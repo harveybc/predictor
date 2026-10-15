@@ -129,7 +129,7 @@ Satoshi's ASOF ruling was audited and withdrawn: EXACT sampling is the default a
 
 **Exact long bundle** (rule `DS12_EXACT`): bundle `9f14c2d2...6ffb`, file `48460378...b507` — **EMPTY SUPPORT**: 0 rows in every split; all 23,153 / 944 / 6,243 candidates are `INPUT_SLOT_NOT_OBSERVED`, because every 144 h / 12 h ladder crosses a >=47 h weekend closure. The sealed long family cannot fit under exact sampling; it needs an explicit ruling (ASOF arm under its own identity, or a market-time window redesign). This is reported, not improvised.
 
-**FRED clocks, bounded attempt:** financial-data's only FRED adapter (`_scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred` @ef0ba6612) queries `fred/series/observations` without realtime parameters, so only the 2026-05-01 current vintage is retained; no ALFRED/vintage adapter exists in any sibling repository. Missing artifact: ALFRED per-observation `realtime_start` for DGS3MO/DGS7 over 2019-2024, or H.15 release timestamps. Confirmatory TEST stays blocked (`PROVENANCE_UNRESOLVED`).
+**FRED clocks, bounded attempt:** financial-data's only FRED adapter (`_scripts/workers/stage13_<host-preferred>_macro_onchain_worker.py::fetch_fred` @ef0ba6612) queries `fred/series/observations` without realtime parameters, so only the 2026-05-01 current vintage is retained; no ALFRED/vintage adapter exists in any sibling repository. Missing artifact: ALFRED per-observation `realtime_start` for DGS3MO/DGS7 over 2019-2024, or H.15 release timestamps. Confirmatory TEST stays blocked (`PROVENANCE_UNRESOLVED`).
 
 ## Market-time sampling support study (order 85ea134e section 2, 2026-10-15)
 
