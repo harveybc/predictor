@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-10-14T20:40:00+00:00",
+  "as_of": "2026-10-15T01:30:00+00:00",
   "critical_path_eta": "feature-selection manifest after GPU queues (done/done/done) and the closure step; later milestones downstream",
   "milestones": [
     {
@@ -49,13 +49,13 @@
     },
     {
       "eta": "4-7 days after M5",
-      "evidence": "I6-DMO implemented (177 CPU tests); first short fit in flight, no result; no eligible real predictor yet",
+      "evidence": "I6-DMO short static exact-DS2 baseline MEASURED and closed: six heads NOT_ELIGIBLE vs naive on 2024 development (one minimal R0 model; no broader claim); long grid has empty exact support and awaits a market-time redesign",
       "id": "M6",
-      "next": "Short report (per-h MAE vs naive), automatic long seal/fit, then pair validation after owner strategy rulings; TEST stays closed. Weekly short/long forecasting; require same-row naive skill before strategy evaluation",
+      "next": "Calendar market-time support study (CPU), paired hourly-input control prepared unfitted, instrument/cost + FRED evidence recovery; strategy only after an eligible pair; TEST closed",
       "progress": 24,
       "state": "SYNTHETIC_ONLY",
       "title": "Short/long forecasts + strategy",
-      "engineering_note": "progress percentage unchanged: no new scientific measurement (2026-10-14)"
+      "engineering_note": "scientific percentage unchanged; short closure / long support redesign (2026-10-15)"
     },
     {
       "eta": "5-10 days after M5",
@@ -85,7 +85,7 @@
   "regenerated_by": {
     "from": "fs_closure/STATUS.json",
     "tool": "tools/fs_close_manifest.py",
-    "i6dmo_update": "M6 evidence/next text edited by the I6-DMO integration (RETURN.md); no percentage changed"
+    "i6dmo_update": "M6 text: short closure / long support redesign; no percentage changed"
   },
   "schema": "predictor.master_milestones.v1"
 }

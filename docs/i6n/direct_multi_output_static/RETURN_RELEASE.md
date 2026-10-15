@@ -44,12 +44,25 @@ replay concur on identical rows). Validation year 2024, original price USD/EUR, 
 | 6 | 3,907 | 0.00149393 | 0.00139809 | +0.0686 | no |
 | 12 | 3,587 | 0.00231534 | 0.00211348 | +0.0955 | no |
 
-**No head is predictively eligible: the exact-DS2 static short model does not beat the
-per-horizon naive on 2024 validation.** This is the measured scientific disposition of this
-baseline, reported as such - not a software failure and not a trading claim; the strategy stage
-could not have opened on these heads regardless of the design-held long family. 54 governed facts
-(annual + weekly per head, support and exclusion counts) are queued in the durable outbox;
-publication delivers through the
+**No head is predictively eligible: this ONE minimal static R0 exact-DS2 short model does not
+beat the per-horizon naive on 2024 development.** The negative result is scoped to exactly that
+identity. It says nothing about other predictors, modular extraction, R2 donor transfer, other
+retraining policies or the heuristic strategy, which remain unmeasured here. The strategy is not
+run on ineligible heads and TEST is not opened to rescue them.
+
+**Causal attribution withdrawn.** No claim is made that earlier, more optimistic numbers were
+caused by ASOF sampling, by TRAIN appearing in a fitness, or by the 2024 feature selection: this
+run is not a controlled ablation of any of those factors. ASOF sampling is not inherently future
+leakage - the specific violation was the unbounded substitution of the sealed exact-input
+treatment; TRAIN inside a fitness was a declared regularizer, not an independent validation
+score; and the 19-feature selection still used 2024, so this measurement remains development,
+not an untouched holdout or a fully resolved point-in-time dataset.
+
+Closure counts from the generated state (reports are not interchangeable with metric rows):
+**55 delivered reports, 2,011 metric rows, zero pending, zero mismatch**, exact readback on all,
+and **28 files verified on each of the two physical mirrors**. No fit is running anywhere, and
+the campaign timers cannot resolve design decisions by polling: the long family and the pair
+await rulings/artifacts, not time. Publication delivered through the
 outbox with exact readback under the Musashi-installed warehouse EnvironmentFile; mirrors to the
 local and second-host paths. The long chain holds under `WAIT_DESIGN_RULING`
 (LONG_EXACT_EMPTY_SUPPORT) and the pair stage stays gated (sealed execution policy; the

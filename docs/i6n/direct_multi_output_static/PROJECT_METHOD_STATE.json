@@ -1,45 +1,51 @@
 {
-  "schema": "i6dmo.method_state.v1",
-  "updated_on": "2026-10-14",
-  "current_stage": "S10_INTEGRATION_VERIFICATION",
-  "execution_status": "AUDIT_REVISE_BEFORE_CONTINUE",
-  "design_artifacts": [
-    "PLAN.md",
-    "EXPERIMENT.short.json",
-    "ACCEPTANCE.md"
-  ],
-  "completed_definition_stages": [
-    "S0_DISCOVERY",
-    "S1_REQUIREMENTS",
-    "S2_USE_CASES",
-    "S3_ACCEPTANCE_TEST_DESIGN",
-    "S4_ARCHITECTURE",
-    "S5_SYSTEM_TEST_DESIGN",
-    "S6_COMPONENT_DESIGN",
-    "S7_INTEGRATION_TEST_DESIGN"
-  ],
-  "definition_gate": "SATOSHI_MUST_REVIEW_AND_MAP_DMO01_DMO20_BEFORE_RUNTIME_IMPLEMENTATION",
-  "next_allowed_actions": [
-    "Integrate bounded warehouse readback correction and regressions",
-    "Follow the audit correction order dated 2026-10-14",
-    "Restore exact input sampling under a new identity",
-    "Implement and verify actual final refit and guarded TEST path without real TEST access",
-    "Complete independent traceability and GPU integration evidence before corrected scientific release"
-  ],
-  "blocked_actions": [
-    "Restart retired H4/H72 DOIN campaign",
-    "Read TEST before final pair/procedure/provenance freeze",
-    "Change consensus or silently reuse old identity/donors",
-    "Claim tests or scientific gates passed without evidence"
-  ],
-  "history": [
-    {
-      "date": "2026-10-14",
-      "event": "Owner changed next experiment to short direct multi-output DS2 static business baseline; implementation delegated to Satoshi."
-    },
-    {
-      "date": "2026-10-14",
-      "event": "Independent audit fdaae9d2 reproduced three protocol defects; original 208 CPU tests passed; cost publication and two mirrors repaired; scientific successor held."
-    }
-  ]
+ "schema": "i6dmo.method_state.v1",
+ "updated_on": "2026-10-15",
+ "current_stage": "S11_SHORT_BASELINE_CLOSED",
+ "execution_status": "SHORT_CLOSED_NOT_ELIGIBLE_LONG_SUPPORT_REDESIGN",
+ "design_artifacts": [
+  "PLAN.md",
+  "EXPERIMENT.short.json",
+  "ACCEPTANCE.md"
+ ],
+ "completed_definition_stages": [
+  "S0_DISCOVERY",
+  "S1_REQUIREMENTS",
+  "S2_USE_CASES",
+  "S3_ACCEPTANCE_TEST_DESIGN",
+  "S4_ARCHITECTURE",
+  "S5_SYSTEM_TEST_DESIGN",
+  "S6_COMPONENT_DESIGN",
+  "S7_INTEGRATION_TEST_DESIGN"
+ ],
+ "definition_gate": "SATOSHI_MUST_REVIEW_AND_MAP_DMO01_DMO20_BEFORE_RUNTIME_IMPLEMENTATION",
+ "next_allowed_actions": [
+  "CPU-only calendar market-time candidate-support study (short 13x2h, long 13x12h open-market slots)",
+  "Prepare, without fitting, the paired short hourly-input control with frozen common-support rules",
+  "Recover the versioned instrument/cost configuration and FRED publication evidence",
+  "Keep the retained ASOF arm and the measured exact baseline immutable"
+ ],
+ "blocked_actions": [
+  "Change consensus or silently reuse old identity/donors",
+  "Claim tests or scientific gates passed without evidence",
+  "Launch the elapsed-time DS12 long grid (typed empty support) or pad/interpolate weekends",
+  "Read TEST before final pair/procedure/provenance freeze",
+  "Refit the measured short identity or run the strategy on ineligible heads",
+  "Restart retired H4/H72 DOIN campaign"
+ ],
+ "history": [
+  {
+   "date": "2026-10-14",
+   "event": "Owner changed next experiment to short direct multi-output DS2 static business baseline; implementation delegated to Satoshi."
+  },
+  {
+   "date": "2026-10-14",
+   "event": "Independent audit fdaae9d2 reproduced three protocol defects; original 208 CPU tests passed; cost publication and two mirrors repaired; scientific successor held."
+  },
+  {
+   "date": "2026-10-15",
+   "event": "Corrected exact-DS2 short release 2c03792e (reviewer ACCEPT_FOR_RELEASE, addendum 6a688a67): short.fit and short.report COMPLETE on the preferred GPU; six heads NOT_ELIGIBLE vs naive on 2024 development; 55 reports / 2011 metric rows delivered with exact readback, 28 files per mirror; long family held WAIT_DESIGN_RULING (LONG_EXACT_EMPTY_SUPPORT) pending the calendar market-time support study."
+  }
+ ],
+ "status_note": "The 2026-10-14 AUDIT_REVISE_BEFORE_CONTINUE applied to the superseded ASOF software and is retained as history; the corrected exact-DS2 short software passed the independent review (ACCEPT_FOR_RELEASE, addendum 6a688a67) and its measurement is closed: six heads NOT_ELIGIBLE on 2024 development, scoped to one minimal static R0 exact-DS2 model only."
 }
