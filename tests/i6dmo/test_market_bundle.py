@@ -78,8 +78,10 @@ def test_frozen_scope_fields_are_enforced():
     assert d["feature_policy"]["exclude"] == ["fred.stress.stlfsi4.level"]
     assert len(d["features"]) == 19
     assert d["feature_manifest_sha256"] == provenance.EXPECTED_MANIFEST_SHA256
-    for forbidden in ("asof", "smoothing", "interpolat", "synthetic"):
-        assert forbidden not in json.dumps(d).lower().replace("no_asof", "")
+    assert d["input_sampling"]["no_asof_no_smoothing_no_interpolation_no_synthetic_prices"] is True
+    assert d["preprocessing"].startswith("scalers and loss scales fit on FIT rows only")
+    assert d["selection_redone"] is False if "selection_redone" in d else True
+    assert d["targets"].startswith("exact ELAPSED t+h, unmodified")
 
 
 # ------------------------------------------------------- per-example time inputs (§3/§6)
@@ -140,8 +142,10 @@ def test_weekend_dst_and_ordinary_weeks_have_distinct_offset_patterns(built, src
 
 
 def test_future_perturbation_changes_nothing(built, src, tmp_path):
+    """Per-window: nothing after t enters its window. Split-wide: FIT scalers/loss scales
+    cannot be moved by inner/development rows."""
     arrays = market_grid.load_market_split(built["short_dir"], "fit")
-    r = len(arrays["row_id"]) // 3
+    r = len(arrays["row_id"]) - 1                      # last FIT origin: all FIT data is <= t
     t = int(arrays["row_id"][r])
     p = _synth.make_input(tmp_path / "f", missing={_synth.epoch("2022-06-15T13:00:00+00:00")},
                           nonfinite=[(_synth.epoch("2021-09-08T09:00:00+00:00"), 5)])
@@ -159,8 +163,25 @@ def test_future_perturbation_changes_nothing(built, src, tmp_path):
     for key in ("x", "offsets_hours", "adjacent_delta_hours", "closure_crossed", "slot_instants"):
         np.testing.assert_array_equal(a2[key][r2], arrays[key][r])
     assert a2["origin_price"][r2] == arrays["origin_price"][r]
-    assert market_grid.load_market_manifest(out)["fit_statistics"] == \
-        built["short"]["fit_statistics"]                 # FIT-only scalers/loss scales unchanged
+    assert (a2["offsets_hours"][r2, -1] == 0) and a2["row_id"][r2] == t
+    # FIT scalers / loss scales are fit on FIT rows only: development rows cannot move them
+    # (a FIT label matures up to t+h, so only data beyond the split can be called "outer").
+    p2 = _synth.make_input(tmp_path / "o", missing={_synth.epoch("2022-06-15T13:00:00+00:00")},
+                           nonfinite=[(_synth.epoch("2021-09-08T09:00:00+00:00"), 5)])
+    with np.load(p2 / "INPUT.npz") as z:
+        ts2, x2, price2 = z["ts"], z["x"].copy(), z["price"].copy()
+    outer = ts2 >= _synth.epoch("2024-01-01T00:00:00+00:00")
+    x2[outer] += 1000.0
+    price2[outer] += 1.0
+    _synth.rewrite_input(p2, x=x2, price=price2)
+    out2 = tmp_path / "ob"
+    m2 = market_grid.build_market_bundle(p2, market_grid.market_design(_synth.load_design()),
+                                         out2, code_commit="TEST")
+    assert m2["fit_statistics"] == built["short"]["fit_statistics"]
+    assert m2["splits"]["fit"]["arrays_sha256"] == \
+        built["short"]["splits"]["fit"]["arrays_sha256"]
+    assert m2["splits"]["validation"]["arrays_sha256"] != \
+        built["short"]["splits"]["validation"]["arrays_sha256"]   # positive control
 
 
 # -------------------------------------------------------- targets, masks, naive (§4/§6)
@@ -271,15 +292,25 @@ def test_bundle_seals_identities_timestamps_exclusions_and_support_hashes(built)
 def test_reconciliation_against_the_support_study_is_retained(built):
     for family in ("short", "long"):
         rec = built[family]["reconciliation"]
+        assert rec["rule"] == built[family]["input_sampling"]["rule"]
         assert rec["study_sha256"] == market_grid.STUDY_SHA256
         assert rec["basis"].startswith("materialized rows")
+        reference = market_grid.STUDY_REFERENCE[rec["rule"]]
         for split in ("fit", "inner", "validation"):
             row = rec["per_split"][split]
-            assert row["materialized"] == row["study_rows"]
-            assert row["difference"] == 0
-            assert row["status"] == "MATCH"
-        assert rec["status"] == "RECONCILED"
+            assert row["study_rows"] == reference[split]
+            assert row["difference"] == row["materialized"] - row["study_rows"]
+            assert row["status"] == ("MATCH" if row["difference"] == 0
+                                     else "DIFFERENCE_RETAINED")
+            assert row["materialized"] == market_grid.load_market_manifest(
+                built[f"{family}_dir"])["splits"][split]["n_rows"]
+        # this synthetic fixture is not the retained input, so differences must be RETAINED,
+        # never silently zeroed or filled; the real bundles are reconciled in the return.
+        assert rec["status"] in ("RECONCILED", "DIFFERENCE_RETAINED_BEFORE_ANY_FIT")
+        if any(r["difference"] for r in rec["per_split"].values()):
+            assert rec["status"] == "DIFFERENCE_RETAINED_BEFORE_ANY_FIT"
         assert rec["counts_are_not_quotas"] is True
+        assert "filling gaps" in rec["note"]
     shared = built["short"]["reconciliation"]["shared_usable_origins"]
     assert set(shared) == {"fit", "inner", "validation"}
 
