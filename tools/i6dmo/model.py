@@ -169,6 +169,7 @@ def _canonical(value):
 
 def model_config(features, seed=6102026, family="short"):
     """The fixed R0 model config for an ordered feature list and family."""
+    family = MATCHED_MODEL_FAMILIES.get(family, family)
     if family in MARKET_FAMILIES:
         spec = MARKET_FAMILIES[family]
         return normalize_model_config({
@@ -582,7 +583,10 @@ CAPACITY_SCHEMA = "i6dmo.capacity.v1"
 #: matched arms is the wider head Flatten, (25 - 13) slots * 4 core channels * 8 hidden units *
 #: 6 heads. Any other difference (branch, fusion, time encoder, core, head width/depth) is an
 #: unreported capacity change and is refused.
-MATCHED_ARMS = {"MG1": "short_mg1", "MG2": "short_mg2"}
+#: Data-lane arm ids (design.MATCHED_SCOPE) -> model family. The sealed matched design families
+#: short_mg1_matched / short_mg2_matched build exactly these recipes (MATCHED_MODEL_FAMILIES).
+MATCHED_ARMS = {"mg1": "short_mg1", "mg2m": "short_mg2"}
+MATCHED_MODEL_FAMILIES = {"short_mg1_matched": "short_mg1", "short_mg2_matched": "short_mg2"}
 MATCHED_HEAD_DELTA = (25 - 13) * 4 * 8 * 6
 #: Declared per-component trainable parameter counts of the fixed R0 recipe with the 19 RAW
 #: features, written out literally so a code change that alters capacity cannot pass silently:
@@ -638,7 +642,6 @@ def declared_parameter_counts(config):
 
 def measured_parameter_counts(bundle):
     """Per-component trainable parameter counts MEASURED on the built Keras graph."""
-    c = bundle.config
     model = bundle.forecast_model
     branches = {f: int(m.count_params()) for f, m in bundle.branch_models.items()}
     core_layers = [int(layer.count_params()) for layer in bundle.core_model.layers
@@ -709,7 +712,7 @@ def capacity_record(bundle):
 
 def matched_capacity_delta(record_mg1, record_mg2):
     """The disclosed MG1-minus-MG2 difference; refuses anything but the declared head delta."""
-    for record, arm in ((record_mg1, "MG1"), (record_mg2, "MG2")):
+    for record, arm in ((record_mg1, "mg1"), (record_mg2, "mg2m")):
         if not isinstance(record, dict) or record.get("schema") != CAPACITY_SCHEMA or \
                 record.get("arm") != arm:
             raise CapacityError(f"{arm} capacity record missing or not the {arm} arm")
@@ -722,7 +725,7 @@ def matched_capacity_delta(record_mg1, record_mg2):
     expected = {"branches": 0, "fusion": 0, "time_encoder": 0, "core": 0,
                 "heads": MATCHED_HEAD_DELTA, "total": MATCHED_HEAD_DELTA}
     if delta != expected:
-        raise CapacityError(f"MG1-MG2 delta {delta} != declared {expected}")
+        raise CapacityError(f"mg1-mg2m delta {delta} != declared {expected}")
     return {"schema": "i6dmo.capacity_delta.v1", "delta": delta,
             "formula": "(25-13)*4*8*6", "declared_head_delta": MATCHED_HEAD_DELTA,
             "interpretation": "practical input/readout recipe comparison; not proof that "

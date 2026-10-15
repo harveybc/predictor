@@ -1,23 +1,22 @@
 """Matched MG1/MG2 short control, MODEL lane: SC05, SC06, SC07 and the CPU half of SC11.
 
-REAL seams only: the sealed MG2 design, a REAL MG2 market bundle built by the data lane's
-``market_grid`` from synthetic inputs, the REAL trainer (``tools.i6dmo.train.main`` in a fresh
-interpreter, and ``train_unit`` in-process), and the REAL report hook
-(``tools.i6dmo.reporting.run_unit``). No injected arrays loader, no fake trainer, no GPU, no
-TEST rows, tiny CPU fixtures (two epochs).
-
-Coverage boundary, stated plainly: the data lane's ``tools/i6dmo/common_population.py`` does
-not exist yet, so the frozen common population, the per-arm accessor for the MG1 arm and the
-population's on-disk format come from ``tests/i6dmo/_common_population_shim.py`` (installed as
-that module only while it is absent). No sealed MG1 design exists yet either (data lane), so the
-MG1 arm runs through ``train_unit`` with a test-derived effective config, which stamps
-``scientific: false``; the MG2 arm runs through the real CLI under the sealed MG2 design.
+Runs against the REAL data-lane module ``tools/i6dmo/common_population.py`` (no shim): a tiny
+synthetic common population is built with ``build_common_population`` from a synthetic input
+whose calendar covers 2020-2024 but whose bars exist only in a few weeks per split (every other
+expected open-market hour is a counted exclusion), with both arms' designs sealed by
+``design.matched_market_time_design`` under the synthetic fixture calendar. The fits go through
+the REAL trainer CLI (``python -m tools.i6dmo.train``) and ``train_unit``; the reports through
+the REAL report hook (``tools.i6dmo.reporting.run_unit``). The committed sealed designs
+(matched_short/EXPERIMENT.mg1.json / EXPERIMENT.mg2m.json) are used for the model builds.
+No injected arrays loader, no fake trainer, no GPU, no TEST bar, two epochs on CPU.
 """
 
 from __future__ import annotations
 
 import copy
-import importlib.util
+import dataclasses
+from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -30,105 +29,105 @@ import pytest
 
 tf = pytest.importorskip("tensorflow")
 
-from tools.i6dmo import design as D, market_grid, model as M, reporting, train as T  # noqa: E402
+from tools.i6dmo import common_population as CP, design as D, market_grid, model as M, reporting, train as T  # noqa: E402,E501
 from tools.i6n_contracts.feature_availability import MANIFEST_NO_STLFSI4  # noqa: E402
-from tests.i6dmo import _common_population_shim as SHIM, _synth  # noqa: E402
+from tests.i6dmo import _synth  # noqa: E402
 from tests.i6dmo.dmo_model_fixtures import DESIGN  # noqa: E402
 
+UTC = timezone.utc
 REPO = DESIGN.parents[3]
-MG2_DESIGN = DESIGN.parent / "EXPERIMENT.mg2.json"
-CAPACITY_DOC = DESIGN.parent / "matched_short" / "CAPACITY_MATCHED.json"
+MATCHED = DESIGN.parent / "matched_short"
+SEALED = {"mg1": MATCHED / "EXPERIMENT.mg1.json", "mg2m": MATCHED / "EXPERIMENT.mg2m.json"}
+CLOSED_MG2 = DESIGN.parent / "EXPERIMENT.mg2.json"
+CAPACITY_DOC = MATCHED / "CAPACITY_MATCHED.json"
 FEATURES = list(MANIFEST_NO_STLFSI4)
 HORIZONS = [2, 3, 4, 5, 6, 12]
 OVERRIDES = {"max_epochs": 2}
-REAL_CP = importlib.util.find_spec("tools.i6dmo.common_population") is not None
+FIXTURE_CAL = {"calendar_id": "SYNTH_FX_NY17_FIXTURE", "version": "synth-v1"}
 ENV = {**os.environ, "CUDA_VISIBLE_DEVICES": ""}
-#: The real trainer entrypoint with ONLY the missing data-lane module shimmed in (fresh
-#: interpreter; tools.i6dmo.train imports the model module before TensorFlow as in production).
-SHIMMED_MAIN = ("import sys\n"
-                "from tests.i6dmo import _common_population_shim as s\n"
-                "s.install()\n"
-                "from tools.i6dmo.train import main\n"
-                "sys.exit(main(sys.argv[1:]))\n")
+#: Weeks (Sunday ids) that carry bars; every other calendar week is an unobserved session.
+OBSERVED = (("2019-12-29", "2020-01-12"), ("2023-11-05", "2023-11-19"),
+            ("2024-01-07", "2024-01-21"), ("2024-12-29", "2024-12-29"))
+TEST_START = int(datetime(2025, 1, 1, tzinfo=UTC).timestamp())
 
 
 def _sha(path):
     return T.file_sha256(path)
 
 
-def mg1_effective():
-    """TEST-ONLY MG1 effective config (no sealed MG1 design exists yet: data lane).
-
-    The sealed MG2 effective config with the market-time block and model block switched to the
-    plan's MG1 values; the model block must equal ``model_config(..., family='short_mg1')``.
-    """
-    eff = copy.deepcopy(T.effective_from_design(MG2_DESIGN))
-    mt = dict(eff["design"]["market_time"], rule="MG1_MARKET_EXACT", observations=25,
-              spacing_open_market_hours=1, span_open_market_hours=24)
-    eff["design"]["market_time"] = mt
-    eff["design"]["experiment_id"] = "TEST-I6-DMO-SHORT-MG1-MATCHED-SHIM-R0"
-    eff["experiment_id"] = eff["design"]["experiment_id"]
-    eff["market_time"] = dict(mt)
-    eff["model"] = dict(eff["model"], slots=25, market_time=dict(mt))
-    eff["design_sha256"] = D.design_sha256(eff["design"])
-    eff["effective_config_sha256"] = D.effective_config_sha256(eff)
-    return eff
-
-
-@pytest.fixture(scope="module", autouse=True)
-def common_population_module():
-    if REAL_CP:
-        pytest.skip("data lane module present: switch these fixtures to it and delete the shim")
-    module = SHIM.install()
-    yield module
-    sys.modules.pop("tools.i6dmo.common_population", None)
-    import tools.i6dmo as pkg
-    if getattr(pkg, "common_population", None) is module:
-        delattr(pkg, "common_population")
+def make_sparse_input(directory, seed=11):
+    directory.mkdir(parents=True)
+    weeks = _synth.calendar_weeks(datetime(2019, 12, 29, tzinfo=UTC), datetime(2024, 12, 29, tzinfo=UTC))
+    keep = {w["week_id"] for w in weeks for a, b in OBSERVED if a <= w["week_id"] <= b}
+    ts = _synth.bar_ends([w for w in weeks if w["week_id"] in keep])
+    ts = ts[ts < TEST_START]
+    rng = np.random.default_rng(seed)
+    x = rng.standard_normal((len(ts), len(FEATURES)))
+    price = 1.10 + np.cumsum(rng.standard_normal(len(ts)) * 1e-3)
+    np.savez(directory / "INPUT.npz", ts=ts, x=x, price=price)
+    digest = hashlib.sha256((directory / "INPUT.npz").read_bytes()).hexdigest()
+    (directory / "CLOCK.json").write_text(json.dumps({
+        "schema": "i6n.source_clock.v1", "status": "RESOLVED", "features": FEATURES,
+        "input_sha256": digest, "timestamp_semantics": "UTC_BAR_END",
+        "availability_policy": "AT_TIMESTAMP", "data_kind": "synthetic_fixture"}, indent=1))
+    (directory / "CALENDAR.json").write_text(json.dumps(_synth.calendar_config(weeks), indent=1))
+    return directory
 
 
 @pytest.fixture(scope="module")
-def world(tmp_path_factory, common_population_module):
+def world(tmp_path_factory):
     root = tmp_path_factory.mktemp("matched")
-    src = _synth.make_input(root / "input")
-    market_grid.build_market_bundle(src, market_grid.market_design(_synth.load_design()),
-                                    root / "mg2_bundle", code_commit="TEST")
-    mg1 = mg1_effective()
-    mg2_sha = D.design_sha256(json.loads(MG2_DESIGN.read_text()))
-    fx = SHIM.build_fixture(root / "fx", mg2_bundle=root / "mg2_bundle", input_dir=src,
-                            designs={"MG1": mg1["design_sha256"], "MG2": mg2_sha})
-    population = SHIM.load_common_population(fx["population"], expected_digest=fx["digest"])
-    return {"root": root, "input": src, "mg2_bundle": root / "mg2_bundle", "mg1": mg1,
-            **fx, "pop": population}
+    src = make_sparse_input(root / "input")
+    short = _synth.load_design()
+    dds = {a: CP.matched_data_design(short, a) for a in CP.ARMS}
+    designs = {}
+    for arm in CP.ARMS:
+        doc = D.matched_market_time_design(short, arm, dds, calendar=FIXTURE_CAL)
+        designs[arm] = root / f"EXPERIMENT.{arm}.json"
+        designs[arm].write_text(json.dumps(doc, indent=1, sort_keys=True))
+    exps = {a: json.loads(designs[a].read_text()) for a in CP.ARMS}
+    seal = CP.write_common_population(CP.build_common_population(src, exps, dds, code_commit="TEST"),
+                                      root / "population")
+    digest = seal["population_digest"]
+    pop = CP.load_common_population(root / "population", expected_digest=digest, input_dir=src)
+    return {"root": root, "input": src, "designs": designs, "exps": exps,
+            "population": root / "population", "digest": digest, "pop": pop}
 
 
 def _cp(world):
-    return {"path": str(world["population"]), "expected_digest": world["digest"]}
+    return {"path": str(world["population"]), "expected_digest": world["digest"],
+            "input_dir": str(world["input"])}
 
 
-def _mg1_fit(world, out, arm=None):
-    return T.train_unit(None, arm or world["arm_mg1"], out, "cpu", training_overrides=OVERRIDES,
-                        common_population=_cp(world), effective=world["mg1"])
+def _cli(world, arm, out, *, design=None, overrides=True):
+    env = dict(ENV)
+    if overrides:
+        env["I6DMO_TEST_TRAINING_OVERRIDES"] = json.dumps(OVERRIDES)
+    return subprocess.run(
+        [sys.executable, "-m", "tools.i6dmo.train", "--design", str(design or world["designs"][arm]),
+         "--out", str(out), "--device", "cpu", "--json",
+         "--common-population", str(world["population"]),
+         "--common-population-digest", world["digest"], "--input-dir", str(world["input"])],
+        capture_output=True, text=True, cwd=REPO, check=False, env=env)
+
+
+def _fit(world, arm, out):
+    """In-process train_unit (same function the CLI runs); used where the accessor is wrapped."""
+    return T.train_unit(world["designs"][arm], None, out, "cpu", training_overrides=OVERRIDES,
+                        common_population=_cp(world))
 
 
 @pytest.fixture(scope="module")
 def fits(world):
-    """One matched fit per arm: MG2 through the REAL CLI, MG1 through train_unit."""
-    out2 = world["root"] / "fit_mg2" / "out" / "train"
-    run = subprocess.run(
-        [sys.executable, "-c", SHIMMED_MAIN, "--design", str(MG2_DESIGN),
-         "--bundle", str(world["mg2_bundle"]), "--out", str(out2), "--device", "cpu", "--json",
-         "--common-population", str(world["population"]),
-         "--common-population-digest", world["digest"]],
-        capture_output=True, text=True, cwd=REPO, check=False,
-        env={**ENV, "I6DMO_TEST_TRAINING_OVERRIDES": json.dumps(OVERRIDES)})
-    assert run.returncode == 0, run.stdout[-3000:] + run.stderr[-3000:]
-    out1 = world["root"] / "fit_mg1" / "out" / "train"
-    receipt1 = _mg1_fit(world, out1)
-    assert receipt1["status"] == "COMPLETED", receipt1
-    return {"MG1": out1, "MG2": out2,
-            "receipts": {"MG1": receipt1,
-                         "MG2": json.loads((out2 / "RECEIPT.json").read_text())}}
+    """One matched fit per arm through the REAL trainer CLI (fresh flags-first interpreters)."""
+    out = {}
+    for arm in CP.ARMS:
+        target = world["root"] / f"fit_{arm}" / "out" / "train"
+        run = _cli(world, arm, target)
+        assert run.returncode == 0, run.stdout[-3000:] + run.stderr[-3000:]
+        out[arm] = target
+    out["receipts"] = {arm: json.loads((out[arm] / "RECEIPT.json").read_text()) for arm in CP.ARMS}
+    return out
 
 
 def _stored_terminal(fit_out):
@@ -145,34 +144,28 @@ def _stored_terminal(fit_out):
     return folder / "TERMINAL.json"
 
 
-def _spec(world, arm, terminal):
-    design = world["mg1"]["design"] if arm == "MG1" else json.loads(MG2_DESIGN.read_text())
-    source = world["arm_mg1"] if arm == "MG1" else world["mg2_bundle"]
-    arm_pin = {"path": str(source)}
-    if arm == "MG2":
-        arm_pin["sha256"] = _sha(Path(source) / "BUNDLE.json")
-    return {"unit_id": f"{arm.lower()}.report", "kind": "report", "family": "short",
+def _spec(world, arm, terminal, design=None):
+    return {"unit_id": f"{arm}.report", "kind": "report", "family": "short",
             "identity_sha256": "r" * 64, "campaign_id": "matched-short-model-lane-test",
             "cadence": "NONE", "test_open": False,
-            "effective_config": {"design": design, "code_commit": "c" * 40},
-            "upstream": {f"{arm.lower()}.fit": {"path": str(terminal), "sha256": _sha(terminal)}},
+            "effective_config": {"design": design or world["exps"][arm], "code_commit": "c" * 40},
+            "upstream": {f"{arm}.fit": {"path": str(terminal), "sha256": _sha(terminal)}},
             "common_population": {"path": str(world["population"]), "sha256": world["digest"]},
-            "matched": {"arm": arm, "fit_unit": f"{arm.lower()}.fit", "arm_source": arm_pin,
+            "matched": {"arm": arm, "fit_unit": f"{arm}.fit",
                         "input": {"path": str(world["input"]),
                                   "sha256": _sha(Path(world["input"]) / "INPUT.npz")}}}
 
 
 def _report(world, arm, fit_out, out):
-    terminal = _stored_terminal(fit_out)
-    result = reporting.run_unit(_spec(world, arm, terminal), out, out.parent / f"{out.name}.progress")
-    return result
+    return reporting.run_unit(_spec(world, arm, _stored_terminal(fit_out)), out,
+                              out.parent / f"{out.name}.progress")
 
 
 @pytest.fixture(scope="module")
 def reports(world, fits):
     out = {}
-    for arm in ("MG1", "MG2"):
-        target = world["root"] / f"report_{arm.lower()}"
+    for arm in CP.ARMS:
+        target = world["root"] / f"report_{arm}"
         result = _report(world, arm, fits[arm], target)
         assert result["status"] == "COMPLETE", result
         out[arm] = {"result": result, "metrics": json.loads((target / "METRICS.json").read_text())}
@@ -181,34 +174,39 @@ def reports(world, fits):
 
 # ============================================================================ SC07 capacity
 
+def _eff(arm):
+    return T.effective_from_design(SEALED[arm])
+
+
 def test_sc07_real_sealed_builds_three_inputs_78_channels_and_2304_delta():
-    mg2_eff = T.effective_from_design(MG2_DESIGN)
-    mg1_eff = mg1_effective()
-    assert M.normalize_model_config(mg1_eff["model"]) == M.model_config(FEATURES, family="short_mg1")
-    assert M.normalize_model_config(mg2_eff["model"]) == M.model_config(FEATURES, family="short_mg2")
     records = {}
-    for arm, eff, slots in (("MG1", mg1_eff, 25), ("MG2", mg2_eff, 13)):
-        bundle = M.build_dmo(eff["model"])
+    for arm, slots, family in (("mg1", 25, "short_mg1_matched"), ("mg2m", 13, "short_mg2_matched")):
+        eff = _eff(arm)
+        assert eff["family"] == family and T.matched_arm(eff) == arm
+        assert M.normalize_model_config(eff["model"]) == M.model_config(FEATURES, family=family)
+        bundle = M.build_dmo(eff["model"])                    # the exact call train_unit makes
         model = bundle.forecast_model
         assert [tuple(t.shape[1:]) for t in model.inputs] == [(slots, 19), (slots,), (slots,)]
-        # MEASURED, not assumed: the core sees 76 encoded value channels + 2 context channels.
+        # MEASURED, not assumed: 19 x 4 encoded value channels + 2 context channels.
         assert tuple(bundle.core_model.input_shape) == (None, slots, 78)
         encoder = model.get_layer("physical_time_encoder")
         assert encoder.min_adjacent_hours == float(eff["design"]["market_time"]["spacing_open_market_hours"])
         assert len(model.outputs) == 6
         records[arm] = M.capacity_record(bundle)
         assert records[arm]["arm"] == arm
-        assert {k: records[arm]["counts"][k] for k in M.DECLARED_CAPACITY[M.MATCHED_ARMS[arm]]} \
-            == M.DECLARED_CAPACITY[M.MATCHED_ARMS[arm]]
-    delta = M.matched_capacity_delta(records["MG1"], records["MG2"])
+        literal = M.DECLARED_CAPACITY[M.MATCHED_ARMS[arm]]
+        assert {k: records[arm]["counts"][k] for k in literal} == literal
+    delta = M.matched_capacity_delta(records["mg1"], records["mg2m"])
     assert delta["delta"] == {"branches": 0, "fusion": 0, "time_encoder": 0, "core": 0,
                               "heads": 2304, "total": 2304}
     assert (25 - 13) * 4 * 8 * 6 == M.MATCHED_HEAD_DELTA == 2304
-    assert records["MG1"]["counts"]["total"] == 7186 and records["MG2"]["counts"]["total"] == 4882
-    # The committed machine-readable disclosure is exactly what the real builds measure.
+    assert records["mg1"]["counts"]["total"] == 7186 and records["mg2m"]["counts"]["total"] == 4882
+    # The committed machine-readable disclosure is exactly what the real sealed builds measure.
     doc = json.loads(CAPACITY_DOC.read_text())
-    assert doc["arms"]["MG1"]["counts"] == records["MG1"]["counts"]
-    assert doc["arms"]["MG2"]["counts"] == records["MG2"]["counts"]
+    for arm in CP.ARMS:
+        assert doc["arms"][arm]["counts"] == records[arm]["counts"]
+        assert doc["arms"][arm]["capacity_sha256"] == records[arm]["capacity_sha256"]
+        assert doc["arms"][arm]["sealed_design_sha256"] == _eff(arm)["design_sha256"]
     assert doc["delta"] == delta["delta"]
     assert doc["declared_capacity"] == M.DECLARED_CAPACITY
 
@@ -240,14 +238,14 @@ def test_sc07_an_unreported_capacity_change_is_refused(monkeypatch, patch):
         changed = copy.deepcopy(M.DECLARED_CAPACITY)
         changed["short_mg2"]["per_head"] = 434
         monkeypatch.setattr(M, "DECLARED_CAPACITY", changed)
-    bundle = M.build_dmo(M.model_config(FEATURES, family="short_mg2"))
+    bundle = M.build_dmo(_eff("mg2m")["model"])
     with pytest.raises(M.CapacityError, match="CAPACITY_UNREPORTED_CHANGE"):
         M.capacity_record(bundle)
 
 
 def test_sc07_capacity_delta_refuses_anything_but_the_declared_head_difference():
-    a = M.capacity_record(M.build_dmo(M.model_config(FEATURES, family="short_mg1")))
-    b = M.capacity_record(M.build_dmo(M.model_config(FEATURES, family="short_mg2")))
+    a = M.capacity_record(M.build_dmo(_eff("mg1")["model"]))
+    b = M.capacity_record(M.build_dmo(_eff("mg2m")["model"]))
     with pytest.raises(M.CapacityError):
         M.matched_capacity_delta(b, a)                       # arms swapped
     tampered = copy.deepcopy(a)
@@ -258,7 +256,7 @@ def test_sc07_capacity_delta_refuses_anything_but_the_declared_head_difference()
 
 def test_sc07_the_trainer_refuses_a_capacity_change_typed_before_fitting(world, tmp_path, monkeypatch):
     monkeypatch.setattr(M, "dmo_head", _wide_head)
-    receipt = _mg1_fit(world, tmp_path / "unit")
+    receipt = _fit(world, "mg1", tmp_path / "unit")
     assert receipt["status"] == "FAILED_TYPED" and receipt["code"] == "CAPACITY_UNREPORTED_CHANGE"
     assert not (tmp_path / "unit" / "TRAINING.json").exists()
 
@@ -278,26 +276,33 @@ def _arrays(offsets):
             "closure_crossed": np.zeros((rows, slots))}
 
 
-def test_25_slot_ladder_passes_the_sealed_spacing_seam_and_bad_ladders_refuse():
-    mg1, mg2 = mg1_effective(), T.effective_from_design(MG2_DESIGN)
-    assert T.market_spacing_hours(mg1) == 1.0 and T.market_spacing_hours(mg2) == 2.0
+def test_25_slot_ladder_passes_the_sealed_spacing_seam_and_bad_ladders_refuse(world):
+    mg1, mg2m = _eff("mg1"), _eff("mg2m")
+    assert T.market_spacing_hours(mg1) == 1.0 and T.market_spacing_hours(mg2m) == 2.0
     weekend = _ladder(2, 25, 1.0)
     weekend[1, :10] -= 48.0                                   # a weekend between slots 9 and 10
     flags = np.zeros((2, 25))
     flags[1, 10] = 1
     ok = T.market_time_inputs({**_arrays(weekend), "closure_crossed": flags}, design=mg1)
     assert [a.shape for a in ok] == [(2, 25, 19), (2, 25), (2, 25)]
-    assert len(T.market_time_inputs(_arrays(_ladder(2, 13, 2.0)), design=mg2)) == 3   # 13 @ 2 h
+    assert len(T.market_time_inputs(_arrays(_ladder(2, 13, 2.0)), design=mg2m)) == 3
+    # The REAL population's per-row actual offsets (closures, DST) pass at 1 h and at 2 h.
+    for arm, eff in (("mg1", mg1), ("mg2m", mg2m)):
+        tensors = CP.arm_tensors(world["pop"], world["exps"][arm], "FIT")
+        arrays = {"x": tensors.x, "offsets_hours": tensors.offsets_hours,
+                  "closure_crossed": tensors.closure_crossed}
+        assert len(T.market_time_inputs(arrays, design=eff)) == 3
+        assert (np.diff(tensors.offsets_hours, axis=1) > float(
+            eff["design"]["market_time"]["spacing_open_market_hours"])).any()   # gaps exist
     refusals = [
         (_ladder(2, 25, 1.0, start=0), mg1),                 # ordinal slot indices 0..24
         (_ladder(2, 25, 0.5), mg1),                          # compressed ladder under MG1
-        (_ladder(2, 13, 1.0), mg2),                          # ordinal 13-slot ladder under MG2
-        (_ladder(2, 25, 1.0), mg2),                          # an MG1 ladder under the MG2 design
+        (_ladder(2, 13, 1.0), mg2m),                         # ordinal 13-slot ladder under MG2
+        (_ladder(2, 25, 1.0), mg2m),                         # an MG1 ladder under the MG2 design
     ]
     for offsets, eff in refusals:
         with pytest.raises(T.TrainDisposition, match="ORDINAL_OR_INVALID_OFFSETS"):
             T.market_time_inputs(_arrays(offsets), design=eff)
-    # The encoder seam carries the same design-derived bound.
     model = M.build_dmo(mg1["model"]).forecast_model
     x = np.zeros((2, 25, 19), np.float32)
     pred = model([x, weekend.astype(np.float32), flags.astype(np.float32)], training=False)
@@ -311,15 +316,17 @@ def test_25_slot_ladder_passes_the_sealed_spacing_seam_and_bad_ladders_refuse():
 def test_sc06_both_real_fit_paths_consume_the_frozen_common_population(world, fits):
     population = world["pop"]
     scales = {}
-    for arm in ("MG1", "MG2"):
+    for arm in CP.ARMS:
         out, receipt = fits[arm], fits["receipts"][arm]
         assert receipt["status"] == "COMPLETED" and receipt["scientific"] is False
         block = receipt["matched"]
         assert block["arm"] == arm and block["common_population_sha256"] == world["digest"]
+        assert block["population_source_verified"] is True
         assert receipt["identity"]["common_population_sha256"] == world["digest"]
         assert receipt["identity"]["matched_arm"] == arm
-        assert block["arm_source"]["kind"] == ("market_bundle" if arm == "MG2"
-                                               else "common_population_accessor")
+        assert block["arm_source"]["kind"] == "common_population.arm_tensors"
+        assert block["population_arm_identity"]["experiment_design_sha256"] == \
+            receipt["identity"]["design_sha256"]
         training = json.loads((out / "TRAINING.json").read_text())
         assert training["rows"]["fit_trainable"] == len(population.splits["FIT"].origin_row_ids)
         assert training["rows"]["inner_trainable"] == len(population.splits["INNER"].origin_row_ids)
@@ -338,80 +345,93 @@ def test_sc06_both_real_fit_paths_consume_the_frozen_common_population(world, fi
         scales[arm] = json.loads((out / "SCALES.json").read_text())
     # ONE shared FIT-only scaler and naive loss scale: identical across arms, equal to the
     # population's frozen statistics, never an arm's own refit.
-    assert scales["MG1"] == scales["MG2"]
-    assert scales["MG1"]["input_mean"] == population.scaler.mean.tolist()
-    assert scales["MG1"]["input_std"] == population.scaler.std.tolist()
-    assert scales["MG1"]["naive_mae"] == [population.naive_loss_scale[h] for h in HORIZONS]
-    arm_only = T.fit_scales(T.load_matched_data(world["mg2_bundle"], T.effective_from_design(MG2_DESIGN),
-                                                MG2_DESIGN, population)["fit"])
-    assert arm_only["input_mean"] != scales["MG2"]["input_mean"]
-    assert fits["receipts"]["MG1"]["identity"]["scales_sha256"] == \
-        fits["receipts"]["MG2"]["identity"]["scales_sha256"]
-    # The training recipe is the frozen one.
-    settings = json.loads((fits["MG1"] / "TRAINING.json").read_text())["settings"]
+    assert scales["mg1"] == scales["mg2m"]
+    assert scales["mg1"]["input_mean"] == population.scaler.mean.tolist()
+    assert scales["mg1"]["input_std"] == population.scaler.std.tolist()
+    assert scales["mg1"]["naive_mae"] == [population.naive_loss_scale[h] for h in HORIZONS]
+    arm_only = T.fit_scales(T.load_matched_data(population, _eff_world(world, "mg2m"))["fit"])
+    assert arm_only["input_mean"] != scales["mg2m"]["input_mean"]
+    assert fits["receipts"]["mg1"]["identity"]["scales_sha256"] == \
+        fits["receipts"]["mg2m"]["identity"]["scales_sha256"]
+    settings = json.loads((fits["mg1"] / "TRAINING.json").read_text())["settings"]
     assert (settings["learning_rate"], settings["weight_decay"], settings["batch_size"],
             settings["patience"], settings["min_delta"]) == (1e-3, 1e-4, 256, 10, 1e-8)
-    assert T.effective_from_design(MG2_DESIGN)["training"]["max_epochs"] == 200
-    assert T.effective_from_design(MG2_DESIGN)["seed"] == 6102026
+    for arm in CP.ARMS:
+        assert _eff(arm)["training"]["max_epochs"] == 200 and _eff(arm)["seed"] == 6102026
 
 
-def _masked_out_positions(world):
-    """(split, row) pairs whose 12 h label is valid under the arm but outside the common mask."""
-    j = HORIZONS.index(12)
-    edits = []
-    for name in ("FIT", "INNER", "DEVELOPMENT"):
-        with np.load(Path(world["arm_mg1"]) / f"{name}.npz") as z:
-            arm_mask = z["mask"]
-            ids = z["row_id"]
-        sp = world["pop"].splits[name]
-        rows = [r for r in range(len(ids)) if arm_mask[r, j] and not sp.head_mask[r, j]]
-        assert rows, f"{name}: the fixture must hold arm-valid labels outside the common mask"
-        edits += [(name, "target_price", (r, j), 9.99) for r in rows]
-    return edits
+def _eff_world(world, arm):
+    return T.effective_from_design(world["designs"][arm])
 
 
-def test_sc06_masked_out_labels_never_reach_loss_monitor_predictions_or_score(world, fits, reports, tmp_path):
-    perturbed = SHIM.perturb_arm(world["arm_mg1"], tmp_path / "arm", _masked_out_positions(world))
+def _wrap_accessor(monkeypatch, edit):
+    """Perturb what the REAL accessor returns (the arm's tensors), nothing else."""
+    real = CP.arm_tensors
+
+    def wrapped(pop, design, split):
+        tensors = real(pop, design, split)
+        target = np.array(tensors.target_price, copy=True)
+        edit(split, target, np.asarray(tensors.head_mask, bool))
+        return dataclasses.replace(tensors, target_price=target)
+    monkeypatch.setattr(CP, "arm_tensors", wrapped)
+
+
+def test_sc06_masked_out_labels_never_reach_loss_monitor_predictions_or_score(
+        world, fits, reports, tmp_path, monkeypatch):
+    def fill_masked_out(split, target, mask):
+        assert (~mask).any(), split                      # masked-out heads exist in every split
+        target[~mask] = 9.99                             # a finite label OUTSIDE the common mask
+    _wrap_accessor(monkeypatch, fill_masked_out)
     out = tmp_path / "fit" / "out" / "train"
-    receipt = _mg1_fit(world, out, arm=perturbed)
+    receipt = _fit(world, "mg1", out)
     assert receipt["status"] == "COMPLETED", receipt
-    base = json.loads((fits["MG1"] / "TRAINING.json").read_text())
+    base = json.loads((fits["mg1"] / "TRAINING.json").read_text())
     new = json.loads((out / "TRAINING.json").read_text())
     assert [r["monitored"] for r in new["history"]] == [r["monitored"] for r in base["history"]]
     assert [r["weights_sha256"] for r in new["history"]] == [r["weights_sha256"] for r in base["history"]]
     for key in ("fit", "inner", "validation"):
         with np.load(out / "predictions" / f"{key}.npz") as a, \
-                np.load(fits["MG1"] / "predictions" / f"{key}.npz") as b:
+                np.load(fits["mg1"] / "predictions" / f"{key}.npz") as b:
             assert np.array_equal(a["predicted_price"], b["predicted_price"])
-    # The report on the perturbed arm source scores identically (annual and weekly).
-    spec = _spec(world, "MG1", _stored_terminal(out))
-    spec["matched"]["arm_source"]["path"] = str(perturbed)
-    result = reporting.run_unit(spec, tmp_path / "report", tmp_path / "progress.json")
+    # The report under the same perturbed accessor scores identically (annual, weekly, selection).
+    result = _report(world, "mg1", out, tmp_path / "report")
     assert result["status"] == "COMPLETE", result
-    assert result["eligibility"] == reports["MG1"]["result"]["eligibility"]
-    assert result["selection"] == reports["MG1"]["result"]["selection"]
+    assert result["eligibility"] == reports["mg1"]["result"]["eligibility"]
+    assert result["selection"] == reports["mg1"]["result"]["selection"]
+    metrics = json.loads((tmp_path / "report" / "METRICS.json").read_text())
+    assert metrics["weekly"] == reports["mg1"]["metrics"]["weekly"]
 
 
-def test_sc06_positive_control_a_common_inner_label_does_move_the_monitor(world, fits, tmp_path):
-    sp = world["pop"].splits["INNER"]
-    r = int(np.flatnonzero(sp.head_mask[:, 0])[0])
-    perturbed = SHIM.perturb_arm(world["arm_mg1"], tmp_path / "arm",
-                                 [("INNER", "target_price", (r, 0), 9.99)])
+def test_sc06_positive_control_a_common_inner_label_does_move_the_monitor(world, fits, tmp_path, monkeypatch):
+    def bump_inner(split, target, mask):
+        if split == "INNER":
+            r = int(np.flatnonzero(mask[:, 0])[0])
+            target[r, 0] += 0.05
+    _wrap_accessor(monkeypatch, bump_inner)
     out = tmp_path / "fit" / "out" / "train"
-    receipt = _mg1_fit(world, out, arm=perturbed)
+    receipt = _fit(world, "mg1", out)
     assert receipt["status"] == "COMPLETED", receipt
-    base = json.loads((fits["MG1"] / "TRAINING.json").read_text())["history"]
+    base = json.loads((fits["mg1"] / "TRAINING.json").read_text())["history"]
     new = json.loads((out / "TRAINING.json").read_text())["history"]
     assert new[0]["fit_loss"] == base[0]["fit_loss"]           # FIT untouched (same weights)
     assert new[0]["inner_loss"] != base[0]["inner_loss"]       # the common INNER label counts
 
 
+def test_sc06_a_common_fit_label_change_is_caught_by_the_shared_naive_cross_check(world, tmp_path, monkeypatch):
+    def bump_fit(split, target, mask):
+        if split == "FIT":
+            r = int(np.flatnonzero(mask[:, 0])[0])
+            target[r, 0] += 0.05
+    _wrap_accessor(monkeypatch, bump_fit)
+    receipt = _fit(world, "mg2m", tmp_path / "unit")
+    assert receipt["status"] == "FAILED_TYPED" and receipt["code"] == "NAIVE_SCALE_MISMATCH"
+
+
 # ============================================================================ SC05 report path
 
 def test_sc05_report_scores_model_and_naive_on_the_same_common_rows_with_manual_replay(world, fits, reports):
-    population = world["pop"]
-    dev = population.splits["DEVELOPMENT"]
-    for arm in ("MG1", "MG2"):
+    dev = world["pop"].splits["DEVELOPMENT"]
+    for arm in CP.ARMS:
         result, metrics = reports[arm]["result"], reports[arm]["metrics"]
         with np.load(fits[arm] / "predictions" / "validation.npz") as z:
             pred, target, origin = z["predicted_price"], z["target_price"], z["origin_price"]
@@ -425,15 +445,16 @@ def test_sc05_report_scores_model_and_naive_on_the_same_common_rows_with_manual_
             assert row["mae"] == pytest.approx(mae, rel=1e-12)
             assert row["naive"] == pytest.approx(naive, rel=1e-12)
             assert row["relative_error"] == pytest.approx((mae - naive) / naive, rel=1e-10)
-            # The model and naive used the identical row set per head.
             assert row["row_ids_sha256"] == metrics["per_horizon"][str(h)]["row_ids_sha256"]
             rels.append(row["relative_error"])
-            weekly = metrics["weekly"]["per_horizon"][str(h)]
-            assert weekly["annual"]["n"] == int(sel.sum())
+            assert metrics["weekly"]["per_horizon"][str(h)]["annual"]["n"] == int(sel.sum())
+            manual = metrics["matched"]["manual_pooled_replay"][str(h)]
+            assert manual["mae"] == pytest.approx(row["mae"], rel=1e-12)
         block = metrics["matched"]
         assert block["population"] == "COMMON_DEVELOPMENT"
         assert block["common_population_sha256"] == world["digest"]
         assert block["development_counts"] == {str(h): dev.counts[h] for h in HORIZONS}
+        assert block["input_replay"]["status"] == "REPLAYED"
         assert metrics["agreement"]["status"] == "AGREE"
         assert block["selection"]["status"] == "COMPLETE"
         assert block["selection"]["score"] == pytest.approx(sum(rels) / 6, rel=1e-12)
@@ -441,10 +462,9 @@ def test_sc05_report_scores_model_and_naive_on_the_same_common_rows_with_manual_
         annual = result["reports"][0]
         assert annual["tags"]["population"] == "COMMON_DEVELOPMENT" and annual["tags"]["arm"] == arm
         assert any(m["metric"] == "Selection_Score_Equal_Head_Relative_MAE" for m in annual["metrics"])
-        # Per-head numbers stay primary: every head is published individually.
         assert {m["horizon"] for m in annual["metrics"] if m["metric"] == "Relative_Error"} == set(HORIZONS)
-    assert reports["MG1"]["metrics"]["matched"]["development_row_ids_sha256"] == \
-        reports["MG2"]["metrics"]["matched"]["development_row_ids_sha256"]
+    assert reports["mg1"]["metrics"]["matched"]["development_row_ids_sha256"] == \
+        reports["mg2m"]["metrics"]["matched"]["development_row_ids_sha256"]
 
 
 def _rewrite_predictions(fit_out, dst, edit):
@@ -472,18 +492,18 @@ def test_sc05_masked_out_predictions_do_not_move_the_score_but_valid_ones_do(wor
     def valid(arrays):
         arrays["predicted_price"][tuple(shown)] += 0.01
 
-    out = _rewrite_predictions(fits["MG2"], tmp_path / "a" / "out" / "train", masked)
-    result = _report(world, "MG2", out, tmp_path / "report_a")
+    out = _rewrite_predictions(fits["mg2m"], tmp_path / "a" / "out" / "train", masked)
+    result = _report(world, "mg2m", out, tmp_path / "report_a")
     assert result["status"] == "COMPLETE", result
-    assert result["eligibility"] == reports["MG2"]["result"]["eligibility"]
-    out = _rewrite_predictions(fits["MG2"], tmp_path / "b" / "out" / "train", valid)
-    result = _report(world, "MG2", out, tmp_path / "report_b")
+    assert result["eligibility"] == reports["mg2m"]["result"]["eligibility"]
+    out = _rewrite_predictions(fits["mg2m"], tmp_path / "b" / "out" / "train", valid)
+    result = _report(world, "mg2m", out, tmp_path / "report_b")
     assert result["status"] == "COMPLETE", result
     h = str(HORIZONS[shown[1]])
-    assert result["eligibility"][h]["mae"] != reports["MG2"]["result"]["eligibility"][h]["mae"]
+    assert result["eligibility"][h]["mae"] != reports["mg2m"]["result"]["eligibility"][h]["mae"]
 
 
-def test_report_refuses_rows_or_mask_that_are_not_the_common_population(world, fits, tmp_path):
+def test_report_refuses_rows_mask_or_prices_that_are_not_the_common_population(world, fits, tmp_path):
     def drop_row(arrays):
         for k in ("row_id", "predicted_price", "target_price", "origin_price", "mask"):
             arrays[k] = arrays[k][1:]
@@ -491,29 +511,33 @@ def test_report_refuses_rows_or_mask_that_are_not_the_common_population(world, f
     def widen_mask(arrays):
         arrays["mask"] = np.ones_like(arrays["mask"])
 
-    for name, edit, code in (("rows", drop_row, "ROW_ID_MISMATCH"), ("mask", widen_mask, "MASK_MISMATCH")):
-        out = _rewrite_predictions(fits["MG1"], tmp_path / name / "out" / "train", edit)
-        result = _report(world, "MG1", out, tmp_path / f"report_{name}")
+    def move_price(arrays):
+        arrays["origin_price"][0] += 1e-4
+
+    for name, edit, code in (("rows", drop_row, "ROW_ID_MISMATCH"), ("mask", widen_mask, "MASK_MISMATCH"),
+                             ("price", move_price, "PRICE_REPLAY_MISMATCH")):
+        out = _rewrite_predictions(fits["mg1"], tmp_path / name / "out" / "train", edit)
+        result = _report(world, "mg1", out, tmp_path / f"report_{name}")
         assert result["status"] == "FAILED" and result["disposition"] == code, result
 
 
-def test_decision_rule_uses_scores_ties_to_mg2_and_never_selects_from_failed_heads(reports):
-    mg1, mg2 = reports["MG1"]["metrics"], reports["MG2"]["metrics"]
-    decision = reporting.decide_matched(mg1, mg2)
-    s1, s2 = mg1["matched"]["selection"]["score"], mg2["matched"]["selection"]["score"]
+def test_decision_rule_uses_scores_ties_to_mg2m_and_never_selects_from_failed_heads(reports):
+    mg1, mg2m = reports["mg1"]["metrics"], reports["mg2m"]["metrics"]
+    decision = reporting.decide_matched(mg1, mg2m)
+    s1, s2 = mg1["matched"]["selection"]["score"], mg2m["matched"]["selection"]["score"]
     assert decision["capacity_delta"]["delta"]["heads"] == 2304
-    assert decision["selected"] == ("MG1" if s1 < s2 - 1e-8 else "MG2")
+    assert decision["selected"] == ("mg1" if s1 < s2 - 1e-8 else "mg2m")
     tie = copy.deepcopy(mg1)
     tie["matched"]["selection"]["score"] = s2 + 5e-9
-    assert reporting.decide_matched(tie, mg2)["decision"] == "TIE_RETAIN_CHEAPER"
-    assert reporting.decide_matched(tie, mg2)["selected"] == "MG2"
+    assert reporting.decide_matched(tie, mg2m)["decision"] == "TIE_RETAIN_CHEAPER"
+    assert reporting.decide_matched(tie, mg2m)["selected"] == "mg2m"
     failed = copy.deepcopy(mg1)
     failed["per_horizon"]["12"]["relative_error"] = None
     failed["matched"]["selection"] = reporting.selection_score(failed["per_horizon"], HORIZONS)
-    out = reporting.decide_matched(failed, mg2)
+    out = reporting.decide_matched(failed, mg2m)
     assert out["decision"] == "INCOMPLETE_COMPARISON" and out["selected"] is None
-    assert out["missing"][0]["horizon"] == 12 and out["missing"][0]["arm"] == "MG1"
-    other = copy.deepcopy(mg2)
+    assert out["missing"][0]["horizon"] == 12 and out["missing"][0]["arm"] == "mg1"
+    other = copy.deepcopy(mg2m)
     other["matched"]["development_row_ids_sha256"] = "0" * 64
     with pytest.raises(reporting.ReportFailure, match="COMMON_POPULATION_MISMATCH"):
         reporting.decide_matched(mg1, other)
@@ -522,83 +546,68 @@ def test_decision_rule_uses_scores_ties_to_mg2_and_never_selects_from_failed_hea
 # ============================================================================ SC06 refusals
 
 def test_sc06_a_cached_full_population_mg2_fit_is_never_a_matched_arm(world, fits, tmp_path, monkeypatch):
-    # (a) A REAL ordinary (full-population) MG2 fit on the same bundle, then offered as the arm.
+    # (a) A REAL ordinary full-population MG2 fit under the closed design, offered as the arm.
+    src = _synth.make_input(tmp_path / "full_input")
+    market_grid.build_market_bundle(src, market_grid.market_design(_synth.load_design()),
+                                    tmp_path / "mg2_bundle", code_commit="TEST")
     monkeypatch.setenv("I6DMO_TEST_MAX_ROWS", "48")
     plain = tmp_path / "plain" / "out" / "train"
-    receipt = T.train_unit(MG2_DESIGN, world["mg2_bundle"], plain, "cpu",
+    receipt = T.train_unit(CLOSED_MG2, tmp_path / "mg2_bundle", plain, "cpu",
                            training_overrides={"max_epochs": 1})
     monkeypatch.delenv("I6DMO_TEST_MAX_ROWS")
     assert receipt["status"] == "COMPLETED" and "common_population_sha256" not in receipt["identity"]
-    result = _report(world, "MG2", plain, tmp_path / "report_plain")
+    result = _report(world, "mg2m", plain, tmp_path / "report_plain")
     assert result["status"] == "FAILED" and result["disposition"] == "NOT_A_MATCHED_FIT", result
     # (b) A matched receipt bound to another population, or to the other arm.
-    identity = fits["receipts"]["MG2"]["identity"]
+    identity = fits["receipts"]["mg2m"]["identity"]
     with pytest.raises(T.TrainDisposition, match="NOT_A_MATCHED_FIT"):
-        T.verify_matched_identity(identity, "0" * 64, "MG2")
+        T.verify_matched_identity(identity, "0" * 64, "mg2m")
     with pytest.raises(T.TrainDisposition, match="NOT_A_MATCHED_FIT"):
-        T.verify_matched_identity(identity, world["digest"], "MG1")
-    # (c) A scientific matched fit under the closed MG2 identity is refused before anything runs.
-    out = tmp_path / "closed"
-    run = subprocess.run(
-        [sys.executable, "-c", SHIMMED_MAIN, "--design", str(MG2_DESIGN),
-         "--bundle", str(world["mg2_bundle"]), "--out", str(out), "--device", "cpu", "--json",
-         "--common-population", str(world["population"]),
-         "--common-population-digest", world["digest"]],
-        capture_output=True, text=True, cwd=REPO, check=False, env=ENV)
-    assert run.returncode == 3, run.stdout[-2000:] + run.stderr[-2000:]
-    closed = json.loads((out / "RECEIPT.json").read_text())
-    assert closed["code"] == "CLOSED_IDENTITY_NOT_MATCHED" and closed["scientific"] is True
-    assert not (out / "TRAINING.json").exists()
+        T.verify_matched_identity(identity, world["digest"], "mg1")
+    # (c) The closed MG2 design cannot carry a matched fit, scientific or not; nothing trains.
+    for overrides in (False, True):
+        out = tmp_path / f"closed_{overrides}"
+        run = _cli(world, "mg2m", out, design=CLOSED_MG2, overrides=overrides)
+        assert run.returncode == 3, run.stdout[-2000:] + run.stderr[-2000:]
+        closed = json.loads((out / "RECEIPT.json").read_text())
+        assert closed["code"] == "MATCHED_IDENTITY_REQUIRED"
+        assert not (out / "TRAINING.json").exists()
+    # (d) A report spec naming the closed design is refused too.
+    spec = _spec(world, "mg2m", _stored_terminal(fits["mg2m"]), design=json.loads(CLOSED_MG2.read_text()))
+    result = reporting.run_unit(spec, tmp_path / "report_closed", tmp_path / "p.json")
+    assert result["status"] == "FAILED" and result["disposition"] == "MATCHED_IDENTITY_REQUIRED", result
 
 
-def test_population_digest_subset_and_argument_refusals(world, tmp_path, monkeypatch):
-    bad = T.train_unit(None, world["arm_mg1"], tmp_path / "a", "cpu", training_overrides=OVERRIDES,
-                       common_population={"path": str(world["population"]),
-                                          "expected_digest": "0" * 64},
-                       effective=world["mg1"])
-    assert bad["status"] == "FAILED_TYPED" and bad["code"] == "COMMON_POPULATION_DIGEST"
+def test_population_digest_subset_arm_and_argument_refusals(world, tmp_path, monkeypatch):
+    bad = T.train_unit(world["designs"]["mg1"], None, tmp_path / "a", "cpu", training_overrides=OVERRIDES,
+                       common_population={"path": str(world["population"]), "expected_digest": "0" * 64})
+    assert bad["status"] == "FAILED_TYPED" and "DIGEST" in bad["code"], bad["code"]
     monkeypatch.setenv("I6DMO_TEST_MAX_ROWS", "10")
-    sub = _mg1_fit(world, tmp_path / "b")
-    assert sub["code"] == "MATCHED_SUBSET_FORBIDDEN"
+    assert _fit(world, "mg1", tmp_path / "b")["code"] == "MATCHED_SUBSET_FORBIDDEN"
     monkeypatch.delenv("I6DMO_TEST_MAX_ROWS")
-    with pytest.raises(T.ContractError, match="EFFECTIVE_INJECTION"):
-        T.train_unit(None, world["arm_mg1"], tmp_path / "c", "cpu", effective=world["mg1"])
-    wrong_arm = T.train_unit(None, world["arm_mg2"], tmp_path / "d", "cpu",
-                             training_overrides=OVERRIDES, common_population=_cp(world),
-                             effective=world["mg1"])
-    assert wrong_arm["code"] == "ARM_RULE_MISMATCH"
-    assert T.main(["--design", str(MG2_DESIGN), "--bundle", "x", "--out", str(tmp_path / "e"),
+    # The committed sealed MG1 design binds the REAL population, not this synthetic one.
+    other = T.train_unit(SEALED["mg1"], None, tmp_path / "c", "cpu", training_overrides=OVERRIDES,
+                         common_population=_cp(world))
+    assert other["status"] == "FAILED_TYPED" and other["code"] == "DESIGN_IDENTITY_MISMATCH", other["code"]
+    with pytest.raises(T.ContractError, match="MATCHED_ARGS"):
+        T.train_unit(world["designs"]["mg1"], tmp_path, tmp_path / "d", "cpu", common_population=_cp(world))
+    assert T.main(["--design", str(world["designs"]["mg1"]), "--out", str(tmp_path / "e"),
                    "--device", "cpu", "--common-population", "p"]) == 2
-
-
-@pytest.mark.skipif(REAL_CP, reason="the data lane module exists")
-def test_real_cli_without_the_data_module_is_a_typed_terminal(world, tmp_path):
-    out = tmp_path / "unit"
-    run = subprocess.run(
-        [sys.executable, "-m", "tools.i6dmo.train", "--design", str(MG2_DESIGN),
-         "--bundle", str(world["mg2_bundle"]), "--out", str(out), "--device", "cpu", "--json",
-         "--common-population", str(world["population"]),
-         "--common-population-digest", world["digest"]],
-        capture_output=True, text=True, cwd=REPO, check=False,
-        env={**ENV, "I6DMO_TEST_TRAINING_OVERRIDES": json.dumps(OVERRIDES)})
-    assert run.returncode == 3
-    assert json.loads((out / "RECEIPT.json").read_text())["code"] == "COMMON_POPULATION_MODULE_MISSING"
+    assert T.main(["--design", str(world["designs"]["mg1"]), "--out", str(tmp_path / "f"),
+                   "--device", "cpu", "--input-dir", "i"]) == 2
 
 
 # ============================================================================ SC11 (CPU half)
 
 def test_sc11_cpu_serialization_round_trip_reproduces_saved_predictions_exactly(world, fits):
     population = world["pop"]
-    sources = {"MG1": (world["arm_mg1"], world["mg1"], None),
-               "MG2": (world["mg2_bundle"], T.effective_from_design(MG2_DESIGN), MG2_DESIGN)}
-    for arm, (source, eff, design_ref) in sources.items():
+    for arm in CP.ARMS:
         out = fits[arm]
         reloaded, doc = M.load_dmo(out / "model")
         assert doc["load_path"] == "rebuild+load_weights"
-        assert [tuple(t.shape[1:]) for t in reloaded.forecast_model.inputs][0][0] == \
-            (25 if arm == "MG1" else 13)
+        assert tuple(reloaded.forecast_model.inputs[0].shape[1:]) == ((25 if arm == "mg1" else 13), 19)
         scales = json.loads((out / "SCALES.json").read_text())
-        data = T.load_matched_data(source, eff, design_ref if design_ref else eff["design"], population)
+        data = T.load_matched_data(population, _eff_world(world, arm))
         for key in ("fit", "inner", "validation"):
             x, _, _ = T.materialize_monitor_inputs(data[key], scales)
             again = T.to_price(M.predict_matrix(reloaded.forecast_model, x), data[key], scales)

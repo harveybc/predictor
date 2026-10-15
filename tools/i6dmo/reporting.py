@@ -373,36 +373,23 @@ def _input_pin(spec):
     return pin
 
 
-def _arm_development(spec, population, design):
-    """DEVELOPMENT prices/weeks of exactly the common rows, re-read from the arm source."""
+def _arm_development(population, design, input_dir):
+    """DEVELOPMENT prices/weeks of exactly the common rows through the data lane's accessor,
+    independently replayed by timestamp against the retained input (REPLAY_MISMATCH)."""
     from tools.i6dmo import train as T
-    source = (spec.get("matched") or {}).get("arm_source") or {}
-    root = Path(source.get("path", ""))
+    tensors = T.arm_split(population, design, "DEVELOPMENT")
+    cp = T._common_population_module()
+    try:
+        replay = cp.replay_against_input(tensors, input_dir)
+    except Exception as exc:
+        raise ReportFailure(getattr(exc, "code", None) or "REPLAY_MISMATCH", str(exc)[:300]) from None
     dev = population.splits["DEVELOPMENT"]
-    if T._is_market_bundle(root):
-        manifest = json.loads((root / "BUNDLE.json").read_text())
-        if source.get("sha256") and _sha(root / "BUNDLE.json") != source["sha256"]:
-            raise ReportFailure("ARM_SOURCE_PIN_MISMATCH", "BUNDLE.json digest differs from the pin")
-        raw = T.load_market_split_arrays(root, "validation", design)
-        calendar = (manifest.get("calendar") or {}).get("calendar_id")
-    else:
-        cp = T._common_population_module()
-        accessor = getattr(cp, "arm_split_arrays", None)
-        if accessor is None:
-            raise ReportFailure("COMMON_POPULATION_ACCESSOR_MISSING", "arm_split_arrays")
-        raw = accessor(population, root, "DEVELOPMENT", design=design)
-        calendar = None
-    idx = T.common_row_index(raw["row_id"], dev.origin_row_ids, "validation")
-    out = {"origin_price": np.asarray(raw["origin_price"], np.float64)[idx],
-           "target_price": np.asarray(raw["target_price"], np.float64)[idx],
-           "calendar_id": calendar}
-    if "mask" in raw and (np.asarray(dev.head_mask) & ~np.asarray(raw["mask"], bool)[idx]).any():
-        raise ReportFailure("COMMON_MASK_UNSUPPORTED_BY_ARM", "DEVELOPMENT")
-    if "week_ids" not in raw:
-        raise ReportFailure("WEEK_IDS_MISSING", "the arm source must carry week_ids")
-    out["week_ids"] = np.asarray(raw["week_ids"])[idx]
-    out["expected_weeks"] = raw.get("expected_weeks")
-    return out
+    if not np.array_equal(np.asarray(tensors.row_id, np.int64), dev.origin_row_ids) or \
+            not np.array_equal(np.asarray(tensors.head_mask, bool), np.asarray(dev.head_mask, bool)):
+        raise ReportFailure("COMMON_POPULATION_ARM_MISMATCH", "DEVELOPMENT")
+    return {"origin_price": np.asarray(tensors.origin_price, np.float64),
+            "target_price": np.asarray(tensors.target_price, np.float64),
+            "week_ids": np.asarray(tensors.week_ids), "replay": replay}
 
 
 def manual_pooled_replay(pred_doc, horizons):
@@ -457,20 +444,18 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
         horizons = [int(h) for h in design["horizons_hours"]]
         matched = spec.get("matched") or {}
         arm = matched.get("arm")
-        if arm not in ("MG1", "MG2") or T.ARM_BY_RULE.get(
-                (design.get("market_time") or {}).get("rule")) != arm:
-            raise ReportFailure("ARM_DESIGN_MISMATCH", f"arm {arm!r} vs design rule "
-                                f"{(design.get('market_time') or {}).get('rule')!r}")
+        design_arm = T.matched_arm(design)
+        if arm != design_arm:
+            raise ReportFailure("ARM_DESIGN_MISMATCH", f"spec arm {arm!r} vs design arm {design_arm!r}")
         pin = spec["common_population"]
-        population = T.load_matched_population(pin["path"], pin.get("sha256"), horizons,
-                                               list(MANIFEST_NO_STLFSI4))
         input_pin = _input_pin(spec)
+        population = T.load_matched_population(pin["path"], pin.get("sha256"), horizons,
+                                               list(MANIFEST_NO_STLFSI4), input_dir=input_pin["path"])
         _progress(progress_path, 1, "verify")
         receipt = _upstream_receipt(spec)
         if receipt.get("status") != "COMPLETED":
             raise ReportFailure("UPSTREAM_FIT_NOT_COMPLETED", str(receipt.get("code")))
-        T.verify_matched_identity(receipt.get("identity"), population.digest, arm,
-                                  scientific=receipt.get("scientific", True))
+        T.verify_matched_identity(receipt.get("identity"), population.digest, arm)
         block = receipt.get("matched") or {}
         if block.get("common_population_sha256") != population.digest or block.get("arm") != arm:
             raise ReportFailure("NOT_A_MATCHED_FIT", "receipt matched block differs")
@@ -495,20 +480,20 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
         values = np.asarray(pred_doc["predicted_price"], np.float64)
         if values.shape != mask.shape:
             raise ReportFailure("PREDICTION_SHAPE", str(values.shape))
-        arm_dev = _arm_development(spec, population, design)
+        arm_dev = _arm_development(population, design, input_pin["path"])
         saved_target = np.asarray(pred_doc["target_price"], np.float64)
         if not np.array_equal(np.asarray(pred_doc["origin_price"], np.float64), arm_dev["origin_price"]) \
                 or not np.array_equal(saved_target[mask], arm_dev["target_price"][mask]):
             raise ReportFailure("PRICE_REPLAY_MISMATCH",
                                 "saved origin/target prices differ from the arm source")
         identities = getattr(population, "identities", None) or {}
-        calendar = (identities.get("calendar") or {}).get("calendar_id") or arm_dev["calendar_id"]
+        calendar = (identities.get("calendar") or {}).get("calendar_id")
         if not calendar:
             raise ReportFailure("CALENDAR_ID_MISSING", "population identities carry no calendar_id")
-        expected = (identities.get("expected_weeks") or {}).get("DEVELOPMENT") or arm_dev["expected_weeks"]
-        weeks_source = "population_or_arm_declared" if expected is not None else "observed_weeks_only"
-        if expected is None:
-            expected = sorted({str(w) for w in arm_dev["week_ids"]})
+        # The population does not declare DEVELOPMENT weeks without common rows; the weekly
+        # diagnostics therefore cover the observed common weeks (recorded, not hidden).
+        weeks_source = "observed_common_development_weeks"
+        expected = sorted({str(w) for w in arm_dev["week_ids"]})
 
         class _View:
             pass
@@ -550,6 +535,7 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
                    "development_row_ids_sha256": T._ids_digest(dev.origin_row_ids),
                    "development_head_mask_sha256": T._array_digest(mask),
                    "development_counts": counts, "expected_weeks_source": weeks_source,
+                   "input_replay": arm_dev["replay"],
                    "capacity": capacity, "fit_identity": receipt.get("identity"),
                    "scientific_fit": receipt.get("scientific"),
                    "manual_pooled_replay": manual, "selection": selection,
@@ -609,7 +595,7 @@ def decide_matched(mg1_metrics, mg2_metrics):
     """
     from tools.i6dmo import model as M
     a, b = (mg1_metrics or {}).get("matched") or {}, (mg2_metrics or {}).get("matched") or {}
-    if a.get("arm") != "MG1" or b.get("arm") != "MG2":
+    if a.get("arm") != "mg1" or b.get("arm") != "mg2m":
         raise ReportFailure("ARM_DESIGN_MISMATCH", f"arms {a.get('arm')!r}/{b.get('arm')!r}")
     for key in ("common_population_sha256", "development_row_ids_sha256",
                 "development_head_mask_sha256", "development_counts"):
@@ -619,19 +605,19 @@ def decide_matched(mg1_metrics, mg2_metrics):
         delta = M.matched_capacity_delta(a.get("capacity"), b.get("capacity"))
     except M.CapacityError as exc:
         raise ReportFailure(exc.code, str(exc)) from None
-    per_head = {str(h): {"MG1": (mg1_metrics["per_horizon"].get(str(h)) or {}).get("relative_error"),
-                         "MG2": (mg2_metrics["per_horizon"].get(str(h)) or {}).get("relative_error")}
+    per_head = {str(h): {"mg1": (mg1_metrics["per_horizon"].get(str(h)) or {}).get("relative_error"),
+                         "mg2m": (mg2_metrics["per_horizon"].get(str(h)) or {}).get("relative_error")}
                 for h in a["selection"]["heads"]}
     doc = {"schema": "i6dmo.matched_decision.v1", "capacity_delta": delta, "per_head": per_head,
-           "scores": {"MG1": a["selection"]["score"], "MG2": b["selection"]["score"]},
+           "scores": {"mg1": a["selection"]["score"], "mg2m": b["selection"]["score"]},
            "tie_tolerance": SELECTION_TIE,
            "note": "one seed establishes a recipe decision, not statistical superiority; an "
                    "aggregate never makes a failed head trading-eligible"}
-    missing = [dict(f, arm=arm) for arm, sel in (("MG1", a["selection"]), ("MG2", b["selection"]))
+    missing = [dict(f, arm=arm) for arm, sel in (("mg1", a["selection"]), ("mg2m", b["selection"]))
                for f in sel.get("failed_heads", [])]
     if missing or a["selection"]["status"] != "COMPLETE" or b["selection"]["status"] != "COMPLETE":
         return dict(doc, decision="INCOMPLETE_COMPARISON", selected=None, missing=missing)
     diff = a["selection"]["score"] - b["selection"]["score"]
     if abs(diff) <= SELECTION_TIE:
-        return dict(doc, decision="TIE_RETAIN_CHEAPER", selected="MG2", difference=diff)
-    return dict(doc, decision="LOWER_SCORE", selected="MG1" if diff < 0 else "MG2", difference=diff)
+        return dict(doc, decision="TIE_RETAIN_CHEAPER", selected="mg2m", difference=diff)
+    return dict(doc, decision="LOWER_SCORE", selected="mg1" if diff < 0 else "mg2m", difference=diff)

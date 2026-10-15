@@ -1,7 +1,7 @@
 {
  "arms": {
-  "MG1": {
-   "capacity_sha256": "44ce75b3b45af977afe20869c4a351c39112a791a7752165dd605ad1d31c6d26",
+  "mg1": {
+   "capacity_sha256": "a29c9f5871927d4351c863cf832ff492694360f281381d3a840b36886ee1632e",
    "counts": {
     "branches": 304,
     "core": 1980,
@@ -54,10 +54,13 @@
      "output": 9,
      "total": 817
     }
-   }
+   },
+   "sealed_design_sha256": "9f0d086edce5d16e5d8337d88d030b1b3e3681f0d20d154d6acecd63837b1928",
+   "sealed_effective_config_sha256": "fc83d0f4b4696038fc406d37f606e3be0b3d377cea2648330e76e82141c5b68f",
+   "sealed_experiment_id": "I6-DMO-SHORT-MG1-MATCHED-R0"
   },
-  "MG2": {
-   "capacity_sha256": "b65089954c57955162ac59c2005e9b5b485fc17c8841a7dba70267a37684cf55",
+  "mg2m": {
+   "capacity_sha256": "5b622fd0fe575cb662c13b50e1bdf645841451001f00c2bb690f35f3b570c325",
    "counts": {
     "branches": 304,
     "core": 1980,
@@ -110,7 +113,10 @@
      "output": 9,
      "total": 433
     }
-   }
+   },
+   "sealed_design_sha256": "a3e073c760545f0a1ae7863cd5328d5bf34dbfa15b9c41d7d0d5da3d75818272",
+   "sealed_effective_config_sha256": "313617d743acfbcd75e5e08475929b2a8531104743712d282f0a8b16281f8990",
+   "sealed_experiment_id": "I6-DMO-SHORT-MG2-MATCHED-R0"
   }
  },
  "declared_capacity": {
@@ -167,5 +173,5 @@
  "plan": "NEXT_CONTRASTS_PLAN_20261015.md section 2, Capacity disclosure and decision rule",
  "recipe": "19 per-feature causal Conv1D(4,k3,s1) branches -> weightless concat fusion -> DynamicPhysicalTimeEncoder 1.0.0 (actual signed UTC offsets; +2 context channels) -> core Conv1D 8 then 4 (k3,s1) -> six Flatten->Dense(8,relu)->Dense(1) heads",
  "schema": "i6dmo.matched_capacity_disclosure.v1",
- "status": "MEASURED_ON_REAL_BUILDS_NO_FIT"
+ "status": "MEASURED_ON_REAL_SEALED_BUILDS_NO_FIT"
 }

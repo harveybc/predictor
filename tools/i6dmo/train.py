@@ -194,12 +194,6 @@ def _elapsed_view(design_path):
                          .read_text(encoding="utf-8"))
     if base["market_time"]["rule"].startswith("MG12"):
         return data_mod.long_data_view(elapsed)
-    if base["market_time"]["rule"] == "MG1_MARKET_EXACT":
-        # The MG1 matched control reads the hourly elapsed view (25 observations, 1 h apart);
-        # market_grid derives the MG1 rule from its spacing (data-lane seam).
-        return json.loads((Path(__file__).resolve().parents[2]
-                           / "docs/i6n/direct_multi_output_static/EXPERIMENT.short_hourly.json")
-                          .read_text(encoding="utf-8"))
     return elapsed
 
 
@@ -268,11 +262,6 @@ def _load_market_bundle(bundle_dir, effective, design_path):
                 "target_price": np.asarray(arrays["target_price"], dtype=np.float64), "mask": mask,
                 "offsets_hours": np.asarray(arrays["offsets_hours"], dtype=np.float64),
                 "closure_crossed": np.asarray(arrays["closure_crossed"], dtype=np.float64)}
-        # Retained for the matched path's actual-UTC offset proof and weekly diagnostics; the
-        # ordinary fit path never reads them (it selects its arrays by name).
-        for extra in ("slot_instants", "week_ids"):
-            if extra in arrays and len(arrays[extra]) == rows:
-                kept[extra] = np.asarray(arrays[extra])
         market_time_inputs(kept, design=effective)   # conventions + the design's spacing bound
         out[name] = kept
     return out
@@ -366,18 +355,18 @@ def load_data_bundle(bundle_dir, effective, design_path=None):
 # --------------------------------------------------------------------- matched common population
 #
 # NEXT_CONTRASTS_PLAN section 2 (SC05/SC06): both matched arms train, monitor and score on the
-# FROZEN common population owned by the data lane (tools/i6dmo/common_population.py):
-# per-split ordered origin row ids, per-head masks, a shared FIT-only scaler and a shared FIT-only
-# naive loss scale per horizon. The model side NEVER refits statistics per arm, never drops or
-# adds rows, and never substitutes an arm's own mask for the common one.
+# FROZEN common population owned by the data lane (tools/i6dmo/common_population.py,
+# INTERFACE_COMMON_POPULATION.json): per-split ordered origin row ids, per-head masks, ONE shared
+# FIT-only scaler and ONE shared FIT-only naive loss scale per horizon, read through the
+# per-arm accessor ``arm_tensors(pop, sealed_design, split)``. The model side never refits
+# statistics per arm, never drops or adds rows and never substitutes another mask.
 
 COMMON_POPULATION_SCHEMA = "i6dmo.common_population.v1"
 MATCHED_SCHEMA = "i6dmo.matched_fit.v1"
 #: Population split -> trainer split key (DEVELOPMENT 2024 is the trainer's "validation" split).
 POPULATION_SPLITS = {"FIT": "fit", "INNER": "inner", "DEVELOPMENT": "validation"}
-ARM_BY_RULE = {"MG1_MARKET_EXACT": "MG1", "MG2_MARKET_EXACT": "MG2"}
-#: Sealed effective identities of the CLOSED full-population MG2/MG12 campaign. A scientific
-#: matched fit never runs under them: the matched arms are new, separately sealed identities.
+#: Sealed effective identities of the CLOSED full-population MG2/MG12 campaign (defence in depth;
+#: design.matched_arm already refuses their families as MATCHED_IDENTITY_REQUIRED).
 CLOSED_FULL_POPULATION_EFFECTIVE = {
     "920332aed3997b56a0fce19ced25c2d48abeff77ebb227ce6cff368c311ad768": "MG2",
     "0853f6d95bc3b70166a469011ba7a8d7f92e740089378e355bb6692c3810dd2f": "MG12",
@@ -397,13 +386,17 @@ def _common_population_module():
                                "tools/i6dmo/common_population.py (data lane) is not installed") from None
 
 
-def matched_arm(effective):
-    """MG1 or MG2 from the sealed design's market-time rule; anything else is refused."""
-    rule = ((effective.get("design") or {}).get("market_time") or {}).get("rule")
-    if rule not in ARM_BY_RULE:
-        raise TrainDisposition("MATCHED_REQUIRES_SHORT_MARKET_TIME",
-                               f"a matched fit needs an MG1/MG2 market-time design, got {rule!r}")
-    return ARM_BY_RULE[rule]
+def matched_arm(effective_or_design):
+    """``mg1``/``mg2m`` through the data lane's typed guard; anything else is refused."""
+    doc = effective_or_design.get("design", effective_or_design) \
+        if "effective_config_sha256" in effective_or_design else effective_or_design
+    if effective_or_design.get("effective_config_sha256") in CLOSED_FULL_POPULATION_EFFECTIVE:
+        raise TrainDisposition("MATCHED_IDENTITY_REQUIRED",
+                               "the closed full-population identity is never a matched arm")
+    try:
+        return D.matched_arm(doc)
+    except D.DesignError as exc:
+        raise TrainDisposition(exc.code, str(exc)[:400]) from None
 
 
 def _ids_digest(ids):
@@ -467,23 +460,29 @@ def validate_population(population, horizons, features):
     if not (std > 0).all():
         raise TrainDisposition("CONSTANT_FEATURE_IN_FIT",
                                f"shared scaler std <= 0 at {np.flatnonzero(~(std > 0)).tolist()}")
-    if type(scaler.n_rows) is not int or scaler.n_rows < 1 or not isinstance(scaler.fit_row_digest, str):
+    if not isinstance(scaler.n_rows, (int, np.integer)) or int(scaler.n_rows) < 1 or \
+            not isinstance(scaler.fit_row_digest, str):
         bad("shared scaler must record n_rows and fit_row_digest")
     scale = {int(k): v for k, v in dict(population.naive_loss_scale).items()}
     if set(scale) != {int(h) for h in horizons}:
         bad(f"naive_loss_scale horizons {sorted(scale)} != {list(horizons)}")
+    unsupported = [h for h, v in sorted(scale.items()) if v is None]
+    if unsupported:
+        raise TrainDisposition("HEAD_UNSUPPORTED_IN_FIT",
+                               f"shared naive loss scale typed unsupported for heads {unsupported}")
     if not all(isinstance(v, float) and math.isfinite(v) and v > 0 for v in scale.values()):
         raise TrainDisposition("ZERO_NAIVE_SCALE", f"shared naive loss scale {scale}")
     return population
 
 
-def load_matched_population(path, expected_digest, horizons, features):
-    """``load_common_population`` (data lane) plus the model-side validation."""
+def load_matched_population(path, expected_digest, horizons, features, input_dir=None):
+    """``load_common_population`` (data lane, digest-verified) plus the model-side validation."""
     cp = _common_population_module()
     if not isinstance(expected_digest, str) or len(expected_digest) != 64:
         raise TrainDisposition("COMMON_POPULATION_DIGEST", "an expected 64-hex digest is required")
     try:
-        population = cp.load_common_population(path, expected_digest=expected_digest)
+        population = cp.load_common_population(path, expected_digest=expected_digest,
+                                               input_dir=input_dir)
     except TrainDisposition:
         raise
     except Exception as exc:  # the data lane's typed errors keep their code
@@ -493,6 +492,16 @@ def load_matched_population(path, expected_digest, horizons, features):
         raise TrainDisposition("COMMON_POPULATION_DIGEST",
                                f"loaded digest {getattr(population, 'digest', None)} != expected")
     return validate_population(population, horizons, features)
+
+
+def arm_split(population, design, split):
+    """The data lane's per-arm accessor for one population split, typed on refusal."""
+    cp = _common_population_module()
+    try:
+        return cp.arm_tensors(population, design, split)
+    except Exception as exc:
+        raise TrainDisposition(getattr(exc, "code", None) or "ARM_TENSORS_REFUSED",
+                               str(exc)[:400]) from None
 
 
 def _boundary_checks(key, origin, mask, effective):
@@ -509,118 +518,63 @@ def _boundary_checks(key, origin, mask, effective):
                                f"{key}: {int(crossing.sum())} common labels reach {end}")
 
 
-def common_row_index(arm_ids, want, key):
-    """Positions of the ordered common origins ``want`` inside an arm's row ids (typed)."""
-    ids = np.asarray(arm_ids, dtype=np.int64)
-    want = np.asarray(want, dtype=np.int64)
-    if len(np.unique(ids)) != len(ids):
-        raise TrainDisposition("BUNDLE_ROW_ID", f"{key}: arm row ids are not unique")
-    order = np.argsort(ids, kind="stable")
-    ordered = ids[order]
-    pos = np.searchsorted(ordered, want)
-    found = ((pos < len(ordered)) & (ordered[np.minimum(pos, max(len(ordered) - 1, 0))] == want)
-             if len(ordered) else np.zeros(len(want), bool))
-    if not found.all():
-        missing = want[~found]
-        raise TrainDisposition("COMMON_ROW_MISSING_IN_ARM",
-                               f"{key}: {len(missing)} common origins absent from the arm "
-                               f"(first {datetime.fromtimestamp(int(missing[0]), timezone.utc).isoformat()})")
-    return order[pos]
+def common_split_arrays(tensors, split_population, effective, key):
+    """Trainer arrays for EXACTLY the frozen common rows of one split, re-verified model-side.
 
-
-def select_common_rows(arrays, split_population, effective, key):
-    """The arm's arrays for EXACTLY the frozen common rows, in population order, common mask.
-
-    Every common row must exist in the arm (COMMON_ROW_MISSING_IN_ARM); a common head must be
-    valid under the arm's own mask when it declares one (COMMON_MASK_UNSUPPORTED_BY_ARM); labels
-    outside the common mask are blanked (NaN) so they can never reach a loss, a monitor or a
-    score. Offsets must be the ACTUAL signed UTC offsets of the slot instants when those are
-    supplied (OFFSETS_NOT_ACTUAL_UTC), and the design's spacing bound is enforced.
+    The accessor's rows must be the population's ordered origins and its masks the common
+    masks (COMMON_POPULATION_ARM_MISMATCH otherwise); labels outside the common head mask are
+    NaN by construction and kept NaN so they can never reach a loss, a monitor or a score;
+    offsets must be the ACTUAL signed UTC offsets of the slot instants (OFFSETS_NOT_ACTUAL_UTC);
+    the design's spacing bound and the split/purge/TEST boundaries are enforced again.
     """
     want = np.asarray(split_population.origin_row_ids, dtype=np.int64)
-    idx = common_row_index(arrays["row_id"], want, key)
     common = np.asarray(split_population.head_mask, dtype=bool)
-    if "mask" in arrays:
-        arm_mask = np.asarray(arrays["mask"], dtype=bool)[idx]
-        if (common & ~arm_mask).any():
-            raise TrainDisposition("COMMON_MASK_UNSUPPORTED_BY_ARM",
-                                   f"{key}: {int((common & ~arm_mask).sum())} common (row, head) "
-                                   "pairs are not valid under this arm")
+    if not np.array_equal(np.asarray(tensors.row_id, np.int64), want):
+        raise TrainDisposition("COMMON_POPULATION_ARM_MISMATCH", f"{key}: arm rows are not the common rows")
+    for name in ("head_mask", "entry_mask", "management_mask"):
+        if not np.array_equal(np.asarray(getattr(tensors, name), bool),
+                              np.asarray(getattr(split_population, name), bool)):
+            raise TrainDisposition("COMMON_POPULATION_ARM_MISMATCH", f"{key}: arm {name} differs")
     slots = effective["design"]["market_time"]["observations"]
     n_features = len(effective["feature_manifest"]["features"])
-    x = np.asarray(arrays["x"], dtype=np.float64)[idx]
+    x = np.asarray(tensors.x, dtype=np.float64)
     if x.shape != (len(want), slots, n_features):
         raise TrainDisposition("BUNDLE_SHAPE", f"{key}: x must be (n, {slots}, {n_features}), got {x.shape}")
-    target = np.asarray(arrays["target_price"], dtype=np.float64)[idx]
+    target = np.asarray(tensors.target_price, dtype=np.float64)
     if target.shape != common.shape:
         raise TrainDisposition("BUNDLE_SHAPE", f"{key}: target_price must be {common.shape}")
     target = np.where(common, target, np.nan)
     kept = {"_spacing_open_market_hours": market_spacing_hours(effective), "row_id": want.copy(),
-            "x": x, "origin_price": np.asarray(arrays["origin_price"], dtype=np.float64)[idx],
+            "x": x, "origin_price": np.asarray(tensors.origin_price, dtype=np.float64),
             "target_price": target, "mask": common.copy(),
-            "offsets_hours": np.asarray(arrays["offsets_hours"], dtype=np.float64)[idx],
-            "closure_crossed": np.asarray(arrays["closure_crossed"], dtype=np.float64)[idx],
-            "entry_mask": np.asarray(split_population.entry_mask, dtype=bool).copy()}
-    for extra in ("slot_instants", "week_ids"):
-        if extra in arrays:
-            kept[extra] = np.asarray(arrays[extra])[idx]
+            "offsets_hours": np.asarray(tensors.offsets_hours, dtype=np.float64),
+            "closure_crossed": np.asarray(tensors.closure_crossed, dtype=np.float64),
+            "slot_instants": np.asarray(tensors.slot_instants, dtype=np.int64),
+            "entry_mask": np.asarray(split_population.entry_mask, dtype=bool).copy(),
+            "week_ids": np.asarray(tensors.week_ids)}
     if not np.isfinite(kept["x"]).all() or not np.isfinite(kept["origin_price"]).all():
         raise TrainDisposition("NONFINITE_INPUT", key)
     if not np.isfinite(target[common]).all():
         raise TrainDisposition("NONFINITE_LABEL", f"{key}: a common valid label is not finite")
-    if "slot_instants" in kept:
-        actual = (np.asarray(kept["slot_instants"], np.int64) - want[:, None]).astype(np.float64) / 3600.0
-        if actual.shape != kept["offsets_hours"].shape or not np.array_equal(actual, kept["offsets_hours"]):
-            raise TrainDisposition("OFFSETS_NOT_ACTUAL_UTC",
-                                   f"{key}: offsets_hours differ from (slot instant - t) in hours")
+    actual = (kept["slot_instants"] - want[:, None]).astype(np.float64) / 3600.0
+    if actual.shape != kept["offsets_hours"].shape or not np.array_equal(actual, kept["offsets_hours"]):
+        raise TrainDisposition("OFFSETS_NOT_ACTUAL_UTC",
+                               f"{key}: offsets_hours differ from (slot instant - t) in hours")
     _boundary_checks(key, want, common, effective)
     market_time_inputs(kept, design=effective)
     return kept
 
 
-def _is_market_bundle(root):
-    try:
-        return json.loads((Path(root) / "BUNDLE.json").read_text(encoding="utf-8")).get("schema") \
-            == "i6dmo.market_bundle.v1"
-    except (OSError, ValueError):
-        return False
-
-
-def load_matched_data(arm_source, effective, design_ref, population):
-    """Per-split arm arrays restricted to the frozen common population.
-
-    Arm source: a sealed market bundle (authenticated by the existing market loader) or, for
-    any other directory, the data lane's per-arm accessor
-    ``common_population.arm_split_arrays(population, arm_dir, split, *, design)``. Both are
-    then restricted and re-verified here by :func:`select_common_rows`.
-    """
-    root = Path(arm_source)
-    if _is_market_bundle(root):
-        loaded = _load_market_bundle(root, effective, design_ref)
-        raw = {name: loaded[key] for name, key in POPULATION_SPLITS.items()}
-        source = {"kind": "market_bundle", "manifest_sha256": loaded["manifest_sha256"]}
-    else:
-        cp = _common_population_module()
-        accessor = getattr(cp, "arm_split_arrays", None)
-        if accessor is None:
-            raise TrainDisposition("COMMON_POPULATION_ACCESSOR_MISSING",
-                                   "common_population.arm_split_arrays is not provided")
-        raw = {}
-        for name in POPULATION_SPLITS:
-            try:
-                raw[name] = accessor(population, root, name, design=effective["design"])
-            except TrainDisposition:
-                raise
-            except Exception as exc:
-                raise TrainDisposition(getattr(exc, "code", None) or "ARM_SOURCE_REFUSED",
-                                       str(exc)[:400]) from None
-        source = {"kind": "common_population_accessor", "module": cp.__name__}
-    out = {"source": source}
+def load_matched_data(population, effective):
+    """Per-split arm arrays on the frozen common population, via the data lane's accessor."""
+    out = {}
     for name, key in POPULATION_SPLITS.items():
-        out[key] = select_common_rows(raw[name], population.splits[name], effective, key)
+        out[key] = common_split_arrays(arm_split(population, effective["design"], name),
+                                       population.splits[name], effective, key)
     digests = {key: {k: _array_digest(v) for k, v in sorted(out[key].items())
                      if isinstance(v, np.ndarray)} for key in POPULATION_SPLITS.values()}
-    source["arm_arrays_sha256"] = hashlib.sha256(_canonical(digests).encode()).hexdigest()
+    out["source"] = {"kind": "common_population.arm_tensors",
+                     "arm_arrays_sha256": hashlib.sha256(_canonical(digests).encode()).hexdigest()}
     return out
 
 
@@ -628,10 +582,9 @@ def matched_scales(population, effective, fit):
     """Shared FIT-only statistics from the population; no per-arm refit of anything.
 
     Input z-score statistics come from ``population.scaler`` (union of both arms' input-source
-    rows for the common FIT origins) and the loss scale per horizon from
+    bars for the common FIT origins) and the loss scale per horizon from
     ``population.naive_loss_scale`` (FIT-only naive on the common FIT mask). The arm's exact FIT
-    prices on the common FIT mask must reproduce that naive (NAIVE_SCALE_MISMATCH otherwise),
-    proving both arms read identical labels.
+    prices on the common FIT mask must reproduce that naive (NAIVE_SCALE_MISMATCH otherwise).
     """
     horizons = effective["horizons_hours"]
     naive = [float(dict(population.naive_loss_scale)[h]) for h in horizons]
@@ -650,14 +603,14 @@ def matched_scales(population, effective, fit):
               "rows": int(len(mask)), "input_mean": np.asarray(scaler.mean, np.float64).tolist(),
               "input_std": np.asarray(scaler.std, np.float64).tolist(), "naive_mae": naive,
               "counts": mask.sum(axis=0).astype(int).tolist(),
-              "scaler": {"fit_row_digest": scaler.fit_row_digest, "n_rows": scaler.n_rows,
+              "scaler": {"fit_row_digest": scaler.fit_row_digest, "n_rows": int(scaler.n_rows),
                          "feature_names": list(scaler.feature_names)},
               "common_population_sha256": population.digest}
     scales["scales_sha256"] = hashlib.sha256(_canonical(scales).encode()).hexdigest()
     return scales, recomputed
 
 
-def verify_matched_identity(identity, population_digest, arm=None, *, scientific=True):
+def verify_matched_identity(identity, population_digest, arm=None):
     """Refuse any fit identity that was not trained on THIS frozen common population.
 
     A cached full-population MG2 (or any other) fit carries no matched identity, or another
@@ -665,6 +618,9 @@ def verify_matched_identity(identity, population_digest, arm=None, *, scientific
     subset score (REUSED_MODEL_SUBSET_SCORE), never a matched arm.
     """
     identity = identity or {}
+    if identity.get("effective_config_sha256") in CLOSED_FULL_POPULATION_EFFECTIVE:
+        raise TrainDisposition("NOT_A_MATCHED_FIT", "the closed full-population identity is "
+                               "never a matched arm")
     if identity.get("common_population_sha256") != population_digest:
         raise TrainDisposition("NOT_A_MATCHED_FIT",
                                "the fit identity does not bind this common population "
@@ -673,34 +629,20 @@ def verify_matched_identity(identity, population_digest, arm=None, *, scientific
     if arm is not None and identity.get("matched_arm") != arm:
         raise TrainDisposition("NOT_A_MATCHED_FIT",
                                f"fit arm {identity.get('matched_arm')!r} != expected {arm!r}")
-    if identity.get("effective_config_sha256") in CLOSED_FULL_POPULATION_EFFECTIVE and scientific:
-        raise TrainDisposition("NOT_A_MATCHED_FIT", "a scientific fit under the closed "
-                               "full-population identity is never a matched arm")
     return identity
 
 
-def _prepare_matched(common_population, effective, bundle_dir, design_ref, scientific):
+def _prepare_matched(common_population, effective):
     arm = matched_arm(effective)
-    closed = CLOSED_FULL_POPULATION_EFFECTIVE.get(effective.get("effective_config_sha256"))
-    if closed and scientific:
-        raise TrainDisposition("CLOSED_IDENTITY_NOT_MATCHED",
-                               f"the closed full-population {closed} identity cannot carry a "
-                               "scientific matched fit; the matched arm needs its own sealed design")
     if os.environ.get("I6DMO_TEST_MAX_ROWS"):
         raise TrainDisposition("MATCHED_SUBSET_FORBIDDEN",
                                "a row subset would break the frozen common population")
     features = effective["feature_manifest"]["features"]
     population = load_matched_population(common_population["path"],
                                          common_population["expected_digest"],
-                                         effective["horizons_hours"], features)
-    arms = (getattr(population, "identities", None) or {}).get("arms")
-    if isinstance(arms, dict) and arm in arms:
-        bound = (arms[arm] or {}).get("design_sha256")
-        if bound is not None and bound != effective["design_sha256"]:
-            raise TrainDisposition("ARM_DESIGN_NOT_IN_POPULATION",
-                                   f"{arm} design {effective['design_sha256'][:12]} is not the one "
-                                   f"the population froze ({str(bound)[:12]})")
-    data = load_matched_data(bundle_dir, effective, design_ref, population)
+                                         effective["horizons_hours"], features,
+                                         input_dir=common_population.get("input_dir"))
+    data = load_matched_data(population, effective)
     scales, recomputed = matched_scales(population, effective, data["fit"])
     splits = {}
     for name, key in POPULATION_SPLITS.items():
@@ -710,11 +652,17 @@ def _prepare_matched(common_population, effective, bundle_dir, design_ref, scien
                         "head_mask_sha256": _array_digest(np.asarray(sp.head_mask, bool)),
                         "counts": {str(h): int(c) for h, c in sorted(dict(sp.counts).items())},
                         "population_split_digest": sp.digest}
+    sealed = ((population.identities or {}).get("arms") or {}).get(arm) or {}
     matched = {"schema": MATCHED_SCHEMA, "arm": arm,
                "rule": effective["design"]["market_time"]["rule"],
                "slots": effective["design"]["market_time"]["observations"],
                "common_population_sha256": population.digest,
-               "population_schema": population.schema, "splits": splits,
+               "population_schema": population.schema,
+               "population_source_verified": common_population.get("input_dir") is not None,
+               "population_arm_identity": {k: sealed.get(k) for k in
+                                           ("experiment_id", "experiment_design_sha256",
+                                            "experiment_seal_sha256", "data_identity_sha256")},
+               "splits": splits,
                "scaler": dict(scales["scaler"], source="common_population (shared, FIT-only)"),
                "naive_loss_scale": {str(h): float(dict(population.naive_loss_scale)[h])
                                     for h in effective["horizons_hours"]},
@@ -1577,17 +1525,16 @@ def _summary(arrays, pred_price):
 
 
 def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=None,
-               common_population=None, effective=None):
+               common_population=None):
     """Run one unit end to end; returns the receipt (also written as RECEIPT.json).
 
     ``training_overrides`` (``max_epochs``/``patience`` only) exist for software
     tests; any override stamps the receipt ``scientific: false``.
 
-    ``common_population`` ({"path", "expected_digest"}) selects the MATCHED path: the arm's
-    arrays come from ``bundle_dir`` restricted to the frozen common population, with the
-    common per-head masks, the shared FIT-only scaler and naive loss scale, and a capacity
-    disclosure. ``effective`` (matched software tests only, e.g. an MG1 arm before the data
-    lane seals its design) bypasses the design file and stamps ``scientific: false``.
+    ``common_population`` ({"path", "expected_digest"[, "input_dir"]}) selects the MATCHED
+    path: the sealed matched design's arm tensors come from the data lane's frozen common
+    population (``bundle_dir`` must then be None or that same directory), with the common
+    per-head masks, the shared FIT-only scaler and naive loss scale, and a capacity disclosure.
     """
     started, wall0 = datetime.now(timezone.utc), time.monotonic()
     out = Path(out_dir)
@@ -1598,20 +1545,22 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
     overrides = dict(training_overrides or {})
     if set(overrides) - set(OVERRIDABLE):
         raise ContractError("OVERRIDE", f"only {OVERRIDABLE} may be overridden in software tests")
-    if common_population is not None and (not isinstance(common_population, dict)
-                                          or set(common_population) != {"path", "expected_digest"}):
-        raise ContractError("MATCHED_ARGS", "common_population needs exactly path and expected_digest")
-    injected = effective is not None
-    if injected and common_population is None:
-        raise ContractError("EFFECTIVE_INJECTION", "only the matched software-test path may inject "
-                            "an effective config")
-    if not injected:
-        effective = effective_from_design(design_path)
+    if common_population is not None:
+        if not isinstance(common_population, dict) or not {"path", "expected_digest"} <= \
+                set(common_population) or set(common_population) - {"path", "expected_digest",
+                                                                     "input_dir"}:
+            raise ContractError("MATCHED_ARGS", "common_population needs path and expected_digest "
+                                "(and optionally input_dir)")
+        if bundle_dir is not None and Path(bundle_dir).resolve() != Path(common_population["path"]).resolve():
+            raise ContractError("MATCHED_ARGS", "a matched fit reads its arm tensors from the common "
+                                "population; --bundle must be omitted or name that directory")
+    elif bundle_dir is None:
+        raise ContractError("BUNDLE_REQUIRED", "--bundle is required outside the matched path")
+    effective = effective_from_design(design_path)
     out.mkdir(parents=True, exist_ok=True)
-    scientific = not overrides and not injected
     receipt = {"schema": RECEIPT_SCHEMA, "experiment_id": effective["experiment_id"],
-               "started_at": started.isoformat(), "scientific": scientific,
-               "overrides": dict(overrides, **({"effective_injected": True} if injected else {})),
+               "started_at": started.isoformat(), "scientific": not overrides,
+               "overrides": overrides,
                "identity": {"design_sha256": effective["design_sha256"],
                             "effective_config_sha256": effective["effective_config_sha256"],
                             "code_files_sha256": _code_identity()},
@@ -1640,12 +1589,9 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
             inner_rows, inner_dropped = trainable_rows(data["inner"])
             scales = fit_scales(fit_rows)
         else:
-            data, scales, matched = _prepare_matched(common_population, effective, bundle_dir,
-                                                     design_path if not injected else effective["design"],
-                                                     scientific)
+            data, scales, matched = _prepare_matched(common_population, effective)
             receipt["identity"].update(
-                bundle_manifest_sha256=matched["arm_source"].get("manifest_sha256")
-                or matched["arm_source"]["arm_arrays_sha256"],
+                bundle_manifest_sha256=matched["arm_source"]["arm_arrays_sha256"],
                 feature_manifest_sha256=effective["feature_manifest"]["manifest_sha256"],
                 common_population_sha256=matched["common_population_sha256"],
                 matched_arm=matched["arm"])
@@ -1744,7 +1690,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog="python -m tools.i6dmo.train",
                                      description="One I6-DMO fit from a frozen data bundle (no overrides).")
     parser.add_argument("--design", required=True)
-    parser.add_argument("--bundle", required=True)
+    parser.add_argument("--bundle", default=None,
+                        help="frozen data bundle (omit, or the population dir, for a matched fit)")
     parser.add_argument("--out", required=True)
     parser.add_argument("--device", required=True, choices=("cpu", "gpu"))
     parser.add_argument("--json", action="store_true")
@@ -1752,6 +1699,8 @@ def main(argv=None):
                         help="matched arm: the data lane's frozen common population")
     parser.add_argument("--common-population-digest", default=None,
                         help="matched arm: the expected common-population digest (64 hex)")
+    parser.add_argument("--input-dir", default=None,
+                        help="matched arm: retained input directory; verifies the sealed source")
     args = parser.parse_args(argv)
     matched = None
     if (args.common_population is None) != (args.common_population_digest is None):
@@ -1760,6 +1709,12 @@ def main(argv=None):
         return 2
     if args.common_population is not None:
         matched = {"path": args.common_population, "expected_digest": args.common_population_digest}
+        if args.input_dir is not None:
+            matched["input_dir"] = args.input_dir
+    elif args.input_dir is not None:
+        print(json.dumps({"status": "CONTRACT_ERROR", "code": "MATCHED_ARGS",
+                          "detail": "--input-dir belongs to a matched fit"}))
+        return 2
     overrides = None
     raw = os.environ.get("I6DMO_TEST_TRAINING_OVERRIDES")
     if raw:  # software tests only: stamps the receipt scientific=false; no CLI flag exists
