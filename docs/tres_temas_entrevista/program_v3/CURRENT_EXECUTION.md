@@ -1,9 +1,26 @@
 # Estado de ejecución vigente
 
-Ultimo retorno auditado: `98ffdf28`, estudio 2026-10-15. Este archivo no es
-un sondeo en vivo de los hosts. Estado posterior depende de STATUS generado.
+Cierre 2026-10-15 08:30 UTC. Campana `i6dmo-9e1ebad89ff2`, runtime
+`a169fcba`, CLOSED / PAIR_NOT_ELIGIBLE. Timers deshabilitados tras verificar
+la entrega completa y los espejos. No hay un fit vivo de esta campana.
 
-## Estado vigente: corto exacto cerrado; sucesor de mercado aprobado
+## Estado vigente: MG2 y MG12 medidos; pareja no elegible
+
+El fit corto MG2 termino en 54.2 s; su reporte fallo en la ruta heredada
+del loader. Musashi corrigio el reporte e importo el fit autenticado con
+su identidad y pin originales, sin reentrenarlo. Las cabezas 6/12 h mejoran
+0.049615%/0.093170% sobre su propio naive; las otras cuatro no. C2/manual/
+lectura de precios concuerdan. 54 reportes / 2006 metricas publicados con
+lectura de vuelta y dos espejos verificados. Desarrollo 2024, TEST cerrado.
+
+MG12 termino en 124.55 s en la 5090, 37 epocas, mejor 27. Sus seis cabezas
+superan el error de su propio naive entre 24.08% y 41.08%. Se ejecuto el hook
+de elegibilidad: cero largos aptos, PAIR_NOT_ELIGIBLE, sin trading ni TEST.
+110 reportes / 3952 metricas con lectura de vuelta; 58 archivos por espejo.
+[Retorno](../../i6n/direct_multi_output_static/RETURN_REPORT_RECOVERY_20261015.md)
+y [indice](../../i6n/direct_multi_output_static/RESULTS_INDEX.md).
+
+## Antecedentes: registros anteriores al despliegue recuperado
 
 El corto exacto DS2 cerro: seis cabezas NOT_ELIGIBLE en desarrollo 2024.
 Publicacion: 55 reportes, 2011 filas de metricas, lectura de vuelta y 28

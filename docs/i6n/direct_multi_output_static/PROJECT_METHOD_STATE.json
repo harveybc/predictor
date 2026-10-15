@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S13_MARKET_TIME_PAIR_RUNNING",
- "execution_status": "MARKET_TIME_PAIR_LAUNCHED_FIRST_FIT_RUNNING_NO_RESULT_YET",
+ "current_stage": "S14_MARKET_TIME_PAIR_CLOSED",
+ "execution_status": "CLOSED_PAIR_NOT_ELIGIBLE_20261015_0830Z",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -21,10 +21,10 @@
  ],
  "definition_gate": "MAP_MARKET_TIME_REQUIREMENTS_AND_UNIT_TEST_DESIGN_BEFORE_NEW_RUNTIME; EXISTING_DEFINITION_STAGES_REFER_TO_CLOSED_DS2",
  "next_allowed_actions": [
-  "Integrate the data (MG2/MG12 bundles) and model (physical-time encoder) seals",
-  "Independent reviewer negative controls and same-row MAE/naive replay before any fit",
-  "validate-design, preflight, init and deploy for the new market-time root (5090 first)",
-  "Let the services advance short -> long -> pair -> eligible strategy -> publication closure"
+  "Retain campaign i6dmo-9e1ebad89ff2 CLOSE.json and its verified metrics, mirrors and original fit identities",
+  "Integrate report repair and finish the bounded CPU-only eligibility/strategy/automatic-close corrections in the recovery handoff",
+  "Prepare the next separately identified validation contrast from the completed minimal static baseline; no implicit refit",
+  "Retain development/source/calendar/cost limitations and TEST closure"
  ],
  "blocked_actions": [
   "Change consensus or silently reuse old identity/donors",
@@ -60,5 +60,5 @@
    "event": "Market-time pair launched: campaign i6dmo-72809b6c88a6, designs 1fa48222/4da1d3e0 (seals 4b64b4ee/97541764, effective 920332ae/0853f6d9), bundles 21400c51/c3867b5c; storage adapter and gates added; two roots retired before any claim (instrument envelope, elapsed data-contract check on a market design); tests/i6dmo 404 passed."
   }
  ],
- "status_note": "Reviewer ACCEPT_FOR_SCIENTIFIC_EXECUTION (84360909). Release 24f5a6cc: the finite market-time graph is deployed and short.fit is running on the preferred GPU under the measured class cap. A launch receipt is not a completion; no market-time result exists. The experiment-storage policy is integrated: live databases, locks and private specs stay on ext4 and only immutable terminal artifacts are archived, digest-verified."
+ "status_note": "Closed 2026-10-15 08:30 UTC, PAIR_NOT_ELIGIBLE. Runtime a169fcba repairs market reporting and imports MG2 without refitting. Short 6h/12h improve 0.049615%/0.093170% vs their own naive; other short heads fail. All MG12 heads fail by 24.08-41.08%; fit 124.55s, 37 epochs, best 27. Pair hook executed after a bounded negative-decision recovery for an overbroad OHLC precondition. No trading or TEST. 110 reports / 3952 metrics readback verified; 58 files per mirror; timers disabled."
 }

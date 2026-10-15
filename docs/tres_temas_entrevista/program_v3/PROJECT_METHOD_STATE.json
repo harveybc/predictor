@@ -8,7 +8,7 @@
   ],
   "program_owner": "Harvey",
   "execution_owner": "Musashi",
-  "handoff_status": "I6_DMO_EXACT_SHORT_CLOSED_MARKET_PAIR_IMPLEMENTATION_ORDER_PUBLISHED",
+  "handoff_status": "I6_DMO_MARKET_PAIR_CLOSED_REPAIR_AND_RESULTS_PUBLISHED",
   "i6e_compact": {
     "neural_cells_complete": 156,
     "neural_cells_expected": 156,
@@ -71,10 +71,10 @@
   },
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Follow docs/i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md and market-time handoff dated 2026-10-15",
-    "Design and run temporal/identity/restart negative controls before changing runtime",
-    "Build and seal new MG2/MG12 designs with per-window physical time metadata, preserving closed DS2 evidence",
-    "Deploy short then long then eligibility-gated pair after independent review and resource gates; use timers, not agent polling"
+    "Read RETURN_REPORT_RECOVERY_20261015.md: MG2/MG12 completed, pair not eligible, 110 reports and 3952 metric rows verified",
+    "Retain original fit identities and closed campaign; no automatic scientific repetition",
+    "Integrate the report repair and CPU-only eligibility/strategy/automatic-close corrections through the bounded handoff",
+    "Prepare a separately identified next validation contrast; retain closed TEST and all source/cost/calendar assumptions"
   ],
   "documents": {
     "horizon_resolution": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
@@ -696,8 +696,10 @@
     "retraining_frequency": "NONE",
     "test_read": false,
     "runtime_implemented": true,
-    "runtime_scope": "CLOSED_EXACT_DS2_BASELINE_ONLY",
-    "successor_runtime_implemented": false,
-    "successor": "MG2_MG12_STATIC_PAIR"
+    "runtime_scope": "CLOSED_EXACT_DS2_AND_MG2_MG12_STATIC_BASELINES",
+    "successor_runtime_implemented": true,
+    "successor": "MG2_MG12_STATIC_PAIR",
+    "successor_state": "CLOSED_PAIR_NOT_ELIGIBLE",
+    "scientific_fits_running": false
   }
 }

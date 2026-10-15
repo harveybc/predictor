@@ -10,13 +10,22 @@ gobiernan la ejecución.
 Enmienda del propietario 2026-10-14, concretada por Musashi 2026-10-15: el despacho es
 [I6-DMO, direct multi-output estatico](../i6n/direct_multi_output_static/PLAN.md).
 El corto exacto DS2 cerro: seis cabezas no elegibles en desarrollo 2024. Su
-identidad y resultado se conservan. El siguiente experimento aprobado es
+identidad y resultado se conservan. El experimento aprobado posterior fue
 [la pareja en tiempo de mercado MG2/MG12](../i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md):
 corto 2/3/4/5/6/12 h y luego largo 18/24/36/48/60/72 h. Cada entrada tiene
 13 observaciones reales, incluye t y separa 2/12 horas de mercado abierto;
 los offsets UTC reales y cruces de cierre entran al modelo. Los targets
 siguen siendo t+h en horas transcurridas, no en horas de mercado. Despues
 se evalua la pareja completa solo si pasa las compuertas predictivas.
+Estado medido al 2026-10-15 08:30 UTC: MG2/MG12 termino con
+`CLOSED / PAIR_NOT_ELIGIBLE`. MG2 supera su naive en 6 y 12 h por
+0.049615% y 0.093170%; ninguna cabeza MG12 lo supera. No se ejecuto
+trading ni se abrio TEST. Los 110 reportes y 3952 filas de metricas tienen
+lectura de vuelta y dos espejos fisicos verificados. El
+[retorno de cierre](../i6n/direct_multi_output_static/RETURN_REPORT_RECOVERY_20261015.md)
+conserva errores por horizonte, costes y limites. No repetir estos fits.
+Las reparaciones pendientes son de automatizacion CPU; cualquier contraste
+cientifico posterior necesita su propia identidad y diseno, no reabrir esta.
 Reajustes durante el ano desactivados en esta
 primera identidad. Esta enmienda prevalece sobre instrucciones antiguas de
 reajuste semanal obligatorio, barridos por horizonte y relevo H4->H72.

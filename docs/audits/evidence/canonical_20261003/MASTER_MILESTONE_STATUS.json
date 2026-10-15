@@ -1,10 +1,10 @@
 {
-  "as_of": "2026-10-15T06:05:00+00:00",
-  "critical_path_eta": "feature-selection manifest after GPU queues (done/done/done) and the closure step; later milestones downstream",
+  "as_of": "2026-10-15T08:30:00+00:00",
+  "critical_path_eta": "MG2/MG12 baseline DONE; next scientific contrast not scheduled",
   "milestones": [
     {
       "eta": "1-3 development days",
-      "evidence": "Weekly/monthly/static contracts, four-year as-of windows and the durable paired-naive scorer pass 72 focused tests; restored evidence is bound to the full contract and WeekSpec",
+      "evidence": "Weekly/monthly/static contracts and four-year windows implemented; paired-naive scorer: 72 focused tests. Full weekly validation remains open.",
       "id": "M1",
       "next": "Run one complete weekly validation pilot with MAE, short/long horizons and idempotent strategy delivery",
       "progress": 66,
@@ -12,10 +12,10 @@
       "title": "Business-faithful evaluation"
     },
     {
-      "eta": "GPU done/done/done; then closure",
-      "evidence": "PS3-R 383/411 terminals (111/137 complete); PS4 102/137; FS-PRED 0 methods; causal 366/366; rep 137/137; refits 146/146; manifest DRAFT sel/rej/pend 0/1/365",
+      "eta": "Selection DONE; source clocks unresolved",
+      "evidence": "6240 tasks closed; EURUSD/ETH unions 20/9. Current baseline: 19 RAW, no STLFSI4. Selection used 2024 development; TEST stays closed.",
       "id": "M2",
-      "next": "Blocking: PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits); PS3-R terminals complete 111/137 heavy candidates; PS4 profiles 102/137 heavy candidates",
+      "next": "Retain selected manifest; resolve source publication clocks before TEST, without rerunning the closed selection",
       "progress": 78,
       "state": "IN_PROGRESS",
       "title": "Feature selection"
@@ -48,14 +48,14 @@
       "title": "Pretrained temporal core"
     },
     {
-      "eta": "4-7 days after M5",
-      "evidence": "I6-DMO market-time MG2/MG12 pair integrated, reviewed (ACCEPT_FOR_SCIENTIFIC_EXECUTION) and LAUNCHED: the first short fit is running on the preferred GPU; no market-time result exists yet",
+      "eta": "Baseline DONE; next contrast not scheduled",
+      "evidence": "MG2/MG12 CLOSED, pair not eligible. Short h6/h12 beat naive; long 0/6. 3952 metrics read back, two mirrors verified. TEST closed.",
       "id": "M6",
-      "next": "Services advance short report -> long fit/report -> pair eligibility -> validation strategy only if eligible -> publication closure; TEST stays closed on unresolved FRED clocks",
+      "next": "Integrate CPU-only eligibility/strategy/automatic-close repairs; define a separately identified next validation contrast; retain TEST closure",
       "progress": 24,
-      "state": "SYNTHETIC_ONLY",
+      "state": "PARTIAL_MEASUREMENT",
       "title": "Short/long forecasts + strategy",
-      "engineering_note": "scientific percentage unchanged; launch receipt is not a completion (2026-10-15)"
+      "engineering_note": "MG2/MG12 measured and closed; whole-M6 percentage unchanged. Prior estimates for other milestones are not fresh measured ETAs."
     },
     {
       "eta": "5-10 days after M5",
@@ -85,7 +85,7 @@
   "regenerated_by": {
     "from": "fs_closure/STATUS.json",
     "tool": "tools/fs_close_manifest.py",
-    "i6dmo_update": "M6 text: short closure / long support redesign; no percentage changed"
+    "i6dmo_update": "2026-10-15: authenticated MG2/MG12 closure and retained selection closure; all milestone percentages unchanged"
   },
   "schema": "predictor.master_milestones.v1"
 }

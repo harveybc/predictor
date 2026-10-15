@@ -13,7 +13,7 @@
       "dragon_4090",
       "omega_4070"
     ],
-    "gpu_use_now": "No scientific fit running in return 98ffdf28. Closed exact DS2 stays immutable; MG2/MG12 runtime requires implementation, independent review and fresh admission before new fits.",
+    "gpu_use_now": "MG2/MG12 completed and CLOSED / PAIR_NOT_ELIGIBLE at 2026-10-15 08:30 UTC; campaign timers disabled, no scientific child remains for this identity.",
     "financial_gate": "MAE in original price must beat naive para el horizonte de X horas on identical rows before strategy evaluation",
     "test_policy": "2024 is development due to feature selection. TEST 2025 closed until full pair, procedure freeze and source provenance gates pass.",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
@@ -32,9 +32,9 @@
       "priority": 0,
       "id": "I6-DMO",
       "resource": "bounded_parallel_CPU_implementation_then_preferred_5090",
-      "state": "EXACT_DS2_CLOSED_MARKET_TIME_SUCCESSOR_APPROVED_NOT_IMPLEMENTED",
-      "dispatch_enabled": true,
-      "work": "Implement, seal, review and run new MG2 short then MG12 long R0 static models; long runs even after scientifically ineligible short, pair trades only after predictive gates. No TEST.",
+      "state": "CLOSED_PAIR_NOT_ELIGIBLE",
+      "dispatch_enabled": false,
+      "work": "Retain completed MG2/MG12 measurement; integrate report repair and CPU-only corrections for pure eligibility, strategy hook and automatic close before any new design. No repeated fit or TEST.",
       "depends_on": [],
       "produces": "Generated STATUS, effective configs, per-horizon naive/MAE, model pairs, OLAP readback and eventual frozen TEST trading metrics",
       "work_plan": "../../i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md"

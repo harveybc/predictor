@@ -155,7 +155,7 @@
       ],
       "gate": "New MG2/MG12 static pair with per-example actual offsets and closure flags; six heads per family; strategy only after naive gates; TEST remains closed",
       "work_plan": "../../i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md",
-      "evidence": "98ffdf28: exact DS2 short closed, six heads NOT_ELIGIBLE; 55 reports, 2011 metric rows readback, 28 files per mirror. Market support measured; successor approved for implementation, not running. Musashi focused rerun: 36 passed."
+      "evidence": "Exact DS2 short closed. MG2/MG12 static successor CLOSED / PAIR_NOT_ELIGIBLE at 2026-10-15 08:30 UTC under runtime a169fcba: MG2 h6/h12 beat their naive by 0.049615%/0.093170%, no long head beats naive, strategy abstained. 110 reports / 3952 metric rows read back, 58 files verified per mirror. Short fit authenticated and reused without retraining; 33 focused recovery checks pass. TEST closed; CPU-only ordinary-worker eligibility/strategy/auto-close integration repairs remain."
     },
     {
       "id": "I7-H",
