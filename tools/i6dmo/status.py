@@ -160,7 +160,44 @@ def _publication(root):
     return dict(base, state=state, **summary)
 
 
-def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, silent_after=None):
+def _arm_views(plan, views, attempts_by_unit, now):
+    """Per-arm status (matched contrast): state, count/denominator, live child, progress time,
+    failure cause and a measured-or-UNKNOWN ETA from this arm's OWN completed fit only."""
+    arms = {}
+    for unit in plan["units"]:
+        arm = unit.get("arm")
+        if not arm or unit["unit_id"] not in views:
+            continue
+        arms.setdefault(arm, []).append(views[unit["unit_id"]])
+    out = {}
+    for arm, members in sorted(arms.items()):
+        states = [m["state"] for m in members]
+        live = [dict(unit_id=m["unit_id"], role=a["role"], device_class=a["device_class"],
+                     started_at=a["started_at"], heartbeat_age_seconds=m["heartbeat_age_seconds"],
+                     progress=m["progress"], state=m["state"])
+                for m in members for a in m["attempts"] if a["outcome"] == "RUNNING"]
+        failures = [dict(unit_id=m["unit_id"], state=m["state"], cause=m["cause"]) for m in members
+                    if m["state"] in ("FAILED", "BLOCKED", "STALE")]
+        if all(s == "COMPLETE" for s in states):
+            state, eta = "COMPLETE", dict(kind="DONE", seconds=0.0)
+        else:
+            state = ("FAILED" if any(s in ("FAILED", "BLOCKED") for s in states) else
+                     "STALE" if "STALE" in states else "RUNNING" if "RUNNING" in states else "WAITING")
+            running = [m for m in members if m["state"] == "RUNNING"]
+            eta = running[0]["eta"] if running and running[0]["eta"]["kind"] != "UNMEASURED" else dict(
+                kind="UNKNOWN", seconds=None,
+                cause="no completed fit of this arm; another arm's or treatment's timing is never its ETA")
+        progress_times = [m["progress"].get("updated_at") for m in members
+                          if isinstance(m.get("progress"), dict) and m["progress"].get("updated_at")]
+        out[arm] = dict(arm=arm, state=state, complete=states.count("COMPLETE"), denominator=len(members),
+                        units={m["unit_id"]: m["state"] for m in members}, live_children=live,
+                        last_progress_at=max(progress_times) if progress_times else None,
+                        failure_causes=failures, eta=eta,
+                        code_commits=sorted({m["code"]["unit_code_commit"] or "UNSEALED" for m in members}))
+    return out
+
+
+def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, silent_after=None, arm=None):
     from tools.i6dmo import services
     root = Path(root)
     now = time.time() if now is None else now
@@ -197,7 +234,8 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
                                            "BLOCKED")}
     completed = [a for a in attempts if a["outcome"] == "COMPLETE" and a["costs"]]
     kind_of = {uid: row["kind"] for uid, row in rows.items()}
-    family_of = {u["unit_id"]: u["family"] for u in plan["units"]}
+    # the ETA family key: a matched arm is its own class (its fit is never another arm's ETA)
+    family_of = {u["unit_id"]: u.get("arm") or u["family"] for u in plan["units"]}
     fit_times = {}
     for a in completed:
         if kind_of.get(a["unit_id"]) in FIT_KINDS:
@@ -211,9 +249,10 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
     remaining_fit_families, all_fit_families = {}, set()
     for u in plan["units"]:
         if u["kind"] in FIT_KINDS:
-            all_fit_families.add(u["family"])
+            key = u.get("arm") or u["family"]
+            all_fit_families.add(key)
             if _open_unit(u["unit_id"]):
-                remaining_fit_families[u["family"]] = remaining_fit_families.get(u["family"], 0) + 1
+                remaining_fit_families[key] = remaining_fit_families.get(key, 0) + 1
     families = {fam: _eta(remaining_fit_families.get(fam, 0), fit_times.get(fam, []))
                 for fam in sorted(all_fit_families)}
     unmeasured = sorted(f for f in remaining_fit_families if families[f]["kind"] == "UNMEASURED")
@@ -307,6 +346,16 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
                     expected=plan["expected"], test_units_enumerated=plan["test_units_enumerated"],
                     test_readiness=None if readiness is None else readiness.get("state"), eta=eta, generated_at=now,
                     progress_note="stage progress counts declared terminals; no invented percentages")
+    arms = _arm_views(plan, views, by_unit, now)
+    if arms:
+        campaign["arms"] = {a: dict(state=v["state"], complete=v["complete"], denominator=v["denominator"],
+                                    eta=v["eta"]) for a, v in arms.items()}
+    if level == "arm":
+        if arm is not None and arm not in arms:
+            return dict(schema="i6dmo.status.v1", state="UNKNOWN_ARM", arm=arm)
+        chosen = {arm: arms[arm]} if arm is not None else arms
+        return dict(schema="i6dmo.status.v1", campaign_id=plan["campaign_id"], campaign_state=state,
+                    arms=chosen, generated_at=now)
     if level == "campaign":
         return campaign
     if level == "stage":

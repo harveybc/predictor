@@ -7,7 +7,7 @@
   RECEIPT.json (the atomic terminal marker) into ``O/TERMINAL.json``. Exit 2/3/4 of the trainer are
   typed terminals (FAILED with the trainer's code), never retried here. A killed trainer (137/124)
   leaves no terminal, so the worker records FAILED_OOM/FAILED_TIMEOUT.
-- report / pair / final_test: delegates to ``run_unit(spec, out_dir, progress_path) -> terminal``
+- report / pair / strategy / comparison / final_test: delegates to ``run_unit(spec, out_dir, progress_path) -> terminal``
   of the hook module named in HOOKS (owned by another lane). The worker checks the hook is
   importable before claiming, so a missing hook is a WAIT_ARTIFACT, never a burned attempt.
 """
@@ -22,9 +22,11 @@ import time
 from pathlib import Path
 
 HOOKS = {"report": "tools.i6dmo.reporting", "pair": "tools.i6dmo.strategy_adapter",
-         "strategy": "tools.i6dmo.strategy_adapter", "final_test": "tools.i6dmo.final"}
+         "strategy": "tools.i6dmo.strategy_adapter", "final_test": "tools.i6dmo.final",
+         "comparison": "tools.i6dmo.matched_runner"}
 HOOK_OWNERS = {"tools.i6dmo.reporting": "ops lane (tools/i6dmo/reporting.py)",
                "tools.i6dmo.strategy_adapter": "strategy lane",
+               "tools.i6dmo.matched_runner": "ops lane (tools/i6dmo/matched_runner.py)",
                "tools.i6dmo.final": "model lane (guarded final TEST path)"}
 TRAINER_MODULE = "tools.i6dmo.train"
 FIT_KINDS = ("fit", "final_refit")
@@ -169,7 +171,7 @@ def run_hook(kind, spec, out, progress):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="python -m tools.i6dmo.unit_runner")
     parser.add_argument("--kind", required=True,
-                        choices=("fit", "final_refit", "report", "pair", "strategy", "final_test"))
+                        choices=("fit", "final_refit", "report", "pair", "strategy", "comparison", "final_test"))
     parser.add_argument("command", choices=("run-unit",))
     parser.add_argument("--spec", required=True)
     parser.add_argument("--out", required=True)

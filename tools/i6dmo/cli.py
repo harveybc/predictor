@@ -102,7 +102,8 @@ def cmd_worker(args):
 def cmd_status(args):
     from tools.i6dmo import services, status
     probe = services.systemd_probe if getattr(args, "probe_systemd", False) else None
-    doc = status.compute(args.root, level=args.level, unit=args.unit, systemd_probe=probe)
+    doc = status.compute(args.root, level=args.level, unit=args.unit, systemd_probe=probe,
+                         arm=getattr(args, "arm", None))
     _emit(doc if args.json else json.dumps(doc, indent=1, sort_keys=True, default=str), as_json=args.json)
     return 0
 
@@ -126,6 +127,108 @@ def cmd_close(args):
     doc = C.close_campaign(args.root)
     _emit(doc)
     return 0 if doc["state"] == "CLOSED" else 3
+
+
+MATCHED_HELP = """Matched short contrast (NEXT_CONTRASTS_PLAN_20261015): MG1 (25 slots) vs MG2 (13 slots).
+
+prepare   resolve private deployment pins, arm bundles/inputs, the frozen common population and the
+          warehouse EnvironmentFile BY PATH (never opened); write host-specific private JSON outside git
+validate  re-verify a prepared JSON (designs, pins, common population) without launching anything
+preflight per-arm host preflight (memory, disk, GPU admission, pinned files) into private PRECHECK files
+init      seal both arms and enumerate the finite graph mg1/mg2 fit -> report -> comparison
+status    campaign / arm / unit status (never launches or alters a fit)
+Deploy with the existing `deploy` command (`--render-to` renders only)."""
+
+
+def cmd_matched(args):
+    from tools.i6dmo import campaign as C
+    from tools.i6dmo import matched_runner as MR
+    try:
+        if args.matched_command == "prepare":
+            doc = MR.prepare(deployment=args.deployment,
+                             designs=dict(mg1=args.mg1_design, mg2=args.mg2_design),
+                             bundles=dict(mg1=args.mg1_bundle, mg2=args.mg2_bundle),
+                             inputs=dict(mg1=args.mg1_input, mg2=args.mg2_input or args.mg1_input),
+                             common_population=args.common_population, population_digest=args.population_digest,
+                             out=args.out, prior_roots=args.prior_root or (), test=args.test, role=args.role)
+            _emit(dict(state="PREPARED", out=str(args.out), designs={a: d["seal_sha256"] for a, d in
+                                                                      doc["designs"].items()},
+                       pins=sorted(doc["data_pins"]), warehouse_environment_file=doc["warehouse_environment_file"]))
+            return 0
+        if args.matched_command == "validate":
+            _emit(MR.validate(args.prepared))
+            return 0
+        if args.matched_command == "preflight":
+            from tools.i6dmo import preflight
+            MR.validate(args.prepared)
+            doc = json.loads(Path(args.prepared).read_text())
+            out_dir = Path(args.out_dir)
+            out_dir.mkdir(parents=True, exist_ok=True)
+            results = {}
+            for arm in MR.ARMS:
+                pins = {k: v for k, v in doc["data_pins"].items() if k.startswith(f"{arm}_")}
+                result = preflight.preflight(doc["designs"][arm]["path"], doc["deployment"], data_pins=pins,
+                                             out=out_dir / f"PRECHECK.{arm}.json")
+                results[arm] = dict(state=result["state"], launch_blockers=result["launch_blockers"])
+            _emit(dict(state="PASS" if all(r["state"] == "PASS" for r in results.values()) else "FAIL",
+                       arms=results, out_dir=str(out_dir)))
+            return 0 if all(r["state"] == "PASS" for r in results.values()) else 3
+        if args.matched_command == "init":
+            MR.validate(args.prepared)
+            doc = json.loads(Path(args.prepared).read_text())
+            _emit(C.init_matched_contrast({a: d["path"] for a, d in doc["designs"].items()}, doc["deployment"],
+                                          args.root, code_commit=args.code_commit, data_pins=doc["data_pins"],
+                                          prior_roots=doc["prior_roots"], entrypoints=_load_json(args.entrypoints)))
+            return 0
+        if args.matched_command == "status":
+            from tools.i6dmo import status
+            _emit(status.compute(args.root, level=args.level, unit=args.unit, arm=args.arm))
+            return 0
+    except MR.PrepareRefused as exc:
+        _emit(dict(state="REFUSED", cause=str(exc)))
+        return 2
+    raise SystemExit("unknown matched-short command")
+
+
+def _add_matched(sub):
+    p = sub.add_parser("matched-short", help="matched short MG1/MG2 contrast (prepare, validate, preflight, init, "
+                                             "status)", description=MATCHED_HELP,
+                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    msub = p.add_subparsers(dest="matched_command", required=True)
+    q = msub.add_parser("prepare", help="resolve pins by path and write the private prepared JSON")
+    q.add_argument("--deployment", required=True, help="existing private deployment JSON (never committed)")
+    for arm in ("mg1", "mg2"):
+        q.add_argument(f"--{arm}-design", required=True, help=f"sealed {arm} market-time design JSON")
+        q.add_argument(f"--{arm}-bundle", required=True, help=f"{arm} frozen bundle directory under the data_root")
+    q.add_argument("--mg1-input", required=True, help="retained INPUT.npz directory under the data_root")
+    q.add_argument("--mg2-input", help="defaults to --mg1-input (both arms read the same source rows)")
+    q.add_argument("--common-population", required=True, help="frozen common population (file or directory)")
+    q.add_argument("--population-digest", required=True, help="its expected i6dmo.common_population.v1 digest")
+    q.add_argument("--prior-root", action="append", help="a prior matched root whose verified terminals may be adopted")
+    q.add_argument("--role", default="coordinator", help="deployment role whose data_root/run_root are resolved")
+    q.add_argument("--out", required=True, help="private output JSON (refused inside a git checkout)")
+    q.add_argument("--test", action="store_true", help="request TEST (always refused: this contrast has no TEST)")
+    q.add_argument("--json", action="store_true")
+    q = msub.add_parser("validate", help="re-verify a prepared JSON; launches nothing")
+    q.add_argument("--prepared", required=True)
+    q.add_argument("--json", action="store_true")
+    q = msub.add_parser("preflight", help="per-arm host preflight into private PRECHECK files")
+    q.add_argument("--prepared", required=True)
+    q.add_argument("--out-dir", required=True, help="private directory for PRECHECK.mg1.json / PRECHECK.mg2.json")
+    q.add_argument("--json", action="store_true")
+    q = msub.add_parser("init", help="seal both arms and enumerate the finite contrast graph")
+    q.add_argument("--prepared", required=True)
+    q.add_argument("--root", required=True, help="NEW campaign root on ext4")
+    q.add_argument("--code-commit", help="runtime commit (default: git HEAD of this checkout)")
+    q.add_argument("--entrypoints", help="optional JSON {kind: argv} (fixtures only; default: unit_runner per kind)")
+    q.add_argument("--json", action="store_true")
+    q = msub.add_parser("status", help="campaign / arm / unit status; never launches or alters a fit")
+    q.add_argument("--root", required=True)
+    q.add_argument("--level", default="campaign", choices=("campaign", "arm", "unit", "all"))
+    q.add_argument("--arm")
+    q.add_argument("--unit")
+    q.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_matched)
 
 
 def build_parser():
@@ -209,8 +312,10 @@ def build_parser():
 
     p = sub.add_parser("status")
     p.add_argument("--root", required=True)
-    p.add_argument("--level", default="campaign", choices=("campaign", "unit", "stage", "publication", "fleet", "all"))
+    p.add_argument("--level", default="campaign",
+                   choices=("campaign", "arm", "unit", "stage", "publication", "fleet", "all"))
     p.add_argument("--unit")
+    p.add_argument("--arm", help="with --level arm: one matched arm (mg1|mg2); default every arm")
     p.add_argument("--probe-systemd", action="store_true",
                    help="one bounded `systemctl --user show` reading of the campaign units (failed unit -> typed)")
     p.add_argument("--json", action="store_true")
@@ -228,6 +333,8 @@ def build_parser():
     p.add_argument("--receipt", required=True, help="JSON {status, evidence, splits_read, owner}")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_gate)
+
+    _add_matched(sub)
 
     p = sub.add_parser("close")
     p.add_argument("--root", required=True)

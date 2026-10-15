@@ -263,8 +263,9 @@ def _validate_child(doc, unit):
         raise ValueError("TERMINAL_IDENTITY_MISMATCH")
     if doc.get("status") not in TERMINAL_STATUSES:
         raise ValueError("TERMINAL_STATUS")
-    if unit["kind"] in ("report", "pair", "strategy", "final_test") and doc.get("costs", {}).get("fit_seconds"):
-        raise ValueError("REPORT_UNIT_FITTED: a report/pair/strategy/test unit must not fit")
+    if unit["kind"] in ("report", "pair", "strategy", "comparison", "final_test") and \
+            doc.get("costs", {}).get("fit_seconds"):
+        raise ValueError("REPORT_UNIT_FITTED: a report/pair/strategy/comparison/test unit must not fit")
 
 
 def _enqueue_reports(root, unit_id, doc, q):
@@ -379,7 +380,9 @@ def _pick(q, plan, spec, role):
         if row is None or row["state"] not in ("QUEUED", "WAIT_RESOURCE", "INTERRUPTED", "WAIT_ARTIFACT") \
                 or not row["identity_sha256"]:
             continue
-        if any(rows[d]["state"] != "COMPLETE" for d in row["spec"]["depends_on"]):
+        # A comparison runs once every arm is terminal: a failed arm is recorded as missing evidence.
+        ready_states = ("COMPLETE", "FAILED", "BLOCKED") if row["kind"] == "comparison" else ("COMPLETE",)
+        if any(rows[d]["state"] not in ready_states for d in row["spec"]["depends_on"]):
             continue
         if row["device"] == "gpu":
             if gpu is None:
@@ -536,8 +539,11 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
             # The resource class is the model family+kind, not the GPU: a full-tree peak measured on
             # one admitted GPU carries to another of the same class. The launcher may seed a class
             # peak measured in a prior campaign; a local measurement, once it exists, wins.
-            class_key = f"{unit['family']}.{unit['kind']}"
-            measured = q.measured_peak(kind=unit["kind"], family=unit["family"]) \
+            # A matched arm carries its own resource class: a 13-slot peak is never the 25-slot need.
+            resource = unit.get("resource_class") or unit["family"]
+            class_key = f"{resource}.{unit['kind']}"
+            measured = (q.measured_peak(kind=unit["kind"], family=unit["family"], resource_class=unit["resource_class"])
+                        if unit.get("resource_class") else q.measured_peak(kind=unit["kind"], family=unit["family"])) \
                 or (launcher.get("measured_class_peaks") or {}).get(class_key)
             cap = cap_for(q, unit["unit_id"], device_class, initial_cap=launcher["initial_cap_bytes"],
                           measured_peak=measured)
@@ -587,14 +593,20 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         q.close()
 
 
+def child_effective(effective, unit):
+    """What a child sees as its effective config: the arm VIEW for a matched arm, else the campaign's."""
+    return C.arm_view(effective, unit["arm"]) if unit.get("arm") else effective
+
+
 def build_unit_spec(root, q, plan, effective, unit, role_spec, *, device_class, gpu, cap, bundle, attempt):
     """The UNIT_SPEC.json a claimed child receives (one definition for the worker and its tests)."""
+    view = child_effective(effective, unit)
     unit_spec = dict(unit, schema="i6dmo.unit_spec.v1", campaign_id=plan["campaign_id"],
                      campaign_root=str(root),
-                     effective_config=effective, effective_config_sha256=plan["effective_config_sha256"],
+                     effective_config=view, effective_config_sha256=plan["effective_config_sha256"],
                      device=dict(cls=device_class, gpu_uuid=gpu["uuid"] if gpu else None), cap_bytes=cap,
                      data_root=role_spec.get("data_root"), bundle=bundle,
-                     pins=resolved_pins(effective, role_spec), attempt=dict(index=attempt["index"], kind=attempt["kind"]),
+                     pins=resolved_pins(view, role_spec), attempt=dict(index=attempt["index"], kind=attempt["kind"]),
                      upstream={d: _upstream(root, q, d) for d in unit["depends_on"]})
     if unit["kind"] == "strategy":
         # The trading stage's forecast inputs are authenticated digests, not assumptions: the
@@ -609,7 +621,7 @@ def _uses_unit_runner(argv):
 
 def bundle_pin(root, effective, unit):
     """Data-lane bundle pin: sealed data_pins for validation fits; DATA_PROVENANCE evidence for final refits."""
-    family = unit["family"]
+    family = unit.get("arm") or unit["family"]
     if unit["kind"] == "fit":
         key, pins = f"{family}_bundle", effective["data_pins"]
     elif unit["kind"] == "final_refit":
@@ -672,7 +684,8 @@ def _artifacts(root, effective, unit, role_spec):
         return bundle, f"BUNDLE_PIN_MISSING:{key} owner=data lane (tools.i6dmo.data.build_frozen_bundle)"
     hook = importlib.import_module(module)
     if hasattr(hook, "preconditions"):
-        cause = hook.preconditions(dict(unit=unit, effective_config=effective, data_root=role_spec.get("data_root")))
+        cause = hook.preconditions(dict(unit=unit, effective_config=child_effective(effective, unit),
+                                        data_root=role_spec.get("data_root")))
         if cause:
             return bundle, cause
     return bundle, None
@@ -741,7 +754,7 @@ def _pair_inputs_missing(root, effective, unit, role_spec):
 
 def _data_identity_problem(effective, unit, bundle, key, pin):
     """The pinned data identity must match the treatment's own declaration, or the unit waits."""
-    design = effective["long"]["design"] if unit["family"] == "long" else effective["design"]
+    design = C.unit_design(effective, unit)
     if design.get("market_time"):
         # A market-time bundle declares its identity in its own sealed manifest (the data-lane
         # market design document is not carried in the campaign).

@@ -29,14 +29,21 @@ STAGES = ("SHORT_DS_STATIC_VALIDATION", "LONG_DS_STATIC_VALIDATION", "PAIR_VALID
 # Market-time pair (order 50d20d01): one finite development graph, no TEST stage at all.
 MARKET_TIME_STAGES = ("SHORT_MARKET_TIME_VALIDATION", "LONG_MARKET_TIME_VALIDATION", "PAIR_VALIDATION",
                       "VALIDATION_STRATEGY", "CLOSED")
+# Matched short contrast (NEXT_CONTRASTS_PLAN_20261015): two matched short R0 arms, one paired
+# comparison, publication/readback, mirrors and CLOSE. No pair, strategy or TEST stage.
+MATCHED_STAGES = ("MATCHED_ARMS_VALIDATION", "PAIRED_COMPARISON", "CLOSED")
 MODE_ELAPSED = "ELAPSED_STATIC"
 MODE_MARKET_TIME = "MARKET_TIME_PAIR"
-MODES = (MODE_ELAPSED, MODE_MARKET_TIME)
-UNIT_KINDS = ("fit", "report", "pair", "strategy", "final_refit", "final_test")
+MODE_MATCHED = "MATCHED_SHORT_CONTRAST"
+MODES = (MODE_ELAPSED, MODE_MARKET_TIME, MODE_MATCHED)
+BASE_UNIT_KINDS = ("fit", "report", "pair", "strategy", "final_refit", "final_test")
+UNIT_KINDS = BASE_UNIT_KINDS + ("comparison",)
 IDENTITY_KEYS = ("unit", "family", "kind", "cadence", "effective_config_sha256", "data_sha256", "code_commit",
                  "seed", "upstream")
 DEFAULT_ENTRYPOINTS = {kind: ["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", kind]
-                       for kind in ("fit", "report", "pair", "strategy", "final_refit", "final_test")}
+                       for kind in BASE_UNIT_KINDS}
+MATCHED_ENTRYPOINTS = dict(DEFAULT_ENTRYPOINTS,
+                           comparison=["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", "comparison"])
 FINAL_REFIT_TRAIN = ["2021-01-01T00:00:00Z", "2025-01-01T00:00:00Z"]
 # Gate -> (owner, artifact, produced automatically by tick?)
 GATES = {
@@ -70,8 +77,8 @@ def unit_identity(components):
     return sha256_json(dict(schema="i6dmo.unit_identity.v1", **components))
 
 
-def validate_entrypoints(entries):
-    missing = [k for k in UNIT_KINDS if k not in entries]
+def validate_entrypoints(entries, required=BASE_UNIT_KINDS):
+    missing = [k for k in required if k not in entries]
     if missing:
         raise ValueError(f"ENTRYPOINT_MISSING: {missing}")
     for kind, argv in entries.items():
@@ -313,6 +320,105 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
                 units=[u["unit_id"] for u in plan["units"]])
 
 
+MATCHED_ARMS = ("mg1", "mg2")
+MATCHED_REQUIRED_PINS = ("mg1_bundle", "mg1_input", "mg2_bundle", "mg2_input", "common_population")
+
+
+def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_commit=None, data_pins=None,
+                          entrypoints=None, prior_roots=()):
+    """Seal the two matched short R0 arms and enumerate the finite contrast graph.
+
+    Refuses (typed): a TEST-open design, a non-market-time design, arms that differ in anything the
+    plan fixes (seed, cadence, horizons, splits, recipe spacing/slots per arm), an unfrozen
+    comparison (no common-population pin with its digest), and bundle pins whose sampling rule is not
+    the arm design's own rule.
+    """
+    from tools.i6dmo import matched_runner as MR
+    adapter = _adapter(adapter)
+    if set(arm_designs) != set(MATCHED_ARMS):
+        raise Refused(f"MATCHED_ARMS_REQUIRED: {sorted(MATCHED_ARMS)}")
+    arms = {}
+    for arm in MATCHED_ARMS:
+        design = json.loads(Path(arm_designs[arm]).read_text())
+        if design.get("splits", {}).get("test", {}).get("open") is not False:
+            raise Refused(f"TEST_OPEN_IN_DESIGN: {arm}")
+        if design.get("schema") != MARKET_TIME_DESIGN_SCHEMA:
+            raise Refused(f"ELAPSED_DESIGN_IN_MATCHED_CONTRAST: {arm} {design.get('schema')}")
+        sealed = _seal_family(design, adapter, arm, mode=MODE_MARKET_TIME)
+        block = design["market_time"]
+        if block.get("observations") != MR.ARM_SLOTS[arm] or \
+                block.get("spacing_open_market_hours") != MR.ARM_SPACING[arm]:
+            raise Refused(f"MATCHED_ARM_RECIPE: {arm} must be {MR.ARM_SLOTS[arm]} slots at "
+                          f"{MR.ARM_SPACING[arm]} open-market hour spacing")
+        arms[arm] = dict(sealed, resource_class=MR.ARM_RESOURCE_CLASS[arm])
+    first, second = (arms[a]["design"] for a in MATCHED_ARMS)
+    for key in ("seed", "retraining_frequency", "horizons_hours", "splits", "repetitions"):
+        if first.get(key) != second.get(key):
+            raise Refused(f"MATCHED_ARMS_DIFFER: {key}")
+    if list(first["horizons_hours"]) != list(MR.HORIZONS):
+        raise Refused(f"MATCHED_HORIZONS: {first['horizons_hours']}")
+    root = Path(root)
+    if root.exists() and any(root.iterdir()):
+        raise Refused("ROOT_NOT_NEW: init never reuses or resurrects an existing campaign root")
+    spec = json.loads(Path(spec_path).read_text())
+    _validate_spec(spec)
+    data_pins = dict(data_pins or {})
+    missing = [k for k in MATCHED_REQUIRED_PINS if k not in data_pins]
+    if missing:
+        raise Refused(f"UNFROZEN_COMPARISON_OR_MISSING_PIN: {missing}")
+    if len(str(data_pins["common_population"].get("population_sha256", ""))) != 64:
+        raise Refused("UNFROZEN_COMPARISON: common_population needs its frozen population_sha256")
+    if not all(isinstance(p, dict) and len(str(p.get("sha256", ""))) == 64 for p in data_pins.values()):
+        raise Refused("DATA_PINS_REQUIRED: every pin needs a sha256")
+    for arm in MATCHED_ARMS:
+        pin = data_pins[f"{arm}_bundle"]
+        rule = arms[arm]["design"]["market_time"]["rule"]
+        if pin.get("input_sampling") != rule or len(str(pin.get("bundle_sha256", ""))) != 64:
+            raise Refused(f"BUNDLE_SAMPLING: {arm}_bundle must be {rule} with its bundle_sha256")
+    entries = validate_entrypoints(dict(entrypoints or MATCHED_ENTRYPOINTS), required=("fit", "report", "comparison"))
+    if entries["report"] in (entries["fit"],) or entries["comparison"] in (entries["fit"],):
+        raise Refused("REPORT_ENTRY_CALLS_FIT")
+    base = arms["mg2"]
+    effective = _seal(dict(
+        schema="i6dmo.effective_config.v1", experiment_id="I6-DMO-MATCHED-SHORT-MG1-MG2-R0",
+        design=base["design"], design_sha256=base["design_sha256"], validator=base["validator"],
+        adapter_effective=base["adapter_effective"], arms=arms, cadence=first["retraining_frequency"],
+        seed=first["seed"], code_commit=code_commit or _git_head(), data_pins=data_pins,
+        data_sha256=sha256_json(data_pins), entrypoints=entries, prior_roots=[str(p) for p in prior_roots],
+        test_open=False, strategy_execution=None, mode=MODE_MATCHED, deployment_sha256=sha256_json(spec),
+        long=None, comparison=dict(rule=MR.RULE, tolerance=MR.TOLERANCE, tie_keeps=MR.TIE_KEEPS,
+                                   horizons=list(MR.HORIZONS), split="DEVELOPMENT")))
+    eff_sha = sha256_json(effective)
+    campaign_id = "i6dmo-" + sha256_json(dict(experiment=effective["experiment_id"], cadence=effective["cadence"],
+                                              effective=eff_sha))[:12]
+    paths = _paths(root)
+    paths["deployment"].parent.mkdir(parents=True, exist_ok=True)
+    os.chmod(paths["deployment"].parent, 0o700)
+    atomic_json(paths["deployment"], spec, mode=0o600)
+    atomic_json(paths["effective"], effective)
+    for folder in ("gates", "terminals", "attempts"):
+        (root / folder).mkdir(parents=True, exist_ok=True)
+    units = _validation_units(effective, eff_sha)
+    plan = dict(schema="i6dmo.plan.v1", campaign_id=campaign_id, effective_config_sha256=eff_sha,
+                effective_config_file_sha256=file_sha256(paths["effective"]), mode=MODE_MATCHED,
+                stages=list(MATCHED_STAGES), units=units, test_units_enumerated=False,
+                expected=dict(validation_units=len(units), arms=list(MATCHED_ARMS),
+                              final_units="NOT_ENUMERABLE_IN_MATCHED_CONTRAST"))
+    q = open_queue(root)
+    try:
+        for unit in units:
+            q.ensure_unit(unit["unit_id"], unit, state=unit.pop("_state"))
+    finally:
+        q.close()
+    _write_plan(root, plan)
+    _storage_gate(spec, "init")
+    write_status(root)
+    return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root), mode=MODE_MATCHED,
+                units=[u["unit_id"] for u in plan["units"]],
+                arms={a: dict(seal_sha256=arms[a]["design"].get("seal_sha256"), design_sha256=arms[a]["design_sha256"])
+                      for a in MATCHED_ARMS})
+
+
 SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)  # pre-ruling exact-slot build
 # Retained ASOF diagnostic arm (audited AUD-DMO-01): real evidence under its own identity,
 # never admissible as the exact-DS2 treatment of this campaign.
@@ -409,6 +515,12 @@ def _identify(unit, effective, family_sha, upstream):
 
 
 def _family_sha(effective, family):
+    if family in (effective.get("arms") or {}):
+        entry = effective["arms"][family]
+        return sha256_json(dict(design=entry["design"], adapter=entry["adapter_effective"]))
+    if family == "comparison":
+        return sha256_json(dict(arms={a: _family_sha(effective, a) for a in sorted(effective["arms"])},
+                                rule=effective["comparison"]))
     if family == "short":
         return sha256_json(dict(design=effective["design"], adapter=effective["adapter_effective"]))
     if family == "long":
@@ -420,6 +532,29 @@ def _family_sha(effective, family):
 
 def mode_of(effective):
     return effective.get("mode") or MODE_ELAPSED
+
+
+def unit_design(effective, unit):
+    """The sealed design a unit trains/reports: its arm's, the long family's, or the short one."""
+    arm = unit.get("arm")
+    if arm:
+        return effective["arms"][arm]["design"]
+    return effective["long"]["design"] if unit["family"] == "long" else effective["design"]
+
+
+def arm_view(effective, arm):
+    """Effective-config VIEW for one matched arm's children: its design is ``design`` and its
+    ``<arm>_bundle``/``<arm>_input`` pins appear as ``short_bundle``/``short_input`` so the model
+    lane's family adapters (trainer CLI, report) read this arm and nothing else."""
+    entry = effective["arms"][arm]
+    pins = {k: v for k, v in (effective.get("data_pins") or {}).items()
+            if not k.startswith(tuple(f"{a}_" for a in effective["arms"]))}
+    for suffix in ("bundle", "input"):
+        if f"{arm}_{suffix}" in effective["data_pins"]:
+            pins[f"short_{suffix}"] = effective["data_pins"][f"{arm}_{suffix}"]
+    return dict(effective, design=entry["design"], design_sha256=entry["design_sha256"],
+                adapter_effective=entry["adapter_effective"], validator=entry["validator"], long=None,
+                data_pins=pins, arm=arm)
 
 
 def _market_time_units(effective):
@@ -452,7 +587,35 @@ def _market_time_units(effective):
     return units
 
 
+def _matched_units(effective):
+    """mg1.fit -> mg1.report, mg2.fit -> mg2.report, both reports -> comparison (no TEST, no pair)."""
+    st = MATCHED_STAGES
+    units, upstream = [], {}
+    window = None
+    for arm in sorted(effective["arms"]):
+        w = _windows(effective["arms"][arm]["design"])
+        window = window or w
+        sha = _family_sha(effective, arm)
+        for unit_id, kind, device, deps, calls_fit in ((f"{arm}.fit", "fit", "gpu", [], True),
+                                                       (f"{arm}.report", "report", "cpu", [f"{arm}.fit"], False)):
+            unit = _base(unit_id, "short", kind, st[0], device, deps, w, calls_fit=calls_fit)
+            unit.update(arm=arm, resource_class=effective["arms"][arm]["resource_class"])
+            _identify(unit, effective, sha, [upstream[d] for d in deps])
+            upstream[unit_id] = unit["identity_sha256"]
+            unit["_state"] = "QUEUED" if not deps else "WAIT_DEPENDENCY"
+            units.append(unit)
+    deps = [f"{arm}.report" for arm in sorted(effective["arms"])]
+    comparison = _base("comparison", "comparison", "comparison", st[1], "cpu", deps,
+                       dict(validation=window["validation"]), calls_fit=False)
+    _identify(comparison, effective, _family_sha(effective, "comparison"), [upstream[d] for d in deps])
+    comparison["_state"] = "WAIT_DEPENDENCY"
+    units.append(comparison)
+    return units
+
+
 def _validation_units(effective, eff_sha):
+    if mode_of(effective) == MODE_MATCHED:
+        return _matched_units(effective)
     if mode_of(effective) == MODE_MARKET_TIME:
         return _market_time_units(effective)
     design = effective["design"]
@@ -709,6 +872,8 @@ def enumerate_test_units(root):
     """Public entry: refused outright for a market-time pair campaign (no TEST stage exists)."""
     if mode_of(load_effective(root)) == MODE_MARKET_TIME:
         raise Refused("TEST_NOT_ENUMERABLE_IN_MARKET_TIME_PAIR: this development campaign has no TEST stage")
+    if mode_of(load_effective(root)) == MODE_MATCHED:
+        raise Refused("TEST_NOT_ENUMERABLE_IN_MATCHED_CONTRAST: this development contrast has no TEST stage")
     plan = load_plan(root)
     ready = readiness(root)
     if ready["state"] != "READY":
@@ -716,7 +881,24 @@ def enumerate_test_units(root):
     return _enumerate_finals(root, plan, ready)
 
 
+def _matched_readiness(root):
+    q = open_queue(root)
+    try:
+        row = q.unit("comparison")
+        term = q.terminal("comparison")
+    finally:
+        q.close()
+    if term is not None:
+        status = (term["terminal"].get("gates") or {}).get("comparison_status") or term["terminal"].get("disposition")
+        return dict(state="TERMINAL", disposition=status, missing=[], cause="matched development contrast decided")
+    if row is not None and row["state"] in ("FAILED", "BLOCKED"):
+        return dict(state="TERMINAL", disposition=f"UNIT_{row['state']}:comparison", cause=row["cause"], missing=[])
+    return dict(state="IN_PROGRESS", disposition=None, missing=[], cause="matched contrast is still advancing")
+
+
 def readiness(root):
+    if mode_of(load_effective(root)) == MODE_MATCHED:
+        return _matched_readiness(root)
     plan = load_plan(root)
     q = open_queue(root)
     try:
@@ -913,9 +1095,10 @@ def _tick(root, now=None, adapter=None):
     load_effective(root)
     effective = load_effective(root)
     market_time = mode_of(effective) == MODE_MARKET_TIME
+    elapsed = mode_of(effective) == MODE_ELAPSED
     design_block = _design_block(root)
     held = set((design_block or {}).get("units", ()))
-    if not held and not market_time:
+    if not held and elapsed:
         _auto_seal_long(root, adapter=adapter)
     _apply_long(root)
     plan = load_plan(root)
@@ -931,6 +1114,12 @@ def _tick(root, now=None, adapter=None):
                 continue
             deps = [rows[d] for d in unit["depends_on"]]
             bad = [d for d in deps if d["state"] in ("FAILED", "BLOCKED")]
+            if unit["kind"] == "comparison":
+                # INCOMPLETE_COMPARISON is decided by the comparison itself, with the missing evidence
+                if all(d["state"] in ("COMPLETE", "FAILED", "BLOCKED") for d in deps):
+                    q.set_state(unit["unit_id"], "QUEUED")
+                    activated.append(unit["unit_id"])
+                continue
             if bad:
                 q.set_state(unit["unit_id"], "BLOCKED", f"UPSTREAM_{bad[0]['unit_id']}_{bad[0]['state']}")
                 blocked.append(unit["unit_id"])
@@ -938,7 +1127,8 @@ def _tick(root, now=None, adapter=None):
                 q.set_state(unit["unit_id"], "QUEUED")
                 activated.append(unit["unit_id"])
         for unit in plan["units"]:
-            if rows[unit["unit_id"]]["state"] == "WAIT_ARTIFACT" and rows["short.report"]["state"] == "COMPLETE" \
+            if rows[unit["unit_id"]]["state"] == "WAIT_ARTIFACT" and \
+                    (rows.get("short.report") or {}).get("state") == "COMPLETE" \
                     and not rows[unit["unit_id"]]["cause"] and unit["identity_sha256"] is None:
                 q.set_state(unit["unit_id"], "WAIT_ARTIFACT",
                             "LONG_DESIGN_NOT_SEALED: run `seal-long` with the sealed long design (model lane)")
@@ -950,7 +1140,7 @@ def _tick(root, now=None, adapter=None):
     _apply_design_block(root)
     _delivery_gate(root, plan)
     ready = readiness(root)
-    opened = (not market_time) and ready["state"] == "READY" and _enumerate_finals(root, load_plan(root), ready)
+    opened = elapsed and ready["state"] == "READY" and _enumerate_finals(root, load_plan(root), ready)
     closing = maybe_close(root)
     status = write_status(root, now=now)
     return dict(activated=activated, blocked=blocked, gates_written=gates, readiness=ready, finals_enumerated=opened,
@@ -1041,7 +1231,8 @@ def _publish(root, *, warehouse=None, mirror=True, run=None):
 # --------------------------------------------------------------------- close
 #: Scientific dispositions that advance to CLOSE automatically once delivery and mirrors verify.
 #: A unit failure is never closed automatically: it stays FAILED in status for a human ruling.
-AUTO_CLOSE_DISPOSITIONS = ("PAIR_NOT_ELIGIBLE", "MARKET_TIME_PAIR_VALIDATION_COMPLETE", "FINAL_PAIR_TEST_COMPLETE")
+AUTO_CLOSE_DISPOSITIONS = ("PAIR_NOT_ELIGIBLE", "MARKET_TIME_PAIR_VALIDATION_COMPLETE", "FINAL_PAIR_TEST_COMPLETE",
+                           "MG1_SELECTED", "MG2_SELECTED", "MG2_RETAINED_WITHIN_TOLERANCE", "INCOMPLETE_COMPARISON")
 CLOSURE_INPUTS_DIR = Path("backup") / "closure_inputs"
 CLOSURE_INPUT_FILES = ("PUBLICATION.json", "MIRRORS.json", "REPORTS.json")
 
@@ -1169,7 +1360,8 @@ def close_campaign(root, *, automatic=False, readback=None):
     q = open_queue(root)
     try:
         rows = {u["unit_id"]: u for u in q.units()}
-        validation = [u["unit_id"] for u in plan["units"] if u["kind"] in ("fit", "report", "pair", "strategy")]
+        validation = [u["unit_id"] for u in plan["units"]
+                      if u["kind"] in ("fit", "report", "pair", "strategy", "comparison")]
         for unit_id in validation:
             if rows[unit_id]["state"] not in ("COMPLETE", "FAILED", "BLOCKED"):
                 missing.append(dict(item=unit_id, reason=f"NOT_TERMINAL_{rows[unit_id]['state']}"))
