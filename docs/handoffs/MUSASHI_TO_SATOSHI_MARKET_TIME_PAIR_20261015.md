@@ -7,6 +7,11 @@ Governing specification:
 No further owner approval is needed for its bounded development execution.
 Real-money trading, TEST reads, secret disclosure and security bypass are not
 authorized. Preserve dirty worktrees, running unrelated services and evidence.
+Also integrate `docs/handoffs/MUSASHI_STORAGE_SETUP_OMEGA_20261015.md` and
+`docs/EXPERIMENT_STORAGE_POLICY.md` before creating the successor deployment.
+Its mutable campaign root, SQLite and private deployment data stay on ext4;
+verified large immutable terminals archive under `EXPERIMENT_STORAGE_ROOT` on
+omega.
 
 ## 1. Parallel ownership, no duplicate work
 
