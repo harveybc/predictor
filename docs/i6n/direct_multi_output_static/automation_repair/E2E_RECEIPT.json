@@ -37,35 +37,143 @@
   ],
   "strategy.validation": []
  },
- "campaign_id": "i6dmo-d6924e1b79bb",
+ "campaign_id": "i6dmo-0108077fb798",
  "close": {
   "closure_inputs": {
    "MIRRORS.json": {
-    "sha256": "5829b35c0c69e4d4eba95981889c08bf8d7ff22a030c52a1478d1dcb856e54d8",
-    "snapshot": "backup/closure_inputs/MIRRORS.5829b35c0c69e4d4eba95981889c08bf8d7ff22a030c52a1478d1dcb856e54d8.json"
+    "sha256": "d51eaf211a6cc61e1b0b2f3afdf15848e779d93e5852fc023f8dee2b33b1dd56",
+    "snapshot": "backup/closure_inputs/MIRRORS.d51eaf211a6cc61e1b0b2f3afdf15848e779d93e5852fc023f8dee2b33b1dd56.json"
    },
    "OUTBOX_READBACK.json": {
-    "sha256": "a713042e90c50ebabd4974a3597b506ca80c4eba48a5e0cd5cf9e5cc015af6cd",
-    "snapshot": "backup/closure_inputs/OUTBOX_READBACK.a713042e90c50ebabd4974a3597b506ca80c4eba48a5e0cd5cf9e5cc015af6cd.json"
+    "sha256": "812b9adf1cc3c6bfa52e59737b864a14ed4f86184066440bb2635982f130f68d",
+    "snapshot": "backup/closure_inputs/OUTBOX_READBACK.812b9adf1cc3c6bfa52e59737b864a14ed4f86184066440bb2635982f130f68d.json"
    },
    "PUBLICATION.json": {
     "sha256": "8c4c33a52aff696d901fac7d63f5ba5961f55b8f8efe9b8016c1b575ea7ef7b0",
     "snapshot": "backup/closure_inputs/PUBLICATION.8c4c33a52aff696d901fac7d63f5ba5961f55b8f8efe9b8016c1b575ea7ef7b0.json"
    },
    "REPORTS.json": {
-    "sha256": "390e27f63d7dafe6e5961b1a53f68e40c345c936a2d819192c682221a6881daa",
-    "snapshot": "backup/closure_inputs/REPORTS.390e27f63d7dafe6e5961b1a53f68e40c345c936a2d819192c682221a6881daa.json"
+    "sha256": "dc284d41cdbf5d202d71e91c23cd3bc568cff5ed84f0d8bc9b4eccb5579b7b75",
+    "snapshot": "backup/closure_inputs/REPORTS.dc284d41cdbf5d202d71e91c23cd3bc568cff5ed84f0d8bc9b4eccb5579b7b75.json"
    }
   },
   "disposition": "PAIR_NOT_ELIGIBLE",
-  "mirrors_sha256": "5829b35c0c69e4d4eba95981889c08bf8d7ff22a030c52a1478d1dcb856e54d8",
+  "mirrors_sha256": "d51eaf211a6cc61e1b0b2f3afdf15848e779d93e5852fc023f8dee2b33b1dd56",
   "publication_sha256": "8c4c33a52aff696d901fac7d63f5ba5961f55b8f8efe9b8016c1b575ea7ef7b0",
-  "sha256": "c6d2d3180240112fa6560f42bf441e6e7c5dbf2e737e0d976310b42cd257bc11",
+  "sha256": "88cf4553194c7290a97127315101b27138d9c2fde2b4e731467d29408a7f723e",
   "snapshots_verify": true,
   "state": "CLOSED",
   "trigger": "AUTOMATIC"
  },
- "code_commit": "332d50b84fda24d9c3e833242d9205788f113789",
+ "code_commit": "3ba826aea7dce0b3d2a29f7751bcfb69460f19f0",
+ "deployment": {
+  "enabled_nothing": true,
+  "rendered_units": [
+   "i6dmo-0108077fb798-coordinator-worker.service",
+   "i6dmo-0108077fb798-coordinator-worker.timer",
+   "i6dmo-0108077fb798-preferred-worker.service",
+   "i6dmo-0108077fb798-preferred-worker.timer",
+   "i6dmo-0108077fb798-publish.service",
+   "i6dmo-0108077fb798-publish.timer",
+   "i6dmo-0108077fb798-secondary-worker.service",
+   "i6dmo-0108077fb798-secondary-worker.timer",
+   "i6dmo-0108077fb798-tick.service",
+   "i6dmo-0108077fb798-tick.timer"
+  ],
+  "systemctl_calls_during_deploy": [
+   [
+    "daemon-reload"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-coordinator-worker.service"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-coordinator-worker.service"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-coordinator-worker.timer"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-coordinator-worker.timer"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-preferred-worker.service"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-preferred-worker.service"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-preferred-worker.timer"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-preferred-worker.timer"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-publish.service"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-publish.service"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-publish.timer"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-publish.timer"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-secondary-worker.service"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-secondary-worker.service"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-secondary-worker.timer"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-secondary-worker.timer"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-tick.service"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-tick.service"
+   ],
+   [
+    "is-enabled",
+    "i6dmo-0108077fb798-tick.timer"
+   ],
+   [
+    "is-active",
+    "i6dmo-0108077fb798-tick.timer"
+   ]
+  ],
+  "timers": [
+   "i6dmo-0108077fb798-coordinator-worker.timer",
+   "i6dmo-0108077fb798-preferred-worker.timer",
+   "i6dmo-0108077fb798-publish.timer",
+   "i6dmo-0108077fb798-secondary-worker.timer",
+   "i6dmo-0108077fb798-tick.timer"
+  ],
+  "unit_dir": "$SCRATCH/systemd-units (scratch; never the user's systemd directory)"
+ },
  "design_seals": {
   "mg12": "97541764436cc1356600999dd7b68e702a66fab37d82e676522709744dda89c6",
   "mg2": "4b64b4ee321e23ce3c2dcb183fda00fd1488af2494bb15f68c89dd9775344ec8"
@@ -75,33 +183,34 @@
   "fit:long.fit"
  ],
  "idempotence": {
-  "files": 89,
+  "files": 91,
   "republish": "ALREADY_CLOSED_AND_MIRRORED",
   "retick": "ALREADY_CLOSED",
-  "tree_sha256": "5148bdbc75145d2c99fdafa7416b6641b681ccb61fb7d795a4b518c9685bae1c",
+  "systemctl_calls_after_close": 0,
+  "tree_sha256": "7912f628eb92faaab690998915d7cf2f08f7984698fb24b1ba2d5b4010194579",
   "tree_unchanged": true,
   "worker": "CLOSED"
  },
  "mirrors": {
-  "close_sha256": "c6d2d3180240112fa6560f42bf441e6e7c5dbf2e737e0d976310b42cd257bc11",
-  "files": 40,
+  "close_sha256": "88cf4553194c7290a97127315101b27138d9c2fde2b4e731467d29408a7f723e",
+  "files": 41,
   "publication_sha256": "8c4c33a52aff696d901fac7d63f5ba5961f55b8f8efe9b8016c1b575ea7ef7b0",
   "state": "VERIFIED",
   "targets": {
    "local": {
     "close_identical": true,
-    "files": 40,
+    "files": 41,
     "snapshots_present": true
    },
    "second_host": {
     "close_identical": true,
-    "files": 40,
+    "files": 41,
     "snapshots_present": true
    }
   }
  },
  "pair_decision": {
-  "artifact_sha256": "0c8e84843e8c79054df6e781e866be938dcfed7d47be0256a381665682e7319e",
+  "artifact_sha256": "cda1c4a4f9dae790282bb73435a74bf9a2690de0fcbac34b7b7c501fc21a7f7f",
   "eligible": {
    "long": [],
    "short": [
@@ -115,16 +224,16 @@
   },
   "inputs": {
    "long.report": {
-    "child_terminal_sha256": "14a23513e61d970f26af086784ea8d3a660e72222e7138970c7e540719392e76",
+    "child_terminal_sha256": "fb9df0df882b1532cd5a0e48d7d3149315289c36763b6018a578be098ea9ec02",
     "identity_sha256": "729b0e7a44333f3f6b11b542be461f3b18760a1f2d2e73b1abaf94d66239f839",
-    "metrics_sha256": "72dc7e9587a4eb235b6585c1d652f2f50d0e5608f4f964fa3d62c48a34eaadc3",
-    "stored_terminal_sha256": "3251ee7f7e590dc12c85a9e7a00d559fda3b0f9864310c04ebcbdebb1f59cf58"
+    "metrics_sha256": "c26724ebc0e141c291c0a95e05533e47b29621581462e6320e76f6918605e9b7",
+    "stored_terminal_sha256": "61900d24cbf0507bc70eff2a659cd2fc965edb9b4d8363dc57615f5c363747ca"
    },
    "short.report": {
-    "child_terminal_sha256": "89bfd527d82698ffc5efb0475518ece08de37979ef5fd05b9232623a0cf6af6a",
+    "child_terminal_sha256": "679efabdac886dbafce96c46feac91cabcf30fa168eb9779a070cbe7198757a1",
     "identity_sha256": "c24746fc5ab7c328b3765a003dc8b2a407c0a8440b670eca8b2819334687761b",
-    "metrics_sha256": "a77eb00a76871b17fe9dcb4a93bf82d000222498d159c68ea02de0583d0816f1",
-    "stored_terminal_sha256": "7ae1c9750d63ca256efcbe24fca8d602a55cb7d2a1cc2f2b4a79ef89494857bb"
+    "metrics_sha256": "bcd52369ad505fe94b6e7ab907469e4abe4b0f1424907ddde08042e6ecd92b96",
+    "stored_terminal_sha256": "41e7e4c249e5d7e301a05bf6899fae18c3da7ea4b0e58cb420f405abd0608714"
    }
   },
   "missing": [
@@ -177,118 +286,232 @@
  "tick_before_publish": {
   "close": "NOT_CLOSABLE",
   "close_problems": [
-   "READBACK_NOT_EXACT:308a77ed6ddf:PENDING",
-   "READBACK_NOT_EXACT:60d88d60648d:PENDING",
-   "READBACK_NOT_EXACT:4770c4e2e2af:PENDING",
-   "READBACK_NOT_EXACT:d9f083536aaf:PENDING",
-   "READBACK_NOT_EXACT:6974b06f4e29:PENDING",
-   "READBACK_NOT_EXACT:07b807fef288:PENDING",
-   "READBACK_NOT_EXACT:89a0da2a0cd5:PENDING",
-   "READBACK_NOT_EXACT:a5f2f1716500:PENDING",
-   "READBACK_NOT_EXACT:c16c3bb6030d:PENDING",
-   "READBACK_NOT_EXACT:8d7094145329:PENDING",
-   "READBACK_NOT_EXACT:4f86f4f11b56:PENDING",
-   "READBACK_NOT_EXACT:12c568e85d18:PENDING",
-   "READBACK_NOT_EXACT:c8100ff86809:PENDING",
-   "READBACK_NOT_EXACT:1d1ec8f48367:PENDING",
-   "READBACK_NOT_EXACT:9c794288f2b4:PENDING",
-   "READBACK_NOT_EXACT:404729438869:PENDING",
-   "READBACK_NOT_EXACT:ff0c9e18226c:PENDING",
-   "READBACK_NOT_EXACT:e17fb6e4517b:PENDING",
-   "READBACK_NOT_EXACT:8ea920b764f0:PENDING",
-   "READBACK_NOT_EXACT:116e6e316f63:PENDING",
-   "READBACK_NOT_EXACT:5df9ca2c65e0:PENDING",
-   "READBACK_NOT_EXACT:b4b854ddea36:PENDING",
-   "READBACK_NOT_EXACT:e8956752c38c:PENDING",
-   "READBACK_NOT_EXACT:d3d8d330d881:PENDING",
-   "READBACK_NOT_EXACT:4a3a25bee5c4:PENDING",
-   "READBACK_NOT_EXACT:436df8652abf:PENDING",
-   "READBACK_NOT_EXACT:affe1b7ae198:PENDING",
-   "READBACK_NOT_EXACT:9a53c5947f43:PENDING",
-   "READBACK_NOT_EXACT:991eec36b341:PENDING",
-   "READBACK_NOT_EXACT:d0cfd919c66d:PENDING",
-   "READBACK_NOT_EXACT:48373f5e71e8:PENDING",
-   "READBACK_NOT_EXACT:a10ca93e4c36:PENDING",
-   "READBACK_NOT_EXACT:fc1d2d83695d:PENDING",
-   "READBACK_NOT_EXACT:db35038354bf:PENDING",
-   "READBACK_NOT_EXACT:7e6ac427de51:PENDING",
-   "READBACK_NOT_EXACT:c49cd9470178:PENDING",
-   "READBACK_NOT_EXACT:6793e8d223a1:PENDING",
-   "READBACK_NOT_EXACT:c6ea5a8cd419:PENDING",
-   "READBACK_NOT_EXACT:31567bc7272b:PENDING",
-   "READBACK_NOT_EXACT:b59a33768426:PENDING",
-   "READBACK_NOT_EXACT:d912aab9839e:PENDING",
-   "READBACK_NOT_EXACT:1db4e6fe3df4:PENDING",
-   "READBACK_NOT_EXACT:09a201277aab:PENDING",
-   "READBACK_NOT_EXACT:78b8982cbf57:PENDING",
-   "READBACK_NOT_EXACT:91240061473f:PENDING",
-   "READBACK_NOT_EXACT:b93ba79ca430:PENDING",
-   "READBACK_NOT_EXACT:c277cfac629f:PENDING",
-   "READBACK_NOT_EXACT:3ef377250e54:PENDING",
-   "READBACK_NOT_EXACT:1ed1353488be:PENDING",
-   "READBACK_NOT_EXACT:b8aa57ac82ba:PENDING",
-   "READBACK_NOT_EXACT:28c53bb8de0f:PENDING",
-   "READBACK_NOT_EXACT:d20c15b0c430:PENDING",
-   "READBACK_NOT_EXACT:88b9438cb2de:PENDING",
-   "READBACK_NOT_EXACT:4defa9c33a8b:PENDING",
-   "READBACK_NOT_EXACT:c54fcfb78635:PENDING",
-   "READBACK_NOT_EXACT:da4b66e759ea:PENDING",
-   "READBACK_NOT_EXACT:67e613436a45:PENDING",
-   "READBACK_NOT_EXACT:36cdaca45e07:PENDING",
-   "READBACK_NOT_EXACT:b6edbf0e28f7:PENDING",
-   "READBACK_NOT_EXACT:a056c510204f:PENDING",
-   "READBACK_NOT_EXACT:e622f1bf6e20:PENDING",
-   "READBACK_NOT_EXACT:e255cc69b721:PENDING",
-   "READBACK_NOT_EXACT:166c72ae7b0b:PENDING",
-   "READBACK_NOT_EXACT:982f2f40d7bb:PENDING",
-   "READBACK_NOT_EXACT:d5c5d4e7bf69:PENDING",
-   "READBACK_NOT_EXACT:21eee31d11be:PENDING",
-   "READBACK_NOT_EXACT:1da29a014871:PENDING",
-   "READBACK_NOT_EXACT:0abaf5b737f0:PENDING",
-   "READBACK_NOT_EXACT:a913c5cdaccd:PENDING",
-   "READBACK_NOT_EXACT:7b5aefc9c2be:PENDING",
-   "READBACK_NOT_EXACT:c464c645eccf:PENDING",
-   "READBACK_NOT_EXACT:ba1df2852cf3:PENDING",
-   "READBACK_NOT_EXACT:b5821e297a2f:PENDING",
-   "READBACK_NOT_EXACT:d7eacb333719:PENDING",
-   "READBACK_NOT_EXACT:9d09c864c929:PENDING",
-   "READBACK_NOT_EXACT:6de85a41a03b:PENDING",
-   "READBACK_NOT_EXACT:786a7c5a063f:PENDING",
-   "READBACK_NOT_EXACT:3fc87321d98b:PENDING",
-   "READBACK_NOT_EXACT:4ad27fecbe50:PENDING",
-   "READBACK_NOT_EXACT:df3c5c5e1b2c:PENDING",
-   "READBACK_NOT_EXACT:505c6826359c:PENDING",
-   "READBACK_NOT_EXACT:b09d54442dea:PENDING",
-   "READBACK_NOT_EXACT:fbef9db2da2b:PENDING",
-   "READBACK_NOT_EXACT:5284db1bb869:PENDING",
-   "READBACK_NOT_EXACT:b2f3fa007d53:PENDING",
-   "READBACK_NOT_EXACT:1582b2510087:PENDING",
-   "READBACK_NOT_EXACT:45865c85bd48:PENDING",
-   "READBACK_NOT_EXACT:57f29c5d9354:PENDING",
-   "READBACK_NOT_EXACT:796d58ad762f:PENDING",
-   "READBACK_NOT_EXACT:e38b75fe5b27:PENDING",
-   "READBACK_NOT_EXACT:18b87ffaf672:PENDING",
-   "READBACK_NOT_EXACT:285a7c9bb08c:PENDING",
-   "READBACK_NOT_EXACT:cca32de7091a:PENDING",
-   "READBACK_NOT_EXACT:a38b779efad5:PENDING",
-   "READBACK_NOT_EXACT:ad13063a679d:PENDING",
-   "READBACK_NOT_EXACT:4ec56cf250b5:PENDING",
-   "READBACK_NOT_EXACT:d6eb3ba0d3a4:PENDING",
-   "READBACK_NOT_EXACT:8ac97e6d60fc:PENDING",
-   "READBACK_NOT_EXACT:80a0d93fef29:PENDING",
-   "READBACK_NOT_EXACT:7bad89d36df6:PENDING",
-   "READBACK_NOT_EXACT:5bc51f1552e6:PENDING",
-   "READBACK_NOT_EXACT:a6b37e1e292e:PENDING",
-   "READBACK_NOT_EXACT:d498fd93fc41:PENDING",
-   "READBACK_NOT_EXACT:2447b0b5305f:PENDING",
-   "READBACK_NOT_EXACT:bc8a1faab54c:PENDING",
-   "READBACK_NOT_EXACT:e7625bbfffc9:PENDING",
-   "READBACK_NOT_EXACT:4ad977a84cb6:PENDING",
-   "READBACK_NOT_EXACT:7d21927fe32d:PENDING",
-   "READBACK_NOT_EXACT:ef7021e82d4a:PENDING",
+   "READBACK_NOT_EXACT:88526e48b957:PENDING",
+   "READBACK_NOT_EXACT:a5930337a5b4:PENDING",
+   "READBACK_NOT_EXACT:86407a773dc8:PENDING",
+   "READBACK_NOT_EXACT:125800d50e39:PENDING",
+   "READBACK_NOT_EXACT:b8e4ac4cf489:PENDING",
+   "READBACK_NOT_EXACT:6157a13810e4:PENDING",
+   "READBACK_NOT_EXACT:0e831e1b40e5:PENDING",
+   "READBACK_NOT_EXACT:b575ae2119ee:PENDING",
+   "READBACK_NOT_EXACT:e449d77774a6:PENDING",
+   "READBACK_NOT_EXACT:0752107c8970:PENDING",
+   "READBACK_NOT_EXACT:881fd2b3899b:PENDING",
+   "READBACK_NOT_EXACT:6f653f5ea6d2:PENDING",
+   "READBACK_NOT_EXACT:4b43dc719959:PENDING",
+   "READBACK_NOT_EXACT:3f8207e86e9a:PENDING",
+   "READBACK_NOT_EXACT:457ea3d6c5f0:PENDING",
+   "READBACK_NOT_EXACT:be216a14041b:PENDING",
+   "READBACK_NOT_EXACT:a22a057692c7:PENDING",
+   "READBACK_NOT_EXACT:a1a42ec9f570:PENDING",
+   "READBACK_NOT_EXACT:7665ab1c7cc2:PENDING",
+   "READBACK_NOT_EXACT:4f51f1b3f45d:PENDING",
+   "READBACK_NOT_EXACT:e4f2e0d6959e:PENDING",
+   "READBACK_NOT_EXACT:1898e748364f:PENDING",
+   "READBACK_NOT_EXACT:3dc276bc36cc:PENDING",
+   "READBACK_NOT_EXACT:d83918c3987c:PENDING",
+   "READBACK_NOT_EXACT:cb9c71bfae60:PENDING",
+   "READBACK_NOT_EXACT:4aea99d74cd2:PENDING",
+   "READBACK_NOT_EXACT:89e0802640a8:PENDING",
+   "READBACK_NOT_EXACT:e9ba47798b97:PENDING",
+   "READBACK_NOT_EXACT:e5170b585333:PENDING",
+   "READBACK_NOT_EXACT:27a42bcb9b31:PENDING",
+   "READBACK_NOT_EXACT:7c8276318add:PENDING",
+   "READBACK_NOT_EXACT:bd1fafb6fefb:PENDING",
+   "READBACK_NOT_EXACT:628568e3dda7:PENDING",
+   "READBACK_NOT_EXACT:6631d856aa59:PENDING",
+   "READBACK_NOT_EXACT:bc5f9115664d:PENDING",
+   "READBACK_NOT_EXACT:f4c58be2dfa9:PENDING",
+   "READBACK_NOT_EXACT:91f3a6832b48:PENDING",
+   "READBACK_NOT_EXACT:1b0e383bc3ad:PENDING",
+   "READBACK_NOT_EXACT:60df58ffc7d7:PENDING",
+   "READBACK_NOT_EXACT:2de75afaa809:PENDING",
+   "READBACK_NOT_EXACT:73a8135af5f2:PENDING",
+   "READBACK_NOT_EXACT:32b5aca31a99:PENDING",
+   "READBACK_NOT_EXACT:4fc2c5275238:PENDING",
+   "READBACK_NOT_EXACT:be4b9a99d6e2:PENDING",
+   "READBACK_NOT_EXACT:caf208941408:PENDING",
+   "READBACK_NOT_EXACT:3e5fba5d397f:PENDING",
+   "READBACK_NOT_EXACT:05f54a628032:PENDING",
+   "READBACK_NOT_EXACT:8c47c1ffd7d2:PENDING",
+   "READBACK_NOT_EXACT:9dec8adc5168:PENDING",
+   "READBACK_NOT_EXACT:e2015f5059bd:PENDING",
+   "READBACK_NOT_EXACT:25024d1af1a7:PENDING",
+   "READBACK_NOT_EXACT:ae81428c0808:PENDING",
+   "READBACK_NOT_EXACT:45b78416ad7a:PENDING",
+   "READBACK_NOT_EXACT:13b2f0e1a74f:PENDING",
+   "READBACK_NOT_EXACT:2c863428eab3:PENDING",
+   "READBACK_NOT_EXACT:9348aa22c6d5:PENDING",
+   "READBACK_NOT_EXACT:ec138bbd47ff:PENDING",
+   "READBACK_NOT_EXACT:d455e626b742:PENDING",
+   "READBACK_NOT_EXACT:e3b97dfbed11:PENDING",
+   "READBACK_NOT_EXACT:e7119dd40028:PENDING",
+   "READBACK_NOT_EXACT:35428561f2dd:PENDING",
+   "READBACK_NOT_EXACT:895c3935c604:PENDING",
+   "READBACK_NOT_EXACT:0b86ceb1123c:PENDING",
+   "READBACK_NOT_EXACT:8884cc211004:PENDING",
+   "READBACK_NOT_EXACT:e5b7cb8cff83:PENDING",
+   "READBACK_NOT_EXACT:38f9bcb07787:PENDING",
+   "READBACK_NOT_EXACT:4bcc695ab01a:PENDING",
+   "READBACK_NOT_EXACT:ffabb1b916e1:PENDING",
+   "READBACK_NOT_EXACT:e903a1917ca4:PENDING",
+   "READBACK_NOT_EXACT:6f206c0ddf02:PENDING",
+   "READBACK_NOT_EXACT:7a4257cf22be:PENDING",
+   "READBACK_NOT_EXACT:205634a8c14a:PENDING",
+   "READBACK_NOT_EXACT:2f5444a43d66:PENDING",
+   "READBACK_NOT_EXACT:83da77c6513f:PENDING",
+   "READBACK_NOT_EXACT:d9c6a60486a4:PENDING",
+   "READBACK_NOT_EXACT:17354689afbf:PENDING",
+   "READBACK_NOT_EXACT:2126e228a61e:PENDING",
+   "READBACK_NOT_EXACT:842305336bca:PENDING",
+   "READBACK_NOT_EXACT:879db6e4a9e7:PENDING",
+   "READBACK_NOT_EXACT:f8c7fce59259:PENDING",
+   "READBACK_NOT_EXACT:b6f81162b2e3:PENDING",
+   "READBACK_NOT_EXACT:509a75138fab:PENDING",
+   "READBACK_NOT_EXACT:5a90485fcb03:PENDING",
+   "READBACK_NOT_EXACT:78e855ead43b:PENDING",
+   "READBACK_NOT_EXACT:97dcfbfd09df:PENDING",
+   "READBACK_NOT_EXACT:b00fde3b97ac:PENDING",
+   "READBACK_NOT_EXACT:8f5e6f287313:PENDING",
+   "READBACK_NOT_EXACT:46acae4331eb:PENDING",
+   "READBACK_NOT_EXACT:2f7c399beddd:PENDING",
+   "READBACK_NOT_EXACT:aa74e398f74f:PENDING",
+   "READBACK_NOT_EXACT:01d80a46564a:PENDING",
+   "READBACK_NOT_EXACT:5eac9cbee332:PENDING",
+   "READBACK_NOT_EXACT:00271c828b82:PENDING",
+   "READBACK_NOT_EXACT:846dc16a784b:PENDING",
+   "READBACK_NOT_EXACT:7d67f7f98c57:PENDING",
+   "READBACK_NOT_EXACT:9159b8745e59:PENDING",
+   "READBACK_NOT_EXACT:25cb2362e83e:PENDING",
+   "READBACK_NOT_EXACT:b3223f349ef0:PENDING",
+   "READBACK_NOT_EXACT:8615c7b8fcfe:PENDING",
+   "READBACK_NOT_EXACT:7ee88d8405f1:PENDING",
+   "READBACK_NOT_EXACT:6cd28f026005:PENDING",
+   "READBACK_NOT_EXACT:b1a432005865:PENDING",
+   "READBACK_NOT_EXACT:55d3609e69a2:PENDING",
+   "READBACK_NOT_EXACT:25b40f0f9351:PENDING",
+   "READBACK_NOT_EXACT:742051a2121d:PENDING",
+   "READBACK_NOT_EXACT:3696a9df58b1:PENDING",
+   "READBACK_NOT_EXACT:7fbcf134f7f1:PENDING",
+   "READBACK_NOT_EXACT:59e0ffd24b37:PENDING",
+   "READBACK_NOT_EXACT:419f415da643:PENDING",
    "OUTBOX_NOT_FULLY_DELIVERED:{\"delivered\":0,\"expected\":109,\"mismatch\":0,\"pending\":109,\"posted\":0}",
    "PUBLICATION_NOT_DELIVERED",
    "MIRRORS_NOT_VERIFIED"
+  ]
+ },
+ "timer_stop": {
+  "at": 1792059500.5069785,
+  "close_sha256": "88cf4553194c7290a97127315101b27138d9c2fde2b4e731467d29408a7f723e",
+  "mirrored": true,
+  "only_this_campaign": true,
+  "receipt_sha256": "e0953686339d31eb6d435b8100b1809a2062c8584fbe0524e4617df7aae086bb",
+  "runner": "INJECTED recorder (tests); production uses systemctl --user",
+  "state": "STOPPED",
+  "systemctl_calls": [
+   [
+    "stop",
+    "i6dmo-0108077fb798-coordinator-worker.service"
+   ],
+   [
+    "disable",
+    "--now",
+    "i6dmo-0108077fb798-coordinator-worker.timer"
+   ],
+   [
+    "stop",
+    "i6dmo-0108077fb798-preferred-worker.service"
+   ],
+   [
+    "disable",
+    "--now",
+    "i6dmo-0108077fb798-preferred-worker.timer"
+   ],
+   [
+    "disable",
+    "--now",
+    "i6dmo-0108077fb798-publish.timer"
+   ],
+   [
+    "stop",
+    "i6dmo-0108077fb798-secondary-worker.service"
+   ],
+   [
+    "disable",
+    "--now",
+    "i6dmo-0108077fb798-secondary-worker.timer"
+   ],
+   [
+    "stop",
+    "i6dmo-0108077fb798-tick.service"
+   ],
+   [
+    "disable",
+    "--now",
+    "i6dmo-0108077fb798-tick.timer"
+   ]
+  ],
+  "trigger": "CLOSED:PAIR_NOT_ELIGIBLE",
+  "units": [
+   {
+    "action": "systemctl --user stop i6dmo-0108077fb798-coordinator-worker.service",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-coordinator-worker.service"
+   },
+   {
+    "action": "systemctl --user disable --now i6dmo-0108077fb798-coordinator-worker.timer",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-coordinator-worker.timer"
+   },
+   {
+    "action": "systemctl --user stop i6dmo-0108077fb798-preferred-worker.service",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-preferred-worker.service"
+   },
+   {
+    "action": "systemctl --user disable --now i6dmo-0108077fb798-preferred-worker.timer",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-preferred-worker.timer"
+   },
+   {
+    "action": "SELF_NOT_STOPPED",
+    "detail": "the invoking oneshot service exits by itself; its timer is disabled",
+    "unit": "i6dmo-0108077fb798-publish.service"
+   },
+   {
+    "action": "systemctl --user disable --now i6dmo-0108077fb798-publish.timer",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-publish.timer"
+   },
+   {
+    "action": "systemctl --user stop i6dmo-0108077fb798-secondary-worker.service",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-secondary-worker.service"
+   },
+   {
+    "action": "systemctl --user disable --now i6dmo-0108077fb798-secondary-worker.timer",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-secondary-worker.timer"
+   },
+   {
+    "action": "systemctl --user stop i6dmo-0108077fb798-tick.service",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-tick.service"
+   },
+   {
+    "action": "systemctl --user disable --now i6dmo-0108077fb798-tick.timer",
+    "rc": 0,
+    "stdout": "",
+    "unit": "i6dmo-0108077fb798-tick.timer"
+   }
   ]
  },
  "unit_states": {
@@ -324,7 +547,7 @@
   }
  },
  "verdict": "PASS",
- "wall_seconds": 38.427,
+ "wall_seconds": 38.875,
  "worker_results": [
   "COMPLETE",
   "IDLE",

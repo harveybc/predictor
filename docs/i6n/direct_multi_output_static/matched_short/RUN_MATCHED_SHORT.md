@@ -138,8 +138,18 @@ python -m tools.i6dmo deploy --root "$I6DMO_ROOT" --deployment "$PRIVATE/deploym
 
 `init` re-runs `validate` first. Enabling the timers, a plain `deploy` without `--no-start`,
 is **not part of this pass**. It requires the model lane's adapters and the reviewed
-design/test gates. After `CLOSE`, every service is a no-op, but the timers are not disabled
-automatically. Stop them after the closure.
+design/test gates.
+
+At the automatic `CLOSE`, or at a typed technical terminal whose facts are delivered and
+mirrored, `tick`/`publish` stop this campaign's own units:
+
+- each timer gets `systemctl --user disable --now`;
+- each idle service gets `systemctl --user stop`;
+- the invoking oneshot is not stopped from inside; it exits by itself.
+
+Only units listed in the campaign's own `DEPLOY.json` that carry its id are touched. The result
+is recorded in `$I6DMO_ROOT/TIMERS_STOPPED.json`, which is also mirrored. A failed stop shows as
+`TIMER_STOP_FAILED` in `status`, is retried on the next tick/publish, and never alters `CLOSE`.
 
 ## 6. Status: campaign, arm and unit
 
