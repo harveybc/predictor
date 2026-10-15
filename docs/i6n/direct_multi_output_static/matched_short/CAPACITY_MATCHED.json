@@ -55,8 +55,8 @@
      "total": 817
     }
    },
-   "sealed_design_sha256": "9f0d086edce5d16e5d8337d88d030b1b3e3681f0d20d154d6acecd63837b1928",
-   "sealed_effective_config_sha256": "fc83d0f4b4696038fc406d37f606e3be0b3d377cea2648330e76e82141c5b68f",
+   "sealed_design_sha256": "64899668352f947b48a773d24c00642cb521bddcc25b049b3e76c3abd37612ba",
+   "sealed_effective_config_sha256": "894cda3b67c80fe60ccd94eaf71d99cd8aee7fab8174c553702f119626920140",
    "sealed_experiment_id": "I6-DMO-SHORT-MG1-MATCHED-R0"
   },
   "mg2m": {
@@ -114,8 +114,8 @@
      "total": 433
     }
    },
-   "sealed_design_sha256": "a3e073c760545f0a1ae7863cd5328d5bf34dbfa15b9c41d7d0d5da3d75818272",
-   "sealed_effective_config_sha256": "313617d743acfbcd75e5e08475929b2a8531104743712d282f0a8b16281f8990",
+   "sealed_design_sha256": "d71d2b3c555dc3fad855b30b97e68d04193bfb5e3df33179f8ef10eea5d04711",
+   "sealed_effective_config_sha256": "ad949872cd5c430598369049dc82dd6063707080f55ee8f906323ab7f47218c7",
    "sealed_experiment_id": "I6-DMO-SHORT-MG2-MATCHED-R0"
   }
  },

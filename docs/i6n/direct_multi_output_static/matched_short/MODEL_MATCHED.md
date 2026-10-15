@@ -23,8 +23,10 @@ Per head, mg1 has 808 hidden + 9 output parameters (Flatten 100). mg2m has
 
 The head difference is exactly (25-13)·4·8·6 = 2304 parameters. Every other
 component differs by 0. These numbers are measured on the real sealed builds
-(`EXPERIMENT.mg1.json` design 9f0d086e / effective fc83d0f4, and
-`EXPERIMENT.mg2m.json` design a3e073c7 / effective 313617d7). They are recorded
+(`EXPERIMENT.mg1.json` design 64899668 / effective 894cda3b, and
+`EXPERIMENT.mg2m.json` design d71d2b3c / effective ad949872, resealed on the
+TF 2.21.0 / Keras 3.13.2 execution runtime; the superseded 9f0d086e / a3e073c7
+seals measured the identical counts). They are recorded
 in `CAPACITY_MATCHED.json`, and every matched receipt carries them
 (`matched.capacity`, also written to `CAPACITY.json`).
 
@@ -119,7 +121,9 @@ population, rows, mask or counts.
   `build_common_population` from sparse synthetic weeks, and designs sealed
   with the fixture calendar.
 - Both arms go through the real trainer CLI. The report uses the real hook.
-- One bounded CPU smoke ran on the real sealed population 4ab41bd8. It made no
+- One bounded CPU smoke ran on the real sealed population 4ab41bd8, under the
+  superseded seals, before the reseal (the resealed population ba01f87a keeps
+  identical splits, scaler and counts; the smoke was not repeated). It made no
   fit. Each arm's FIT/INNER/DEVELOPMENT tensors passed every model-side check,
   including the shared-naive cross-check on 16397 FIT rows. A 64-row forward
   pass ran for each arm. SCALES were identical across arms, the delta was
