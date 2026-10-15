@@ -1,0 +1,68 @@
+{
+  "artifact": "H.15 release-clock evidence (public, unauthenticated)",
+  "documented_release_clock": {
+    "about_page_sha256": "76421abe5d8d1ac3283c46597ddc3a217c709a0973ede9391d90dc69218a8afc",
+    "also": "It is published every business day except holidays. (https://www.federalreserve.gov/releases/h15/about.htm)",
+    "limitation": "This is the CURRENT schedule page, retrieved 2026-10-14. It is a documented recurring clock, NOT a per-release timestamp for the 2019-2024 releases. Dated historical H.15 release pages are not served: /releases/h15/20190102/default.htm returns HTTP 404. The RSS data feed carries only the current release.",
+    "page": "https://www.federalreserve.gov/releases/h15/",
+    "page_sha256": "f9a63a4db17a53eb89bd87013cf2830c35d6a962c196e3297df077cd48a1472d",
+    "quoted": "The release is posted daily Monday through Friday at 4:15pm."
+  },
+  "pages": {
+    "h15_about": {
+      "bytes": 77045,
+      "clock_strings": [],
+      "http_status": "200",
+      "release_date_strings": [],
+      "schedule_sentences": [
+        " It is published every business day except holidays."
+      ],
+      "sha256": "76421abe5d8d1ac3283c46597ddc3a217c709a0973ede9391d90dc69218a8afc",
+      "url": "https://www.federalreserve.gov/releases/h15/about.htm"
+    },
+    "h15_archive_probe_2019": {
+      "bytes": 82134,
+      "clock_strings": [],
+      "http_status": "404",
+      "release_date_strings": [],
+      "schedule_sentences": [],
+      "sha256": "6f9fe50e0fd5bffb03505915986401f9c12257847e07d888f776e85a04c5ac66",
+      "url": "https://www.federalreserve.gov/releases/h15/20190102/default.htm"
+    },
+    "h15_current": {
+      "bytes": 1860,
+      "clock_strings": [],
+      "http_status": "200",
+      "release_date_strings": [],
+      "schedule_sentences": [],
+      "sha256": "90f71780871939fbb45d5afb9cb52a124851e5c0fdc0d2e413966a174f79dbfe",
+      "url": "https://www.federalreserve.gov/releases/h15/current/default.htm"
+    },
+    "h15_index": {
+      "bytes": 105912,
+      "clock_strings": [
+        "4:15pm."
+      ],
+      "http_status": "200",
+      "release_date_strings": [
+        "October 14, 2026"
+      ],
+      "schedule_sentences": [
+        " Thus the rates published after September 19, 2008, likely reflect the direct or indirect effects of the new temporary programs and, accordingly, likely are not comparable for some purposes to rates published prior to that period.",
+        " Treasury published a factor for adjusting the daily nominal 20-year constant maturity in order to estimate a 30-year nominal rate."
+      ],
+      "sha256": "f9a63a4db17a53eb89bd87013cf2830c35d6a962c196e3297df077cd48a1472d",
+      "url": "https://www.federalreserve.gov/releases/h15/"
+    },
+    "h15_rss_data_current": {
+      "bytes": 29713,
+      "clock_strings": [],
+      "http_status": "200",
+      "release_date_strings": [],
+      "schedule_sentences": [],
+      "sha256": "320d8e5f9f27eac483038cb9f70e26748b7ec44dd318e4919278cf8e45b7d58f",
+      "url": "https://www.federalreserve.gov/feeds/Data/H15_H15.XML"
+    }
+  },
+  "retrieved_utc": "2026-10-15T03:32:57Z"
+}

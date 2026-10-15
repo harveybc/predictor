@@ -1,0 +1,143 @@
+{
+  "artifact": "MT5 cost-evidence transcription attempt for instrument config f2443141",
+  "capture_window": "2026-08-16T01:46Z .. 2026-08-16T04:22Z (five snapshots)",
+  "claim_under_test": "tools/i6dmo/instrument_eurusd.v1.json note: 'The MT5 bridge lab retains live spread snapshots in its lab database; transcribing them is a later evidence task'",
+  "corroborating_record": "lts docs/audits/evidence/mt5_unknown_outcome_20260926/NOTE.md: 'Verified 2026-09-26 on this host: no mt5-bridge.sqlite exists anywhere on the filesystem'",
+  "cost_fields_promotable_to_EVIDENCED": [],
+  "cost_fields_that_remain_ASSUMED_NOT_BROKER_VERIFIED": [
+    "costs.spread_price",
+    "costs.slippage_price",
+    "costs.commission_per_lot_round_trip",
+    "costs.swap_per_lot_per_day"
+  ],
+  "exact_missing_artifacts": [
+    "MT5 symbol_snapshots rows for EURUSD covering the validation window, with terminal_observed_at, bid, ask, spread, spread_points and point.",
+    "A broker statement or venue fee schedule giving EURUSD commission per lot round trip and the signed per-direction swap tiers."
+  ],
+  "instrument_of_the_retained_rows": "ETHUSD (MT5 demo), not EURUSD",
+  "lab_database_search": {
+    "hits": [],
+    "pattern": "mt5-bridge.sqlite* / *mt5*bridge*.sqlite*",
+    "roots_searched": [
+      "<home>",
+      "/var/tmp",
+      "/srv",
+      "/opt",
+      "/mnt",
+      "/media",
+      "/tmp"
+    ],
+    "verdict": "ABSENT"
+  },
+  "retained_mt5_artifacts": [
+    {
+      "bridge_tables_present": [
+        "order_rows",
+        "position_rows",
+        "service_state_rows"
+      ],
+      "bytes": 4964,
+      "collected_at": "2026-08-16T04:22:39.373550+00:00",
+      "contains_EURUSD": false,
+      "contains_spread_field": false,
+      "declared_lab_database_path": "<home>/.local/state/lts/mt5-bridge.sqlite",
+      "environment": "demo",
+      "instrument_in_session": "ETHUSD",
+      "retained_file": "latest.json",
+      "sha256": "3848764c21688b6dcaa0aefc3cd3cfc53bc5c44a087e4b6a383437e6d2b09929",
+      "symbol_snapshot_rows": 0
+    },
+    {
+      "bridge_tables_present": [
+        "order_rows",
+        "position_rows",
+        "service_state_rows"
+      ],
+      "bytes": 4964,
+      "collected_at": "2026-08-16T01:46:46.866827+00:00",
+      "contains_EURUSD": false,
+      "contains_spread_field": false,
+      "declared_lab_database_path": "<home>/.local/state/lts/mt5-bridge.sqlite",
+      "environment": "demo",
+      "instrument_in_session": "ETHUSD",
+      "retained_file": "mt5_direct_evidence_20260816T014646Z.json",
+      "sha256": "0b339bfad2e6b11abc369d2a25e48da4f97eeabcb4e011178b0ae2042610acb3",
+      "symbol_snapshot_rows": 0
+    },
+    {
+      "bridge_tables_present": [
+        "order_rows",
+        "position_rows",
+        "service_state_rows"
+      ],
+      "bytes": 4964,
+      "collected_at": "2026-08-16T01:48:44.823476+00:00",
+      "contains_EURUSD": false,
+      "contains_spread_field": false,
+      "declared_lab_database_path": "<home>/.local/state/lts/mt5-bridge.sqlite",
+      "environment": "demo",
+      "instrument_in_session": "ETHUSD",
+      "retained_file": "mt5_direct_evidence_20260816T014844Z.json",
+      "sha256": "3968e6b93eee65e9d3cb1eb3a6c14b134ede32cfc976f187cf8a3bb0083c9cf2",
+      "symbol_snapshot_rows": 0
+    },
+    {
+      "bridge_tables_present": [
+        "order_rows",
+        "position_rows",
+        "service_state_rows"
+      ],
+      "bytes": 4964,
+      "collected_at": "2026-08-16T04:15:46.429419+00:00",
+      "contains_EURUSD": false,
+      "contains_spread_field": false,
+      "declared_lab_database_path": "<home>/.local/state/lts/mt5-bridge.sqlite",
+      "environment": "demo",
+      "instrument_in_session": "ETHUSD",
+      "retained_file": "mt5_direct_evidence_20260816T041546Z.json",
+      "sha256": "3b0ddc8037bdf6742d886671ca30dcc7b65f3df05e1018e18219c24daa9c7b63",
+      "symbol_snapshot_rows": 0
+    },
+    {
+      "bridge_tables_present": [
+        "order_rows",
+        "position_rows",
+        "service_state_rows"
+      ],
+      "bytes": 4964,
+      "collected_at": "2026-08-16T04:18:49.120915+00:00",
+      "contains_EURUSD": false,
+      "contains_spread_field": false,
+      "declared_lab_database_path": "<home>/.local/state/lts/mt5-bridge.sqlite",
+      "environment": "demo",
+      "instrument_in_session": "ETHUSD",
+      "retained_file": "mt5_direct_evidence_20260816T041849Z.json",
+      "sha256": "3442861682c09284c2938f7101fa4d84a8a7b3e7d7a410cdbb6f6b78e56ad126",
+      "symbol_snapshot_rows": 0
+    },
+    {
+      "bridge_tables_present": [
+        "order_rows",
+        "position_rows",
+        "service_state_rows"
+      ],
+      "bytes": 4964,
+      "collected_at": "2026-08-16T04:22:39.373550+00:00",
+      "contains_EURUSD": false,
+      "contains_spread_field": false,
+      "declared_lab_database_path": "<home>/.local/state/lts/mt5-bridge.sqlite",
+      "environment": "demo",
+      "instrument_in_session": "ETHUSD",
+      "retained_file": "mt5_direct_evidence_20260816T042239Z.json",
+      "sha256": "3848764c21688b6dcaa0aefc3cd3cfc53bc5c44a087e4b6a383437e6d2b09929",
+      "symbol_snapshot_rows": 0
+    }
+  ],
+  "verdict": "NO_TRANSCRIBABLE_EVIDENCE_EXISTS_ON_THIS_HOST",
+  "why_not_promotable": [
+    "The symbol_snapshots table that holds bid/ask/spread/spread_points/point lives only in the lab SQLite database, which does not exist.",
+    "The five retained mt5-direct evidence JSONs contain account, heartbeat, session, bar, inference and position rows only: zero symbol_snapshots rows, no 'spread' field and no EURUSD symbol.",
+    "Even a recovered snapshot would be a 2026 ETHUSD demo quote: it could not evidence a EURUSD 2020-2024 spread, slippage, commission or swap.",
+    "No broker statement, account history export or venue fee schedule is retained in any of these repositories."
+  ]
+}
