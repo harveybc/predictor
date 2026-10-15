@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S15_MATCHED_SHORT_CONTRAST_PREPARING",
- "execution_status": "PRIOR_PAIR_CLOSED_NEXT_CONTRAST_APPROVED_NOT_RUNNING",
+ "current_stage": "S16_MATCHED_SHORT_PUBLICATION_CLOSURE",
+ "execution_status": "MATCHED_UNITS_5_OF_5_COMPLETE_MG2_SELECTED_CLOSURE_PENDING",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -23,8 +23,8 @@
  "definition_gate": "SC01-SC12 test design is specified in NEXT_CONTRASTS_PLAN_20261015.md; freeze new market-time designs and common populations, implement executable tests and obtain independent actual-path review before dispatch. Existing acceptance evidence belongs to closed baselines, not the new contrast.",
  "next_allowed_actions": [
   "Retain campaign i6dmo-9e1ebad89ff2 CLOSE.json and its verified metrics, mirrors and original fit identities",
-  "Integrate report repair and finish the bounded CPU-only eligibility/strategy/automatic-close corrections in the recovery handoff",
-  "Implement and independently review new MG1/MG2 matched-short designs and frozen common masks under NEXT_CONTRASTS_PLAN_20261015.md; no reuse of full-population MG2 as a matched fit",
+  "Retain matched campaign i6dmo-6004b711281c runtime 796ec8f4 and its two completed fresh GPU fits; let ordinary timers finish reports, comparison and publication after bounded no-execution admission recovery",
+  "Integrate separately verified fairness/scientific-default/admission-accounting fixes for the next release; harden donor trust before reuse or R2; no changed pin over the running identity",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],
  "blocked_actions": [
@@ -63,9 +63,12 @@
  ],
  "next_contrast": {
   "id": "I6-DMO-SHORT-MG1-MG2-MATCHED",
-  "state": "APPROVED_FOR_DEFINITION_AND_IMPLEMENTATION",
-  "runtime_implemented": false,
-  "scientific_fits_started": 0,
+  "state": "FIVE_UNITS_COMPLETE_MG2_SELECTED_CLOSURE_PENDING",
+  "runtime_implemented": true,
+  "scientific_fits_started": 2,
+  "scientific_fits_complete": 2,
+  "campaign_id": "i6dmo-6004b711281c",
+  "code_commit": "796ec8f48b0b1621fb9fa9e60e12c1c37079e51e",
   "plan": "NEXT_CONTRASTS_PLAN_20261015.md",
   "acceptance_ids": ["SC01", "SC02", "SC03", "SC04", "SC05", "SC06", "SC07", "SC08", "SC09", "SC10", "SC11", "SC12"],
   "later_order": ["COMPATIBLE_BRANCH_R2_VS_R0", "LONG_TRANSFER", "QUARTERLY_VS_STATIC"]

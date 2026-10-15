@@ -459,6 +459,7 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
         design = _design(spec)
         horizons = [int(h) for h in design["horizons_hours"]]
         matched = spec.get("matched") or {}
+        require_scientific_fit = matched.get("require_scientific_fit") is not False
         arm = matched.get("arm")
         design_arm = T.matched_arm(design)
         if arm != design_arm:
@@ -472,8 +473,8 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
         if receipt.get("status") != "COMPLETED":
             raise ReportFailure("UPSTREAM_FIT_NOT_COMPLETED", str(receipt.get("code")))
         T.verify_matched_identity(receipt.get("identity"), population.digest, arm)
-        if matched.get("require_scientific_fit") and (receipt.get("scientific") is not True
-                                                      or receipt.get("device") != "gpu"):
+        if require_scientific_fit and (receipt.get("scientific") is not True
+                                       or receipt.get("device") != "gpu"):
             raise ReportFailure("NON_SCIENTIFIC_FIT", f"a scientific matched report needs a scientific GPU fit; "
                                 f"receipt scientific={receipt.get('scientific')!r} device={receipt.get('device')!r}")
         block = receipt.get("matched") or {}
@@ -555,7 +556,7 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
                    "input_replay": arm_dev["replay"],
                    "capacity": capacity, "fit_identity": receipt.get("identity"),
                    "scientific_fit": receipt.get("scientific"), "fit_device": receipt.get("device"),
-                   "require_scientific_fit": bool(matched.get("require_scientific_fit")),
+                   "require_scientific_fit": require_scientific_fit,
                    "manual_pooled_replay": manual, "selection": selection,
                    "same_rows": "model and naive per horizon on identical common rows, common "
                                 "mask and original-price units; C2, saved-prediction replay "
@@ -603,19 +604,20 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
                 selection=selection)
 
 
-def decide_matched(mg1_metrics, mg2_metrics, *, require_scientific=False):
+def decide_matched(mg1_metrics, mg2_metrics, *, require_scientific=True):
     """Deterministic recipe decision from the two matched METRICS.json documents.
 
     Lower selection score wins; within SELECTION_TIE the cheaper MG2 is retained; any failed
     head or arm closes INCOMPLETE_COMPARISON with the missing evidence (never a selection from
     incomplete heads). Both arms must carry the same common population, the same DEVELOPMENT
-    rows/mask/counts and the declared capacity difference only.
+    rows/mask/counts and the declared capacity difference only. Scientific GPU fits are required
+    unless engineering callers explicitly pass require_scientific=False.
     """
     from tools.i6dmo import model as M
     a, b = (mg1_metrics or {}).get("matched") or {}, (mg2_metrics or {}).get("matched") or {}
     if a.get("arm") != "mg1" or b.get("arm") != "mg2m":
         raise ReportFailure("ARM_DESIGN_MISMATCH", f"arms {a.get('arm')!r}/{b.get('arm')!r}")
-    if require_scientific:  # a scientific campaign decides only from scientific GPU fits
+    if require_scientific is not False:
         for block in (a, b):
             if block.get("scientific_fit") is not True or block.get("fit_device") != "gpu":
                 raise ReportFailure("NON_SCIENTIFIC_FIT", f"{block.get('arm')}: scientific_fit="

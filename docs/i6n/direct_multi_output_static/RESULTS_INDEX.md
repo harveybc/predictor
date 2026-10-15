@@ -7,7 +7,10 @@
 | MG2 short fit and recovered report | 6/12 h improve MAE 0.049615%/0.093170%; 2/3/4/5 h remain above naive; 54 reports and 2006 metrics readback verified | [Recovery return](RETURN_REPORT_RECOVERY_20261015.md) |
 | MG12 long | Six heads above naive by 24.08-41.08%; 37 epochs, best 27, 124.55 s | [Recovery return](RETURN_REPORT_RECOVERY_20261015.md#mg12-long-development-2024) |
 | Pair and strategy | CLOSED / PAIR_NOT_ELIGIBLE; no trading or TEST; 110 reports / 3952 metrics delivered, 58 files per mirror | [Closure](RETURN_REPORT_RECOVERY_20261015.md#pair-disposition-publication-and-remaining-engineering) |
+| Matched short MG1/MG2m | Five units complete; MG2_SELECTED. Mean relative MAE +4.321015% / -0.007738%; MG2m beats naive at 4/6/12 h; final publication/closure pending | [Audit and per-horizon results](matched_short/MUSASHI_AUDIT_20261015.md) |
 
 All reported 2024 results are development. TEST remains closed. Each stage
 keeps its own support, model identity and cost; these are not controlled
 ablations of sampling alone. Generated STATUS supersedes snapshot run states.
+The closed MG2/MG12 pair has a [runtime-seal qualification](RETURN_REPORT_RECOVERY_20261015.md#runtime-qualification-added-2026-10-15):
+actual TF 2.21.0 differed from declared TF 2.18.0; do not claim runtime compliance.

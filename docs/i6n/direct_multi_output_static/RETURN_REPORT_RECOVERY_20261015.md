@@ -103,3 +103,15 @@ remain unresolved for confirmation. These measurements finish this minimal
 static R0 baseline, not the architecture's broader validation program.
 This result does not isolate the effect of market sampling versus DS2 because
 the population and physical-time encoding also changed.
+
+## Runtime qualification added 2026-10-15
+
+The retained short and long designs declare TensorFlow 2.18.0 / Keras 3.9.0,
+but both executed fit receipts record TensorFlow 2.21.0. This is a confirmed
+runtime-seal nonconformance, not an input/target look-ahead finding. The
+observed predictions/errors and original closed receipts remain retained;
+they do not certify execution under their declared runtime. Do not reuse
+them as runtime-compatible donors or claim a runtime-matched comparison.
+No retroactive reseal or automatic refit is authorized. The new matched
+control has separately sealed runtime identities. See the
+[follow-up audit](matched_short/MUSASHI_AUDIT_20261015.md).

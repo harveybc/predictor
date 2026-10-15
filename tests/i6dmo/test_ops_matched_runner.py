@@ -225,11 +225,12 @@ def _metrics(arm, score, failed=()):
 
 def test_one_decision_rule_tie_keeps_mg2m_and_a_scientific_negative_is_complete():
     from tools.i6dmo import matched_runner as MR, reporting
-    decide = lambda a, b: MR.disposition_of(reporting.decide_matched(a, b))  # noqa: E731
+    decide = lambda a, b: MR.disposition_of(reporting.decide_matched(a, b, require_scientific=False))  # noqa: E731
     assert decide(_metrics("mg1", -0.01 - 5e-9), _metrics("mg2m", -0.01)) == "MG2_RETAINED_WITHIN_TOLERANCE"
     assert decide(_metrics("mg1", -0.01 - 2e-8), _metrics("mg2m", -0.01)) == "MG1_SELECTED"
     assert decide(_metrics("mg1", 0.3), _metrics("mg2m", 0.2)) == "MG2_SELECTED"  # both lose to naive
-    verdict = reporting.decide_matched(_metrics("mg1", -0.1), _metrics("mg2m", -0.1, failed=(12,)))
+    verdict = reporting.decide_matched(_metrics("mg1", -0.1), _metrics("mg2m", -0.1, failed=(12,)),
+                                       require_scientific=False)
     assert MR.disposition_of(verdict) == "INCOMPLETE_COMPARISON"
     assert MR.missing_evidence(verdict) == ["HEAD_MISSING:mg2m:h12"]
     assert reporting.SELECTION_TIE == MR.TOLERANCE  # the campaign records the same tolerance it applies
@@ -707,10 +708,16 @@ def test_review_d5_prefit_infrastructure_refusal_waits_and_never_burns_the_contr
     root = make_matched(tmp_path)
     campaign.tick(root)
     bad = {"I6DMO_FAKE_INFRA_CODE": code, "I6DMO_FAKE_INFRA_UNIT": "mg1.fit", "I6DMO_FAKE_COUNTER": str(counter)}
-    for _ in range(queue.MAX_PHYSICAL_ATTEMPTS + 1):  # more refusals than the attempt budget
+    other_arm_completed = False
+    for _ in range(queue.MAX_PHYSICAL_ATTEMPTS + 2):  # refusals plus the other arm's fair turn
         out = worker(root, "preferred", bad)
+        if out.get("unit_id") == "mg2m.fit":
+            assert out["result"] == "COMPLETE" and not other_arm_completed
+            other_arm_completed = True
+            continue
         assert out["result"] == "WAIT_RESOURCE" and out["cause"] == f"INFRA_PREFIT:{code}@preferred"
         assert states(root)["mg1.fit"] == "WAIT_RESOURCE"
+    assert other_arm_completed and states(root)["mg2m.fit"] == "COMPLETE"
     unit = status.compute(root, level="unit", unit="mg1.fit")
     assert unit["state"] == "WAIT_RESOURCE" and unit["cause"].startswith("INFRA_PREFIT:")
     assert not (root / "terminals" / unit["identity_sha256"]).exists()  # no terminal was stored

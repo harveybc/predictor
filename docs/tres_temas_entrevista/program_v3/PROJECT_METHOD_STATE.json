@@ -702,7 +702,7 @@
     "successor_state": "CLOSED_PAIR_NOT_ELIGIBLE",
     "scientific_fits_running": false,
     "next_contrast": "I6-DMO-SHORT-MG1-MG2-MATCHED",
-    "next_contrast_state": "APPROVED_FOR_DEFINITION_AND_IMPLEMENTATION",
+    "next_contrast_state": "FIVE_UNITS_COMPLETE_MG2_SELECTED_CLOSURE_PENDING",
     "next_contrast_plan": "../../i6n/direct_multi_output_static/NEXT_CONTRASTS_PLAN_20261015.md"
   }
 }

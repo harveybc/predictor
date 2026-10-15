@@ -417,7 +417,16 @@ def _pick(q, plan, spec, role):
     earlier = [r for r, v in spec["roles"].items() if _role_gpu(v) and v.get("order", 0) < order]
     rows = {u["unit_id"]: u for u in q.units()}
     running_hosts = {a["host_key"] for a in q.running() if a["heavy"]}
-    for unit in plan["units"]:
+    units = plan["units"]
+    if plan.get("mode") == "MATCHED_SHORT_CONTRAST":
+        # Persisted pre-fit refusals rotate arms instead of repeatedly starving the next one.
+        refusals = {}
+        for attempt in q.attempts():
+            if attempt["outcome"] == "INTERRUPTED" and str(attempt.get("cause") or "").startswith(INFRA_PREFIT):
+                key = attempt["unit_id"]
+                refusals[key] = refusals.get(key, 0) + 1
+        units = sorted(units, key=lambda unit: refusals.get(unit["unit_id"], 0))
+    for unit in units:
         row = rows.get(unit["unit_id"])
         if row is None or row["state"] not in ("QUEUED", "WAIT_RESOURCE", "INTERRUPTED", "WAIT_ARTIFACT") \
                 or not row["identity_sha256"]:

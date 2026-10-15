@@ -151,7 +151,7 @@ def _spec(world, arm, terminal, design=None):
             "effective_config": {"design": design or world["exps"][arm], "code_commit": "c" * 40},
             "upstream": {f"{arm}.fit": {"path": str(terminal), "sha256": _sha(terminal)}},
             "common_population": {"path": str(world["population"]), "sha256": world["digest"]},
-            "matched": {"arm": arm, "fit_unit": f"{arm}.fit",
+            "matched": {"arm": arm, "fit_unit": f"{arm}.fit", "require_scientific_fit": False,
                         "input": {"path": str(world["input"]),
                                   "sha256": _sha(Path(world["input"]) / "INPUT.npz")}}}
 
@@ -523,24 +523,24 @@ def test_report_refuses_rows_mask_or_prices_that_are_not_the_common_population(w
 
 def test_decision_rule_uses_scores_ties_to_mg2m_and_never_selects_from_failed_heads(reports):
     mg1, mg2m = reports["mg1"]["metrics"], reports["mg2m"]["metrics"]
-    decision = reporting.decide_matched(mg1, mg2m)
+    decision = reporting.decide_matched(mg1, mg2m, require_scientific=False)
     s1, s2 = mg1["matched"]["selection"]["score"], mg2m["matched"]["selection"]["score"]
     assert decision["capacity_delta"]["delta"]["heads"] == 2304
     assert decision["selected"] == ("mg1" if s1 < s2 - 1e-8 else "mg2m")
     tie = copy.deepcopy(mg1)
     tie["matched"]["selection"]["score"] = s2 + 5e-9
-    assert reporting.decide_matched(tie, mg2m)["decision"] == "TIE_RETAIN_CHEAPER"
-    assert reporting.decide_matched(tie, mg2m)["selected"] == "mg2m"
+    assert reporting.decide_matched(tie, mg2m, require_scientific=False)["decision"] == "TIE_RETAIN_CHEAPER"
+    assert reporting.decide_matched(tie, mg2m, require_scientific=False)["selected"] == "mg2m"
     failed = copy.deepcopy(mg1)
     failed["per_horizon"]["12"]["relative_error"] = None
     failed["matched"]["selection"] = reporting.selection_score(failed["per_horizon"], HORIZONS)
-    out = reporting.decide_matched(failed, mg2m)
+    out = reporting.decide_matched(failed, mg2m, require_scientific=False)
     assert out["decision"] == "INCOMPLETE_COMPARISON" and out["selected"] is None
     assert out["missing"][0]["horizon"] == 12 and out["missing"][0]["arm"] == "mg1"
     other = copy.deepcopy(mg2m)
     other["matched"]["development_row_ids_sha256"] = "0" * 64
     with pytest.raises(reporting.ReportFailure, match="COMMON_POPULATION_MISMATCH"):
-        reporting.decide_matched(mg1, other)
+        reporting.decide_matched(mg1, other, require_scientific=False)
 
 
 # ============================================================================ SC06 refusals

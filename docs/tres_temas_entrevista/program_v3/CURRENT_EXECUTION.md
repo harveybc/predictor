@@ -1,5 +1,23 @@
 # Estado de ejecución vigente
 
+Auditoria posterior de Musashi, 2026-10-15: campana `i6dmo-6004b711281c`,
+runtime `796ec8f4`. Los dos ajustes nuevos MG1/MG2m terminaron en 151.21 s y
+54.58 s, con identico soporte/scaler comun y hashes de ocho ficheros de codigo
+verificados por brazo. MG1.report esperaba admision y la
+cola agoto incorrectamente sus intentos sin ejecutar el reporte. Se recupero
+cache limpia y se reclasificaron solo esos rechazos probados, con backup,
+lock y evidencia conservada, sin tocar limites, modelos ni runtime. A las 13:39
+UTC ambos reportes terminaron: 110 entregados con lectura de vuelta, cero
+pendientes. Scores medios relativos MG1 +4.321015%, MG2m -0.007738%; MG2m
+mejora su naive en 4/6/12 h. Comparacion/cierre global siguen en la automatizacion.
+TEST cerrado, sin nuevos fits.
+Actualizacion 13:42 UTC: 5/5 unidades COMPLETE; la comparacion oficial devuelve
+MG2_SELECTED. Solo restan publicacion/espejo/cierre global por automatizacion.
+[Auditoria](../../i6n/direct_multi_output_static/matched_short/MUSASHI_AUDIT_20261015.md)
+y [orden de seguimiento](../../handoffs/MUSASHI_TO_SATOSHI_MATCHED_AUDIT_FOLLOWUP_20261015.md).
+
+## Antecedentes: cierre anterior y preparacion
+
 Cierre 2026-10-15 08:30 UTC. Campana `i6dmo-9e1ebad89ff2`, runtime
 `a169fcba`, CLOSED / PAIR_NOT_ELIGIBLE. Timers deshabilitados tras verificar
 la entrega completa y los espejos. No hay un fit vivo de esta campana.
@@ -12,7 +30,7 @@ y [orden de implementacion](../../handoffs/MUSASHI_TO_SATOSHI_SHORT_MATCHED_CONT
 La orden esta escrita para Satoshi; no constituye un mensaje entregado a su
 sesion ni una afirmacion de que la haya ejecutado.
 
-## Estado vigente: MG2 y MG12 medidos; pareja no elegible
+## Cierre anterior: MG2 y MG12 medidos; pareja no elegible
 
 El fit corto MG2 termino en 54.2 s; su reporte fallo en la ruta heredada
 del loader. Musashi corrigio el reporte e importo el fit autenticado con

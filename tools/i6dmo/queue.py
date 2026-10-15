@@ -229,8 +229,10 @@ class Queue:
                     return dict(result="WAIT_RESOURCE", cause="HOST_HEAVY_LEASE_HELD")
             physical = [a for a in db.execute("SELECT * FROM attempts WHERE unit_id=? ORDER BY attempt_id",
                                               (unit_id,)).fetchall()
-                        if not (a["outcome"] == "INTERRUPTED" and str(a["cause"] or "").startswith("INFRA_PREFIT:"))]
-            # infrastructure refusals before any training are not attempts of the science
+                        if not (a["outcome"] == "INTERRUPTED" and
+                                (str(a["cause"] or "").startswith("INFRA_PREFIT:") or
+                                 a["cause"] == "LAUNCHER_ADMISSION_REFUSED"))]
+            # Proven pre-execution refusals retain their history but spend no physical attempt.
             index_base = db.execute("SELECT COUNT(*) FROM attempts WHERE unit_id=?", (unit_id,)).fetchone()[0]
             kind = "INITIAL"
             if physical:
