@@ -1,11 +1,11 @@
 # Automation repair: one finite end-to-end receipt (CPU, 2026-10-15)
 
 Machine receipt: `E2E_RECEIPT.json` in this directory
-(sha256 `b78728f51a2444c4f20ccd82085daac232f69f787fa7393bb8443ab5fa3db5d3`).
+(sha256 `8d000fdce8aff8a164d14a1cb0aa4f4dd7798fc7f4c68ae1fc590c50cdbf55c3`).
 
 ## Command
 
-Run from the repository root at commit `cec74baa`, with a clean `tools/i6dmo` and
+Run from the repository root at commit `332d50b8` (final repair + matched-runner tip; first run at `cec74baa` also PASS), with a clean `tools/i6dmo` and
 `tests/i6dmo` (the receipt records `worktree_dirty_under_tools_or_tests: false`):
 
 ```bash
@@ -15,7 +15,7 @@ CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 3G -t 600s -n i6dmo-repair-e2e -- \
 ```
 
 `$SCRATCH` was a new throwaway directory under `/var/tmp`. It was not a live campaign.
-Result: exit code `0`, verdict `PASS`, 44 s wall.
+Result: exit code `0`, verdict `PASS`, 40 s wall (38.4 s in-process).
 
 ## What ran
 
@@ -37,13 +37,13 @@ Result: exit code `0`, verdict `PASS`, 44 s wall.
 
 | Item | sha256 |
 |---|---|
-| `CLOSE.json` | `18f5c6600df8c3ea684727243acbde345113ac82536f512c0e22314c8769cb7a` |
+| `CLOSE.json` | `c6d2d3180240112fa6560f42bf441e6e7c5dbf2e737e0d976310b42cd257bc11` |
 | Publication (closure input) | `8c4c33a52aff696d901fac7d63f5ba5961f55b8f8efe9b8016c1b575ea7ef7b0` |
-| Mirrors (closure input) | `ac423c2884eb02942df1664d91e135dbede5c600aa33e27d3f0f6a2a3ec0f9a1` |
-| Outbox readback (closure input) | `a824e1a52ab319c775665052cfcee1ada4230b32c90db51bce49539647c6356d` |
-| Reports (closure input) | `9a584bfe8bdd2e9298c79647544d12683ff3fa12fd8e89d334b934d610d1e26c` |
-| Root tree after CLOSE | `eb1c8dfa330908fb13d328dcfd029f16713ed2b7ab8bb56f4318452c7fad22cc` |
+| Mirrors (closure input) | `5829b35c0c69e4d4eba95981889c08bf8d7ff22a030c52a1478d1dcb856e54d8` |
+| Outbox readback (closure input) | `a713042e90c50ebabd4974a3597b506ca80c4eba48a5e0cd5cf9e5cc015af6cd` |
+| Reports (closure input) | `390e27f63d7dafe6e5961b1a53f68e40c345c936a2d819192c682221a6881daa` |
+| Root tree after CLOSE | `5148bdbc75145d2c99fdafa7416b6641b681ccb61fb7d795a4b518c9685bae1c` |
 
-The scratch root was a fixture campaign, `i6dmo-8c5badd0cb19`. The closed
+The scratch root was a fixture campaign, `i6dmo-d6924e1b79bb`. The closed
 `i6dmo-9e1ebad89ff2` and the retained `i6dmo-72809b6c88a6` were not touched. No timer or service
 was installed or enabled. No GPU was used and no scientific fit ran.
