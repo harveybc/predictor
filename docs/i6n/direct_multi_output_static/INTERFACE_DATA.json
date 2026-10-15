@@ -234,5 +234,113 @@
     "study": "docs/i6n/direct_multi_output_static/market_grid/SUPPORT_STUDY.json (d2b6a238...)",
     "cli": "python -m tools.i6dmo.market_grid --design <short design> --input-dir <input> --out <report.json>",
     "status": "SUPPORT_STUDY_NOT_A_PREDICTIVE_MEASUREMENT; candidates not sealed, no fit"
+  },
+  "market_time": {
+    "order": "MUSASHI_TO_SATOSHI_MARKET_TIME_PAIR_20261015 (50d20d01) section 1.1; plan MARKET_TIME_PAIR_PLAN.md sections 2/4/6",
+    "status": "TRAINING_ADAPTER_IMPLEMENTED_CPU_TESTED_NO_FIT_HAS_RUN",
+    "module": "tools/i6dmo/market_grid.py",
+    "tests": "tests/i6dmo/test_market_bundle.py (15 passed), tests/i6dmo/test_market_grid.py (9 passed)",
+    "designs": {
+      "mg2": "docs/i6n/direct_multi_output_static/market_grid/DESIGN.mg2.json",
+      "mg12": "docs/i6n/direct_multi_output_static/market_grid/DESIGN.mg12.json",
+      "schema": "i6dmo.market_design.v1 \u2014 DATA_LANE_SEALED_INPUTS_NOT_A_RUNTIME_CONFIG; the runtime/model seal is added by its owner lane",
+      "api": "market_grid.market_design(elapsed_design) -> doc; validate_market_design(doc); data_identity_sha256(doc)",
+      "contradiction_guard": "any 'input'/'history_span_hours'/'spacing_hours' field, or elapsed_span_hours_fixed=True, raises CONTRADICTORY_TIME_FIELDS"
+    },
+    "build": "market_grid.build_market_bundle(input_dir, market_design, out_dir, code_commit=..., shared_with=<other bundle dir>)",
+    "read": "market_grid.load_market_manifest(dir); load_market_split(dir, split, design=<doc>) (authenticates MARKET_RULE_MISMATCH / MARKET_DATA_IDENTITY_MISMATCH); market_grid.paired_metrics(dir, split, predictions, input_dir=...)",
+    "bundle_schema": "i6dmo.market_bundle.v1 \u2014 deliberately NOT i6dmo.data_bundle.v1, so a DS2/ASOF trainer cannot adopt it by shape; it publishes NO fixed 'offsets_hours' ladder (elapsed_offsets_vary_per_row=true) and instead 'offsets_open_market_hours'",
+    "split_npz": {
+      "row_id": "(n,) int64 origin UTC epoch seconds",
+      "x": "(n,13,19) float64 RAW values at the exact expected market slots, oldest->t",
+      "origin_price": "(n,) float64 p(t)",
+      "target_price": "(n,6) float64 exact ELAPSED p(t+h), NaN where mask False",
+      "mask": "(n,6) bool C1 MANAGEMENT support",
+      "offsets_hours": "(n,13) float64 ACTUAL signed offsets from t in HOURS; last column exactly 0",
+      "adjacent_delta_hours": "(n,13) float64 RAW hours between adjacent slots; first column 0; the /24 conversion is the MODEL's",
+      "closure_crossed": "(n,13) int64 0/1; first column 0; 1 when the step from the previous slot crossed a market closure",
+      "slot_instants": "(n,13) int64 UTC epoch seconds of each slot"
+    },
+    "split_aux_npz": "row_id, row_ids ('EURUSD|<iso>'), entry_mask (n,6) C1 ENTRY, week_ids",
+    "model_contract": "plan section 3: sinusoidal code on ACTUAL offsets (never ordinal indices), then two context channels appended before the core (adjacent hours/24, closure 0/1); 19 branches x 4 filters = 76 value channels + 2 context channels",
+    "manifest_seals": [
+      "design_sha256",
+      "data_identity_sha256",
+      "derives_from_design_sha256",
+      "feature_manifest_sha256",
+      "availability_contract_sha256",
+      "calendar{id,version,status,sha256}",
+      "source_clock",
+      "inputs{file:sha256}",
+      "support_hashes{row_ids,arrays,slot_instants,offsets}",
+      "per-split row_ids_sha256/arrays_sha256/aux_sha256/slot_instants_sha256/offsets_sha256",
+      "counts (typed exclusions, closures_vs_gaps, elapsed_span_hours_distribution)",
+      "fit_statistics (FIT-only scalers + per-head fit naive MAE)",
+      "reconciliation",
+      "code{commit,files_sha256,market_grid_sha256}",
+      "bundle_sha256"
+    ],
+    "real_bundles": {
+      "MG2_MARKET_EXACT": {
+        "code_commit": "08b9fb5c",
+        "bundle_sha256": "21400c51525e916c3c6cd9510ea806ec6ee0e998e3daeb8026b56264259a55da",
+        "bundle_json_file_sha256": "471ea311078aafbd12cbdc82b7d76e4c9fc28153b61ffa301370945bb1ef047d",
+        "data_identity_sha256": "d5d97a6e2e6b3f27",
+        "rows": {
+          "fit": 16496,
+          "inner": 715,
+          "validation": 4772
+        },
+        "fit_naive_mae": {
+          "2": 0.001048523188845105,
+          "3": 0.001292862136636821,
+          "4": 0.0015042693356470012,
+          "5": 0.0016927363932781546,
+          "6": 0.0018724161754452692,
+          "12": 0.0027652781556039173
+        },
+        "elapsed_span_hours_range": [
+          24,
+          73
+        ],
+        "rows_crossing_a_closure": 2217
+      },
+      "MG12_MARKET_EXACT": {
+        "code_commit": "08b9fb5c",
+        "bundle_sha256": "c3867b5c0043ed1df80d1f285684fe29691421156bcb9fe7b104ff4b1507670b",
+        "bundle_json_file_sha256": "e6595c0e397c55a02e863c402088ecb582ade968c397b2253716fcc805e5d866",
+        "data_identity_sha256": "0449cd4efd32b50a",
+        "rows": {
+          "fit": 13174,
+          "inner": 546,
+          "validation": 3804
+        },
+        "fit_naive_mae": {
+          "18": 0.003531116932422172,
+          "24": 0.004109250329163924,
+          "36": 0.004962521266073196,
+          "48": 0.005845652497211551,
+          "60": 0.006614685222001326,
+          "72": 0.007534100522518041
+        },
+        "elapsed_span_hours_range": [
+          191,
+          241
+        ],
+        "rows_crossing_a_closure": 13174
+      }
+    },
+    "reconciliation_vs_study": "study d2b6a238; MG2 16496/715/4772 and MG12 13174/546/3804 all MATCH (difference 0), shared usable origins 13123/546/3760 equal to the study; status RECONCILED; counts are references, never quotas",
+    "input": {
+      "sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+      "calendar_sha256": "782603fd26e879d6f837c83e9ec92d363500cb1dd150544e10a80c1ddeb88265",
+      "calendar_status": "ASSUMED_NOT_BROKER"
+    },
+    "limits": [
+      "2024 remains DEVELOPMENT (the 19-feature selection used it)",
+      "two FRED publication clocks unresolved: confirmatory TEST stays blocked",
+      "calendar is ASSUMED, not a verified broker schedule",
+      "no fit has run under this design"
+    ]
   }
 }

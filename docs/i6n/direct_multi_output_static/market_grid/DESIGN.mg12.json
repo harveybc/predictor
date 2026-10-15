@@ -1,0 +1,177 @@
+{
+ "asset": "EURUSD",
+ "availability_contract_sha256": "9668898c28cafeef2bc48e7d3a42e82a2655d699ff8f0d8d59e921bf120b1bc9",
+ "business": {
+  "calendar": "versioned_instrument_contract",
+  "entry_cutoff": "inherit_versioned_thursday_cutoff",
+  "entry_delay_after_open_hours": 12,
+  "force_flat_before_close_hours": 12,
+  "keep_row_if_any_head_valid": true,
+  "per_output_masks": true,
+  "preserve_observed_past_input_history": true
+ },
+ "data_identity_sha256": "0449cd4efd32b50aa6ee9ef81b3ae90b96abeca6c2ca1fac7fc7e4b9c2a81053",
+ "derives_from_design_sha256": "572b790a652adf805af384072741372ab8b6e959eda871695f05046f8cda6104",
+ "evaluation_mode": "BUSINESS_STATIC_BASELINE",
+ "experiment_id": "I6-DMO-LONG-MG12-STATIC-R0",
+ "feature_manifest_sha256": "2ff34fa21d5841da1befdd4d898db911128d959a5e460d04cc45b54955416470",
+ "feature_policy": {
+  "development_selection_used_2024": true,
+  "exclude": [
+   "fred.stress.stlfsi4.level"
+  ],
+  "reject_stlfsi4_aliases": true,
+  "source": "active_19_feature_point_in_time_manifest",
+  "unresolved_provenance_blocks_confirmatory_test": true
+ },
+ "features": [
+  "fred.inflation_expectations.t5yie.level",
+  "fred.rates.dgs3mo.diff_5d",
+  "fred.rates.dgs5.level",
+  "fred.rates.dgs7.logret_5d",
+  "fred.rates.dprime.logret_5d",
+  "fx.gbpusd.logret_1h",
+  "px.close_loc",
+  "px.log_co",
+  "px.rv5",
+  "rg.atr_ratio",
+  "yh.eem.logret_5d",
+  "yh.iyr.logret_1d",
+  "yh.kc_f.logret_1d",
+  "yh.n225.logret_1d",
+  "yh.si_f.logret_1d",
+  "yh.slv.logret_1d",
+  "yh.vnq.logret_1d",
+  "yh.xlc.logret_1d",
+  "yh.xlre.logret_1d"
+ ],
+ "horizons_hours": [
+  18,
+  24,
+  36,
+  48,
+  60,
+  72
+ ],
+ "input_sampling": {
+  "elapsed_span_hours_fixed": false,
+  "exactness": "exact finite retained observation required at every expected endpoint; unplanned open-session gaps are counted exclusions",
+  "grid": "expected whole-hour bar-END instants in (open, close] of the versioned calendar; never dataset row counts",
+  "include_origin": true,
+  "issuance_hours": 1,
+  "no_asof_no_smoothing_no_interpolation_no_synthetic_prices": true,
+  "observations": 13,
+  "rule": "MG12_MARKET_EXACT",
+  "spacing_open_market_hours": 12,
+  "span_open_market_hours": 144,
+  "value_mode": "RAW"
+ },
+ "metrics": {
+  "annual_aggregation": "pooled_absolute_error_sums_and_counts",
+  "negative_is_better": true,
+  "olap_write_and_readback": true,
+  "per_horizon": true,
+  "relative_error": "(MAE_h-naive_h)/naive_h",
+  "scale": "original_price_USD_per_EUR",
+  "weekly_diagnostics": true
+ },
+ "model": {
+  "branch": {
+   "filters": 4,
+   "kernel_size": 3,
+   "stride": 1,
+   "type": "causal_conv1d"
+  },
+  "core": {
+   "filters": [
+    8,
+    4
+   ],
+   "kernel_sizes": [
+    3,
+    3
+   ],
+   "strides": [
+    1,
+    1
+   ],
+   "transformer_blocks": 0,
+   "type": "causal_conv1d"
+  },
+  "fusion": "concatenate_filters",
+  "heads": {
+   "hidden_activation": "relu",
+   "hidden_units": [
+    8
+   ],
+   "independent_weights": true,
+   "output_activation": "linear",
+   "output_units": 1,
+   "readout": "flatten_core_sequence"
+  },
+  "positional_encoding": "immediately_after_fusion",
+  "regime": "R0"
+ },
+ "naive": "p(t) vs p(t+h) in ELAPSED hours on exactly the model's rows, original price",
+ "preprocessing": "scalers and loss scales fit on FIT rows only; selection is not redone",
+ "repetitions": 1,
+ "retraining_frequency": "NONE",
+ "schema": "i6dmo.market_design.v1",
+ "seed": 6102026,
+ "splits": {
+  "end_exclusive": true,
+  "inner_tail_weeks": 8,
+  "purge_by_label_availability": true,
+  "test": {
+   "end": "2026-01-01T00:00:00Z",
+   "open": false,
+   "start": "2025-01-01T00:00:00Z"
+  },
+  "train": {
+   "end": "2024-01-01T00:00:00Z",
+   "start": "2020-01-01T00:00:00Z"
+  },
+  "validation": {
+   "end": "2025-01-01T00:00:00Z",
+   "start": "2024-01-01T00:00:00Z"
+  }
+ },
+ "status": "DATA_LANE_SEALED_INPUTS_NOT_A_RUNTIME_CONFIG",
+ "support_study_reference_counts_are_not_quotas": true,
+ "support_study_sha256": "d2b6a2380380cfcc6eaafd0ece7b3e3c3375bf28f178d43a8e0ca05163ee0475",
+ "targets": "exact ELAPSED t+h, unmodified, under the original C1 business masks",
+ "time_encoder": {
+  "adjacent_delta_first_slot": 0,
+  "adjacent_delta_unit": "HOURS",
+  "closure_crossed_first_slot": 0,
+  "closure_crossed_values": [
+   0,
+   1
+  ],
+  "dtypes": {
+   "adjacent_delta_hours": "float64",
+   "closure_crossed": "int64",
+   "offsets_hours": "float64",
+   "slot_instants": "int64"
+  },
+  "last_offset_exactly_zero": true,
+  "model_applies_division_by": 24,
+  "model_requirement": "sinusoidal position code evaluated on ACTUAL signed offsets (never ordinal slot indices), then two context channels appended before the core: adjacent elapsed-hours/24 and closure-crossed (0/1)",
+  "offsets_sign": "SIGNED_FROM_T",
+  "offsets_unit": "HOURS",
+  "value_channels": "19 branches x 4 filters = 76 encoded value channels plus the 2 context channels"
+ },
+ "training": {
+  "batch_size": 256,
+  "learning_rate": 0.001,
+  "loss": "equal_head_masked_mae_over_fit_only_naive",
+  "max_epochs": 200,
+  "min_delta": 1e-08,
+  "monitor": "mean_end_of_epoch_fit_and_inner_loss",
+  "optimizer": "AdamW",
+  "outer_validation_for_checkpoint_selection": false,
+  "patience": 10,
+  "restore_best_weights": true,
+  "weight_decay": 0.0001
+ }
+}
