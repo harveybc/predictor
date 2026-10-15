@@ -3,8 +3,9 @@ Description=I6-DMO @CID@ publication timer
 @MARK@
 
 [Timer]
-OnBootSec=5min
-OnUnitInactiveSec=600s
+OnBootSec=@PUBLISH_BOOT@
+OnUnitInactiveSec=@PUBLISH_INTERVAL@s
+@TIMER_ACCURACY@
 Persistent=true
 Unit=@PREFIX@publish.service
 

@@ -44,11 +44,14 @@ from pathlib import Path
 
 #: Arm ids are the data lane's (``design.matched_arm``): ``mg1`` control, ``mg2m`` matched reference.
 ARMS = ("mg1", "mg2m")
-ARM_SLOTS = {"mg1": 25, "mg2m": 13}
-ARM_SPACING = {"mg1": 1, "mg2m": 2}
-ARM_RESOURCE_CLASS = {"mg1": "short_mg1_matched", "mg2m": "short_mg2_matched"}
+LONG_ARMS = ("mg1l", "mg12m")
+ARM_SLOTS = {"mg1": 25, "mg2m": 13, "mg1l": 145, "mg12m": 13}
+ARM_SPACING = {"mg1": 1, "mg2m": 2, "mg1l": 1, "mg12m": 12}
+ARM_RESOURCE_CLASS = {"mg1": "short_mg1_matched", "mg2m": "short_mg2_matched",
+                      "mg1l": "long_mg1_matched", "mg12m": "long_mg12_matched"}
 MATCHED_DIR = Path(__file__).resolve().parents[2] / "docs/i6n/direct_multi_output_static/matched_short"
 HORIZONS = (2, 3, 4, 5, 6, 12)
+LONG_HORIZONS = (18, 24, 36, 48, 60, 72)
 TOLERANCE = 1e-8
 TIE_KEEPS = "mg2m"
 RULE = "EQUAL_HEAD_MEAN_ANNUAL_POOLED_RELATIVE_MAE_COMMON_DEVELOPMENT"
@@ -58,6 +61,16 @@ GIB = 1024 ** 3
 MIN_COORDINATOR_AVAILABLE = 4 * GIB
 MIN_DISK = 20 * GIB
 TEST_START = "2025-01-01"
+
+
+def contrast_profile(arms):
+    """Resolve exactly one declared control; never mix families or patch short globals."""
+    arms = tuple(arms)
+    if len(arms) == 2 and set(arms) == set(ARMS):
+        return dict(arms=ARMS, horizons=HORIZONS, tie_keeps=TIE_KEEPS, family="short")
+    if len(arms) == 2 and set(arms) == set(LONG_ARMS):
+        return dict(arms=LONG_ARMS, horizons=LONG_HORIZONS, tie_keeps="mg12m", family="long")
+    raise ValueError(f"MATCHED_ARMS_REQUIRED: expected {ARMS} or {LONG_ARMS}, got {arms}")
 
 
 class PrepareRefused(RuntimeError):
@@ -86,6 +99,8 @@ def _atomic(path, value):
 #: its verdicts as campaign dispositions.
 VERDICTS = {("LOWER_SCORE", "mg1"): "MG1_SELECTED", ("LOWER_SCORE", "mg2m"): "MG2_SELECTED",
             ("TIE_RETAIN_CHEAPER", "mg2m"): "MG2_RETAINED_WITHIN_TOLERANCE",
+            ("LOWER_SCORE", "mg1l"): "MG1_LONG_SELECTED", ("LOWER_SCORE", "mg12m"): "MG12_SELECTED",
+            ("TIE_RETAIN_CHEAPER", "mg12m"): "MG12_RETAINED_WITHIN_TOLERANCE",
             ("INCOMPLETE_COMPARISON", None): "INCOMPLETE_COMPARISON"}
 
 
@@ -170,13 +185,15 @@ def run_unit(spec, out_dir, progress_path):
     expected_population = ((effective.get("data_pins") or {}).get("common_population") or {}).get("population_sha256")
     metrics, records = {}, {}
     try:
-        for arm in ARMS:
+        profile = contrast_profile(effective.get("arms") or ARMS)
+        arms = profile["arms"]
+        for arm in arms:
             unit_id = f"{arm}.report"
             up = (spec.get("upstream") or {}).get(unit_id)
             if not up:
                 continue  # technically failed/blocked arm: recorded as missing, never inferred
             metrics[arm], records[unit_id] = _authenticated_report(unit_id, up, expected_population)
-        absent = [f"ARM_MISSING:{arm}" for arm in ARMS if arm not in metrics]
+        absent = [f"ARM_MISSING:{arm}" for arm in arms if arm not in metrics]
         if absent:
             verdict = dict(schema="i6dmo.matched_decision.v1", decision="INCOMPLETE_COMPARISON", selected=None,
                            missing=[], scores=None, per_head=None,
@@ -185,7 +202,7 @@ def run_unit(spec, out_dir, progress_path):
         else:
             from tools.i6dmo import reporting
             try:
-                verdict = reporting.decide_matched(metrics["mg1"], metrics["mg2m"],
+                verdict = reporting.decide_matched(metrics[arms[0]], metrics[arms[1]],
                                                    require_scientific=not effective.get("engineering_cpu_fixture"))
             except reporting.ReportFailure as exc:
                 raise _Refusal(f"{exc.code}:{str(exc).split(': ', 1)[-1][:120]}") from None
@@ -297,7 +314,7 @@ def runtime_pin(design):
 
 
 def prepare(*, deployment, input_dir, out, role="coordinator", designs=None, population_seal=None,
-            population_dir=None, prior_roots=(), test=False, probe=None, env=None):
+            population_dir=None, prior_roots=(), test=False, probe=None, env=None, long=False):
     """Resolve the matched contrast's private pins BY PATH and write host-specific private JSON.
 
     The population directory and its expected digest come from the private spec (storage root) plus
@@ -308,6 +325,12 @@ def prepare(*, deployment, input_dir, out, role="coordinator", designs=None, pop
     """
     if test:
         raise PrepareRefused("TEST_REQUEST: the matched contrast has no TEST stage")
+    try:
+        profile = contrast_profile(designs or (LONG_ARMS if long else ARMS))
+    except ValueError as exc:
+        raise PrepareRefused(str(exc)) from None
+    arms = profile["arms"]
+    design_dir = MATCHED_DIR.parent / "matched_long" if profile["family"] == "long" else MATCHED_DIR
     out = Path(out).resolve()
     anchor = out.parent
     while not anchor.exists() and anchor != anchor.parent:
@@ -334,7 +357,7 @@ def prepare(*, deployment, input_dir, out, role="coordinator", designs=None, pop
         if not Path(env_file).is_file():
             raise PrepareRefused("MISSING_ARTIFACT:warehouse environment_file (configured path does not exist)")
         env_state = "PRESENT_BY_PATH"
-    seal_path = Path(population_seal or MATCHED_DIR / "POPULATION_SEAL.json")
+    seal_path = Path(population_seal or design_dir / "POPULATION_SEAL.json")
     if not seal_path.is_file():
         raise PrepareRefused("UNFROZEN_COMPARISON: committed POPULATION_SEAL.json missing")
     seal = json.loads(seal_path.read_text())
@@ -353,8 +376,8 @@ def prepare(*, deployment, input_dir, out, role="coordinator", designs=None, pop
     pop = verify_population(pop_dir, digest, input_dir=input_dir)
     from tools.i6dmo import design as D
     sealed = {}
-    for arm in ARMS:
-        path = Path((designs or {}).get(arm) or MATCHED_DIR / f"EXPERIMENT.{arm}.json")
+    for arm in arms:
+        path = Path((designs or {}).get(arm) or design_dir / f"EXPERIMENT.{arm}.json")
         if not path.is_file():
             raise PrepareRefused(f"MISSING_ARTIFACT:{arm} design")
         doc = json.loads(path.read_text())
@@ -371,7 +394,7 @@ def prepare(*, deployment, input_dir, out, role="coordinator", designs=None, pop
         if not runtime_pin(doc):
             raise PrepareRefused(f"INCOMPATIBLE_DESIGN:{arm} declares no sealed runtime pin")
         sealed[arm] = dict(path=str(path.resolve()), sha256=_sha(path), seal_sha256=doc.get("seal_sha256"),
-                           runtime=runtime_pin(doc), family=D.MATCHED_SCOPE[arm]["family"])
+                           runtime=runtime_pin(doc), family=D.ALL_MATCHED_SCOPE[arm]["family"])
     pins = dict(
         common_population=dict(base="experiment_storage", relpath=_under(storage, pop_dir, "population"),
                                sha256=_sha(pop_dir / "POPULATION.json"), population_sha256=digest),
@@ -383,12 +406,14 @@ def prepare(*, deployment, input_dir, out, role="coordinator", designs=None, pop
         raise PrepareRefused(f"INADEQUATE_MEMORY: {facts.get('mem_available_bytes')} < {MIN_COORDINATOR_AVAILABLE}")
     if facts.get("disk_free_bytes", 0) < MIN_DISK:
         raise PrepareRefused(f"INADEQUATE_DISK: {facts.get('disk_free_bytes')} < {MIN_DISK}")
-    doc = dict(schema="i6dmo.matched_short_prepared.v1", deployment=str(deployment.resolve()),
+    schema = "i6dmo.matched_long_prepared.v1" if profile["family"] == "long" else "i6dmo.matched_short_prepared.v1"
+    doc = dict(schema=schema, deployment=str(deployment.resolve()),
                deployment_sha256=_sha(deployment), role=role, designs=sealed, data_pins=pins,
                experiment_storage_root=str(storage), population_seal=dict(path=str(seal_path.resolve()),
                                                                            sha256=_sha(seal_path)),
                warehouse_environment_file=env_state, prior_roots=[str(Path(p).resolve()) for p in prior_roots],
-               decision_rule=dict(rule=RULE, tolerance=TOLERANCE, tie_keeps=TIE_KEEPS, horizons=list(HORIZONS)),
+               decision_rule=dict(rule=RULE, tolerance=TOLERANCE, tie_keeps=profile["tie_keeps"],
+                                  horizons=list(profile["horizons"])),
                host_facts=dict(mem_available_bytes=facts.get("mem_available_bytes"),
                                disk_free_bytes=facts.get("disk_free_bytes")),
                test_open=False, prepared_at=time.time())
@@ -409,7 +434,7 @@ def _check_donor(prior, sealed, pins, *, entrypoints=None):
     from tools.i6dmo import campaign as C, donor_trust
     prior = Path(prior)
     docs = {}
-    for arm in ARMS:
+    for arm in contrast_profile(sealed)["arms"]:
         path = Path((sealed.get(arm) or {}).get("path") or MATCHED_DIR / f"EXPERIMENT.{arm}.json")
         doc = json.loads(path.read_text())
         if doc.get("seal_sha256") != sealed[arm]["seal_sha256"]:
@@ -425,8 +450,15 @@ def _check_donor(prior, sealed, pins, *, entrypoints=None):
 def validate(prepared_path):
     """Re-verify a prepared JSON: designs, input, population (digest) still match; launches nothing."""
     doc = json.loads(Path(prepared_path).read_text())
-    if doc.get("schema") != "i6dmo.matched_short_prepared.v1" or doc.get("test_open") is not False:
+    if doc.get("schema") not in ("i6dmo.matched_short_prepared.v1", "i6dmo.matched_long_prepared.v1") \
+            or doc.get("test_open") is not False:
         raise PrepareRefused("PREPARED_SCHEMA")
+    try:
+        profile = contrast_profile(doc["designs"])
+    except (ValueError, KeyError) as exc:
+        raise PrepareRefused(f"PREPARED_SCHEMA:{exc}") from None
+    if (profile["family"] == "long") != (doc["schema"] == "i6dmo.matched_long_prepared.v1"):
+        raise PrepareRefused("PREPARED_SCHEMA: family differs from declared schema")
     spec_path = Path(doc["deployment"])
     if not spec_path.is_file() or _sha(spec_path) != doc["deployment_sha256"]:
         raise PrepareRefused("MISSING_ARTIFACT:deployment spec changed since prepare")

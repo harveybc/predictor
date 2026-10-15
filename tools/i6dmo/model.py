@@ -154,6 +154,8 @@ MARKET_FAMILIES = {
     # Recipe unchanged; the only consequence is the wider head Flatten (25x4 instead of 13x4).
     "short_mg1": {"slots": 25, "horizons_hours": [2, 3, 4, 5, 6, 12], "rule": "MG1_MARKET_EXACT",
                   "spacing_open_market_hours": 1, "span_open_market_hours": 24},
+    "long_mg1": {"slots": 145, "horizons_hours": [18, 24, 36, 48, 60, 72], "rule": "MG1_MARKET_EXACT",
+                 "spacing_open_market_hours": 1, "span_open_market_hours": 144},
 }
 #: The sealed effective config's model block is the authority: it carries ``offsets_hours: None``
 #: (variable per example, never a fixed grid) and the sealed ``time_encoder`` identity, so both
@@ -195,11 +197,13 @@ def is_market_time(config):
 
 
 def market_family(config):
-    """The MARKET_FAMILIES key whose rule the config declares (None for elapsed configs)."""
+    """Match rule AND slots AND physical horizons (MG1 short and long share a rule)."""
     if not is_market_time(config):
         return None
     rule = (config.get("market_time") or {}).get("rule")
-    return next((name for name, spec in MARKET_FAMILIES.items() if spec["rule"] == rule), None)
+    return next((name for name, spec in MARKET_FAMILIES.items()
+                 if spec["rule"] == rule and spec["slots"] == config.get("slots")
+                 and spec["horizons_hours"] == config.get("horizons_hours")), None)
 
 
 def model_family(config):
@@ -239,8 +243,7 @@ def _normalize_market_config(config):
         if c[key] != _FIXED[key]:
             raise ValueError(f"FIXED_VALUE: model {key} is fixed to {_FIXED[key]!r}")
     mt = c["market_time"]
-    match = next((spec for spec in MARKET_FAMILIES.values()
-                  if spec["rule"] == mt.get("rule")), None)
+    match = MARKET_FAMILIES.get(market_family(c))
     if match is None:
         raise ValueError(f"FIXED_VALUE: unknown market-time rule {mt.get('rule')!r}")
     if (c["slots"], c["horizons_hours"]) != (match["slots"], match["horizons_hours"]) or \
@@ -511,6 +514,8 @@ def _probe_causal(model, in_grid, out_grid, label):
     can false-negative when one random perturbation lands every filter in a dead
     ReLU region, so it is retried over a few fixed seeds and must pass on one.
     """
+    if len(in_grid) > 25:
+        return _probe_long_causal(model, in_grid, out_grid, label)
     last = None
     for seed in (0, 1, 2, 3):
         try:
@@ -520,6 +525,39 @@ def _probe_causal(model, in_grid, out_grid, label):
                 raise
             last = exc
     raise last
+
+
+def _probe_long_causal(model, in_grid, out_grid, label):
+    """Every long-window slot must participate, across fixed ReLU activation baselines.
+
+    No-lookahead is checked on every perturbation. Participation is accumulated per slot,
+    since requiring all 145 ReLUs to activate on one random baseline is not reliable.
+    No weights, input ordering or tolerances are changed.
+    """
+    length, channels = int(model.input_shape[1]), int(model.input_shape[2])
+    if length != len(in_grid) or int(model.output_shape[1]) != len(out_grid):
+        raise ValueError(f"{label}: probe grid does not match model shape")
+    future = np.asarray(out_grid)[None, :] < np.asarray(in_grid)[:, None]
+    first = np.asarray([next((k for k, edge in enumerate(out_grid) if edge >= t), -1)
+                        for t in in_grid])
+    active = np.zeros(length, dtype=bool)
+    for seed in range(8):
+        base = np.random.default_rng(seed).normal(size=(1, length, channels)).astype("float32")
+        batch = np.repeat(base, 2 * length + 1, axis=0)
+        for i in range(length):
+            batch[i + 1, i, :] += 3.0
+            batch[length + i + 1, i, :] -= 3.0
+        out = np.asarray(model(batch, training=False), dtype="float64")
+        moved = np.max(np.abs(out[1:] - out[:1]), axis=2)
+        moved = np.maximum(moved[:length], moved[length:])
+        scale = max(1.0, float(np.max(np.abs(out[0]))))
+        if np.any(moved[future] > 1e-5 * scale):
+            raise ValueError(f"{label}: time alignment violated; output depends on the later input")
+        active |= (first >= 0) & (moved[np.arange(length), np.maximum(first, 0)] > 1e-7 * scale)
+        if active.all():
+            return {"checked_inputs": length, "checked_outputs": len(out_grid)}
+    raise ValueError(f"{label}: time alignment violated; inputs at "
+                     f"{np.asarray(in_grid)[~active].tolist()} do not reach their right-edge outputs")
 
 
 def build_dmo(config):
@@ -586,9 +624,12 @@ CAPACITY_SCHEMA = "i6dmo.capacity.v1"
 #: unreported capacity change and is refused.
 #: Data-lane arm ids (design.MATCHED_SCOPE) -> model family. The sealed matched design families
 #: short_mg1_matched / short_mg2_matched build exactly these recipes (MATCHED_MODEL_FAMILIES).
-MATCHED_ARMS = {"mg1": "short_mg1", "mg2m": "short_mg2"}
-MATCHED_MODEL_FAMILIES = {"short_mg1_matched": "short_mg1", "short_mg2_matched": "short_mg2"}
+MATCHED_ARMS = {"mg1": "short_mg1", "mg2m": "short_mg2",
+                "mg1l": "long_mg1", "mg12m": "long_mg12"}
+MATCHED_MODEL_FAMILIES = {"short_mg1_matched": "short_mg1", "short_mg2_matched": "short_mg2",
+                          "long_mg1_matched": "long_mg1", "long_mg12_matched": "long_mg12"}
 MATCHED_HEAD_DELTA = (25 - 13) * 4 * 8 * 6
+LONG_MATCHED_HEAD_DELTA = (145 - 13) * 4 * 8 * 6
 #: Declared per-component trainable parameter counts of the fixed R0 recipe with the 19 RAW
 #: features, written out literally so a code change that alters capacity cannot pass silently:
 #: the build must reproduce BOTH the analytic recipe count and this literal disclosure.
@@ -599,6 +640,16 @@ DECLARED_CAPACITY = {
                   "per_head": 817, "per_head_hidden": 808, "per_head_output": 9,
                   "heads": 4902, "total": 7186},
     "short_mg2": {"slots": 13, "features": 19, "core_input_channels": 78,
+                  "branches": 304, "per_branch": 16, "fusion": 0, "time_encoder": 0,
+                  "core": 1980, "core_layers": [1880, 100],
+                  "per_head": 433, "per_head_hidden": 424, "per_head_output": 9,
+                  "heads": 2598, "total": 4882},
+    "long_mg1": {"slots": 145, "features": 19, "core_input_channels": 78,
+                 "branches": 304, "per_branch": 16, "fusion": 0, "time_encoder": 0,
+                 "core": 1980, "core_layers": [1880, 100],
+                 "per_head": 4657, "per_head_hidden": 4648, "per_head_output": 9,
+                 "heads": 27942, "total": 30226},
+    "long_mg12": {"slots": 13, "features": 19, "core_input_channels": 78,
                   "branches": 304, "per_branch": 16, "fusion": 0, "time_encoder": 0,
                   "core": 1980, "core_layers": [1880, 100],
                   "per_head": 433, "per_head_hidden": 424, "per_head_output": 9,
@@ -712,8 +763,17 @@ def capacity_record(bundle):
 
 
 def matched_capacity_delta(record_mg1, record_mg2):
-    """The disclosed MG1-minus-MG2 difference; refuses anything but the declared head delta."""
-    for record, arm in ((record_mg1, "mg1"), (record_mg2, "mg2m")):
+    """Disclosed hourly-minus-downsampled capacity for exactly one matched contrast."""
+    if not isinstance(record_mg1, dict) or not isinstance(record_mg2, dict):
+        raise CapacityError("two matched capacity records required")
+    arms = (record_mg1.get("arm"), record_mg2.get("arm"))
+    if arms == ("mg1", "mg2m"):
+        head_delta, formula = MATCHED_HEAD_DELTA, "(25-13)*4*8*6"
+    elif arms == ("mg1l", "mg12m"):
+        head_delta, formula = LONG_MATCHED_HEAD_DELTA, "(145-13)*4*8*6"
+    else:
+        raise CapacityError(f"not an ordered matched arm pair: {arms}")
+    for record, arm in zip((record_mg1, record_mg2), arms):
         if not isinstance(record, dict) or record.get("schema") != CAPACITY_SCHEMA or \
                 record.get("arm") != arm:
             raise CapacityError(f"{arm} capacity record missing or not the {arm} arm")
@@ -724,11 +784,11 @@ def matched_capacity_delta(record_mg1, record_mg2):
     delta = {k: a[k] - b[k] for k in ("branches", "fusion", "time_encoder", "core", "heads",
                                        "total")}
     expected = {"branches": 0, "fusion": 0, "time_encoder": 0, "core": 0,
-                "heads": MATCHED_HEAD_DELTA, "total": MATCHED_HEAD_DELTA}
+                "heads": head_delta, "total": head_delta}
     if delta != expected:
-        raise CapacityError(f"mg1-mg2m delta {delta} != declared {expected}")
+        raise CapacityError(f"{arms} delta {delta} != declared {expected}")
     return {"schema": "i6dmo.capacity_delta.v1", "delta": delta,
-            "formula": "(25-13)*4*8*6", "declared_head_delta": MATCHED_HEAD_DELTA,
+            "formula": formula, "declared_head_delta": head_delta,
             "interpretation": "practical input/readout recipe comparison; not proof that "
                               "additional signal alone caused any gain"}
 

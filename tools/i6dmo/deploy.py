@@ -55,6 +55,27 @@ def _fill(template, values):
     return text
 
 
+def timer_cadence(spec):
+    """Resolve bounded campaign-local cadence; omitted settings retain historical defaults."""
+    raw = spec.get("timer_cadence") or {}
+    bounds = dict(worker_seconds=(5, 600), cpu_worker_seconds=(5, 600),
+                  tick_seconds=(5, 3600), publish_seconds=(30, 3600),
+                  boot_seconds=(10, 600), accuracy_seconds=(1, 30))
+    if not isinstance(raw, dict) or set(raw) - set(bounds):
+        raise ValueError("TIMER_CADENCE: unknown settings")
+    for key, value in raw.items():
+        lo, hi = bounds[key]
+        if type(value) is not int or not lo <= value <= hi:
+            raise ValueError(f"TIMER_CADENCE: {key} requires integer {lo}..{hi}")
+    boot = f"{raw['boot_seconds']}s" if "boot_seconds" in raw else None
+    return dict(WORKER_INTERVAL=raw.get("worker_seconds", 120),
+                CPU_WORKER_INTERVAL=raw.get("cpu_worker_seconds", 120),
+                TICK_INTERVAL=raw.get("tick_seconds", int(spec.get("tick_interval_seconds", 300))),
+                PUBLISH_INTERVAL=raw.get("publish_seconds", 600),
+                WORKER_BOOT=boot or "3min", TICK_BOOT=boot or "2min", PUBLISH_BOOT=boot or "5min",
+                TIMER_ACCURACY=(f"AccuracySec={raw['accuracy_seconds']}s" if "accuracy_seconds" in raw else ""))
+
+
 def render_units(root, roles=None):
     root = Path(root).resolve()
     C.load_effective(root)  # refuses a tampered seal or an open TEST
@@ -66,8 +87,9 @@ def render_units(root, roles=None):
     python = coord.get("python") or spec["roles"].get("coordinator", {}).get("python") or "python3"
     workdir = coord.get("workdir") or spec["roles"].get("coordinator", {}).get("workdir")
     roles = roles or coord.get("unit_roles") or sorted(spec["roles"])
+    cadence = timer_cadence(spec)
     base = dict(CID=cid, MARK=f"{MARK}={cid}", PYTHON=python, WORKDIR=workdir, ROOT=root, PREFIX=p,
-                INTERVAL=int(spec.get("tick_interval_seconds", 300)), ENVFILE=spec["warehouse"].get("environment_file") or "")
+                **cadence, INTERVAL=cadence["TICK_INTERVAL"], ENVFILE=spec["warehouse"].get("environment_file") or "")
     units = {f"{p}tick.service": _fill("i6dmo-tick.service.in", base),
              f"{p}tick.timer": _fill("i6dmo-tick.timer.in", base)}
     if spec["warehouse"].get("environment_file"):  # else publication waits; the outbox keeps every fact
@@ -77,6 +99,8 @@ def render_units(root, roles=None):
         if role not in spec["roles"]:
             raise C.Refused(f"UNKNOWN_ROLE: {role}")
         values = dict(base, ROLE=role)
+        if not any(g.get("heavy") for g in spec["roles"][role].get("gpus", [])):
+            values["WORKER_INTERVAL"] = cadence["CPU_WORKER_INTERVAL"]
         units[f"{p}{role}-worker.service"] = _fill("i6dmo-worker.service.in", values)
         units[f"{p}{role}-worker.timer"] = _fill("i6dmo-worker.timer.in", values)
     return units

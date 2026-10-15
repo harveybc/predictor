@@ -713,6 +713,9 @@ def build_unit_spec(root, q, plan, effective, unit, role_spec, *, device_class, 
         fit_unit = unit_spec.pop("regime_fit_unit", None)
         if fit_unit and unit_spec.get("matched"):
             unit_spec["matched"]["fit_unit"] = fit_unit
+    if unit["unit_id"] == "raw.pair" and C.mode_of(effective) == C.MODE_MATCHED_LONG:
+        for arm in effective["arms"]:
+            unit_spec["upstream"][f"{arm}.report"] = _upstream(root, q, f"{arm}.report")
     if unit["kind"] == "strategy":
         # The trading stage's forecast inputs are authenticated digests, not assumptions: the
         # hook checks them against the digests the pair decision recorded for the same units.
@@ -823,7 +826,7 @@ def _artifacts(root, effective, unit, role_spec):
         return bundle, cause
     if not _uses_unit_runner(argv):
         return bundle, None
-    module = unit_runner.hook_module(unit["kind"])
+    module = unit_runner.hook_module(unit["kind"], unit)
     owner = unit_runner.HOOK_OWNERS.get(module, "model lane")
     if importlib.util.find_spec(module) is None:
         return bundle, f"ENTRY_UNAVAILABLE:{module} owner={owner}"

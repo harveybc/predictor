@@ -3,8 +3,9 @@ Description=I6-DMO @CID@ worker timer for role @ROLE@
 @MARK@
 
 [Timer]
-OnBootSec=3min
-OnUnitInactiveSec=120s
+OnBootSec=@WORKER_BOOT@
+OnUnitInactiveSec=@WORKER_INTERVAL@s
+@TIMER_ACCURACY@
 Persistent=true
 Unit=@PREFIX@@ROLE@-worker.service
 

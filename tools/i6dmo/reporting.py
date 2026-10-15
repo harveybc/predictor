@@ -85,7 +85,8 @@ def preconditions(context):
 
 def _design(spec):
     effective = spec["effective_config"]
-    return effective["long"]["design"] if spec["family"] == "long" else effective["design"]
+    return effective["long"]["design"] if spec["family"] == "long" and not spec.get("arm") \
+        else effective["design"]
 
 
 def _check_bundle(pin, family="short", expected_rule=None):
@@ -434,6 +435,116 @@ def selection_score(per_horizon, horizons):
     return dict(doc, status="COMPLETE", score=math.fsum(rels) / len(rels), failed_heads=[])
 
 
+def validate_matched_report(metrics, *, horizons, arm, child=None):
+    """Validate original paired evidence before comparison or RAW-pair admission.
+
+    Complete scoring is distinct from beating naive: every declared head must be reported
+    faithfully, but any number may have positive relative error. Returns the recomputed
+    selection without modifying cached metrics or their authenticated child.
+    """
+    def require(ok, code, detail):
+        if not ok:
+            raise ReportFailure(code, f"{arm}: {detail}")
+
+    def finite(value):
+        try:
+            return type(value) in (int, float) and math.isfinite(value)
+        except OverflowError:
+            return False
+
+    def identity(value):
+        return isinstance(value, str) and bool(value.strip())
+
+    require(isinstance(metrics, dict), "MATCHED_REPORT_METADATA", "paired metrics required")
+    require((metrics.get("schema"), metrics.get("split"), metrics.get("scale"), metrics.get("unit"))
+            == ("i6dmo.paired_metrics.v1", "DEVELOPMENT", "original_price", UNIT),
+            "MATCHED_REPORT_METADATA", "schema/split/scale/unit must be original paired DEVELOPMENT")
+    require(isinstance(metrics.get("agreement"), dict) and metrics["agreement"].get("status") == "AGREE",
+            "MATCHED_REPORT_AGREEMENT", "scoring agreement must be AGREE")
+    c2 = metrics.get("c2")
+    require(isinstance(c2, dict) and c2.get("state") == "COMPLETE" and
+            all(identity(c2.get(k)) for k in ("sha256", "contract_sha256", "input_sha256")),
+            "MATCHED_REPORT_C2", "complete C2 with result/contract/input identities required")
+    block = metrics.get("matched")
+    require(isinstance(block, dict) and block.get("schema") == MATCHED_REPORT_SCHEMA and
+            block.get("arm") == arm and block.get("population") == "COMMON_DEVELOPMENT",
+            "MATCHED_REPORT_METADATA", "matched arm/schema/population")
+    for key in ("common_population_sha256", "development_row_ids_sha256", "development_head_mask_sha256"):
+        require(identity(block.get(key)), "MATCHED_REPORT_SUPPORT", f"missing {key}")
+    keys = {str(h) for h in horizons}
+    rows, counts, replay = (metrics.get("per_horizon"), block.get("development_counts"),
+                            block.get("manual_pooled_replay"))
+    for label, value in (("per_horizon", rows), ("development_counts", counts),
+                         ("manual_pooled_replay", replay)):
+        require(isinstance(value, dict) and set(value) == keys, "MATCHED_HORIZONS",
+                f"{label} must contain exactly the declared six actual heads")
+    for h, row in rows.items():
+        require(isinstance(row, dict), "MATCHED_REPORT_SUPPORT", f"h{h}: row required")
+        n, declared, failed = row.get("n"), row.get("n_declared"), row.get("n_failed")
+        require(type(n) is int and n > 0 and type(declared) is int and n == declared and
+                type(failed) is int and failed == 0 and row.get("state") == "COMPLETE" and
+                type(counts[h]) is int and counts[h] == declared and identity(row.get("row_ids_sha256")),
+                "MATCHED_REPORT_SUPPORT", f"h{h}: complete declared support/counts/rows required")
+        mae, naive, relative = row.get("mae"), row.get("naive_mae"), row.get("relative_error")
+        require(finite(mae) and mae >= 0 and finite(naive) and naive > 0 and finite(relative),
+                "MATCHED_REPORT_ERRORS", f"h{h}: finite own-naive errors required")
+        own_relative = (mae - naive) / naive
+        require(finite(own_relative) and _close(relative, own_relative) and
+                row.get("eligible_mae_below_naive") is (mae < naive) and
+                row.get("relative_error_undefined_reason") is None,
+                "MATCHED_REPORT_ERRORS", f"h{h}: relative error/eligibility contradict own naive")
+        for key, mean in (("sum_abs_error", mae), ("naive_sum_abs_error", naive)):
+            if key in row:
+                require(finite(row[key]) and row[key] >= 0 and _close(row[key] / n, mean),
+                        "MATCHED_REPORT_ERRORS", f"h{h}: {key} contradicts pooled mean/count")
+        ref = replay[h]
+        require(isinstance(ref, dict) and type(ref.get("n")) is int and ref["n"] == n,
+                "MATCHED_REPORT_REPLAY", f"h{h}: replay count differs")
+        for key in ("mae", "naive_mae", "relative_error"):
+            require(finite(ref.get(key)) and _close(row[key], ref[key]),
+                    "MATCHED_REPORT_REPLAY", f"h{h}: replay {key} differs")
+    try:
+        selection = selection_score(rows, horizons)
+    except (OverflowError, ValueError) as exc:
+        raise ReportFailure("MATCHED_SELECTION_MISMATCH", f"{arm}: nonfinite aggregate score") from exc
+
+    def check_selection(cached, label):
+        require(isinstance(cached, dict) and cached.get("heads") == selection["heads"] and
+                cached.get("status") == selection["status"] == "COMPLETE" and
+                cached.get("failed_heads") == selection["failed_heads"] == [] and
+                finite(cached.get("score")) and _close(cached["score"], selection["score"]),
+                "MATCHED_SELECTION_MISMATCH", f"{label} contradicts recomputed selection")
+
+    check_selection(block.get("selection"), "matched.selection")
+    if child is not None:
+        require(isinstance(child, dict) and child.get("status") == "COMPLETE",
+                "MATCHED_REPORT_METADATA", "complete child report required")
+        lineage = child.get("lineage") or {}
+        require(isinstance(lineage, dict) and lineage.get("c2") == c2,
+                "MATCHED_REPORT_C2", "child lineage C2 differs")
+        require(lineage.get("arm") == arm and
+                lineage.get("common_population_sha256") == block["common_population_sha256"],
+                "MATCHED_REPORT_SUPPORT", "child lineage arm/population differs")
+        eligibility = child.get("eligibility")
+        require(isinstance(eligibility, dict) and set(eligibility) == keys,
+                "MATCHED_HORIZONS", "child eligibility must contain the same six heads")
+        for h, row in rows.items():
+            source = eligibility[h]
+            require(isinstance(source, dict), "MATCHED_REPORT_SUPPORT", f"h{h}: child eligibility required")
+            for key in ("n", "n_declared", "n_failed", "state", "row_ids_sha256"):
+                require(type(source.get(key)) is type(row[key]) and source[key] == row[key],
+                        "MATCHED_REPORT_SUPPORT", f"h{h}: child {key} differs")
+            for child_key, row_key in (("mae", "mae"), ("naive", "naive_mae"),
+                                       ("relative_error", "relative_error")):
+                require(finite(source.get(child_key)) and _close(source[child_key], row[row_key]),
+                        "MATCHED_REPORT_ERRORS", f"h{h}: child {child_key} differs")
+            require(source.get("eligible") is row["eligible_mae_below_naive"],
+                    "MATCHED_REPORT_ERRORS", f"h{h}: child eligibility differs")
+        if "selection" in child:
+            check_selection(child["selection"], "child.selection")
+    return selection
+
+
 def _matched_expected_weeks(design, input_dir, observed_week_ids):
     """Expected DEVELOPMENT weeks from the sealed calendar through the market_grid table, exactly as
     the closed MG2 report derived them (the population identities carry no empty weeks). The input
@@ -617,8 +728,21 @@ def decide_matched(mg1_metrics, mg2_metrics, *, require_scientific=True):
     """
     from tools.i6dmo import model as M
     a, b = (mg1_metrics or {}).get("matched") or {}, (mg2_metrics or {}).get("matched") or {}
-    if a.get("arm") != "mg1" or b.get("arm") != "mg2m":
-        raise ReportFailure("ARM_DESIGN_MISMATCH", f"arms {a.get('arm')!r}/{b.get('arm')!r}")
+    from tools.i6dmo import matched_runner as MR
+    try:
+        profile = MR.contrast_profile((a.get("arm"), b.get("arm")))
+    except ValueError:
+        raise ReportFailure("ARM_DESIGN_MISMATCH", f"arms {a.get('arm')!r}/{b.get('arm')!r}") from None
+    control, downsampled = profile["arms"]
+    if a.get("arm") != control or b.get("arm") != downsampled:
+        raise ReportFailure("ARM_DESIGN_MISMATCH", "control/reference order differs")
+    selections = None
+    if profile["family"] == "long":
+        if any(not isinstance(block.get("selection"), dict) or
+               block["selection"].get("heads") != list(profile["horizons"]) for block in (a, b)):
+            raise ReportFailure("MATCHED_HORIZONS", "long reports require their six exact horizons")
+        selections = tuple(validate_matched_report(metrics, horizons=profile["horizons"], arm=arm)
+                           for metrics, arm in ((mg1_metrics, control), (mg2_metrics, downsampled)))
     if require_scientific is not False:
         for block in (a, b):
             if block.get("scientific_fit") is not True or block.get("fit_device") != "gpu":
@@ -632,19 +756,21 @@ def decide_matched(mg1_metrics, mg2_metrics, *, require_scientific=True):
         delta = M.matched_capacity_delta(a.get("capacity"), b.get("capacity"))
     except M.CapacityError as exc:
         raise ReportFailure(exc.code, str(exc)) from None
-    per_head = {str(h): {"mg1": (mg1_metrics["per_horizon"].get(str(h)) or {}).get("relative_error"),
-                         "mg2m": (mg2_metrics["per_horizon"].get(str(h)) or {}).get("relative_error")}
+    if selections is None:
+        selections = (a["selection"], b["selection"])
+    per_head = {str(h): {control: (mg1_metrics["per_horizon"].get(str(h)) or {}).get("relative_error"),
+                         downsampled: (mg2_metrics["per_horizon"].get(str(h)) or {}).get("relative_error")}
                 for h in a["selection"]["heads"]}
     doc = {"schema": "i6dmo.matched_decision.v1", "capacity_delta": delta, "per_head": per_head,
-           "scores": {"mg1": a["selection"]["score"], "mg2m": b["selection"]["score"]},
+           "scores": {control: selections[0]["score"], downsampled: selections[1]["score"]},
            "tie_tolerance": SELECTION_TIE,
            "note": "one seed establishes a recipe decision, not statistical superiority; an "
                    "aggregate never makes a failed head trading-eligible"}
-    missing = [dict(f, arm=arm) for arm, sel in (("mg1", a["selection"]), ("mg2m", b["selection"]))
+    missing = [dict(f, arm=arm) for arm, sel in ((control, selections[0]), (downsampled, selections[1]))
                for f in sel.get("failed_heads", [])]
-    if missing or a["selection"]["status"] != "COMPLETE" or b["selection"]["status"] != "COMPLETE":
+    if missing or selections[0]["status"] != "COMPLETE" or selections[1]["status"] != "COMPLETE":
         return dict(doc, decision="INCOMPLETE_COMPARISON", selected=None, missing=missing)
-    diff = a["selection"]["score"] - b["selection"]["score"]
+    diff = selections[0]["score"] - selections[1]["score"]
     if abs(diff) <= SELECTION_TIE:
-        return dict(doc, decision="TIE_RETAIN_CHEAPER", selected="mg2m", difference=diff)
-    return dict(doc, decision="LOWER_SCORE", selected="mg1" if diff < 0 else "mg2m", difference=diff)
+        return dict(doc, decision="TIE_RETAIN_CHEAPER", selected=downsampled, difference=diff)
+    return dict(doc, decision="LOWER_SCORE", selected=control if diff < 0 else downsampled, difference=diff)

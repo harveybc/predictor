@@ -192,7 +192,8 @@ def _elapsed_view(design_path):
     elapsed = json.loads((Path(__file__).resolve().parents[2]
                           / "docs/i6n/direct_multi_output_static/EXPERIMENT.short.json")
                          .read_text(encoding="utf-8"))
-    if base["market_time"]["rule"].startswith("MG12"):
+    if D.family(base).startswith("long") and \
+            base["horizons_hours"] == D.LONG_HORIZONS:
         return data_mod.long_data_view(elapsed)
     return elapsed
 

@@ -208,7 +208,8 @@ def test_sc07_real_sealed_builds_three_inputs_78_channels_and_2304_delta():
         assert doc["arms"][arm]["capacity_sha256"] == records[arm]["capacity_sha256"]
         assert doc["arms"][arm]["sealed_design_sha256"] == _eff(arm)["design_sha256"]
     assert doc["delta"] == delta["delta"]
-    assert doc["declared_capacity"] == M.DECLARED_CAPACITY
+    assert doc["declared_capacity"] == {name: M.DECLARED_CAPACITY[name]
+                                         for name in doc["declared_capacity"]}
 
 
 def _wide_head(*, input_shape, horizon_hours, name, params):

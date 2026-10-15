@@ -52,7 +52,9 @@ def _sha(path):
     return digest.hexdigest()
 
 
-def hook_module(kind):
+def hook_module(kind, spec=None):
+    if kind == "evaluation" and (spec or {}).get("unit_id") == "raw.pair":
+        return "tools.i6dmo.raw_pair"
     return TRAINER_MODULE if kind in FIT_KINDS else HOOKS[kind]
 
 
@@ -64,7 +66,8 @@ def _family_design(spec):
     exactly (FINAL_WINDOW_MISMATCH otherwise, a typed terminal upstream, not an improvised window).
     """
     effective = spec["effective_config"]
-    base = effective["long"]["design"] if spec["family"] == "long" else effective["design"]
+    base = effective["long"]["design"] if spec["family"] == "long" and not spec.get("arm") \
+        else effective["design"]
     if spec.get("kind") != "final_refit":
         return base
     from tools.i6dmo import design as design_module  # model lane typed adapter
@@ -239,7 +242,7 @@ def _terminal(spec, out, status, disposition, artifacts, costs, reports, extra=N
 
 
 def run_hook(kind, spec, out, progress):
-    module = importlib.import_module(HOOKS[kind])
+    module = importlib.import_module(hook_module(kind, spec))
     doc = module.run_unit(spec, Path(out), Path(progress))
     doc = dict(doc, schema="i6dmo.terminal.v1", unit_id=spec["unit_id"], identity_sha256=spec["identity_sha256"])
     Path(out).mkdir(parents=True, exist_ok=True)

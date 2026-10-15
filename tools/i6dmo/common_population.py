@@ -1,4 +1,4 @@
-"""I6-DMO matched short control: the frozen MG1/MG2 common population (plan 20261015 section 2).
+"""I6-DMO matched RAW short and long controls: frozen two-arm common populations.
 
 NEXT_CONTRASTS_PLAN_20261015 section 2 / SC01-SC04 / SC10, data-lane part. CPU only; nothing
 here fits a model, opens TEST or reads a TEST bar (``data.load_input`` refuses any input that
@@ -9,6 +9,9 @@ holds one before an array is built).
   ``mg2m`` (matched reference, 13 observations, 2 h spacing); both span 24 open-market hours.
   Slots, exactness and C1 per-head business masks come from the audited
   :func:`tools.i6dmo.market_grid.build_market_table`; this module only intersects them.
+  The separate long contrast uses ``mg1l`` (145 slots at spacing 1) and ``mg12m`` (13 at
+  spacing 12), spanning 144 market hours with elapsed heads 18/24/36/48/60/72. The short
+  constants and serialized identity remain unchanged; mixed/partial contrasts are refused.
 * For FIT, INNER and the full DEVELOPMENT year (the data lane's VALIDATION split) separately,
   the population is the intersection of the (origin row_id, horizon) pairs valid under BOTH
   treatments; origins with no common valid head are dropped. Every candidate origin keeps a
@@ -54,6 +57,8 @@ SPLIT_NAMES = ("FIT", "INNER", "DEVELOPMENT")
 #: DEVELOPMENT is the data lane's VALIDATION split (full 2024); the name follows the plan.
 SOURCE_SPLIT = {"FIT": "FIT", "INNER": "INNER", "DEVELOPMENT": "VALIDATION"}
 ARMS = tuple(D.MATCHED_SCOPE)                      # ("mg1", "mg2m")
+LONG_ARMS = tuple(D.LONG_MATCHED_SCOPE)
+LONG_HORIZONS = tuple(D.LONG_MATCHED_SCOPE[LONG_ARMS[0]]["horizons_hours"])
 #: Typed per-(origin, head) exclusion codes. Precedence: business/label (C1, independent of
 #: the input treatment) first, then the treatment-specific input reason.
 HEAD_REASONS = ("COMMON_VALID", "ORIGIN_OUTSIDE_CALENDAR_WEEK",
@@ -77,21 +82,40 @@ class CommonPopulationError(ValueError):
         super().__init__(f"{code}: {detail}" if detail else code)
 
 
+def _arm_set(arms):
+    try:
+        return D.matched_arm_set(arms)
+    except D.DesignError as exc:
+        raise CommonPopulationError(exc.code, str(exc)) from None
+
+
+def _subset_key(arms):
+    control, reference = _arm_set(arms)
+    return f"{reference}_slots_subset_of_{control}"
+
+
+def _head_reasons(arms):
+    control, reference = _arm_set(arms)
+    return tuple(r.replace("MG1_ONLY", control.upper() + "_ONLY")
+                 .replace("MG2M_ONLY", reference.upper() + "_ONLY") for r in HEAD_REASONS)
+
+
 # =========================================================================== data designs
 
 def matched_data_design(short_design: Mapping[str, Any], arm: str) -> Dict[str, Any]:
     """Data-lane DESIGN.<arm>.json: everything that determines the arm's materialized arrays."""
-    if arm not in ARMS:
-        raise CommonPopulationError("ARM_UNKNOWN", f"{arm!r}; one of {ARMS}")
+    if arm not in D.ALL_MATCHED_SCOPE:
+        raise CommonPopulationError("ARM_UNKNOWN", f"{arm!r}; one of {tuple(D.ALL_MATCHED_SCOPE)}")
     base = data.validate_design(short_design)
     if base.get("experiment_id") != D.SHORT_ID:
         raise CommonPopulationError("SHORT_DESIGN_REQUIRED", str(base.get("experiment_id")))
-    scope = D.MATCHED_SCOPE[arm]
+    scope = D.ALL_MATCHED_SCOPE[arm]
+    rules = D.matched_population_rules(arm)
     doc: Dict[str, Any] = {
         "schema": DATA_DESIGN_SCHEMA,
         "status": "DATA_LANE_SEALED_INPUTS_NOT_A_RUNTIME_CONFIG",
         "experiment_id": scope["experiment_id"], "arm": arm, "role": scope["role"],
-        "partner_arm": scope["partner"], "contrast_id": D.MATCHED_CONTRAST_ID,
+        "partner_arm": scope["partner"], "contrast_id": rules["contrast_id"],
         "derives_from_design_sha256": provenance.canonical_sha256(base),
         "asset": base["asset"], "seed": base["seed"], "repetitions": base["repetitions"],
         "evaluation_mode": base["evaluation_mode"],
@@ -108,7 +132,7 @@ def matched_data_design(short_design: Mapping[str, Any], arm: str) -> Dict[str, 
                           "endpoint; unplanned open-session gaps are counted exclusions"),
             "no_asof_no_smoothing_no_interpolation_no_synthetic_prices": True,
         },
-        "horizons_hours": list(data.horizons(base)),
+        "horizons_hours": list(scope["horizons_hours"]),
         "targets": "exact ELAPSED t+h, unmodified, under the original C1 business masks",
         "naive": "p(t) vs p(t+h) in ELAPSED hours on exactly the common rows, original price",
         "splits": json.loads(json.dumps(base["splits"])),
@@ -118,12 +142,12 @@ def matched_data_design(short_design: Mapping[str, Any], arm: str) -> Dict[str, 
         "features": list(provenance.MANIFEST),
         "feature_manifest_sha256": provenance.EXPECTED_MANIFEST_SHA256,
         "availability_contract_sha256": provenance.EXPECTED_CONTRACT_SHA256,
-        "preprocessing": D.MATCHED_POPULATION_RULES["scaler"],
-        "loss_scale": D.MATCHED_POPULATION_RULES["loss_scale"],
+        "preprocessing": rules["scaler"],
+        "loss_scale": rules["loss_scale"],
         "time_encoder": dict(market_grid.TIME_ENCODER),
-        "matched_population_rules_sha256": D.MATCHED_POPULATION_RULES["rules_sha256"],
+        "matched_population_rules_sha256": rules["rules_sha256"],
     }
-    if list(doc["horizons_hours"]) != list(HORIZONS):
+    if list(doc["horizons_hours"]) != scope["horizons_hours"]:
         raise CommonPopulationError("HORIZONS_INVALID", str(doc["horizons_hours"]))
     doc["data_identity_sha256"] = data_identity_sha256(doc)
     return validate_matched_data_design(doc, arm=arm)
@@ -143,9 +167,10 @@ def validate_matched_data_design(doc: Mapping[str, Any], *, arm: Optional[str] =
         if key in doc:
             raise CommonPopulationError("CONTRADICTORY_TIME_FIELDS", f"{key!r} is an elapsed field")
     got = doc.get("arm")
-    if got not in ARMS or (arm is not None and got != arm):
+    if got not in D.ALL_MATCHED_SCOPE or (arm is not None and got != arm):
         raise CommonPopulationError("ARM_UNKNOWN", f"design arm {got!r} (expected {arm!r})")
-    scope = D.MATCHED_SCOPE[got]
+    scope = D.ALL_MATCHED_SCOPE[got]
+    rules = D.matched_population_rules(got)
     s = doc.get("input_sampling") or {}
     want = {"rule": scope["rule"], "observations": scope["observations"],
             "spacing_open_market_hours": scope["spacing_open_market_hours"],
@@ -157,14 +182,14 @@ def validate_matched_data_design(doc: Mapping[str, Any], *, arm: Optional[str] =
             raise CommonPopulationError("MATCHED_DATA_DESIGN_INVALID",
                                         f"input_sampling.{key} must be {value!r}")
     if doc.get("experiment_id") != scope["experiment_id"] or \
-            doc.get("contrast_id") != D.MATCHED_CONTRAST_ID:
+            doc.get("contrast_id") != rules["contrast_id"]:
         raise CommonPopulationError("MATCHED_DATA_DESIGN_INVALID", "experiment/contrast id")
-    if list(doc.get("horizons_hours") or ()) != list(HORIZONS):
-        raise CommonPopulationError("MATCHED_DATA_DESIGN_INVALID", "horizons 2,3,4,5,6,12")
+    if list(doc.get("horizons_hours") or ()) != scope["horizons_hours"]:
+        raise CommonPopulationError("MATCHED_DATA_DESIGN_INVALID", f"horizons {scope['horizons_hours']}")
     if doc.get("features") != list(provenance.MANIFEST) or \
             doc.get("feature_manifest_sha256") != provenance.EXPECTED_MANIFEST_SHA256:
         raise CommonPopulationError("MATCHED_DATA_DESIGN_INVALID", "19-feature manifest required")
-    if doc.get("matched_population_rules_sha256") != D.MATCHED_POPULATION_RULES["rules_sha256"]:
+    if doc.get("matched_population_rules_sha256") != rules["rules_sha256"]:
         raise CommonPopulationError("MATCHED_DATA_DESIGN_INVALID", "population rules changed")
     if doc.get("data_identity_sha256") != data_identity_sha256(doc):
         raise CommonPopulationError("MATCHED_DATA_DESIGN_SEAL", "data identity does not verify")
@@ -240,7 +265,7 @@ class SharedScaler:
 
 @dataclass(frozen=True)
 class CommonPopulation:
-    """Frozen common population of the matched MG1/MG2 contrast."""
+    """Frozen common population of exactly one declared matched contrast."""
 
     splits: Dict[str, SplitPopulation]
     scaler: SharedScaler
@@ -373,14 +398,19 @@ def build_common_population(input_dir: str | Path, experiments: Mapping[str, Map
                             code_commit: Optional[str] = None) -> CommonPopulation:
     """Build the frozen common population from both sealed arms and the retained input.
 
-    ``experiments``/``data_designs`` map ``mg1`` and ``mg2m`` to the sealed EXPERIMENT and
-    DESIGN documents. Every identity is cross-checked; a closed full-population design is a
+    ``experiments``/``data_designs`` map exactly ``mg1``/``mg2m`` OR ``mg1l``/``mg12m`` to sealed
+    EXPERIMENT and DESIGN documents. Every identity is cross-checked; a full-population design is a
     typed ``MATCHED_IDENTITY_REQUIRED``. Reads only bars before the TEST start.
     """
-    if set(experiments) != set(ARMS) or set(data_designs) != set(ARMS):
-        raise CommonPopulationError("ARMS_REQUIRED", f"exactly {ARMS}")
+    arms = _arm_set(experiments)
+    if _arm_set(data_designs) != arms:
+        raise CommonPopulationError("ARMS_REQUIRED", "experiment and data arm sets differ")
+    control, reference = arms
+    rules = D.matched_population_rules(control)
+    head_reasons = _head_reasons(arms)
+    subset_key = _subset_key(arms)
     exp_ids, dd = {}, {}
-    for arm in ARMS:
+    for arm in arms:
         try:
             got = D.matched_arm(dict(experiments[arm]))
         except D.DesignError as exc:
@@ -394,52 +424,52 @@ def build_common_population(input_dir: str | Path, experiments: Mapping[str, Map
             raise CommonPopulationError("DESIGN_IDENTITY_MISMATCH",
                                         f"{arm} EXPERIMENT does not bind this data design")
         exp_ids[arm] = D.design_sha256(dict(experiments[arm]))
-    for arm in ARMS:
-        partner = D.MATCHED_SCOPE[arm]["partner"]
+    for arm in arms:
+        partner = D.ALL_MATCHED_SCOPE[arm]["partner"]
         if experiments[arm]["sealed_identities"]["partner_data_identity_sha256"] != \
                 dd[partner]["data_identity_sha256"]:
             raise CommonPopulationError("DESIGN_IDENTITY_MISMATCH",
                                         f"{arm} does not bind the partner {partner} data identity")
-    elapsed = {arm: _elapsed_shim(dd[arm]) for arm in ARMS}
-    bundles = {arm: data.load_input(input_dir, elapsed[arm]) for arm in ARMS}
-    if bundles["mg1"].files != bundles["mg2m"].files:
+    elapsed = {arm: _elapsed_shim(dd[arm]) for arm in arms}
+    bundles = {arm: data.load_input(input_dir, elapsed[arm]) for arm in arms}
+    if bundles[control].files != bundles[reference].files:
         raise CommonPopulationError("SOURCE_DIGEST_MISMATCH", "the input changed between loads")
-    bundle = bundles["mg1"]
+    bundle = bundles[control]
     from tools.i6dmo.market_grid import build_market_table
-    tables = {arm: build_market_table(bundles[arm], elapsed[arm]) for arm in ARMS}
-    t1, t2 = tables["mg1"], tables["mg2m"]
+    tables = {arm: build_market_table(bundles[arm], elapsed[arm]) for arm in arms}
+    t1, t2 = tables[control], tables[reference]
     if not (np.array_equal(t1.origin_ts, t2.origin_ts) and np.array_equal(t1.split, t2.split)
             and np.array_equal(t1.week_id, t2.week_id)):
         raise CommonPopulationError("INTERNAL_CANDIDATES_DIFFER", "arms disagree on candidates")
     cal_ref = {"calendar_id": t1.identity["calendar_id"],
                "version": t1.identity["calendar_version"]}
-    for arm in ARMS:
+    for arm in arms:
         sealed = experiments[arm]["sealed_identities"]["calendar"]
         if (sealed["calendar_id"], sealed["version"]) != (cal_ref["calendar_id"], cal_ref["version"]):
             raise CommonPopulationError("CALENDAR_IDENTITY_MISMATCH",
                                         f"{arm} sealed {sealed} but the input supplies {cal_ref}")
-    given, given_reason = _business_labels(bundle, elapsed["mg1"], t1)
+    given, given_reason = _business_labels(bundle, elapsed[control], t1)
     for arm, t in tables.items():
         if not np.array_equal(t.label_ok, given & t.input_ok[:, None]):
             raise CommonPopulationError("INTERNAL_MASK_INCONSISTENT",
                                         f"{arm}: label_ok != C1(input available) & input_ok")
-    code = {r: i for i, r in enumerate(HEAD_REASONS)}
+    code = {r: i for i, r in enumerate(head_reasons)}
     in_code = {r: i for i, r in enumerate(INPUT_REASONS)}
     hs = t1.horizons
     splits: Dict[str, SplitPopulation] = {}
     kept: Dict[str, np.ndarray] = {}
-    arm_arrays: Dict[str, Dict[str, Dict[str, np.ndarray]]] = {a: {} for a in ARMS}
+    arm_arrays: Dict[str, Dict[str, Dict[str, np.ndarray]]] = {a: {} for a in arms}
     exclusion_arrays: Dict[str, Dict[str, np.ndarray]] = {}
     report: Dict[str, Any] = {"before_intersection": {}, "after_intersection": {},
                               "exclusions": {}, "unsupported_heads": {},
-                              "mg2m_slots_subset_of_mg1": True}
+                              subset_key: True}
     for name in SPLIT_NAMES:
         src = SOURCE_SPLIT[name]
         sel = np.flatnonzero(t1.split == src)
-        valid = {a: tables[a].label_ok[sel] for a in ARMS}
-        common = valid["mg1"] & valid["mg2m"]
+        valid = {a: tables[a].label_ok[sel] for a in arms}
+        common = valid[control] & valid[reference]
         keep = common.any(axis=1)
-        entry = tables["mg1"].entry_ok[sel] & tables["mg2m"].entry_ok[sel] & common
+        entry = tables[control].entry_ok[sel] & tables[reference].entry_ok[sel] & common
         idx = sel[keep]
         head = common[keep]
         ent = entry[keep]
@@ -450,35 +480,35 @@ def build_common_population(input_dir: str | Path, experiments: Mapping[str, Map
             name=name, origin_row_ids=pop_arrays["origin_row_ids"], head_mask=head,
             entry_mask=ent, management_mask=pop_arrays["management_mask"], counts=counts,
             digest=_split_digest(name, pop_arrays, counts))
-        for arm in ARMS:
+        for arm in arms:
             arm_arrays[arm][name] = _arm_split_arrays(bundles[arm], tables[arm], idx, head, ent)
         if len(idx):
             sub = all(set(b) <= set(a) for a, b in zip(
-                arm_arrays["mg1"][name]["slot_instants"].tolist(),
-                arm_arrays["mg2m"][name]["slot_instants"].tolist()))
-            report["mg2m_slots_subset_of_mg1"] &= bool(sub)
+                arm_arrays[control][name]["slot_instants"].tolist(),
+                arm_arrays[reference][name]["slot_instants"].tolist()))
+            report[subset_key] &= bool(sub)
         kept[name] = idx
         # typed exclusions for every candidate origin of the split
-        in_ok = {a: tables[a].input_ok[sel] for a in ARMS}
+        in_ok = {a: tables[a].input_ok[sel] for a in arms}
         head_reason = given_reason[sel].copy()
         biz = given[sel]
         for j in range(len(hs)):
             col = head_reason[:, j]
-            both_bad = biz[:, j] & ~in_ok["mg1"] & ~in_ok["mg2m"]
-            only1 = biz[:, j] & ~in_ok["mg1"] & in_ok["mg2m"]
-            only2 = biz[:, j] & in_ok["mg1"] & ~in_ok["mg2m"]
+            both_bad = biz[:, j] & ~in_ok[control] & ~in_ok[reference]
+            only1 = biz[:, j] & ~in_ok[control] & in_ok[reference]
+            only2 = biz[:, j] & in_ok[control] & ~in_ok[reference]
             col[both_bad] = code["INPUT_INVALID_BOTH"]
-            col[only1] = code["INPUT_INVALID_MG1_ONLY"]
-            col[only2] = code["INPUT_INVALID_MG2M_ONLY"]
+            col[only1] = code[f"INPUT_INVALID_{control.upper()}_ONLY"]
+            col[only2] = code[f"INPUT_INVALID_{reference.upper()}_ONLY"]
             col[common[:, j]] = code["COMMON_VALID"]
             head_reason[:, j] = col
         input_reason = {a: np.asarray([in_code[r or "INPUT_OK"] for r in
                                        (tables[a].input_reason[i] for i in sel)], dtype=np.int8)
-                        for a in ARMS}
+                        for a in arms}
         exclusion_arrays[name] = {"candidate_row_ids": t1.origin_ts[sel].astype(np.int64),
                                   "head_reason": head_reason,
-                                  "input_reason_mg1": input_reason["mg1"],
-                                  "input_reason_mg2m": input_reason["mg2m"]}
+                                  f"input_reason_{control}": input_reason[control],
+                                  f"input_reason_{reference}": input_reason[reference]}
         report["before_intersection"][name] = {
             arm: {"origins_with_any_valid_head": int(valid[arm].any(axis=1).sum()),
                   "heads": {str(h): int(valid[arm][:, j].sum()) for j, h in enumerate(hs)},
@@ -486,7 +516,7 @@ def build_common_population(input_dir: str | Path, experiments: Mapping[str, Map
                                   for j, h in enumerate(hs)},
                   "origin_input_reasons": dict(sorted(Counter(
                       INPUT_REASONS[v] for v in input_reason[arm].tolist()).items()))}
-            for arm in ARMS}
+            for arm in arms}
         report["before_intersection"][name]["candidates"] = int(len(sel))
         report["after_intersection"][name] = {
             "origins": int(len(idx)), "heads": {str(h): counts[h] for h in hs},
@@ -494,21 +524,21 @@ def build_common_population(input_dir: str | Path, experiments: Mapping[str, Map
             "first_origin": data.iso(int(t1.origin_ts[idx].min())) if len(idx) else None,
             "last_origin": data.iso(int(t1.origin_ts[idx].max())) if len(idx) else None}
         report["exclusions"][name] = {
-            "heads": {str(h): dict(sorted(Counter(HEAD_REASONS[v] for v in
+            "heads": {str(h): dict(sorted(Counter(head_reasons[v] for v in
                                                   head_reason[:, j].tolist()).items()))
                       for j, h in enumerate(hs)},
             "origins_dropped_no_common_head": int((~keep).sum())}
         report["unsupported_heads"][name] = [int(h) for h in hs if counts[h] == 0]
     # ---- shared FIT-only scaler over the UNION of both arms' source bars of common FIT origins
     fit_bars = np.unique(np.concatenate([tables[a].slot_index[kept["FIT"]].reshape(-1)
-                                         for a in ARMS]))
+                                         for a in arms]))
     if fit_bars.size and (fit_bars < 0).any():
         raise CommonPopulationError("INTERNAL_SLOT_MISSING", "FIT source bar absent")
     if not fit_bars.size:
         raise CommonPopulationError("NO_COMMON_FIT_ROWS", "the common FIT population is empty")
     xs = bundle.x[fit_bars]
     bar_ts = bundle.ts[fit_bars].astype(np.int64)
-    fit_end = int(data.split_bounds(elapsed["mg1"])[0].end.timestamp())
+    fit_end = int(data.split_bounds(elapsed[control])[0].end.timestamp())
     if int(bar_ts.max()) >= fit_end:
         raise CommonPopulationError("INTERNAL_SCALER_LEAK", "a scaler source bar is >= INNER start")
     scaler = SharedScaler(feature_names=tuple(bundle.features), mean=xs.mean(axis=0),
@@ -535,27 +565,28 @@ def build_common_population(input_dir: str | Path, experiments: Mapping[str, Map
     report["zero_scale_features"] = zero
     report["scaler_source_bars"] = {"n": int(len(bar_ts)), "first": data.iso(int(bar_ts.min())),
                                     "last": data.iso(int(bar_ts.max()))}
-    report["reference_closed_mg2_rows"] = {
+    closed_reference_key = "reference_closed_mg2_rows" if arms == ARMS else "reference_closed_mg12_rows"
+    report[closed_reference_key] = {
         "descriptive_only_not_a_quota": True,
-        "closed_bundle_rows": dict(market_grid.STUDY_REFERENCE["MG2_MARKET_EXACT"]),
-        "mg2m_rows_before_intersection": {
+        "closed_bundle_rows": dict(market_grid.STUDY_REFERENCE[D.ALL_MATCHED_SCOPE[reference]["rule"]]),
+        f"{reference}_rows_before_intersection": {
             k.lower() if k != "DEVELOPMENT" else "validation":
-                report["before_intersection"][k]["mg2m"]["origins_with_any_valid_head"]
+                report["before_intersection"][k][reference]["origins_with_any_valid_head"]
             for k in SPLIT_NAMES}}
-    report["head_reason_codes"] = list(HEAD_REASONS)
+    report["head_reason_codes"] = list(head_reasons)
     report["input_reason_codes"] = list(INPUT_REASONS)
     identities = {
-        "contrast_id": D.MATCHED_CONTRAST_ID,
-        "matched_population_rules_sha256": D.MATCHED_POPULATION_RULES["rules_sha256"],
+        "contrast_id": rules["contrast_id"],
+        "matched_population_rules_sha256": rules["rules_sha256"],
         "arms": {arm: {"experiment_id": experiments[arm]["experiment_id"],
-                       "family": D.MATCHED_SCOPE[arm]["family"],
+                       "family": D.ALL_MATCHED_SCOPE[arm]["family"],
                        "experiment_design_sha256": exp_ids[arm],
                        "experiment_seal_sha256": experiments[arm]["seal_sha256"],
                        "data_design_sha256": provenance.canonical_sha256(dd[arm]),
                        "data_identity_sha256": dd[arm]["data_identity_sha256"],
-                       "observations": D.MATCHED_SCOPE[arm]["observations"],
-                       "spacing_open_market_hours": D.MATCHED_SCOPE[arm]["spacing_open_market_hours"]}
-                 for arm in ARMS},
+                       "observations": D.ALL_MATCHED_SCOPE[arm]["observations"],
+                       "spacing_open_market_hours": D.ALL_MATCHED_SCOPE[arm]["spacing_open_market_hours"]}
+                 for arm in arms},
         "source": {"inputs": dict(sorted(bundle.files.items())),
                    "input_sha256": bundle.files["INPUT.npz"],
                    "source_clock": {k: bundle.clock.get(k) for k in
@@ -567,17 +598,17 @@ def build_common_population(input_dir: str | Path, experiments: Mapping[str, Map
                      "status": t1.identity["calendar_status"],
                      "sha256": bundle.files["CALENDAR.json"]},
         "splits": {name: {**b.to_json(), "population_name": name}
-                   for name, b in zip(SPLIT_NAMES, data.split_bounds(elapsed["mg1"]))},
-        "test": {"materialized": False, "start": elapsed["mg1"]["splits"]["test"]["start"]},
+                   for name, b in zip(SPLIT_NAMES, data.split_bounds(elapsed[control]))},
+        "test": {"materialized": False, "start": elapsed[control]["splits"]["test"]["start"]},
         "code": {"commit": code_commit, "files_sha256": _code_digests()},
     }
     pop = CommonPopulation(splits=splits, scaler=scaler, naive_loss_scale=naive,
-                           identities=identities, digest="", report=report,
+                           identities=identities, digest="", horizons=tuple(hs), report=report,
                            arm_arrays=arm_arrays, exclusion_arrays=exclusion_arrays)
     body = _population_body(pop)
     _check_no_test(pop)
     return CommonPopulation(splits=splits, scaler=scaler, naive_loss_scale=naive,
-                            identities=identities, digest=_population_digest(body),
+                            identities=identities, digest=_population_digest(body), horizons=tuple(hs),
                             report=report, arm_arrays=arm_arrays,
                             exclusion_arrays=exclusion_arrays)
 
@@ -612,7 +643,7 @@ def _array_files(pop: CommonPopulation) -> Dict[str, Dict[str, np.ndarray]]:
     for name, sp in pop.splits.items():
         files[f"POPULATION_{name}.npz"] = sp.arrays()
         files[f"EXCLUSIONS_{name}.npz"] = pop.exclusion_arrays[name]
-        for arm in ARMS:
+        for arm in _arm_set(pop.identities["arms"]):
             files[f"ARM_{arm}_{name}.npz"] = pop.arm_arrays[arm][name]
     return files
 
@@ -636,7 +667,8 @@ def _population_body(pop: CommonPopulation, *, array_digests: Optional[Mapping[s
             "exclusions_path": f"EXCLUSIONS_{name}.npz",
             "exclusions_sha256": digests[f"EXCLUSIONS_{name}.npz"],
             "arms": {arm: {"path": f"ARM_{arm}_{name}.npz",
-                           "arrays_sha256": digests[f"ARM_{arm}_{name}.npz"]} for arm in ARMS},
+                           "arrays_sha256": digests[f"ARM_{arm}_{name}.npz"]}
+                     for arm in _arm_set(pop.identities["arms"])},
         }
     ident = pop.identities
     return {
@@ -691,7 +723,7 @@ def write_common_population(pop: CommonPopulation, out_dir: str | Path) -> Dict[
 def _scaler_bar_ts(pop: CommonPopulation) -> np.ndarray:
     """Recompute the scaler source bars from the FIT arm arrays (union of both arms' slots)."""
     bars = np.unique(np.concatenate([pop.arm_arrays[a]["FIT"]["slot_instants"].reshape(-1)
-                                     for a in ARMS]))
+                                     for a in _arm_set(pop.identities["arms"])]))
     if _scaler_rows_digest(bars) != pop.scaler.fit_row_digest:
         raise CommonPopulationError("SCALER_ROWS_MISMATCH", "FIT slots disagree with the scaler")
     return bars.astype(np.int64)
@@ -699,6 +731,9 @@ def _scaler_bar_ts(pop: CommonPopulation) -> np.ndarray:
 
 def seal_summary(body: Mapping[str, Any], population_json_sha256: str) -> Dict[str, Any]:
     """Small committable seal: hashes, counts, exclusions summary, scaler digest. No arrays."""
+    arms = _arm_set(body["identities"]["arms"])
+    subset_key = _subset_key(arms)
+    closed_key = "reference_closed_mg2_rows" if arms == ARMS else "reference_closed_mg12_rows"
     return {
         "schema": SEAL_SCHEMA, "status": "SEALED_BEFORE_ANY_FIT",
         "population_digest": body["digest"], "population_json_sha256": population_json_sha256,
@@ -721,8 +756,8 @@ def seal_summary(body: Mapping[str, Any], population_json_sha256: str) -> Dict[s
         "naive_loss_scale": body["naive_loss_scale"],
         "naive_loss_scale_status": body["report"]["naive_loss_scale_status"],
         "identities": body["identities"], "identity_digests": body["identity_digests"],
-        "mg2m_slots_subset_of_mg1": body["report"]["mg2m_slots_subset_of_mg1"],
-        "reference_closed_mg2_rows": body["report"]["reference_closed_mg2_rows"],
+        subset_key: body["report"][subset_key],
+        closed_key: body["report"][closed_key],
         "files": body["files"], "test_materialized": False, "fits_run": 0,
     }
 
@@ -759,6 +794,11 @@ def load_common_population(path: str | Path, *, expected_digest: str,
             set(body.get("splits") or {}) != set(SPLIT_NAMES):
         raise CommonPopulationError("SPLIT_UNKNOWN", "FIT/INNER/DEVELOPMENT only; TEST never exists")
     ident = body["identities"]
+    arms = _arm_set(ident["arms"])
+    rules = D.matched_population_rules(arms[0])
+    if ident.get("contrast_id") != rules["contrast_id"] or \
+            ident.get("matched_population_rules_sha256") != rules["rules_sha256"]:
+        raise CommonPopulationError("DESIGN_IDENTITY_MISMATCH", "contrast/population rules")
     for key, code in (("calendar", "CALENDAR_DIGEST_MISMATCH"), ("source", "SOURCE_DIGEST_MISMATCH"),
                       ("arms", "DESIGN_IDENTITY_MISMATCH"), ("splits", "SPLIT_BOUNDS_MISMATCH")):
         if provenance.canonical_sha256(ident[key]) != body["identity_digests"][key]:
@@ -769,9 +809,9 @@ def load_common_population(path: str | Path, *, expected_digest: str,
         verify_source(body, input_dir)
     splits: Dict[str, SplitPopulation] = {}
     digests: Dict[str, str] = {}
-    verified_arm: Dict[str, Dict[str, str]] = {a: {} for a in ARMS}
+    verified_arm: Dict[str, Dict[str, str]] = {a: {} for a in arms}
     hs = tuple(int(h) for h in body["horizons_hours"])
-    if hs != HORIZONS:
+    if hs != tuple(D.ALL_MATCHED_SCOPE[arms[0]]["horizons_hours"]):
         raise CommonPopulationError("HORIZONS_INVALID", str(hs))
     for name in SPLIT_NAMES:
         info = body["splits"][name]
@@ -786,7 +826,7 @@ def load_common_population(path: str | Path, *, expected_digest: str,
         for key in ("entry_mask", "management_mask"):
             if provenance.array_sha256({key: arrays[key]}) != info[f"{key}_sha256"]:
                 raise CommonPopulationError("MASK_DIGEST_MISMATCH", f"{name} {key} changed")
-        _check_split_arrays(name, arrays)
+        _check_split_arrays(name, arrays, horizons=hs)
         counts = {int(h): int(head[:, j].sum()) for j, h in enumerate(hs)}
         if {str(h): v for h, v in counts.items()} != info["counts"]:
             raise CommonPopulationError("HEAD_MASK_DIGEST_MISMATCH", f"{name} per-head counts")
@@ -802,7 +842,9 @@ def load_common_population(path: str | Path, *, expected_digest: str,
         digests[info["exclusions_path"]] = provenance.array_sha256(exc)
         if digests[info["exclusions_path"]] != info["exclusions_sha256"]:
             raise CommonPopulationError("EXCLUSIONS_MISMATCH", f"{name} exclusions changed")
-        for arm in ARMS:
+        if set(info["arms"]) != set(arms):
+            raise CommonPopulationError("ARMS_REQUIRED", f"{name} arms differ from identities")
+        for arm in arms:
             arm_info = info["arms"][arm]
             arrs = _load_npz(root / arm_info["path"])
             digests[arm_info["path"]] = provenance.array_sha256(arrs)
@@ -821,7 +863,7 @@ def load_common_population(path: str | Path, *, expected_digest: str,
                           fit_row_digest=sc["fit_row_digest"], n_rows=int(sc["n_rows"]))
     naive = {int(h): v for h, v in body["naive_loss_scale"].items()}
     pop = CommonPopulation(splits=splits, scaler=scaler, naive_loss_scale=naive,
-                           identities=ident, digest="", report=body["report"],
+                           identities=ident, digest="", horizons=hs, report=body["report"],
                            source_dir=str(root))
     recomputed = _population_digest(_population_body(pop, array_digests=digests,
                                                       scaler_rows_digest=sc["rows_sha256"]))
@@ -835,7 +877,7 @@ def load_common_population(path: str | Path, *, expected_digest: str,
             raise CommonPopulationError("FILE_DIGEST_MISMATCH", name)
     _check_no_test(pop)
     return CommonPopulation(splits=splits, scaler=scaler, naive_loss_scale=naive,
-                            identities=ident, digest=recomputed, report=body["report"],
+                            identities=ident, digest=recomputed, horizons=hs, report=body["report"],
                             source_dir=str(root), verified_arm_digests=verified_arm)
 
 
@@ -857,13 +899,13 @@ def verify_source(body_or_pop: Any, input_dir: str | Path) -> Dict[str, str]:
     return got
 
 
-def _check_split_arrays(name: str, arrays: Mapping[str, np.ndarray]) -> None:
+def _check_split_arrays(name: str, arrays: Mapping[str, np.ndarray], *, horizons=HORIZONS) -> None:
     rid, head = arrays["origin_row_ids"], arrays["head_mask"]
     n = len(rid)
     if rid.dtype != np.int64 or (n > 1 and np.any(np.diff(rid) <= 0)):
         raise CommonPopulationError("ROW_DIGEST_MISMATCH", f"{name} row ids not increasing int64")
     for key in ("head_mask", "entry_mask", "management_mask"):
-        if arrays[key].dtype != bool or arrays[key].shape != (n, len(HORIZONS)):
+        if arrays[key].dtype != bool or arrays[key].shape != (n, len(horizons)):
             raise CommonPopulationError("MASK_DIGEST_MISMATCH", f"{name} {key} shape/dtype")
     if n and not head.any(axis=1).all():
         raise CommonPopulationError("HEAD_MASK_DIGEST_MISMATCH", f"{name} row without a common head")
@@ -877,7 +919,7 @@ def _check_arm_against_split(arm: str, sp: SplitPopulation, arrs: Mapping[str, n
     for key in ("head_mask", "entry_mask", "management_mask"):
         if not np.array_equal(arrs[key], getattr(sp, key)):
             raise CommonPopulationError("POPULATION_ARM_MISMATCH", f"{arm} {sp.name} {key}")
-    slots = D.MATCHED_SCOPE[arm]["observations"]
+    slots = D.ALL_MATCHED_SCOPE[arm]["observations"]
     if arrs["x"].shape[1:] != (slots, len(provenance.MANIFEST)):
         raise CommonPopulationError("POPULATION_ARM_MISMATCH", f"{arm} x shape {arrs['x'].shape}")
     if len(sp.origin_row_ids):
@@ -904,6 +946,8 @@ def arm_tensors(pop: CommonPopulation, arm_design: Mapping[str, Any], split: str
         arm = D.matched_arm(dict(arm_design))
     except D.DesignError as exc:
         raise CommonPopulationError(exc.code, str(exc)) from None
+    if arm not in _arm_set(pop.identities["arms"]):
+        raise CommonPopulationError("DESIGN_IDENTITY_MISMATCH", f"{arm} is outside this contrast")
     sealed = pop.identities["arms"][arm]
     if D.design_sha256(dict(arm_design)) != sealed["experiment_design_sha256"]:
         raise CommonPopulationError("DESIGN_IDENTITY_MISMATCH",
@@ -946,7 +990,7 @@ def replay_against_input(tensors: ArmTensors, input_dir: str | Path) -> Dict[str
             raise CommonPopulationError("REPLAY_MISMATCH", f"{data.row_id(t)} inputs")
         if price[pos[int(t)]] != tensors.origin_price[r]:
             raise CommonPopulationError("REPLAY_MISMATCH", f"{data.row_id(t)} origin price")
-        for j, h in enumerate(HORIZONS):
+        for j, h in enumerate(D.ALL_MATCHED_SCOPE[tensors.arm]["horizons_hours"]):
             if tensors.head_mask[r, j]:
                 q = pos.get(int(t) + h * HOUR)
                 if q is None or price[q] != tensors.target_price[r, j]:

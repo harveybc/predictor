@@ -36,13 +36,15 @@ MATCHED_STAGES = ("MATCHED_ARMS_VALIDATION", "PAIRED_COMPARISON", "CLOSED")
 MODE_ELAPSED = "ELAPSED_STATIC"
 MODE_MARKET_TIME = "MARKET_TIME_PAIR"
 MODE_MATCHED = "MATCHED_SHORT_CONTRAST"
+MODE_MATCHED_LONG = "MATCHED_LONG_CONTRAST"
+MATCHED_CONTRAST_MODES = (MODE_MATCHED, MODE_MATCHED_LONG)
 # R0-versus-R2 branch-pretraining contrast (R2_CONTRAST_DESIGN.ruled.json): 19 pretraining units,
 # fresh R0 and R2 fits on the mg2m arm, reports, decide_r2, publication, CLOSE.
 MODE_R2 = "R2_CONTRAST"
 R2_STAGES = ("BRANCH_PRETRAINING", "R0_R2_FITS", "REPORTS", "R2_DECISION", "CLOSED")
-MODES = (MODE_ELAPSED, MODE_MARKET_TIME, MODE_MATCHED, MODE_R2)
+MODES = (MODE_ELAPSED, MODE_MARKET_TIME, MODE_MATCHED, MODE_MATCHED_LONG, MODE_R2)
 #: Modes built from matched arms (arm views, population pins, runtime pins, fairness, strict science).
-MATCHED_FAMILY_MODES = (MODE_MATCHED, MODE_R2)
+MATCHED_FAMILY_MODES = (MODE_MATCHED, MODE_MATCHED_LONG, MODE_R2)
 BASE_UNIT_KINDS = ("fit", "report", "pair", "strategy", "final_refit", "final_test")
 UNIT_KINDS = BASE_UNIT_KINDS + ("comparison", "pretrain", "evaluation")
 IDENTITY_KEYS = ("unit", "family", "kind", "cadence", "effective_config_sha256", "data_sha256", "code_commit",
@@ -219,7 +221,8 @@ def _design_checks(design, *, mode=None):
     errors = []
     schema = design.get("schema")
     expected = {MODE_MARKET_TIME: MARKET_TIME_DESIGN_SCHEMA,
-                MODE_MATCHED: "i6dmo.matched_market_time_design.v1"}.get(mode, ELAPSED_DESIGN_SCHEMA)
+                MODE_MATCHED: "i6dmo.matched_market_time_design.v1",
+                MODE_MATCHED_LONG: "i6dmo.matched_market_time_design.v1"}.get(mode, ELAPSED_DESIGN_SCHEMA)
     if schema != expected:
         errors.append("SCHEMA")
     elif schema != ELAPSED_DESIGN_SCHEMA:
@@ -360,7 +363,7 @@ def donor_problem(prior_root, effective):
 
 
 def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_commit=None, data_pins=None,
-                          entrypoints=None, prior_roots=(), engineering_cpu_fixture=False):
+                          entrypoints=None, prior_roots=(), engineering_cpu_fixture=False, raw_pair=None):
     """Seal the two matched short R0 arms and enumerate the finite contrast graph.
 
     Refuses (typed): a TEST-open design, anything but the two sealed matched identities
@@ -372,10 +375,23 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
     from tools.i6dmo import design as D
     from tools.i6dmo import matched_runner as MR
     adapter = _adapter(adapter)
-    if set(arm_designs) != set(MATCHED_ARMS):
-        raise Refused(f"MATCHED_ARMS_REQUIRED: {sorted(MATCHED_ARMS)}")
+    try:
+        profile = MR.contrast_profile(arm_designs)
+    except ValueError as exc:
+        raise Refused(str(exc)) from None
+    arm_order = profile["arms"]
+    contrast_mode = MODE_MATCHED_LONG if profile["family"] == "long" else MODE_MATCHED
+    if raw_pair is not None:
+        if profile["family"] != "long" or not isinstance(raw_pair, dict):
+            raise Refused("RAW_PAIR_REQUIRES_LONG_CONTRAST")
+        short = raw_pair.get("short_report") or {}
+        if short.get("unit_id") != "mg2m.report" or not Path(short.get("path", "")).is_file() \
+                or file_sha256(short["path"]) != short.get("sha256"):
+            raise Refused("RAW_PAIR_SHORT_PIN")
+        if raw_pair.get("policy") != dict(min_valid_long_heads=2, min_valid_short_heads=1):
+            raise Refused("RAW_PAIR_POLICY: preserve the existing minimum-head rule")
     arms = {}
-    for arm in MATCHED_ARMS:
+    for arm in arm_order:
         design = json.loads(Path(arm_designs[arm]).read_text())
         if design.get("splits", {}).get("test", {}).get("open") is not False:
             raise Refused(f"TEST_OPEN_IN_DESIGN: {arm}")
@@ -387,14 +403,14 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
             raise Refused(f"{exc.code}: {arm}") from None
         if declared != arm:
             raise Refused(f"MATCHED_IDENTITY_REQUIRED: {arm} design declares arm {declared}")
-        sealed = _seal_family(design, adapter, arm, mode=MODE_MATCHED)
+        sealed = _seal_family(design, adapter, arm, mode=contrast_mode)
         block = design["market_time"]
         if block.get("observations") != MR.ARM_SLOTS[arm] or \
                 block.get("spacing_open_market_hours") != MR.ARM_SPACING[arm]:
             raise Refused(f"MATCHED_ARM_RECIPE: {arm} must be {MR.ARM_SLOTS[arm]} slots at "
                           f"{MR.ARM_SPACING[arm]} open-market hour spacing")
         arms[arm] = dict(sealed, resource_class=MR.ARM_RESOURCE_CLASS[arm])
-    first, second = (arms[a]["design"] for a in MATCHED_ARMS)
+    first, second = (arms[a]["design"] for a in arm_order)
     for key in ("seed", "retraining_frequency", "horizons_hours", "splits", "repetitions", "training"):
         if first.get(key) != second.get(key):
             raise Refused(f"MATCHED_ARMS_DIFFER: {key}")
@@ -403,11 +419,11 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
     if engineering_cpu_fixture:
         # CPU fits exist only for SYNTHETIC-calendar engineering fixtures (no CLI flag exposes this):
         # a design sealed on a real calendar can never be fitted on CPU through this path.
-        for arm in MATCHED_ARMS:
+        for arm in arm_order:
             calendar = ((arms[arm]["design"].get("sealed_identities") or {}).get("calendar") or {})
             if not str(calendar.get("calendar_id", "")).startswith(ENGINEERING_FIXTURE_CALENDAR_PREFIX):
                 raise Refused(f"ENGINEERING_CPU_FIXTURE_REQUIRES_SYNTHETIC_CALENDAR: {arm}")
-    if list(first["horizons_hours"]) != list(MR.HORIZONS):
+    if list(first["horizons_hours"]) != list(profile["horizons"]):
         raise Refused(f"MATCHED_HORIZONS: {first['horizons_hours']}")
     root = Path(root)
     if root.exists() and any(root.iterdir()):
@@ -422,21 +438,27 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
         raise Refused("UNFROZEN_COMPARISON: common_population needs its frozen population_sha256")
     if not all(isinstance(p, dict) and len(str(p.get("sha256", ""))) == 64 for p in data_pins.values()):
         raise Refused("DATA_PINS_REQUIRED: every pin needs a sha256")
-    entries = validate_entrypoints(dict(entrypoints or MATCHED_ENTRYPOINTS), required=("fit", "report", "comparison"))
+    defaults = dict(MATCHED_ENTRYPOINTS)
+    if raw_pair is not None:
+        defaults["evaluation"] = ["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", "evaluation"]
+    required = ("fit", "report", "comparison", "evaluation") if raw_pair is not None else ("fit", "report", "comparison")
+    entries = validate_entrypoints(dict(entrypoints or defaults), required=required)
     if entries["report"] in (entries["fit"],) or entries["comparison"] in (entries["fit"],):
         raise Refused("REPORT_ENTRY_CALLS_FIT")
-    base = arms["mg2m"]
+    base = arms[profile["tie_keeps"]]
     effective = _seal(dict(
-        schema="i6dmo.effective_config.v1", experiment_id="I6-DMO-MATCHED-SHORT-MG1-MG2-R0",
+        schema="i6dmo.effective_config.v1", experiment_id=("I6-DMO-MATCHED-LONG-MG1-MG12-R0"
+            if profile["family"] == "long" else "I6-DMO-MATCHED-SHORT-MG1-MG2-R0"),
         design=base["design"], design_sha256=base["design_sha256"], validator=base["validator"],
         adapter_effective=base["adapter_effective"], arms=arms, cadence=first["retraining_frequency"],
         seed=first["seed"], code_commit=code_commit or _git_head(), data_pins=data_pins,
         data_sha256=sha256_json(data_pins), entrypoints=entries, prior_roots=[str(p) for p in prior_roots],
-        test_open=False, strategy_execution=None, mode=MODE_MATCHED, deployment_sha256=sha256_json(spec),
+        test_open=False, strategy_execution=None, mode=contrast_mode, deployment_sha256=sha256_json(spec),
         long=None, fit_device="cpu" if engineering_cpu_fixture else "gpu",
         engineering_cpu_fixture=bool(engineering_cpu_fixture),
-        comparison=dict(rule=MR.RULE, tolerance=MR.TOLERANCE, tie_keeps=MR.TIE_KEEPS,
-                                   horizons=list(MR.HORIZONS), split="DEVELOPMENT")))
+        comparison=dict(rule=MR.RULE, tolerance=MR.TOLERANCE, tie_keeps=profile["tie_keeps"],
+                                   horizons=list(profile["horizons"]), split="DEVELOPMENT"),
+        **({"raw_pair": raw_pair} if raw_pair is not None else {})))
     eff_sha = sha256_json(effective)
     campaign_id = "i6dmo-" + sha256_json(dict(experiment=effective["experiment_id"], cadence=effective["cadence"],
                                               effective=eff_sha))[:12]
@@ -449,9 +471,10 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
         (root / folder).mkdir(parents=True, exist_ok=True)
     units = _validation_units(effective, eff_sha)
     plan = dict(schema="i6dmo.plan.v1", campaign_id=campaign_id, effective_config_sha256=eff_sha,
-                effective_config_file_sha256=file_sha256(paths["effective"]), mode=MODE_MATCHED,
-                stages=list(MATCHED_STAGES), units=units, test_units_enumerated=False,
-                expected=dict(validation_units=len(units), arms=list(MATCHED_ARMS),
+                effective_config_file_sha256=file_sha256(paths["effective"]), mode=contrast_mode,
+                stages=(list(MATCHED_STAGES[:-1]) + ["RAW_PAIR_ELIGIBILITY_AND_STRATEGY", "CLOSED"]
+                        if raw_pair is not None else list(MATCHED_STAGES)), units=units, test_units_enumerated=False,
+                expected=dict(validation_units=len(units), arms=list(arm_order),
                               final_units="NOT_ENUMERABLE_IN_MATCHED_CONTRAST"))
     q = open_queue(root)
     try:
@@ -462,10 +485,10 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
     _write_plan(root, plan)
     _storage_gate(spec, "init")
     write_status(root)
-    return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root), mode=MODE_MATCHED,
+    return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root), mode=contrast_mode,
                 units=[u["unit_id"] for u in plan["units"]],
                 arms={a: dict(seal_sha256=arms[a]["design"].get("seal_sha256"), design_sha256=arms[a]["design_sha256"])
-                      for a in MATCHED_ARMS})
+                      for a in arm_order})
 
 
 SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)  # pre-ruling exact-slot build
@@ -564,6 +587,8 @@ def _identify(unit, effective, family_sha, upstream):
 
 
 def _family_sha(effective, family):
+    if family == "raw_pair":
+        return sha256_json(dict(raw_pair=effective["raw_pair"], comparison=_family_sha(effective, "comparison")))
     if family == "r2_pretrain":
         return sha256_json(dict(arm=_family_sha(effective, "mg2m"), objective=effective["r2"]["objective"],
                                 contract=effective["r2"]["contract_seal_sha256"]))
@@ -657,7 +682,8 @@ def _matched_units(effective):
         for unit_id, kind, device, deps, calls_fit in ((f"{arm}.fit", "fit", effective.get("fit_device", "gpu"), [],
                                                         True),
                                                        (f"{arm}.report", "report", "cpu", [f"{arm}.fit"], False)):
-            unit = _base(unit_id, "short", kind, st[0], device, deps, w, calls_fit=calls_fit)
+            family = "long" if mode_of(effective) == MODE_MATCHED_LONG else "short"
+            unit = _base(unit_id, family, kind, st[0], device, deps, w, calls_fit=calls_fit)
             unit.update(arm=arm, resource_class=effective["arms"][arm]["resource_class"])
             _identify(unit, effective, sha, [upstream[d] for d in deps])
             upstream[unit_id] = unit["identity_sha256"]
@@ -669,6 +695,12 @@ def _matched_units(effective):
     _identify(comparison, effective, _family_sha(effective, "comparison"), [upstream[d] for d in deps])
     comparison["_state"] = "WAIT_DEPENDENCY"
     units.append(comparison)
+    if effective.get("raw_pair") is not None:
+        pair = _base("raw.pair", "raw_pair", "evaluation", "RAW_PAIR_ELIGIBILITY_AND_STRATEGY",
+                     "cpu", ["comparison"], dict(validation=window["validation"]), calls_fit=False)
+        _identify(pair, effective, _family_sha(effective, "raw_pair"), [comparison["identity_sha256"]])
+        pair["_state"] = "WAIT_DEPENDENCY"
+        units.append(pair)
     return units
 
 
@@ -894,7 +926,7 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
 def _validation_units(effective, eff_sha):
     if mode_of(effective) == MODE_R2:
         return _r2_units(effective)
-    if mode_of(effective) == MODE_MATCHED:
+    if mode_of(effective) in MATCHED_CONTRAST_MODES:
         return _matched_units(effective)
     if mode_of(effective) == MODE_MARKET_TIME:
         return _market_time_units(effective)
@@ -1162,17 +1194,21 @@ def enumerate_test_units(root):
 
 
 def _matched_readiness(root):
+    final_id = "raw.pair" if load_effective(root).get("raw_pair") is not None else "comparison"
     q = open_queue(root)
     try:
-        row = q.unit("comparison")
-        term = q.terminal("comparison")
+        row = q.unit(final_id)
+        term = q.terminal(final_id)
     finally:
         q.close()
     if term is not None:
-        status = (term["terminal"].get("gates") or {}).get("comparison_status") or term["terminal"].get("disposition")
+        status = (term["terminal"].get("gates") or {}).get("pair_status") or \
+            (term["terminal"].get("gates") or {}).get("comparison_status") or term["terminal"].get("disposition")
+        if final_id == "raw.pair" and status == "PASS" and term["terminal"].get("status") == "COMPLETE":
+            status = "RAW_PAIR_VALIDATION_COMPLETE"
         return dict(state="TERMINAL", disposition=status, missing=[], cause="matched development contrast decided")
     if row is not None and row["state"] in ("FAILED", "BLOCKED"):
-        return dict(state="TERMINAL", disposition=f"UNIT_{row['state']}:comparison", cause=row["cause"], missing=[])
+        return dict(state="TERMINAL", disposition=f"UNIT_{row['state']}:{final_id}", cause=row["cause"], missing=[])
     return dict(state="IN_PROGRESS", disposition=None, missing=[], cause="matched contrast is still advancing")
 
 
@@ -1584,7 +1620,9 @@ def _publish(root, *, warehouse=None, mirror=True, run=None):
 #: A unit failure is never closed automatically: it stays FAILED in status for a human ruling.
 AUTO_CLOSE_DISPOSITIONS = ("R2_SELECTED", "R0_RETAINED",
                            "PAIR_NOT_ELIGIBLE", "MARKET_TIME_PAIR_VALIDATION_COMPLETE", "FINAL_PAIR_TEST_COMPLETE",
-                           "MG1_SELECTED", "MG2_SELECTED", "MG2_RETAINED_WITHIN_TOLERANCE", "INCOMPLETE_COMPARISON")
+                           "MG1_SELECTED", "MG2_SELECTED", "MG2_RETAINED_WITHIN_TOLERANCE", "INCOMPLETE_COMPARISON",
+                           "MG1_LONG_SELECTED", "MG12_SELECTED", "MG12_RETAINED_WITHIN_TOLERANCE",
+                           "RAW_PAIR_VALIDATION_COMPLETE")
 CLOSURE_INPUTS_DIR = Path("backup") / "closure_inputs"
 CLOSURE_INPUT_FILES = ("PUBLICATION.json", "MIRRORS.json", "REPORTS.json")
 
@@ -1662,6 +1700,9 @@ def closure_problems(root):
         problems.append(f"READINESS_{ready['state']}")
     if disposition not in AUTO_CLOSE_DISPOSITIONS:
         problems.append(f"DISPOSITION_NOT_AUTO_CLOSABLE:{disposition}")
+    if disposition in ("MG1_LONG_SELECTED", "MG12_SELECTED", "MG12_RETAINED_WITHIN_TOLERANCE",
+                        "RAW_PAIR_VALIDATION_COMPLETE") and mode_of(load_effective(root)) != MODE_MATCHED_LONG:
+        problems.append(f"DISPOSITION_MODE_MISMATCH:{disposition}")
     readback, readback_problems = _outbox_readback(root)
     problems += readback_problems
     pub = _read_json_file(root / "PUBLICATION.json")

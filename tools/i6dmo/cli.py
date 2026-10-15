@@ -141,17 +141,27 @@ init      seal both arms and enumerate the finite graph mg1/mg2m fit -> report -
 status    campaign / arm / unit status (never launches or alters a fit)
 Deploy with the existing `deploy` command (`--render-to` renders only)."""
 
+MATCHED_LONG_HELP = """RAW long control: mg1l (145 hourly market slots) versus mg12m (13 slots, 12h spacing).
+Both span 144 open-market hours, include current t and predict exact elapsed
+18,24,36,48,60,72-hour heads at hourly origins. No R2, pretraining or TEST.
+prepare/validate/preflight/init use the same finite queue and warehouse path.
+An authenticated --raw-pair config adds automatic eligibility and strategy
+evaluation after the comparison. status is read-only at campaign/arm/unit level."""
+
 
 def cmd_matched(args):
     from tools.i6dmo import campaign as C
     from tools.i6dmo import matched_runner as MR
     try:
         if args.matched_command == "prepare":
-            designs = {a: d for a, d in (("mg1", args.mg1_design), ("mg2m", args.mg2m_design)) if d}
+            long = getattr(args, "matched_family", "short") == "long"
+            names = (("mg1l", args.mg1_design), ("mg12m", args.mg2m_design)) if long else (
+                ("mg1", args.mg1_design), ("mg2m", args.mg2m_design))
+            designs = {a: d for a, d in names if d}
             doc = MR.prepare(deployment=args.deployment, input_dir=args.input_dir, out=args.out, role=args.role,
                              designs=designs or None, population_seal=args.population_seal,
                              population_dir=args.population_dir, prior_roots=args.prior_root or (),
-                             test=args.test)
+                             test=args.test, long=long)
             _emit(dict(state="PREPARED", out=str(args.out),
                        designs={a: d["seal_sha256"] for a, d in doc["designs"].items()},
                        population_sha256=doc["data_pins"]["common_population"]["population_sha256"],
@@ -170,7 +180,8 @@ def cmd_matched(args):
             doc = json.loads(Path(args.prepared).read_text())
             _emit(C.init_matched_contrast({a: d["path"] for a, d in doc["designs"].items()}, doc["deployment"],
                                           args.root, code_commit=args.code_commit, data_pins=doc["data_pins"],
-                                          prior_roots=doc["prior_roots"], entrypoints=_load_json(args.entrypoints)))
+                                          prior_roots=doc["prior_roots"], entrypoints=_load_json(args.entrypoints),
+                                          raw_pair=_load_json(getattr(args, "raw_pair", None))))
             return 0
         if args.matched_command == "status":
             from tools.i6dmo import status
@@ -182,9 +193,9 @@ def cmd_matched(args):
     raise SystemExit("unknown matched-short command")
 
 
-def _add_matched(sub):
-    p = sub.add_parser("matched-short", help="matched short MG1/MG2m contrast (prepare, validate, preflight, init, "
-                                             "status)", description=MATCHED_HELP,
+def _add_matched(sub, family="short"):
+    p = sub.add_parser(f"matched-{family}", help=f"matched {family} RAW sampling contrast (prepare, validate, preflight, init, "
+                                             "status)", description=MATCHED_LONG_HELP if family == "long" else MATCHED_HELP,
                        formatter_class=argparse.RawDescriptionHelpFormatter)
     msub = p.add_subparsers(dest="matched_command", required=True)
     q = msub.add_parser("prepare", help="resolve pins by path and write the private prepared JSON")
@@ -192,8 +203,10 @@ def _add_matched(sub):
     q.add_argument("--input-dir", required=True, help="retained INPUT.npz directory under the role's data_root")
     q.add_argument("--out", required=True, help="private output JSON (refused inside a git checkout)")
     q.add_argument("--role", default="coordinator", help="role whose data_root/run_root/storage root are resolved")
-    q.add_argument("--mg1-design", help="default: the committed matched_short/EXPERIMENT.mg1.json")
-    q.add_argument("--mg2m-design", help="default: the committed matched_short/EXPERIMENT.mg2m.json")
+    q.add_argument(*(("--mg1l-design", "--mg1-design") if family == "long" else ("--mg1-design",)),
+                   dest="mg1_design", help="sealed hourly control")
+    q.add_argument(*(("--mg12m-design", "--mg2m-design") if family == "long" else ("--mg2m-design",)),
+                   dest="mg2m_design", help="sealed downsampled reference")
     q.add_argument("--population-seal", help="default: the committed matched_short/POPULATION_SEAL.json")
     q.add_argument("--population-dir", help="default: the seal's private_location under the storage root")
     q.add_argument("--prior-root", action="append", help="a prior matched root whose verified terminals may be adopted")
@@ -211,14 +224,16 @@ def _add_matched(sub):
     q.add_argument("--root", required=True, help="NEW campaign root on ext4")
     q.add_argument("--code-commit", help="runtime commit (default: git HEAD of this checkout)")
     q.add_argument("--entrypoints", help="optional JSON {kind: argv} (fixtures only; default: unit_runner per kind)")
+    if family == "long":
+        q.add_argument("--raw-pair", help="private authenticated short-report/strategy pins for automatic pair evaluation")
     q.add_argument("--json", action="store_true")
     q = msub.add_parser("status", help="campaign / arm / unit status; never launches or alters a fit")
     q.add_argument("--root", required=True)
     q.add_argument("--level", default="campaign", choices=("campaign", "arm", "unit", "all"))
-    q.add_argument("--arm", help="mg1 | mg2m (with --level arm)")
-    q.add_argument("--unit", help="e.g. mg1.fit (with --level unit)")
+    q.add_argument("--arm", help=("mg1l | mg12m" if family == "long" else "mg1 | mg2m") + " (with --level arm)")
+    q.add_argument("--unit", help="one exact unit id (with --level unit)")
     q.add_argument("--json", action="store_true")
-    p.set_defaults(func=cmd_matched)
+    p.set_defaults(func=cmd_matched, matched_family=family)
 
 
 R2_HELP = """R0-versus-R2 branch-pretraining contrast (ruled R2_CONTRAST_DESIGN.ruled.json), finite:
@@ -410,6 +425,7 @@ def build_parser():
     p.set_defaults(func=cmd_gate)
 
     _add_matched(sub)
+    _add_matched(sub, "long")
     _add_r2(sub)
 
     p = sub.add_parser("close")

@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S7_RAW_LONG_MATCHED_CONTROL_DEFINITION",
- "execution_status": "RAW_PRIORITY_R2_DEFERRED_AFTER_PREFIT_IMPORT_FAILURE",
+ "current_stage": "S11_RAW_LONG_MATCHED_READY_FOR_EXECUTION",
+ "execution_status": "INDEPENDENT_REVIEW_ACCEPTED_SOURCE_FREEZE_PENDING_DEPLOYMENT",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -21,7 +21,7 @@
   "S6_COMPONENT_DESIGN",
   "S7_INTEGRATION_TEST_DESIGN"
  ],
- "definition_gate": "SC01-SC12 test design is specified in NEXT_CONTRASTS_PLAN_20261015.md; freeze new market-time designs and common populations, implement executable tests and obtain independent actual-path review before dispatch. Existing acceptance evidence belongs to closed baselines, not the new contrast.",
+ "definition_gate": "RAW long control accepted by independent hash-bound re-review in matched_long/INDEPENDENT_REVIEW.md. Parent focused CPU tests: 157 passed; independent final CPU checks: 76 passed. Freeze reviewed source, regenerate governing population under that commit, then fresh resource admission and automatic execution. No claim of scientific results from these tests.",
  "next_allowed_actions": [
   "Retain campaign i6dmo-9e1ebad89ff2 CLOSE.json and its verified metrics, mirrors and original fit identities",
   "Retain the closed matched campaign and selected MG2m recipe without another matched-control fit",
@@ -94,6 +94,6 @@
   "audit": "matched_short/MUSASHI_R2_AUDIT_20261015.md",
   "operational_cadence": "matched_short/R2_OPERATIONAL_CADENCE_20261015.json"
  },
- "status_note": "Owner restored RAW-first priority; Musashi executes, no new Satoshi work. Matched short CLOSED; matched long hourly/downsampled control missing. No eligible RAW pair or trading measurement. R2 has 19 donors and R0 complete but failed before training because donor terminals were absent on the preferred worker. Preserve all artifacts, defer R2; no TEST or hidden retry.",
+ "status_note": "Owner restored RAW-first priority; Musashi executes, no new Satoshi work. Matched short CLOSED. Long MG12m versus MG1l implementation and finite factory-to-CLOSE paths accepted; release manifest binds executable bytes. Real engineering population and 6243 exact strategy-close reconciliations prepared, but engineering population is non-governing. Production population must be regenerated after source freeze. No new scientific fit or trading result claimed yet. R2 remains deferred; TEST closed.",
  "runtime_qualification_mg2_mg12": {"label": "RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21", "record": "docs/i6n/direct_multi_output_static/RUNTIME_QUALIFICATION_MG2_MG12.json", "record_sha256": "ea96d5a08ff2cd9544ff41d6447f29e60b0cbbf5e4fa160247f9610cc2486060", "statement": "closed MG2/MG12 results: declared TF 2.18.0/Keras 3.9.0, receipts record TF 2.21.0; numbers unchanged; not a runtime-matched donor/control"}
 }

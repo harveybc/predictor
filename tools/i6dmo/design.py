@@ -181,7 +181,19 @@ MATCHED_SCOPE = {
              "horizons_hours": [2, 3, 4, 5, 6, 12], "family": "short_mg2_matched",
              "role": "MATCHED_REFERENCE", "partner": "mg1"},
 }
-MATCHED_FAMILIES = tuple(v["family"] for v in MATCHED_SCOPE.values())
+LONG_MATCHED_CONTRAST_ID = "I6-DMO-LONG-MG1-VS-MG12-MATCHED-R0"
+LONG_MATCHED_SCOPE = {
+    "mg1l": {"experiment_id": "I6-DMO-LONG-MG1-MATCHED-R0", "rule": "MG1_MARKET_EXACT",
+             "observations": 145, "spacing_open_market_hours": 1, "span_open_market_hours": 144,
+             "horizons_hours": [18, 24, 36, 48, 60, 72], "family": "long_mg1_matched",
+             "role": "CONTROL", "partner": "mg12m"},
+    "mg12m": {"experiment_id": "I6-DMO-LONG-MG12-MATCHED-R0", "rule": "MG12_MARKET_EXACT",
+              "observations": 13, "spacing_open_market_hours": 12, "span_open_market_hours": 144,
+              "horizons_hours": [18, 24, 36, 48, 60, 72], "family": "long_mg12_matched",
+              "role": "MATCHED_REFERENCE", "partner": "mg1l"},
+}
+ALL_MATCHED_SCOPE = {**MATCHED_SCOPE, **LONG_MATCHED_SCOPE}
+MATCHED_FAMILIES = tuple(v["family"] for v in ALL_MATCHED_SCOPE.values())
 #: Frozen BEFORE either fit (plan section 2 "Common population"); both sealed designs bind its sha256.
 MATCHED_POPULATION_RULES = {
     "schema": "i6dmo.matched_population_rules.v1",
@@ -219,6 +231,36 @@ MATCHED_SUPERSEDED_SEALS = {
 MATCHED_POPULATION_RULES["rules_sha256"] = hashlib.sha256(json.dumps(
     MATCHED_POPULATION_RULES, sort_keys=True, separators=(",", ":"),
     allow_nan=False).encode("utf-8")).hexdigest()
+LONG_MATCHED_POPULATION_RULES = copy.deepcopy(MATCHED_POPULATION_RULES)
+LONG_MATCHED_POPULATION_RULES.pop("rules_sha256")
+LONG_MATCHED_POPULATION_RULES["contrast_id"] = LONG_MATCHED_CONTRAST_ID
+LONG_MATCHED_POPULATION_RULES["scaler"] = (
+    "ONE FIT-only feature mean/std (ddof=0) over the UNION of MG1-long/MG12 input-source "
+    "bars of the common FIT origins, with its exact source-row digest; the same "
+    "statistics serve both arms; INNER/DEVELOPMENT cannot change them")
+LONG_MATCHED_POPULATION_RULES["rules_sha256"] = hashlib.sha256(json.dumps(
+    LONG_MATCHED_POPULATION_RULES, sort_keys=True, separators=(",", ":"),
+    allow_nan=False).encode("utf-8")).hexdigest()
+
+
+def matched_arm_set(arms):
+    """Infer exactly one supported contrast; mixed, partial and combined pairs are refused."""
+    keys = set(arms)
+    for scope in (MATCHED_SCOPE, LONG_MATCHED_SCOPE):
+        if keys == set(scope):
+            return tuple(scope)
+    raise DesignError("ARMS_REQUIRED", "exactly mg1/mg2m or mg1l/mg12m")
+
+
+def matched_population_rules(arm):
+    """Frozen rules of an explicit matched arm, never a short-family global override."""
+    if arm in MATCHED_SCOPE:
+        return copy.deepcopy(MATCHED_POPULATION_RULES)
+    if arm in LONG_MATCHED_SCOPE:
+        return copy.deepcopy(LONG_MATCHED_POPULATION_RULES)
+    raise DesignError("MATCHED_ARM_UNKNOWN", repr(arm))
+
+
 SHORT_CLOSURE_UNIT = "short.report"
 SHORT_CLOSURE_STATUSES = ("COMPLETE", "NOT_ELIGIBLE")
 TERMINAL_SCHEMA = "i6dmo.terminal.v1"
@@ -466,9 +508,10 @@ MARKET_TIME_SCHEMAS = {MARKET_TIME_SCOPE[k]["family"]: _market_time_schema(k)
 
 
 def _matched_schema(arm):
-    """Matched MG1/MG2 design schema: market-time scope + the frozen common-population rules."""
-    scope = MATCHED_SCOPE[arm]
-    partner = MATCHED_SCOPE[scope["partner"]]
+    """Matched design schema: explicit market-time scope and contrast-specific population rules."""
+    scope = ALL_MATCHED_SCOPE[arm]
+    partner = ALL_MATCHED_SCOPE[scope["partner"]]
+    rules = matched_population_rules(arm)
     base = copy.deepcopy(SCHEMA)
     return {
         "schema": _fixed(MATCHED_SCHEMA),
@@ -492,10 +535,10 @@ def _matched_schema(arm):
         "metrics": base["metrics"], "execution": base["execution"],
         "matched_population": {
             "arm": _fixed(arm), "role": _fixed(scope["role"]),
-            "contrast_id": _fixed(MATCHED_CONTRAST_ID),
+            "contrast_id": _fixed(rules["contrast_id"]),
             "partner_arm": _fixed(scope["partner"]),
             "partner_experiment_id": _fixed(partner["experiment_id"]),
-            "rules_sha256": _fixed(MATCHED_POPULATION_RULES["rules_sha256"]),
+            "rules_sha256": _fixed(rules["rules_sha256"]),
             "full_population_fit_substitutes": _fixed(False),
         },
         "sealed_identities": {
@@ -515,7 +558,7 @@ def _matched_schema(arm):
     }
 
 
-MATCHED_SCHEMAS = {MATCHED_SCOPE[k]["family"]: _matched_schema(k) for k in MATCHED_SCOPE}
+MATCHED_SCHEMAS = {ALL_MATCHED_SCOPE[k]["family"]: _matched_schema(k) for k in ALL_MATCHED_SCOPE}
 
 
 def mode(doc):
@@ -535,27 +578,26 @@ def family(doc):
         return "short_mg2"
     if eid == MG12_ID:
         return "long_mg12"
-    if eid == MG1_MATCHED_ID:
-        return "short_mg1_matched"
-    if eid == MG2_MATCHED_ID:
-        return "short_mg2_matched"
+    for scope in ALL_MATCHED_SCOPE.values():
+        if eid == scope["experiment_id"]:
+            return scope["family"]
     return "short"
 
 
 def matched_arm(doc):
-    """Arm key (``mg1``/``mg2m``) of a VALIDATED matched design; anything else is refused.
+    """Arm key of a VALIDATED short or long matched design; anything else is refused.
 
     The closed full-population MG2 (``short_mg2``), the ELAPSED hourly control and every other
     family raise ``MATCHED_IDENTITY_REQUIRED``: none can stand in for a matched identity.
     """
     fam = family(doc)
-    for arm, scope in MATCHED_SCOPE.items():
+    for arm, scope in ALL_MATCHED_SCOPE.items():
         if scope["family"] == fam:
             validate_design(doc)
             return arm
     eid = doc.get("experiment_id") if isinstance(doc, dict) else None
     raise DesignError("MATCHED_IDENTITY_REQUIRED",
-                      f"family {fam!r} ({eid!r}) is not a matched MG1/MG2 identity; a "
+                      f"family {fam!r} ({eid!r}) is not a declared matched identity; a "
                       "full-population or elapsed design never substitutes for one")
 
 
@@ -825,7 +867,7 @@ def _market_time_effective(d, features):
     }
     if fam in MATCHED_FAMILIES:
         effective["matched_population"] = copy.deepcopy(d["matched_population"])
-        effective["matched_population_rules"] = copy.deepcopy(MATCHED_POPULATION_RULES)
+        effective["matched_population_rules"] = matched_population_rules(matched_arm(d))
     effective["effective_config_sha256"] = effective_config_sha256(effective)
     return effective
 
@@ -1152,12 +1194,12 @@ MATCHED_CALENDAR = {"calendar_id": "FX_NY_17_ASSUMED_NOT_BROKER", "version": "i6
 
 
 def matched_market_time_design(short_design, arm, data_designs, *, calendar=None, runtime=None):
-    """Derive ONE sealed matched design (``mg1`` control or ``mg2m`` reference); pure, no data read.
+    """Derive ONE sealed short or long matched design; pure, no data read.
 
     ``data_designs`` maps both arms to their data-lane DESIGN documents
     (:func:`tools.i6dmo.common_population.matched_data_design`); this design binds its own data
     design digest and data identity plus the partner's data identity, and the frozen
-    MATCHED_POPULATION_RULES. ``calendar``/``runtime`` default to the real assumed calendar and
+    contrast-specific population rules. ``calendar``/``runtime`` default to the real calendar and
     the execution-role pins ``MATCHED_RUNTIME`` (not the sealing host's install).
     """
     from tools.i6dmo import common_population as CP
@@ -1165,9 +1207,13 @@ def matched_market_time_design(short_design, arm, data_designs, *, calendar=None
     if family(base) != "short" or mode(base) == "FINAL_REFIT":
         raise DesignError("SHORT_DESIGN_REQUIRED",
                           "the matched designs derive from the elapsed short design")
-    if arm not in MATCHED_SCOPE:
-        raise DesignError("MATCHED_ARM_UNKNOWN", f"{arm!r}; one of {sorted(MATCHED_SCOPE)}")
-    scope = MATCHED_SCOPE[arm]
+    if arm not in ALL_MATCHED_SCOPE:
+        raise DesignError("MATCHED_ARM_UNKNOWN", f"{arm!r}; one of {sorted(ALL_MATCHED_SCOPE)}")
+    matched_arm_set(data_designs)
+    scope = ALL_MATCHED_SCOPE[arm]
+    rules = matched_population_rules(arm)
+    if set(data_designs) != {arm, scope["partner"]}:
+        raise DesignError("ARMS_REQUIRED", f"{arm} requires partner {scope['partner']}")
     own, partner = data_designs[arm], data_designs[scope["partner"]]
     for key, doc in ((arm, own), (scope["partner"], partner)):
         try:
@@ -1200,10 +1246,10 @@ def matched_market_time_design(short_design, arm, data_designs, *, calendar=None
         "metrics": copy.deepcopy(base["metrics"]),
         "execution": copy.deepcopy(base["execution"]),
         "matched_population": {
-            "arm": arm, "role": scope["role"], "contrast_id": MATCHED_CONTRAST_ID,
+            "arm": arm, "role": scope["role"], "contrast_id": rules["contrast_id"],
             "partner_arm": scope["partner"],
-            "partner_experiment_id": MATCHED_SCOPE[scope["partner"]]["experiment_id"],
-            "rules_sha256": MATCHED_POPULATION_RULES["rules_sha256"],
+            "partner_experiment_id": ALL_MATCHED_SCOPE[scope["partner"]]["experiment_id"],
+            "rules_sha256": rules["rules_sha256"],
             "full_population_fit_substitutes": False,
         },
         "sealed_identities": {
@@ -1240,16 +1286,28 @@ def seal_matched_short(short_design_path, out_dir, *, calendar=None, runtime=Non
 
     Never touches EXPERIMENT.short_hourly.json, EXPERIMENT.mg2.json or EXPERIMENT.mg12.json.
     """
+    return _seal_matched(short_design_path, out_dir, MATCHED_SCOPE,
+                         "i6dmo.seal_matched_short.v1", calendar=calendar, runtime=runtime)
+
+
+def seal_matched_long(short_design_path, out_dir, *, calendar=None, runtime=None):
+    """Seal the distinct RAW 144-market-hour MG1-long/MG12 contrast, without data or fits."""
+    return _seal_matched(short_design_path, out_dir, LONG_MATCHED_SCOPE,
+                         "i6dmo.seal_matched_long.v1", calendar=calendar, runtime=runtime)
+
+
+def _seal_matched(short_design_path, out_dir, scope, schema, *, calendar=None, runtime=None):
     from tools.i6dmo import common_population as CP
     short = load_design(short_design_path)
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    data_designs = {arm: CP.matched_data_design(short, arm) for arm in MATCHED_SCOPE}
-    result = {"schema": "i6dmo.seal_matched_short.v1", "status": "SEALED", "fits_run": 0,
-              "contrast_id": MATCHED_CONTRAST_ID,
-              "matched_population_rules_sha256": MATCHED_POPULATION_RULES["rules_sha256"]}
-    _write_once(out / "MATCHED_POPULATION_RULES.json", MATCHED_POPULATION_RULES, "MATCHED_DESIGN_EXISTS")
-    for arm in MATCHED_SCOPE:
+    data_designs = {arm: CP.matched_data_design(short, arm) for arm in scope}
+    rules = matched_population_rules(next(iter(scope)))
+    result = {"schema": schema, "status": "SEALED", "fits_run": 0,
+              "contrast_id": rules["contrast_id"],
+              "matched_population_rules_sha256": rules["rules_sha256"]}
+    _write_once(out / "MATCHED_POPULATION_RULES.json", rules, "MATCHED_DESIGN_EXISTS")
+    for arm in scope:
         doc = matched_market_time_design(short, arm, data_designs, calendar=calendar, runtime=runtime)
         effective = effective_config(doc)
         _write_once(out / f"DESIGN.{arm}.json", data_designs[arm], "MATCHED_DESIGN_EXISTS")

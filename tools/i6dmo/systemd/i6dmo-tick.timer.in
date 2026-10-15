@@ -3,8 +3,9 @@ Description=I6-DMO @CID@ tick timer
 @MARK@
 
 [Timer]
-OnBootSec=2min
+OnBootSec=@TICK_BOOT@
 OnUnitInactiveSec=@INTERVAL@s
+@TIMER_ACCURACY@
 Persistent=true
 Unit=@PREFIX@tick.service
 
