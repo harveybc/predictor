@@ -8,7 +8,7 @@ governing specification `MARKET_TIME_PAIR_PLAN.md` sections 2-6 at
 
 Two jobs: **A. data provenance** (independent, reported here) and
 **B. independent falsification of the integrated temporal and metric paths**
-(reported in section B once the integration is pinned).
+(reported in section B).
 
 Constraints honored: CPU only (`CUDA_VISIBLE_DEVICES=""`), every execution one
 at a time under `crispdm-run -q -m 3G -t <=900s -n i6dmo-mt-review -- ...` with
@@ -296,13 +296,237 @@ fetchers hit public endpoints only.
 
 ## B. Independent falsification of the temporal and metric paths
 
-**Status: NOT STARTED.** At the time section A was written the integration
-branch did not yet contain the DATA and MODEL market-time work (neither lane
-tip was an ancestor of the integration tip), so there was nothing integrated to
-falsify. This section will carry the pinned integration commit, the executed
-negative controls, at least one independent fail-closed counterexample per area
-of plan section 6, the original-price same-row MAE / naive replay, and a verdict
-of `ACCEPT_FOR_SCIENTIFIC_EXECUTION` or `FIX_REQUIRED`.
+**Reviewed pin:** `satoshi/i6dmo-static-20261014` @ `96d4787b` ("merge the
+MG2/MG12 data and model seals; verify the bundle-model array contract"), which
+contains data `00c27fed` and model `5826f124` as ancestors (both verified).
+Merged into this review branch; no lane branch was edited.
 
-No statement in section A certifies any lane's code. This reviewer wrote none
-of the reviewed implementation and does not self-certify the probes' subject.
+Sealed identities as pinned by the coordinator and re-derived here: designs
+`169fbece` (MG2) / `8c10a9ca` (MG12), seals `e7c2f3e7` / `ef562ba4`, effective
+`5798baaa` / `0b1b63e3`, bundles MG2 `21400c51` (BUNDLE.json `471ea311`) and
+MG12 `c3867b5c` (`e6595c0e`), encoder `DynamicPhysicalTimeEncoder` v1.0.0.
+Sealed runtime pins (TensorFlow 2.18.0, Keras 3.9.0) equal the installed
+runtime. Candidate suite at the pin: **`pytest tests/i6dmo` 369 passed**,
+424 s, CPU, one bounded job — the coordinator's count reproduces.
+
+### B.0 Verdict
+
+**FIX_REQUIRED.** The temporal and metric paths themselves are sound: every
+plan-section-6 control over the data path, the encoder, the context channels,
+serialization and the same-row per-horizon naive **passes**, each against an
+injected fail-closed counterexample of mine. But **the sealed market-time
+identity cannot execute a fit**: three independent seams between the lanes
+refuse it, so there is no path from the sealed designs and bundles to a
+measurement. All three are typed, fail-closed refusals — nothing silently does
+the wrong thing — and all three are cheap to repair.
+
+| Area (plan section 6) | Verdict | Probe |
+|---|---|---|
+| current-`t` inclusion; last offset exactly 0 | PASS | RB01 A1 |
+| future perturbation changes nothing | PASS | RB01 A2 |
+| exact ELAPSED target timestamps | PASS | RB01 A3 |
+| weekend/DST offsets vs ordinary weeks | PASS | RB01 B1 |
+| unplanned gaps not compressed into closures | PASS | RB01 B2 |
+| chronology | PASS | RB01 C1 |
+| split and purge boundaries | PASS | RB01 C2 |
+| same-row per-horizon naive, original price | PASS | RB01 C3 |
+| first slot delta 0 and flag 0 | PASS | RB01 D1 |
+| actual per-example time/closure reach the model (controlled weights) | PASS | RB02 E1 |
+| **an ordinal-index encoding would be caught** | **FAIL** | RB02 E2 |
+| two context channels exact; the 24 not fitted | PASS | RB02 F1 |
+| 19 branches -> 76 + 2 = 78 core channels | PASS | RB02 G1 |
+| serialization/reload of ALL inputs incl. time channels | PASS | RB02 H1 |
+| DS2 unchanged; no artifact adoptable by shape alone | PASS | RB02 I1 |
+| **the fit path consumes a market-time bundle** | **FAIL** | RB03 J1 |
+| finite graph, successor to long, PAIR_NOT_ELIGIBLE, no TEST unit | PASS | RB03 K1 |
+| **the campaign accepts the sealed market-time designs** | **FAIL** | RB03 K2 |
+| identity components, not shape, govern adoption | PASS | RB03 L2 |
+| **the sealed effective config builds its model** | **FAIL** | RB04 |
+
+### B.1 Blocking items, with reproducers
+
+**B-1. `build_dmo(effective["model"])` is refused for BOTH sealed families.**
+The trainer builds the network with exactly that call (`train_unit`,
+tools/i6dmo/train.py). `design.effective_config()` emits a model block carrying
+two keys that `model.normalize_model_config()`'s `MARKET_KEYS` set does not
+accept:
+
+```
+UNKNOWN_FIELD/schema mismatch in market-time model config:
+['offsets_hours', 'time_encoder']
+```
+
+`offsets_hours` is `None` (so there is no contradictory fixed elapsed ladder —
+that part of plan section 2 holds), and `time_encoder` is the sealed formula
+block; the two producers simply disagree about the model block's shape. This is
+inside the model lane, on both `5798baaa` and `0b1b63e3`, so **the sealed
+identities as they stand cannot build a network at all**, independently of any
+data bundle. The positive control in the same probe shows
+`model_config(features, family="short_mg2"|"long_mg12")` builds fine with 78
+core channels, so the defect is the effective-config block, not market-time
+models.
+Reproducer: `python3 -I review_probes/rb04_sealed_effective_builds.py`.
+
+**B-2. The trainer refuses the market-time bundle; nothing feeds the time
+inputs.** `train.load_data_bundle` requires manifest schema
+`i6dmo.data_bundle.v1` and the manifest key `offsets_hours`, and requires the
+split npz arrays to be *exactly* `(row_id, x, origin_price, target_price,
+mask)`. The market bundle is `i6dmo.market_bundle.v1` (deliberately, per
+INTERFACE_DATA) with `offsets_open_market_hours` and nine arrays. The real
+trainer CLI, invoked exactly as a fit unit invokes it, on the sealed MG2 design
+and a freshly built MG2 bundle:
+
+```
+python -m tools.i6dmo.train --design EXPERIMENT.mg2.json --bundle <mg2> \
+    --device cpu --json      ->  exit 3, status FAILED_TYPED,
+                                 BUNDLE_SCHEMA
+```
+
+More fundamentally, `train.py` is untouched by this integration: it assembles a
+single `x` tensor, and no code anywhere assembles
+`[observations, offsets_hours, closure_crossed]` for the 3-input model outside
+tests and my probes. The model lane's INTERFACE_MODEL declares
+`consumes_data_bundle` for the market variant, but no consumer implements it.
+`market_bundle_contract_check.py` checks the bundle against a *described*
+contract, not against the trainer, so it reports CONTRACT_OK while the trainer
+still refuses — I did not rely on it as evidence.
+Reproducer: `python3 -I review_probes/rb03_integration_ops.py <workdir>`,
+control J1.
+
+**B-3. `campaign.init_campaign` refuses the sealed market-time designs.**
+`_design_checks` hard-requires `schema == "i6dmo.design.v1"`; the sealed designs
+carry `i6dmo.market_time_design.v1`, so `_seal_family` raises `Refused: SCHEMA`
+for both short and long. The ops market-time graph is therefore untested against
+the designs the model lane actually produces: its own fixture
+(`ops_fakes.write_market_time_designs`) fabricates an elapsed-schema design with
+an improvised `input` block carrying `sampling_rule` /
+`spacing_open_market_hours`, which is a shape the sealed schema explicitly
+forbids. The seven MTP acceptance tests pass on that fixture, with fake
+trainers, which is why this seam is invisible in the suite.
+Reproducer: same probe, control K2.
+
+**B-4. An ordinal-index encoding reaches the model unrefused.** Plan section 6
+requires that "ordinal-index encoding would be caught". The guard exists only in
+the bundle builder (`market_grid.time_inputs` raises
+`INTERNAL_OFFSET_NOT_ZERO`), and the encoder's `build` correctly refuses a fixed
+per-batch grid — but the model call itself accepts slot indices
+(`arange(-12..0)`) **and a positive, physically impossible future offset**
+silently. Executed:
+
+```
+model_call_with_ordinal_offsets            -> ACCEPTED_SILENTLY
+model_call_with_a_positive_future_offset   -> ACCEPTED_SILENTLY
+encoder_with_a_fixed_per_batch_grid        -> ValueError (refused)
+bundle_time_inputs_with_nonzero_last_offset-> INTERNAL_OFFSET_NOT_ZERO (refused)
+```
+
+Detectable is not the same as caught: the committed test shows the ordinal code
+*differs numerically*, which is a property of the formula, not a guard. Since the
+component that will feed these arrays (B-2) does not exist yet, this is the one
+place where the missing seam could later be built wrong without any refusal.
+Fix: assert in `DynamicPhysicalTimeEncoder.call` (or at the trainer's input
+assembly) that the last offset is 0, that every offset is <= 0, and that the
+first adjacent delta and closure flag are 0.
+Reproducer: same probe as RB02, control E2.
+
+### B.2 What passed, and how hard it was pushed
+
+All counterexamples below were written by this reviewer, not reused from the
+candidate's tests.
+
+- **RB01 A1/D1.** On 18,856 FIT rows the last slot equals the origin in every
+  row, every last offset is exactly 0, every offset is <= 0, and the first
+  adjacent delta and closure flag are 0 in every row.
+- **RB01 A2 future perturbation.** Shifting **19,291** bars strictly after `t`
+  by +1234.5 (and the price by +99) leaves one origin's inputs, actual offsets
+  and closure flags bit-identical; the counterexample — perturbing the *oldest
+  in-window* bar — does change the inputs, so the control is informative.
+- **RB01 A3 exact targets.** 28,484 (row, head) label comparisons against the
+  retained price at `t + h*3600`: 0 mismatches; the shifted-by-one-hour control
+  disagrees, so the equality is not trivial.
+- **RB01 B1 weekend/DST.** Ordinary-week elapsed spans are exactly {24} open-
+  market hours; closure-crossing spans are {71, 72, 73} over 2,600 rows — three
+  distinct spans, which is the DST evidence the plan asks for, and never a fixed
+  24 h label.
+- **RB01 B2 unplanned gap.** Dropping one bar inside an open session keeps that
+  hour an *expected* market hour; all 12 origins whose window contains it are
+  excluded `INPUT_SLOT_NOT_OBSERVED` and counted per split, and **none** of
+  their closure flags turns true at that slot — the gap is not compressed into
+  a closure. With the bar present the same 12 origins are not excluded.
+- **RB01 C2 purge.** For FIT/INNER/VALIDATION every origin lies inside its split
+  and **zero** valid labels reach the split end.
+- **RB01 C3 same-row naive.** `market_grid.paired_metrics` on the VALIDATION
+  split (4,924 rows) agrees with my manual original-price computation on `n`,
+  MAE and the per-horizon naive to <= 1e-9 on every head, on identical rows.
+  Counterexample: rescaling the retained prices by 1.0001 raises
+  `NaiveReplayMismatch` naming the disagreeing heads.
+- **RB02 E1 controlled weights.** With all 19 branch kernels and biases set to
+  zero (fused tensor identically 0, no gradient step anywhere), swapping actual
+  offsets for ordinal indices moves the encoder output by 2.04 and the
+  predictions by 0.270, and zeroing the closure flags moves the predictions by
+  0.0159 — the per-example inputs demonstrably reach the core and the heads.
+- **RB02 F1 context channels.** The two appended channels match my independent
+  recomputation to 7.9e-8, the sinusoidal code to 3.3e-6 against the rule
+  recomputed on the actual offsets, and the encoder layer holds **no weights**,
+  so the factor 24 cannot have been fitted.
+- **RB02 H1 serialization.** Reload is bit-identical (max prediction difference
+  exactly 0.0) with 78 core channels; MODEL.json records the input names and
+  `slot_order_is_not_wall_clock`. Counterexample: stripping `market_time` from a
+  market artifact raises `MARKET_TIME_INCOMPATIBLE`.
+- **RB02 I1 DS2.** The DS2 model keeps one input, 76 core channels,
+  `PhysicalOffsetEncoding`, a null time-encoder field and a bit-identical
+  reload; the config digests differ. Counterexamples: a market config carrying
+  `offsets_hours` is refused, and a DS2 artifact whose metadata claims
+  market-time is refused `MARKET_TIME_INCOMPATIBLE` — not adoptable by shape.
+- **RB03 K1/L2.** The graph is exactly the six declared units with no TEST or
+  final unit, `long.fit` depends on `short.report` **only** (the terminal, never
+  eligibility), so the automatic successor after a scientific short failure is
+  structural; `PAIR_NOT_ELIGIBLE` is a terminal status; the worker's identity
+  component keys equal the campaign's.
+
+### B.3 Scope discipline
+
+Numerical equivalence was scoped **exactly as already reviewed**: the DMO10
+protocol, its tolerances and `MONITOR_TOLERANCE` were not reopened, not
+re-measured and not weakened, and no gate was relaxed. No fit, no GPU, no TEST
+row, no service, no credential. The already-closed exact-DS2 baseline and the
+retained ASOF arm were read only.
+
+### B.4 Missing coverage (honest)
+
+- **Everything GPU.** No GPU execution was permitted, so the 5090/4090 paths,
+  GPU determinism and any GPU save/load identity for the new encoder are
+  unverified by me.
+- **The real bundles.** MG2 `21400c51` / MG12 `c3867b5c` live in a private
+  campaign root that is not readable here; I rebuilt bundles from the synthetic
+  fixture instead. I checked the pinned row counts in INTERFACE_DATA against the
+  support study (16,496/715/4,772 and 13,174/546/3,804 — equal, reconciliation
+  MATCH) but did not recompute them from the real input.
+- **Deploy and publication.** `validate-design`, `preflight`, `init`, `deploy`,
+  the outbox readback and the mirrors were not exercised; B-3 means `init`
+  cannot currently accept the sealed designs anyway.
+- **Campaign recovery and exclusive claims** were read in the candidate's ops
+  tests (fake trainers) and not independently driven by me.
+- **The acceptance matrix** carries only the ops-scope market-time addendum
+  (MTP01-MTP07); no DATA or MODEL acceptance rows were added, which plan
+  section 2 asks for.
+
+### B.5 Reproduction (B)
+
+```bash
+CUDA_VISIBLE_DEVICES='' crispdm-run -q -m 3G -t 900s -n i6dmo-mt-review -- \
+  python -m pytest -q -p no:cacheprovider tests/i6dmo
+for p in rb01_data_time rb02_model_time rb03_integration_ops; do
+  CUDA_VISIBLE_DEVICES='' crispdm-run -q -m 3G -t 900s -n i6dmo-mt-review -- \
+    python3 -I docs/i6n/direct_multi_output_static/market_time/review_probes/$p.py <workdir>
+done
+CUDA_VISIBLE_DEVICES='' crispdm-run -q -m 3G -t 600s -n i6dmo-mt-review -- \
+  python3 -I docs/i6n/direct_multi_output_static/market_time/review_probes/rb04_sealed_effective_builds.py
+```
+
+Retained verdicts: `review_probes/RB0{1,2,3,4}_RESULT.json`, redacted of local
+paths and host names.
+
+No statement in this review certifies any lane's code beyond what its own
+executed control shows. This reviewer wrote none of the reviewed implementation
+and does not self-certify the probes' subject.

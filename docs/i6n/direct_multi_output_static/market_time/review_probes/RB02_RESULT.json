@@ -1,0 +1,129 @@
+{
+ "controls": {
+  "E1_actual_time_reaches_the_model": {
+   "branch_layers_zeroed": 19,
+   "controlled_weights": "every branch kernel and bias set to zero so the fused tensor is identically 0 and only the time encoder contributes; no fit, no gradient step",
+   "encoded_differs_for_ordinal_vs_actual": 2.0416665859520435,
+   "fused_is_identically_zero": 0.0,
+   "note": "a nonzero difference under zeroed branches proves the per-example time inputs are consumed by the core and the heads; it proves nothing about predictive quality.",
+   "predictions_differ_for_ordinal_vs_actual": 0.26986314728856087,
+   "predictions_differ_when_closure_flags_are_zeroed": 0.015896476805210114,
+   "verdict": "PASS"
+  },
+  "E2_ordinal_encoding_would_be_caught": {
+   "bundle_time_inputs_with_nonzero_last_offset": "DataContractError:INTERNAL_OFFSET_NOT_ZERO: the last offset must be 0",
+   "encoder_with_a_fixed_per_batch_grid": "ValueError:expected [values(batch, slots, C), offsets(batch, slots), closure(batch, slots)]; a fixed per-batch grid is not accepted",
+   "model_call_with_a_positive_future_offset": "ACCEPTED_SILENTLY",
+   "model_call_with_ordinal_offsets": "ACCEPTED_SILENTLY",
+   "verdict": "FAIL"
+  },
+  "F1_context_channels_exact": {
+   "adjacent_channel_is_delta_over_24": true,
+   "closure_channel_is_the_flag": true,
+   "context_shape": [
+    4,
+    13,
+    2
+   ],
+   "first_slot_delta_zero": true,
+   "max_abs_context_error": 7.947285984855057e-08,
+   "max_abs_sinusoid_error_vs_independent_recomputation": 3.3357093528196824e-06,
+   "verdict": "PASS"
+  },
+  "G1_channel_arithmetic": {
+   "branches": 19,
+   "core_input_channels": 78,
+   "core_input_shape": [
+    13,
+    78
+   ],
+   "encoder_has_no_weights": true,
+   "expected": 78,
+   "fusion_output_shape": [
+    13,
+    76
+   ],
+   "model_input_names": [
+    "observations",
+    "offsets_hours",
+    "closure_crossed"
+   ],
+   "slots": 13,
+   "time_encoder_identity": {
+    "context_channels": [
+     "adjacent_elapsed_hours_over_24",
+     "closure_crossed"
+    ],
+    "dtype": {
+     "class_name": "DTypePolicy",
+     "config": {
+      "name": "float32"
+     },
+     "module": "keras",
+     "registered_name": null
+    },
+    "layer": "i6dmo.DynamicPhysicalTimeEncoder",
+    "name": "dynamic_physical_time_encoder",
+    "position": "immediately_after_branch_fusion",
+    "trainable": true,
+    "unit_conversion_hours": 24.0,
+    "version": "1.0.0"
+   },
+   "verdict": "PASS"
+  },
+  "H1_serialization_reload": {
+   "counterexample_caught": true,
+   "counterexample_stripped_market_metadata": "ValueError:MARKET_TIME_INCOMPATIBLE: artifact metadata and config disagree; no donor is compatible by shape alone",
+   "input_names_recorded": [
+    "observations",
+    "offsets_hours",
+    "closure_crossed"
+   ],
+   "market_time_metadata_recorded": {
+    "elapsed_span_fixed": false,
+    "include_origin": true,
+    "observations": 13,
+    "require_exact_market_slots": true,
+    "rule": "MG2_MARKET_EXACT",
+    "slot_order_is_not_wall_clock": true,
+    "spacing_open_market_hours": 2,
+    "span_open_market_hours": 24,
+    "time_encoder_version": "1.0.0",
+    "time_inputs": [
+     "offsets_hours",
+     "closure_crossed"
+    ]
+   },
+   "max_abs_prediction_difference_after_reload": 0.0,
+   "reloaded_core_input_channels": 78,
+   "slot_order_is_not_wall_clock_recorded": true,
+   "time_inputs_recorded": [
+    "offsets_hours",
+    "closure_crossed"
+   ],
+   "verdict": "PASS"
+  },
+  "I1_ds2_unchanged_and_not_adoptable": {
+   "counterexample_ds2_artifact_claiming_market_time": "ValueError:MARKET_TIME_INCOMPATIBLE: artifact metadata and config disagree; no donor is compatible by shape alone",
+   "counterexample_market_config_with_elapsed_offsets": "ValueError:UNKNOWN_FIELD/schema mismatch in market-time model config: ['offsets_hours']",
+   "ds2_core_input_channels": 76,
+   "ds2_positional_encoding": "tools.i6dmo.model:PhysicalOffsetEncoding",
+   "ds2_reload_identical": true,
+   "ds2_single_input": [
+    "observations"
+   ],
+   "ds2_time_encoder_field": null,
+   "model_config_sha256_differs": true,
+   "verdict": "PASS"
+  }
+ },
+ "probe": "RB02_model_time",
+ "verdict": {
+  "E1_actual_time_reaches_the_model": "PASS",
+  "E2_ordinal_encoding_would_be_caught": "FAIL",
+  "F1_context_channels_exact": "PASS",
+  "G1_channel_arithmetic": "PASS",
+  "H1_serialization_reload": "PASS",
+  "I1_ds2_unchanged_and_not_adoptable": "PASS"
+ }
+}

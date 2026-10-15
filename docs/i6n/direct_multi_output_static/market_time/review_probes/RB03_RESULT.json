@@ -1,0 +1,190 @@
+{
+ "controls": {
+  "J1_fit_path_integration": {
+   "counterexample_trainer_loads_the_elapsed_bundle": "KeyError:'fit'",
+   "effective_from_sealed_market_design": "BUILT",
+   "effective_has_offsets_hours": true,
+   "fit_path_exists_for_market_time": false,
+   "market_bundle_schema": "i6dmo.market_bundle.v1",
+   "market_manifest_has_offsets_hours": false,
+   "market_manifest_time_key": [
+    "elapsed_offsets_vary_per_row",
+    "offsets_open_market_hours"
+   ],
+   "market_npz_arrays": [
+    "adjacent_delta_hours",
+    "closure_crossed",
+    "mask",
+    "offsets_hours",
+    "origin_price",
+    "row_id",
+    "slot_instants",
+    "target_price",
+    "x"
+   ],
+   "market_split_arrays": [
+    "arrays_sha256",
+    "aux_path",
+    "aux_sha256"
+   ],
+   "sealed_design_used": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg2.json",
+   "trainer_bundle_schema": "i6dmo.data_bundle.v1",
+   "trainer_cli_returncode": 3,
+   "trainer_cli_stderr_tail": "rnal/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:144] hostname: <host>\n2026-10-14 22:52:11.962162: I external/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:168] libcuda reported version is: 580.178.4\n2026-10-14 22:52:11.962201: I external/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:172] kernel reported version is: 580.178.4\n2026-10-14 22:52:11.962213: I external/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:259] kernel version seems to match DSO: 580.178.4\n",
+   "trainer_cli_stdout_tail": " \"5798baaa772b6d6015612b08d39ce982ce759bc7f7e40177ad830c6ee7bea356\"}, \"overrides\": {}, \"resources\": {\"cgroup_memory_peak_bytes\": 803422208, \"cpu_sys_s\": 0.49062599999999995, \"cpu_user_s\": 2.938765, \"device\": \"cpu\", \"max_rss_kib\": 877428, \"tensorflow_version\": \"2.18.0\", \"tf_gpu_memory_peak_bytes\": null, \"visible_gpus\": 0}, \"schema\": \"i6dmo.train_receipt.v1\", \"scientific\": true, \"started_at\": \"2026-10-15T03:52:11.794793+00:00\", \"status\": \"FAILED_TYPED\", \"timings\": {\"wall_s\": 0.13460822397610173}}\n",
+   "trainer_loads_a_market_bundle": "TrainDisposition:BUNDLE_SCHEMA: BUNDLE.json requires ['feature_manifest_sha256', 'features', 'horizons_hours', 'offsets_hours', 'schema', 'splits']",
+   "trainer_refusal_code": "BUNDLE_SCHEMA",
+   "trainer_required_arrays": [
+    "mask",
+    "origin_price",
+    "row_id",
+    "target_price",
+    "x"
+   ],
+   "verdict": "FAIL",
+   "why_it_matters": "without a trainer that accepts the market bundle and feeds offsets_hours / closure_crossed, no MG2/MG12 measurement can be produced; the refusal is fail-closed, which is correct, but it is not an executable scientific path"
+  },
+  "K1_stages_successor_and_pair_closure": {
+   "any_final_or_test_unit": false,
+   "dependency_graph": {
+    "long.fit": [
+     "short.report"
+    ],
+    "long.report": [
+     "long.fit"
+    ],
+    "pair.eligibility": [
+     "short.report",
+     "long.report"
+    ],
+    "short.fit": [],
+    "short.report": [
+     "short.fit"
+    ],
+    "strategy.validation": [
+     "pair.eligibility"
+    ]
+   },
+   "device_per_unit": {
+    "long.fit": "gpu",
+    "long.report": "cpu",
+    "pair.eligibility": "cpu",
+    "short.fit": "gpu",
+    "short.report": "cpu",
+    "strategy.validation": "cpu"
+   },
+   "elapsed_stages": [
+    "SHORT_DS_STATIC_VALIDATION",
+    "LONG_DS_STATIC_VALIDATION",
+    "PAIR_VALIDATION",
+    "FINAL_PROCEDURE_FROZEN",
+    "TEST_READINESS",
+    "FINAL_PAIR_TEST",
+    "CLOSED"
+   ],
+   "kinds": [
+    "fit",
+    "pair",
+    "report",
+    "strategy"
+   ],
+   "long_fit_depends_on": [
+    "short.report"
+   ],
+   "long_fit_depends_on_short_eligibility": false,
+   "long_fit_depends_on_short_report_terminal_only": true,
+   "long_units": [
+    "long.fit",
+    "long.report"
+   ],
+   "market_time_stages": [
+    "SHORT_MARKET_TIME_VALIDATION",
+    "LONG_MARKET_TIME_VALIDATION",
+    "PAIR_VALIDATION",
+    "VALIDATION_STRATEGY",
+    "CLOSED"
+   ],
+   "market_unit_enumeration": "CALLED",
+   "no_test_stage_in_market_time": true,
+   "pair_not_eligible_is_terminal": true,
+   "short_units": [
+    "short.fit",
+    "short.report"
+   ],
+   "unit_kinds": [
+    "fit",
+    "report",
+    "pair",
+    "strategy",
+    "final_refit",
+    "final_test"
+   ],
+   "units": [
+    "short.fit",
+    "short.report",
+    "long.fit",
+    "long.report",
+    "pair.eligibility",
+    "strategy.validation"
+   ],
+   "verdict": "PASS"
+  },
+  "K2_ops_accepts_the_sealed_designs": {
+   "adapter": "<tools.i6dmo.campaign.ModelLaneAdapter object at 0x740fdf103770>",
+   "seal_family_on_ops_fixture_design": "FileNotFoundError:[Errno 2] No such file or directory: '<workdir>",
+   "seal_family_on_sealed_design": "Refused:SCHEMA: short",
+   "seal_family_on_sealed_long_design": "Refused:SCHEMA: long",
+   "sealed_short_schema": "i6dmo.market_time_design.v1",
+   "verdict": "FAIL",
+   "windows_from_sealed_design": {
+    "inner_tail_weeks": 8,
+    "train": [
+     "2020-01-01T00:00:00Z",
+     "2024-01-01T00:00:00Z"
+    ],
+    "validation": [
+     "2024-01-01T00:00:00Z",
+     "2025-01-01T00:00:00Z"
+    ]
+   }
+  },
+  "L1_test_never_enumerable": {
+   "note": "campaign.py line ~625 documents the public TEST entry as refused outright for a market-time pair campaign; exercised by the ops suite",
+   "public_final_entry": null
+  },
+  "L2_identity_components": {
+   "campaign_identity_keys": [
+    "unit",
+    "family",
+    "kind",
+    "cadence",
+    "effective_config_sha256",
+    "data_sha256",
+    "code_commit",
+    "seed",
+    "upstream"
+   ],
+   "identity_component_keys": [
+    "unit",
+    "family",
+    "kind",
+    "cadence",
+    "effective_config_sha256",
+    "data_sha256",
+    "code_commit",
+    "seed",
+    "upstream"
+   ],
+   "keys_agree": true,
+   "verdict": "PASS"
+  }
+ },
+ "probe": "RB03_integration_ops",
+ "verdict": {
+  "J1_fit_path_integration": "FAIL",
+  "K1_stages_successor_and_pair_closure": "PASS",
+  "K2_ops_accepts_the_sealed_designs": "FAIL",
+  "L1_test_never_enumerable": null,
+  "L2_identity_components": "PASS"
+ }
+}

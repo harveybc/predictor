@@ -1,0 +1,183 @@
+{
+ "controls": {
+  "A1_current_t_included": {
+   "all_offsets_non_positive": true,
+   "last_offset_all_zero": true,
+   "last_slot_equals_origin_rows": 18856,
+   "max_offset": 0.0,
+   "rows": 18856,
+   "verdict": "PASS"
+  },
+  "A2_future_perturbation": {
+   "bars_perturbed_after_t": 19291,
+   "closure_flags_unchanged": true,
+   "counterexample_in_window_bar_changes_inputs": true,
+   "inputs_unchanged": true,
+   "offsets_unchanged": true,
+   "origin": "2021-12-02T04:00:00+00:00",
+   "verdict": "PASS"
+  },
+  "A3_exact_elapsed_targets": {
+   "checked": 2400,
+   "counterexample_shifted_target_is_detected": true,
+   "examples": [],
+   "mismatches": 0,
+   "verdict": "PASS"
+  },
+  "B1_weekend_dst_offsets": {
+   "closure_crossing_spans": [
+    71,
+    72,
+    73
+   ],
+   "crossing_spans_are_all_longer": true,
+   "elapsed_span_hours_distribution": {
+    "24": 16256,
+    "71": 52,
+    "72": 2509,
+    "73": 39
+   },
+   "more_than_one_distinct_crossing_span_dst_evidence": true,
+   "ordinary_span_is_exactly_the_market_span": true,
+   "ordinary_week_spans": [
+    24
+   ],
+   "rows_with_a_closure_crossing": 2600,
+   "verdict": "PASS"
+  },
+  "B2_unplanned_gap_not_compressed": {
+   "counted_exclusions_per_split": {
+    "FIT": 12,
+    "INNER": 0,
+    "VALIDATION": 0
+   },
+   "counterexample_same_origins_not_excluded_with_the_bar_present": 12,
+   "dropped_bar": "2022-06-15T13:00:00+00:00",
+   "of_those_excluded_INPUT_SLOT_NOT_OBSERVED": 12,
+   "of_those_whose_closure_flag_turned_true_at_that_slot": 0,
+   "origins_whose_window_contains_it": 12,
+   "still_an_expected_open_market_hour": true,
+   "verdict": "PASS"
+  },
+  "C1_chronology": {
+   "rows": 18856,
+   "slots_strictly_increasing_rows": 18856,
+   "verdict": "PASS"
+  },
+  "C2_split_and_purge": {
+   "FIT": {
+    "origins_inside_split": true,
+    "rows": 18856,
+    "valid_labels_reaching_split_end": 0
+   },
+   "INNER": {
+    "origins_inside_split": true,
+    "rows": 752,
+    "valid_labels_reaching_split_end": 0
+   },
+   "VALIDATION": {
+    "origins_inside_split": true,
+    "rows": 4924,
+    "valid_labels_reaching_split_end": 0
+   },
+   "verdict": "PASS"
+  },
+  "C3_same_row_naive_original_price": {
+   "counterexample_caught": true,
+   "counterexample_rescaled_prices": "NaiveReplayMismatch:h2: naive C2 0.0011407191393996406 manual 0.0011407191393996406 replay 0.0011408332113135814; h3: naive C2 0.0013940834606966743 manual 0.0013940834606966743 re",
+   "mae_matches": true,
+   "n_matches": true,
+   "naive_matches": true,
+   "per_horizon_comparison": [
+    {
+     "h": "2",
+     "manual_mae": 0.0013715977295964841,
+     "manual_n": 4924,
+     "manual_naive": 0.0011407191393996406,
+     "report_mae": 0.0013715977295964841,
+     "report_n": 4924,
+     "report_naive": 0.0011407191393996406
+    },
+    {
+     "h": "3",
+     "manual_mae": 0.0016143529522493175,
+     "manual_n": 4871,
+     "manual_naive": 0.0013940834606966743,
+     "report_mae": 0.0016143529522493175,
+     "report_n": 4871,
+     "report_naive": 0.0013940834606966743
+    },
+    {
+     "h": "4",
+     "manual_mae": 0.0018074563522658092,
+     "manual_n": 4818,
+     "manual_naive": 0.0016224266368694536,
+     "report_mae": 0.0018074563522658092,
+     "report_n": 4818,
+     "report_naive": 0.0016224266368694538
+    },
+    {
+     "h": "5",
+     "manual_mae": 0.0019791246196755284,
+     "manual_n": 4765,
+     "manual_naive": 0.001822030165845018,
+     "report_mae": 0.0019791246196755284,
+     "report_n": 4765,
+     "report_naive": 0.0018220301658450184
+    },
+    {
+     "h": "6",
+     "manual_mae": 0.0021427363884898142,
+     "manual_n": 4712,
+     "manual_naive": 0.0019960724845045925,
+     "report_mae": 0.0021427363884898147,
+     "report_n": 4712,
+     "report_naive": 0.0019960724845045925
+    },
+    {
+     "h": "12",
+     "manual_mae": 0.0028919371232395074,
+     "manual_n": 4394,
+     "manual_naive": 0.0028013633072435404,
+     "report_mae": 0.0028919371232395074,
+     "report_n": 4394,
+     "report_naive": 0.00280136330724354
+    }
+   ],
+   "report_keys": [
+    "agreement",
+    "bundle_sha256",
+    "c2",
+    "per_horizon",
+    "relative_error_definition",
+    "row_ids_sha256",
+    "rule",
+    "scale",
+    "schema",
+    "split",
+    "unit",
+    "weekly"
+   ],
+   "rows": 4924,
+   "split": "validation",
+   "verdict": "PASS"
+  },
+  "D1_first_slot_delta_and_flag_zero": {
+   "first_delta_all_zero": true,
+   "first_flag_all_zero": true,
+   "verdict": "PASS"
+  }
+ },
+ "probe": "RB01_data_time",
+ "verdict": {
+  "A1_current_t_included": "PASS",
+  "A2_future_perturbation": "PASS",
+  "A3_exact_elapsed_targets": "PASS",
+  "B1_weekend_dst_offsets": "PASS",
+  "B2_unplanned_gap_not_compressed": "PASS",
+  "C1_chronology": "PASS",
+  "C2_split_and_purge": "PASS",
+  "C3_same_row_naive_original_price": "PASS",
+  "D1_first_slot_delta_and_flag_zero": "PASS"
+ }
+}
