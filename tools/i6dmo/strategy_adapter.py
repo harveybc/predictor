@@ -933,6 +933,94 @@ def _validated_instrument(instrument) -> Dict[str, Any]:
     return json.loads(json.dumps(instrument, sort_keys=True))
 
 
+# Versioned instrument/cost configuration recovered from retained evidence
+# (order 85ea134e section 3). Every field cites sources and carries a status;
+# nothing in it is a silent guess and nothing claims broker verification.
+INSTRUMENT_CONFIG_SCHEMA = "i6dmo.instrument_config.v1"
+DEFAULT_INSTRUMENT_FILE = Path(__file__).resolve().parent / "instrument_eurusd.v1.json"
+INSTRUMENT_FIELD_STATUSES = ("EVIDENCED", "ASSUMED_NOT_BROKER_VERIFIED")
+_INSTRUMENT_FIELD_NAMES = ("price_decimals", "point_size", "pip_size", "pip_cost_parameter",
+                           "lot_units", "costs.spread_price", "costs.slippage_price",
+                           "costs.commission_per_lot_round_trip", "costs.swap_per_lot_per_day")
+
+
+def load_instrument_config(path) -> Dict[str, Any]:
+    """Load and verify the sealed versioned instrument configuration file."""
+    path = Path(path)
+    if not path.exists():
+        raise _err("INSTRUMENT_CONFIG_MISSING",
+                   f"versioned instrument configuration {path.name} does not exist")
+    try:
+        doc = json.loads(path.read_text())
+    except ValueError:
+        raise _err("INSTRUMENT_FILE_TAMPERED", f"{path.name} is not valid JSON")
+    body = {k: v for k, v in doc.items() if k != "config_sha256"}
+    if doc.get("schema") != INSTRUMENT_CONFIG_SCHEMA or \
+            doc.get("config_sha256") != _canonical_sha(body):
+        raise _err("INSTRUMENT_FILE_TAMPERED", f"{path.name} seal does not match its body")
+    return doc
+
+
+def _instrument_fields(doc: Mapping[str, Any]) -> Dict[str, Any]:
+    """Per-field provenance checks: a field without source/status is refused."""
+    fields = doc.get("fields")
+    if not isinstance(fields, Mapping) or set(fields) != set(_INSTRUMENT_FIELD_NAMES):
+        raise _err("INSTRUMENT_FIELD_UNSOURCED",
+                   f"fields must be exactly {sorted(_INSTRUMENT_FIELD_NAMES)}")
+    values: Dict[str, Any] = {}
+    for name, field in fields.items():
+        if not isinstance(field, Mapping) or "value" not in field:
+            raise _err("INSTRUMENT_FIELD_UNSOURCED", f"{name} carries no value")
+        if field.get("status") not in INSTRUMENT_FIELD_STATUSES:
+            raise _err("INSTRUMENT_FIELD_UNSOURCED",
+                       f"{name} status must be one of {INSTRUMENT_FIELD_STATUSES}")
+        sources = field.get("sources")
+        if not isinstance(sources, list) or not sources or \
+                not all(isinstance(x, str) and x.strip() for x in sources):
+            raise _err("INSTRUMENT_FIELD_UNSOURCED", f"{name} cites no retained source")
+        conflict = field.get("conflict")
+        if conflict is not None:
+            if not isinstance(conflict, Mapping) or \
+                    not isinstance(conflict.get("values"), list) or len(conflict["values"]) < 2 or \
+                    not isinstance(conflict.get("reason"), str) or not conflict["reason"].strip() or \
+                    not any(isinstance(v, Mapping) and v.get("value") == field["value"]
+                            for v in conflict["values"]):
+                raise _err("INSTRUMENT_FIELD_UNSOURCED",
+                           f"{name} conflict must record both values, the chosen one and its reason")
+        values[name] = field["value"]
+    return values
+
+
+def instrument_from_config(doc: Mapping[str, Any]) -> Dict[str, Any]:
+    """Versioned sourced file -> the plain instrument mapping the receipt derives from."""
+    values = _instrument_fields(doc)
+    if doc.get("cost_verification") != "NOT_BROKER_VERIFIED":
+        raise _err("COST_VERIFICATION_INVALID",
+                   "the recovered configuration proves no broker verification; "
+                   "it must declare NOT_BROKER_VERIFIED")
+    for key in ("instrument_id", "config_version"):
+        if not isinstance(doc.get(key), str) or not doc[key].strip():
+            raise _err("INSTRUMENT_CONFIG_INVALID", f"{key} is mandatory")
+    return {
+        "instrument_id": doc["instrument_id"], "config_version": doc["config_version"],
+        "price_decimals": values["price_decimals"], "point_size": values["point_size"],
+        "pip_size": values["pip_size"], "pip_cost_parameter": values["pip_cost_parameter"],
+        "lot_units": values["lot_units"],
+        "costs": {k.split(".", 1)[1]: values[k] for k in values if k.startswith("costs.")},
+        "cost_verification": "NOT_BROKER_VERIFIED",
+    }
+
+
+def derive_execution_policy_from_file(path=None, *,
+                                      policy: Optional[types.ModuleType] = None) -> Dict[str, Any]:
+    """Sealed receipt derived from the sealed versioned instrument file."""
+    doc = load_instrument_config(DEFAULT_INSTRUMENT_FILE if path is None else path)
+    receipt = derive_execution_policy(instrument_from_config(doc), policy=policy)
+    body = {k: v for k, v in receipt.items() if k != "receipt_sha256"}
+    body["instrument_config_sha256"] = doc["config_sha256"]
+    return dict(body, receipt_sha256=_canonical_sha(body))
+
+
 def derive_execution_policy(instrument: Mapping[str, Any], *,
                             policy: Optional[types.ModuleType] = None) -> Dict[str, Any]:
     """Deterministic sealed receipt from the versioned instrument configuration.
@@ -1066,10 +1154,14 @@ def _sealed_policy_for(spec, root: Path, policy) -> Dict[str, Any]:
     a tampered sealed receipt is refused, and a sealed receipt that does not
     match the sealed effective configuration is a mismatch.
     """
-    instrument = ((spec.get("effective_config") or {}).get("strategy_execution") or {}).get("instrument")
-    if instrument is None:
-        raise _Refusal("FAILED", "INSTRUMENT_CONFIG_MISSING")
-    derived = derive_execution_policy(instrument, policy=policy)
+    strategy_execution = (spec.get("effective_config") or {}).get("strategy_execution") or {}
+    instrument = strategy_execution.get("instrument")
+    if instrument is not None:
+        derived = derive_execution_policy(instrument, policy=policy)
+    else:
+        # The typed wait clears exactly when the versioned sourced file exists and seals.
+        file_path = strategy_execution.get("instrument_file") or DEFAULT_INSTRUMENT_FILE
+        derived = derive_execution_policy_from_file(file_path, policy=policy)
     sealed = load_execution_policy(root)
     if sealed is not None and sealed["receipt_sha256"] != derived["receipt_sha256"]:
         raise _Refusal("FAILED", "EXECUTION_POLICY_MISMATCH")

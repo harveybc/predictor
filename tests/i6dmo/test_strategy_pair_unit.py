@@ -129,11 +129,24 @@ def test_pair_runs_without_any_owner_approval_gate(env):
     assert "owner" not in doc["disposition"].lower()
 
 
-def test_missing_instrument_configuration_is_a_typed_config_failure_not_a_wait(env):
+def test_without_inline_instrument_the_versioned_sourced_file_governs(env):
+    # Order 85ea134e section 3: the typed wait clears exactly when the sealed
+    # versioned file exists; the committed file exists, so the unit completes
+    # with that file's seal bound into the receipt.
     del env["spec"]["effective_config"]["strategy_execution"]
     doc = _run(env)
-    assert (doc["status"], doc["disposition"]) == ("FAILED", "INSTRUMENT_CONFIG_MISSING")
-    assert not (env["out"] / "pair").exists()
+    assert doc["status"] == "COMPLETE", doc["disposition"]
+    file_doc = json.loads(sa.DEFAULT_INSTRUMENT_FILE.read_text())
+    derived = sa.derive_execution_policy_from_file(sa.DEFAULT_INSTRUMENT_FILE)
+    assert doc["gates"]["execution_policy_sha256"] == derived["receipt_sha256"]
+    assert derived["instrument_config_sha256"] == file_doc["config_sha256"]
+    # An explicitly named file that does not exist is the typed wait, not a prompt.
+    env["spec"]["effective_config"]["strategy_execution"] = {
+        "instrument_file": str(env["root"] / "absent_instrument.json")}
+    env["out2"] = env["out"].parent.parent / "a02" / "out"
+    env["out2"].mkdir(parents=True)
+    doc2 = sa.run_unit(env["spec"], env["out2"], env["out2"].parent / "progress.json")
+    assert (doc2["status"], doc2["disposition"]) == ("FAILED", "INSTRUMENT_CONFIG_MISSING")
 
 
 def test_invalid_instrument_configuration_is_typed(env):

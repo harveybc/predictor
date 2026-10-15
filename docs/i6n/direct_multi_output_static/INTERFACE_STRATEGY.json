@@ -10,7 +10,9 @@
     "docs/i6n/direct_multi_output_static/STRATEGY_RETURN.md",
     "tests/i6dmo/test_strategy_pair_unit.py",
     "tests/i6dmo/test_strategy_execution_policy.py",
-    "tests/i6dmo/test_strategy_final_backtest.py"
+    "tests/i6dmo/test_strategy_final_backtest.py",
+    "tools/i6dmo/instrument_eurusd.v1.json",
+    "tests/i6dmo/test_strategy_instrument_config.py"
   ],
   "shared_files": "tools/i6dmo/__init__.py and tests/i6dmo/__init__.py arrive empty via merge of ops ae70a6a9",
   "strategy_pin": {
@@ -153,5 +155,13 @@
     ],
     "artifact": "final_backtest/BACKTEST.json (sha in the returned artifacts); report split test, tags.test_read true",
     "note": "only reachable through tools.i6dmo.final.run_unit after guard_test + guard_execution_policy; run_unit('final_test') in this module still refuses (lane 2 owns the final hook)"
+  },
+  "versioned_instrument_config": {
+    "file": "tools/i6dmo/instrument_eurusd.v1.json (schema i6dmo.instrument_config.v1, sealed config_sha256 f2443141...)",
+    "recovered_from": "retained evidence only: pinned heuristic-strategy plugin blob 3a19b3f (+commit 310e285), lts backtrader_simulation_broker (blob ddeef86c @12bce5f), lts config_simulation.json/REFERENCE_plugins.md, lts heuristic_strategy copy, MT5 bridge lab schema, prior strategy audits; no credentials, no broker query, no trading",
+    "per_field": "value + status (EVIDENCED | ASSUMED_NOT_BROKER_VERIFIED) + sources; conflicts record both values, the chosen conservative default and its reason",
+    "resolved_conflict": "plugin POINT arithmetic (spread 0.00002 / slippage 0.00001) vs lts PIP arithmetic (0.0002 / 0.0001): chosen 0.0002/0.0001 (larger cost, matches the retained '2 pip spread' worst-case-retail intent)",
+    "api": "load_instrument_config(path) (INSTRUMENT_CONFIG_MISSING | INSTRUMENT_FILE_TAMPERED), instrument_from_config(doc) (INSTRUMENT_FIELD_UNSOURCED | COST_VERIFICATION_INVALID), derive_execution_policy_from_file(path=DEFAULT_INSTRUMENT_FILE) -> receipt carrying instrument_config_sha256",
+    "pair_unit": "without an inline strategy_execution.instrument, run_unit derives from strategy_execution.instrument_file or the committed default file; the typed INSTRUMENT_CONFIG_MISSING wait clears exactly when the sealed file exists"
   }
 }
