@@ -91,10 +91,11 @@ def test_monday_origin_crosses_weekend_with_exact_friday_slots(src, short):
     assert rec.input_ok is True                         # DS2_EXACT refused this origin
     slots = rec.slot_instants
     assert len(slots) == 13 and slots[-1] == t
-    assert slots[6] == _synth.epoch(weeks[i]["market_open"])  # 12 market hours back = open
-    assert slots[5] == prev_close - H                   # next step lands on Friday
+    # bar-END grid: 12 open-market hours back from open+12h is the previous Friday close
+    assert slots[6] == prev_close
+    assert slots[5] == prev_close - 2 * H               # earlier slots stay on Friday
     gap = _synth.epoch(weeks[i]["market_open"]) - prev_close
-    assert rec.closure_crossed[6] is True and sum(rec.closure_crossed) == 1
+    assert rec.closure_crossed[7] is True and sum(rec.closure_crossed) == 1
     assert rec.elapsed_span_s == 24 * H + gap           # varies: never a fixed 24 h label
     assert list(rec.actual_offsets_s) == [s - t for s in slots]
     arrays_ok = all(s in set(int(v) for v in short["bundle"].ts) for s in slots)
