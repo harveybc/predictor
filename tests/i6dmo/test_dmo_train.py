@@ -238,6 +238,10 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
         T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m), (in_x, in_y, in_m),
                            corrupted, ids=ids)
     assert "batch 0" in str(err.value) and "row_ids" in str(err.value)
+    cpu_replay = subprocess.run([sys.executable, "-m", "tools.i6dmo.replay_monitor", "--design",
+                                 str(DESIGN), "--bundle", str(bundle), "--unit", str(out), "--json"],
+                                capture_output=True, text=True, cwd=REPO, env=ENV, check=False)
+    assert json.loads(cpu_replay.stdout)["status"] == "MATCH"  # CPU end-to-end stays BITWISE
     assert monitored == hist[best]["monitored"]  # bitwise: identical evaluation procedure
     assert fm_r["sums"] == record["fit"]["sums"] and fm_r["counts"] == record["fit"]["counts"]
     assert im_r["sums"] == record["inner"]["sums"] and im_r["counts"] == record["inner"]["counts"]
@@ -403,7 +407,9 @@ def test_static_algorithm_flags_are_forced_recorded_and_enforced(tmp_path):
         T.replay_monitored(bundle.forecast_model, fit, inner, good)
 
 
-def test_predeclared_tolerance_applies_only_with_static_flags_and_small_deltas(tmp_path):
+def test_monitor_tolerance_v2_bound_arithmetic_and_refusals(tmp_path):
+    """v2 floor: |delta| <= 1e-9 + 5e-5*|recorded| on partial sums/monitored, GPU-scope,
+    activating only with confirmed static flags; beyond-bound and unflagged stay hard."""
     import copy
     from tools.i6dmo import model as M
     bundle = M.build_dmo(M.model_config(["a", "b"]))
@@ -413,24 +419,32 @@ def test_predeclared_tolerance_applies_only_with_static_flags_and_small_deltas(t
     fit, inner = (x, y, mask), (x[:8], y[:8], mask[:8])
     base = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 15, "graph": "inference",
             "partition": "sequential_row_id_fixed", "monitor_instance": "canonical_loader_rebuild",
+            "input_materialization": T.MONITOR_INPUT, "monitor_forward": T.monitor_forward_identity(),
             "determinism_flags": T.current_determinism_flags()}
     _, _, monitored, witness = T.evaluate_monitored(bundle.forecast_model, fit, inner, 15)
     record = dict(base, witness=witness, monitored=monitored)
-    perturbed = copy.deepcopy(record)
-    for row in perturbed["witness"]["fit"]["batches"]:
-        row["partial_sums"] = [v * (1 + 5e-6) for v in row["partial_sums"]]  # within 1e-5 relative
-    fm, im, got, tolerated = T.replay_monitored(bundle.forecast_model, fit, inner, perturbed)
-    assert tolerated and all(t["max_relative_delta"] <= 1e-5 for t in tolerated)
+    assert T.MONITOR_TOLERANCE == {"version": "v2", "rtol": 5e-5, "atol": 1e-9,
+                                   **{k: T.MONITOR_TOLERANCE[k] for k in T.MONITOR_TOLERANCE
+                                      if k not in ("version", "rtol", "atol")}}
+    exact = T.replay_monitored(bundle.forecast_model, fit, inner, record)
+    assert exact[3]["status"] == "BITWISE" and exact[3]["within_floor"] == []
+    within = copy.deepcopy(record)
+    for row in within["witness"]["fit"]["batches"]:
+        row["partial_sums"] = [v * (1 + 2e-5) + 5e-10 for v in row["partial_sums"]]  # inside floor
+    within["monitored"] = monitored * (1 + 2e-5)
+    fm, im, got, report = T.replay_monitored(bundle.forecast_model, fit, inner, within)
+    assert report["status"] == "WITHIN_DECLARED_FLOOR"
+    assert report["within_floor"] and all(e["max_abs_delta"] <= e["max_allowed"]
+                                          for e in report["within_floor"])
     assert got == monitored  # the recompute itself is unchanged; only the comparison tolerates
-    big = copy.deepcopy(record)
-    big["witness"]["fit"]["batches"][0]["partial_sums"][0] *= 1.001  # beyond the bound
+    beyond = copy.deepcopy(record)
+    beyond["witness"]["fit"]["batches"][0]["partial_sums"][0] *= 1.001  # beyond the floor
     with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
-        T.replay_monitored(bundle.forecast_model, fit, inner, big)
-    unflagged = copy.deepcopy(perturbed)
-    del unflagged["determinism_flags"]  # tolerance never activates without confirmed static flags
+        T.replay_monitored(bundle.forecast_model, fit, inner, beyond)
+    unflagged = copy.deepcopy(within)
+    del unflagged["determinism_flags"]  # the floor never activates without confirmed static flags
     with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
         T.replay_monitored(bundle.forecast_model, fit, inner, unflagged)
-
 
 def test_init_order_witness_recorded_and_preimported_record_refused():
     """A record produced where TF initialized before the flags never scores."""
@@ -493,9 +507,10 @@ def test_weights_at_witness_and_row_forward_witness_recorded_and_enforced(tmp_pa
     fit_rows, _ = T.trainable_rows(data["fit"])
     inner_rows, _ = T.trainable_rows(data["inner"])
     args = (loaded.forecast_model, T.transform(fit_rows, scales), T.transform(inner_rows, scales))
-    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE") as err:
-        T.replay_monitored(*args, record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
-    assert "row 3" in str(err.value) and "uniform" in str(err.value).lower()
+    _, _, _, report = T.replay_monitored(*args, record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
+    diag = report["row_forward_diagnostics"]["fit"]
+    assert 3 in diag["first_divergent_rows"] and diag["uniform_delta_pattern"] is False
+    assert report["status"] == "BITWISE"  # diagnostics never grade; sums stayed bitwise
 
 
 def test_tf32_is_disabled_flags_first_and_recorded():
