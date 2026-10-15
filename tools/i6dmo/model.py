@@ -136,6 +136,9 @@ _FIXED = {
 FAMILIES = {
     "short": {"offsets_hours": list(range(-24, 1, 2)), "horizons_hours": [2, 3, 4, 5, 6, 12]},
     "long": {"offsets_hours": list(range(-144, 1, 12)), "horizons_hours": [18, 24, 36, 48, 60, 72]},
+    # Paired hourly-input control: same 24 elapsed hours and heads at hourly spacing (25 obs).
+    # The only forced recipe change: each head flattens a 25x4 instead of a 13x4 core sequence.
+    "short_hourly": {"offsets_hours": list(range(-24, 1, 1)), "horizons_hours": [2, 3, 4, 5, 6, 12]},
 }
 
 
@@ -297,6 +300,24 @@ def _core_params(c):
             "activation": k["activation"]}
 
 
+def _probe_causal(model, in_grid, out_grid, label):
+    """Plugin causality probe with ReLU-aware retries.
+
+    A look-ahead violation fails on the FIRST seed (hard). The participation half
+    can false-negative when one random perturbation lands every filter in a dead
+    ReLU region, so it is retried over a few fixed seeds and must pass on one.
+    """
+    last = None
+    for seed in (0, 1, 2, 3):
+        try:
+            return probe_alignment(model, in_grid, out_grid, seed=seed, label=label)
+        except ValueError as exc:
+            if "depends on the later" in str(exc):
+                raise
+            last = exc
+    raise last
+
+
 def build_dmo(config):
     """Build the fixed R0 model. Seeds the global RNG first (explicit random init)."""
     c = normalize_model_config(config)
@@ -311,7 +332,7 @@ def build_dmo(config):
         comp = dmo_branch(input_shape=(steps, 1), time_grid=grid, output_steps=steps, name=name,
                           params=_branch_params(c))
         model = _validate_component(comp, [(steps, 1)], grid, c["branch"]["filters"])
-        probe_alignment(model, grid, grid, label="branch " + name)
+        _probe_causal(model, grid, grid, "branch " + name)
         branches[feature] = model
         sequences.append(model(FeatureSelect([i], name="select_" + name)(inputs)))
     factory, fusion_identity = _resolve("fusion", {"plugin": "sequence_concat"}, {"fusion": "modular.fusion"})
@@ -325,7 +346,7 @@ def build_dmo(config):
     core_comp = dmo_core(input_shape=tuple(fused.shape[1:]), time_grid=grid, name="temporal_core",
                          params=_core_params(c))
     core = _validate_component(core_comp, [tuple(fused.shape[1:])], grid, c["core"]["filters"][-1])
-    probe_alignment(core, grid, grid, label="core")
+    _probe_causal(core, grid, grid, "core")
     latent = core(encoded)
     heads, outputs = {}, []
     for h in c["horizons_hours"]:

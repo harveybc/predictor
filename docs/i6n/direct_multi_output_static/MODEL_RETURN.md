@@ -476,3 +476,35 @@ items, both applied as the last pre-release change:
 FINAL effective config sha (the identity the scientific fit runs under):
 `287e4f11e4ef385234becf02d9ed31864d8a3a58fc0b4c7f3e4c6a765a76e097`
 (design sha unchanged `541ce40a…`). Nothing else changes after this commit.
+
+## Round 18: paired short HOURLY-input control (prepared, NOT fitted)
+
+Per MUSASHI_TO_SATOSHI_STATIC_BASELINE_CLOSE_AND_MARKET_GRID_20261015 section 3
+(preparation only; no fit, no GPU, CPU tests only):
+
+- `EXPERIMENT.short_hourly.json` is sealed and committed:
+  `I6-DMO-SHORT-HOURLY-DS1-STATIC-R0`, the same 24 elapsed-hour span with 25
+  observations at hourly spacing including t, six heads 2..12, same model
+  recipe, same static cadence and splits, its OWN identity (design sha
+  `971ba9c4…`). Derived deterministically from the validated short design by
+  `seal-hourly-control` (typed refusals: FIXED_VALUE, HOURLY_DESIGN_SEAL,
+  HOURLY_DESIGN_UNDECIDED, TEST_FORBIDDEN; idempotent; a final variant of the
+  control is refused as a separate later decision).
+- The ONLY forced model adjustment is declared: each head flattens a 25x4
+  instead of a 13x4 core sequence (hidden Dense input 100 vs 52); branches
+  (4/3/1), core (8->4) and all parameter counts outside the heads are
+  identical (tested). The causality probe gained ReLU-aware retry seeds
+  (look-ahead violations still fail on the first seed).
+- TRAIN/validation availability differences are DECLARED inside the sealed
+  design (`derived_from.availability_declaration`): hourly exact slots across
+  weekend-adjacent windows differ from the two-hour grid; the per-split counts
+  are owned by the data lane's market-grid support study and are not
+  duplicated here.
+- `COMMON_SUPPORT_RULES.json` (sha `9d61117f…`) is frozen BEFORE any scoring
+  and bound into the sealed design: comparison population is the intersection
+  of valid (row_id, head) pairs under both designs; shared naive on exactly
+  those rows; a reused model scored on the subset is labelled
+  REUSED_MODEL_SUBSET_SCORE and is NOT a model trained on the common TRAIN
+  population; encoder/R2 and cadence contrasts remain distinct later sealed
+  designs, never combined and attributed to downsampling.
+- The short design's FINAL effective sha `287e4f11…` is unchanged (verified).

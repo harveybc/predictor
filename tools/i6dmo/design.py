@@ -40,6 +40,7 @@ HORIZONS = [2, 3, 4, 5, 6, 12]
 LONG_HORIZONS = [18, 24, 36, 48, 60, 72]
 SHORT_ID = "I6-DMO-SHORT-DS2-STATIC-R0"
 LONG_ID = "I6-DMO-LONG-DS12-STATIC-R0"
+SHORT_HOURLY_ID = "I6-DMO-SHORT-HOURLY-DS1-STATIC-R0"
 STLFSI4 = "fred.stress.stlfsi4.level"
 UNDECIDED = "UNDECIDED"
 #: PLAN.md section 5, verbatim decisions for the long family; everything else mirrors the short design.
@@ -68,6 +69,43 @@ FINAL_PLAN_OPEN_FIELDS = FINAL_PLAN_OPEN_FIELDS_DEFAULT
 FINAL_RULE = ("final design = validated short/long design with the PLAN section 5 final-refit "
               "window [2021-01-01, 2025-01-01) and its eight-week inner tail; no outer validation "
               "split; weights frozen throughout TEST; derived without reading any outcome")
+#: Section 3 of MUSASHI_TO_SATOSHI_STATIC_BASELINE_CLOSE_AND_MARKET_GRID_20261015: the paired
+#: short HOURLY-input control — same 24 elapsed-hour span, 25 observations at hourly spacing
+#: including t, six heads, same model recipe and static cadence, sealed as its own identity.
+HOURLY_FROM_PLAN = {
+    ("experiment_id",): SHORT_HOURLY_ID,
+    ("input", "spacing_hours"): 1,
+    ("input", "observations"): 25,
+}
+HOURLY_RULE = ("hourly control = validated short design with hourly spacing (25 observations over "
+               "the same 24 elapsed hours, t included); six heads, model recipe and static cadence "
+               "mirrored; only what 25-vs-13 observations forces changes in the model (each head "
+               "flattens a 25x4 instead of a 13x4 core sequence); sealed as its own identity, "
+               "prepared without fitting")
+HOURLY_AVAILABILITY_DECLARATION = (
+    "DECLARED TRAIN/validation availability differences vs the 13-observation DS2 design: hourly "
+    "exact slots across weekend-adjacent windows differ (a window needing 25 consecutive hourly "
+    "observations loses more weekend-adjacent origins than the two-hour grid, and gains none); "
+    "the exact per-split counts are owned by the data lane's market-grid support study and are "
+    "not duplicated here; comparison is only valid under the frozen common-support rules")
+#: Frozen BEFORE any scoring; the sealed hourly design binds this document's sha256.
+COMMON_SUPPORT_RULES = {
+    "schema": "i6dmo.common_support_rules.v1",
+    "frozen_before_scoring": True,
+    "population": ("intersection of the (origin row_id, head) pairs that are valid under BOTH "
+                   "designs' bundles, per split, on identical row ids; nothing outside the "
+                   "intersection enters either side of the comparison"),
+    "metrics": ("per-head pooled original-price MAE and the SHARED naive computed on exactly the "
+                "intersection rows (sums/counts, never means of weekly means); relative error "
+                "(MAE_h-naive_h)/naive_h, negative better"),
+    "reused_model_rule": ("a model trained on its own full TRAIN population and scored on the "
+                          "common support is labelled REUSED_MODEL_SUBSET_SCORE and is NOT a "
+                          "model trained on the common TRAIN population; that contrast would be "
+                          "a separate sealed design and identity"),
+    "distinct_contrasts": ("encoder/R2 and retraining-cadence contrasts are distinct later sealed "
+                           "designs; changes are never combined and attributed to downsampling"),
+    "no_test": "TEST rows never enter the comparison; development 2024 disclosure applies to both",
+}
 SHORT_CLOSURE_UNIT = "short.report"
 SHORT_CLOSURE_STATUSES = ("COMPLETE", "NOT_ELIGIBLE")
 TERMINAL_SCHEMA = "i6dmo.terminal.v1"
@@ -89,6 +127,9 @@ def _canonical(value):
 
 def _sha(value):
     return hashlib.sha256(_canonical(value).encode("utf-8")).hexdigest()
+
+
+COMMON_SUPPORT_RULES["rules_sha256"] = _sha(COMMON_SUPPORT_RULES)
 
 
 # ------------------------------------------------------------------ schema
@@ -240,6 +281,27 @@ def _final_schema(fam):
 FINAL_SCHEMAS = {fam: _final_schema(fam) for fam in ("short", "long")}
 
 
+def _hourly_schema():
+    schema = copy.deepcopy(SCHEMA)
+    for path, value in HOURLY_FROM_PLAN.items():
+        node = schema
+        for key in path[:-1]:
+            node = node[key]
+        node[path[-1]] = _fixed(value)
+    schema["derived_from"] = {
+        "rule": _fixed(HOURLY_RULE),
+        "base_experiment_id": _fixed(SHORT_ID),
+        "base_design_sha256": _HEX,
+        "availability_declaration": _fixed(HOURLY_AVAILABILITY_DECLARATION),
+        "common_support_rules_sha256": _fixed(COMMON_SUPPORT_RULES["rules_sha256"]),
+    }
+    schema["seal_sha256"] = _HEX
+    return schema
+
+
+HOURLY_SCHEMA = _hourly_schema()
+
+
 def mode(doc):
     """``FINAL_REFIT`` for a derived final design, otherwise ``VALIDATION``."""
     eid = doc.get("experiment_id") if isinstance(doc, dict) else None
@@ -247,9 +309,13 @@ def mode(doc):
 
 
 def family(doc):
-    """``long`` for the long experiment ids, otherwise ``short`` (validated as such)."""
+    """``long``/``short_hourly`` for those experiment ids, otherwise ``short``."""
     eid = doc.get("experiment_id") if isinstance(doc, dict) else None
-    return "long" if eid in (LONG_ID, LONG_ID + FINAL_SUFFIX) else "short"
+    if eid in (LONG_ID, LONG_ID + FINAL_SUFFIX):
+        return "long"
+    if eid == SHORT_HOURLY_ID:
+        return "short_hourly"
+    return "short"
 
 
 def _same(a, b):
@@ -319,6 +385,13 @@ def validate_design(doc):
         _check(doc, FINAL_SCHEMAS[fam], "")
         if doc["seal_sha256"] != _sha(_seal_body(doc)):
             raise DesignError("FINAL_DESIGN_SEAL", "the sealed final design was modified")
+    elif fam == "short_hourly":
+        open_paths = _undecided(doc)
+        if open_paths:
+            raise DesignError("HOURLY_DESIGN_UNDECIDED", f"open fields {open_paths}; prepare, never improvise")
+        _check(doc, HOURLY_SCHEMA, "")
+        if doc["seal_sha256"] != _sha(_seal_body(doc)):
+            raise DesignError("HOURLY_DESIGN_SEAL", "the sealed hourly control design was modified")
     elif fam == "long":
         open_paths = _undecided(doc)
         if open_paths:
@@ -340,8 +413,10 @@ def final_refit_design(base_design):
     ``FINAL_PLAN_OPEN_FIELDS`` is a typed ``FINAL_DESIGN_UNDECIDED``; nothing is improvised.
     """
     base = validate_design(base_design)
-    if mode(base) == "FINAL_REFIT":
-        raise DesignError("FINAL_FROM_VALIDATION_ONLY", "a final design derives from the validation design")
+    if mode(base) == "FINAL_REFIT" or family(base) not in ("short", "long"):
+        raise DesignError("FINAL_FROM_VALIDATION_ONLY",
+                          "a final design derives from the short/long validation design; the hourly "
+                          "control's final policy is a separate later decision")
     open_paths = [".".join(path) for path in FINAL_PLAN_OPEN_FIELDS]
     if open_paths:
         raise DesignError("FINAL_DESIGN_UNDECIDED", f"PLAN leaves {open_paths} open; final units must wait")
@@ -606,6 +681,61 @@ def seal_long_design(short_design_path, short_terminal_path, out_path):
             "file_sha256": _file_sha(out), "derived_from": doc["derived_from"]}
 
 
+def hourly_control_design(short_design):
+    """Derive the sealed hourly-input control design from the validated short design (pure)."""
+    base = validate_design(short_design)
+    if family(base) != "short" or mode(base) == "FINAL_REFIT":
+        raise DesignError("SHORT_DESIGN_REQUIRED", "the hourly control derives from the short design")
+    doc = copy.deepcopy(base)
+    for path, value in HOURLY_FROM_PLAN.items():
+        node = doc
+        for key in path[:-1]:
+            node = node[key]
+        node[path[-1]] = copy.deepcopy(value)
+    doc["derived_from"] = {"rule": HOURLY_RULE, "base_experiment_id": SHORT_ID,
+                           "base_design_sha256": design_sha256(base),
+                           "availability_declaration": HOURLY_AVAILABILITY_DECLARATION,
+                           "common_support_rules_sha256": COMMON_SUPPORT_RULES["rules_sha256"]}
+    doc["seal_sha256"] = _sha(_seal_body(doc))
+    return validate_design(doc)
+
+
+def seal_hourly_control(short_design_path, out_dir):
+    """Write EXPERIMENT.short_hourly.json + the frozen COMMON_SUPPORT_RULES.json (idempotent)."""
+    doc = hourly_control_design(load_design(short_design_path))
+    effective_config(doc)
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    written = {}
+    for name, payload in (("EXPERIMENT.short_hourly.json", doc),
+                          ("COMMON_SUPPORT_RULES.json", COMMON_SUPPORT_RULES)):
+        text = json.dumps(payload, sort_keys=True, indent=2) + "\n"
+        path = out / name
+        if path.exists():
+            if path.read_text(encoding="utf-8") != text:
+                raise DesignError("HOURLY_DESIGN_EXISTS", f"{path} holds different content")
+        else:
+            tmp = path.with_name(path.name + ".tmp")
+            tmp.write_text(text, encoding="utf-8")
+            os.replace(tmp, path)
+        written[name] = str(path)
+    return {"schema": "i6dmo.seal_hourly_control.v1", "status": "SEALED",
+            "experiment_id": SHORT_HOURLY_ID, "design_sha256": design_sha256(doc),
+            "common_support_rules_sha256": COMMON_SUPPORT_RULES["rules_sha256"],
+            "files": written, "fits_run": 0}
+
+
+def run_seal_hourly_control(args):
+    try:
+        result = seal_hourly_control(args.short_design, args.out_dir)
+    except DesignError as exc:
+        result = {"schema": "i6dmo.seal_hourly_control.v1", "status": "FAILED", "code": exc.code,
+                  "detail": str(exc)}
+    print(json.dumps(result, sort_keys=True) if args.json
+          else f"{result['status']} {result.get('design_sha256') or result.get('code')}")
+    return 0 if result["status"] == "SEALED" else 2
+
+
 def run_seal_long_design(args):
     try:
         result = seal_long_design(args.short_design, args.short_terminal, args.out)
@@ -643,6 +773,12 @@ def add_cli(subparsers):
     q.add_argument("--out", required=True)
     q.add_argument("--json", action="store_true")
     q.set_defaults(func=run_seal_long_design)
+    h = subparsers.add_parser("seal-hourly-control",
+                              help="seal the paired short hourly-input control design (no fit)")
+    h.add_argument("--short-design", required=True)
+    h.add_argument("--out-dir", required=True)
+    h.add_argument("--json", action="store_true")
+    h.set_defaults(func=run_seal_hourly_control)
     return p
 
 

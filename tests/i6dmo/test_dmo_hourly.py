@@ -62,7 +62,7 @@ def test_common_support_rules_are_frozen_before_any_scoring_and_bound_to_the_des
     assert rules["frozen_before_scoring"] is True
     assert rules["population"].startswith("intersection")
     assert "REUSED_MODEL_SUBSET_SCORE" in json.dumps(rules)
-    assert "not a model trained on the common TRAIN population" in json.dumps(rules)
+    assert "NOT a model trained on the common TRAIN population" in json.dumps(rules)
     assert "downsampling" in rules["distinct_contrasts"]
     doc = json.loads(design_path.read_text())
     assert doc["derived_from"]["common_support_rules_sha256"] == rules["rules_sha256"]

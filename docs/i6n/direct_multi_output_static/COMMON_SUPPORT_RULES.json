@@ -1,0 +1,10 @@
+{
+  "distinct_contrasts": "encoder/R2 and retraining-cadence contrasts are distinct later sealed designs; changes are never combined and attributed to downsampling",
+  "frozen_before_scoring": true,
+  "metrics": "per-head pooled original-price MAE and the SHARED naive computed on exactly the intersection rows (sums/counts, never means of weekly means); relative error (MAE_h-naive_h)/naive_h, negative better",
+  "no_test": "TEST rows never enter the comparison; development 2024 disclosure applies to both",
+  "population": "intersection of the (origin row_id, head) pairs that are valid under BOTH designs' bundles, per split, on identical row ids; nothing outside the intersection enters either side of the comparison",
+  "reused_model_rule": "a model trained on its own full TRAIN population and scored on the common support is labelled REUSED_MODEL_SUBSET_SCORE and is NOT a model trained on the common TRAIN population; that contrast would be a separate sealed design and identity",
+  "rules_sha256": "9d61117f3caeea14a556d77fbd208468fc23ed8b7791ab7be61aabf1de420a87",
+  "schema": "i6dmo.common_support_rules.v1"
+}
