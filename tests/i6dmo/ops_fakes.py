@@ -98,6 +98,14 @@ MG2_DESIGN = ROOT / "docs/i6n/direct_multi_output_static/EXPERIMENT.mg2.json"
 MG12_DESIGN = ROOT / "docs/i6n/direct_multi_output_static/EXPERIMENT.mg12.json"
 
 
+INTEGRATION_PINS = ROOT / "docs/i6n/direct_multi_output_static/market_time/INTEGRATION_PINS.json"
+
+
+def integration_pins():
+    """The identities this integration sealed; a silent reseal must fail, not pass."""
+    return json.loads(INTEGRATION_PINS.read_text())
+
+
 def sealed_market_time_designs():
     """The REAL sealed designs. A fake may stand in for the trainer, never for the design under seal."""
     for path in (MG2_DESIGN, MG12_DESIGN):

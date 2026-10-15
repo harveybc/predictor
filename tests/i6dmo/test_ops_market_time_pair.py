@@ -142,14 +142,21 @@ def test_an_elapsed_grid_terminal_is_never_adopted_by_shape_or_horizon_match(tmp
 
 def test_init_accepts_the_real_sealed_designs_and_refuses_an_elapsed_one(tmp_path):
     """The seam the fixtures used to hide: the campaign must seal exactly what the model lane produces."""
-    from tests.i6dmo.ops_fakes import elapsed_design_for_market_time, sealed_market_time_designs
+    import hashlib
+    from tests.i6dmo.ops_fakes import (elapsed_design_for_market_time, integration_pins,
+                                       sealed_market_time_designs)
     from tools.i6dmo import campaign
     short, long = sealed_market_time_designs()
+    pins = integration_pins()["designs"]
     root = make_market_time_campaign(tmp_path, name="sealed")
     effective = campaign.load_effective(root)
-    for doc, path in ((effective["design"], short), (effective["long"]["design"], long)):
+    for doc, path, pin in ((effective["design"], short, pins["mg2"]),
+                           (effective["long"]["design"], long, pins["mg12"])):
         assert doc["schema"] == campaign.MARKET_TIME_DESIGN_SCHEMA
-        assert doc["seal_sha256"] == json.loads(path.read_text())["seal_sha256"]
+        # the integrated identity is pinned: a reseal must update INTEGRATION_PINS.json deliberately
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == pin["file_sha256"]
+        assert doc["seal_sha256"] == pin["seal_sha256"] == json.loads(path.read_text())["seal_sha256"]
+        assert doc["experiment_id"] == pin["experiment_id"]
         assert doc["market_time"]["require_exact_market_slots"] is True
         assert doc["market_time"]["elapsed_span_fixed"] is False
         assert "input" not in doc and "history_span_hours" not in doc

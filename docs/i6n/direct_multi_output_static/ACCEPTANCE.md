@@ -137,4 +137,7 @@ These rows point at the owning lanes' own tests; the ops suite does not re-certi
 | MODEL | No donor compatible by shape alone; DS2 families untouched | model | `test_dmo_market_time.py::test_no_donor_is_compatible_by_shape_alone`, `::test_ds2_and_other_elapsed_families_are_untouched` |
 
 Independent review `f07305a2` reported FIX_REQUIRED with blockers B-1/B-2/B-4 in the model lane and
-B-3 (K2) in ops; the ops blocker is fixed here and MTP08-MTP10 are its regressions.
+B-3 (K2) in ops. The ops blocker was fixed at `0884cf9a` (MTP08-MTP10 are its regressions) and the
+model lane landed B-1/B-2/B-4 at `3cfcb59d`, which RESEALED both designs; the integrated identities
+are pinned in `market_time/INTEGRATION_PINS.json` and asserted by MTP08, so a later reseal fails
+the suite until the integration pin is updated deliberately.
