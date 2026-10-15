@@ -26,6 +26,14 @@ lectura de vuelta y dos espejos fisicos verificados. El
 conserva errores por horizonte, costes y limites. No repetir estos fits.
 Las reparaciones pendientes son de automatizacion CPU; cualquier contraste
 cientifico posterior necesita su propia identidad y diseno, no reabrir esta.
+El propietario acepto el siguiente orden:
+[control corto MG1/MG2, ramas R2, transferencia larga y cadencia trimestral](../i6n/direct_multi_output_static/NEXT_CONTRASTS_PLAN_20261015.md).
+Primero se implementa el control de muestreo con poblaciones FIT/INNER/2024
+comunes, 25/13 observaciones en 24 horas de mercado y seis cabezas. El
+control horario en horas transcurridas ya preparado no sustituye este diseno.
+No se atribuye a la informacion de entrada sola el efecto combinado con el
+aumento de parametros del cabezal Flatten. No hay una campana nueva corriendo
+por el mero hecho de aceptar su plan.
 Reajustes durante el ano desactivados en esta
 primera identidad. Esta enmienda prevalece sobre instrucciones antiguas de
 reajuste semanal obligatorio, barridos por horizonte y relevo H4->H72.

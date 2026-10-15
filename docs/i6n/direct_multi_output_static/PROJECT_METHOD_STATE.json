@@ -1,13 +1,14 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S14_MARKET_TIME_PAIR_CLOSED",
- "execution_status": "CLOSED_PAIR_NOT_ELIGIBLE_20261015_0830Z",
+ "current_stage": "S15_MATCHED_SHORT_CONTRAST_PREPARING",
+ "execution_status": "PRIOR_PAIR_CLOSED_NEXT_CONTRAST_APPROVED_NOT_RUNNING",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
   "ACCEPTANCE.md",
-  "MARKET_TIME_PAIR_PLAN.md"
+  "MARKET_TIME_PAIR_PLAN.md",
+  "NEXT_CONTRASTS_PLAN_20261015.md"
  ],
  "completed_definition_stages": [
   "S0_DISCOVERY",
@@ -19,11 +20,11 @@
   "S6_COMPONENT_DESIGN",
   "S7_INTEGRATION_TEST_DESIGN"
  ],
- "definition_gate": "MAP_MARKET_TIME_REQUIREMENTS_AND_UNIT_TEST_DESIGN_BEFORE_NEW_RUNTIME; EXISTING_DEFINITION_STAGES_REFER_TO_CLOSED_DS2",
+ "definition_gate": "SC01-SC12 test design is specified in NEXT_CONTRASTS_PLAN_20261015.md; freeze new market-time designs and common populations, implement executable tests and obtain independent actual-path review before dispatch. Existing acceptance evidence belongs to closed baselines, not the new contrast.",
  "next_allowed_actions": [
   "Retain campaign i6dmo-9e1ebad89ff2 CLOSE.json and its verified metrics, mirrors and original fit identities",
   "Integrate report repair and finish the bounded CPU-only eligibility/strategy/automatic-close corrections in the recovery handoff",
-  "Prepare the next separately identified validation contrast from the completed minimal static baseline; no implicit refit",
+  "Implement and independently review new MG1/MG2 matched-short designs and frozen common masks under NEXT_CONTRASTS_PLAN_20261015.md; no reuse of full-population MG2 as a matched fit",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],
  "blocked_actions": [
@@ -60,5 +61,14 @@
    "event": "Market-time pair launched: campaign i6dmo-72809b6c88a6, designs 1fa48222/4da1d3e0 (seals 4b64b4ee/97541764, effective 920332ae/0853f6d9), bundles 21400c51/c3867b5c; storage adapter and gates added; two roots retired before any claim (instrument envelope, elapsed data-contract check on a market design); tests/i6dmo 404 passed."
   }
  ],
- "status_note": "Closed 2026-10-15 08:30 UTC, PAIR_NOT_ELIGIBLE. Runtime a169fcba repairs market reporting and imports MG2 without refitting. Short 6h/12h improve 0.049615%/0.093170% vs their own naive; other short heads fail. All MG12 heads fail by 24.08-41.08%; fit 124.55s, 37 epochs, best 27. Pair hook executed after a bounded negative-decision recovery for an overbroad OHLC precondition. No trading or TEST. 110 reports / 3952 metrics readback verified; 58 files per mirror; timers disabled."
+ "next_contrast": {
+  "id": "I6-DMO-SHORT-MG1-MG2-MATCHED",
+  "state": "APPROVED_FOR_DEFINITION_AND_IMPLEMENTATION",
+  "runtime_implemented": false,
+  "scientific_fits_started": 0,
+  "plan": "NEXT_CONTRASTS_PLAN_20261015.md",
+  "acceptance_ids": ["SC01", "SC02", "SC03", "SC04", "SC05", "SC06", "SC07", "SC08", "SC09", "SC10", "SC11", "SC12"],
+  "later_order": ["COMPATIBLE_BRANCH_R2_VS_R0", "LONG_TRANSFER", "QUARTERLY_VS_STATIC"]
+ },
+ "status_note": "Prior pair closed 2026-10-15 08:30 UTC, PAIR_NOT_ELIGIBLE. Runtime a169fcba repairs market reporting and imports MG2 without refitting. Short 6h/12h improve 0.049615%/0.093170% vs their own naive; other short heads fail. All MG12 heads fail by 24.08-41.08%; fit 124.55s, 37 epochs, best 27. Pair hook executed after a bounded negative-decision recovery for an overbroad OHLC precondition. No trading or TEST. 110 reports / 3952 metrics readback verified; 58 files per mirror; timers disabled. Owner accepted matched short sampling then R2, long transfer and quarterly cadence; successor preparation is not an execution claim."
 }

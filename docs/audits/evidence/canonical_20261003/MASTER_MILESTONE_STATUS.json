@@ -1,6 +1,6 @@
 {
   "as_of": "2026-10-15T08:30:00+00:00",
-  "critical_path_eta": "MG2/MG12 baseline DONE; next scientific contrast not scheduled",
+  "critical_path_eta": "MG2/MG12 DONE; matched short control approved, preparing (ETA unmeasured)",
   "milestones": [
     {
       "eta": "1-3 development days",
@@ -48,10 +48,10 @@
       "title": "Pretrained temporal core"
     },
     {
-      "eta": "Baseline DONE; next contrast not scheduled",
+      "eta": "Baseline DONE; next control ETA unmeasured",
       "evidence": "MG2/MG12 CLOSED, pair not eligible. Short h6/h12 beat naive; long 0/6. 3952 metrics read back, two mirrors verified. TEST closed.",
       "id": "M6",
-      "next": "Integrate CPU-only eligibility/strategy/automatic-close repairs; define a separately identified next validation contrast; retain TEST closure",
+      "next": "Prepare matched MG1/MG2 short control and automate closure; then compatible-branch R2, long transfer and quarterly cadence. TEST closed",
       "progress": 24,
       "state": "PARTIAL_MEASUREMENT",
       "title": "Short/long forecasts + strategy",

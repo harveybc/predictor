@@ -3,7 +3,7 @@
   "updated_on": "2026-10-15",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "I6_DMO_NEW_MG2_STATIC_THEN_MG12_AND_GATED_PAIR",
+    "focus": "I6_DMO_MATCHED_SHORT_SAMPLING_THEN_R2_LONG_AND_CADENCE",
     "parallelism": "Parallel bounded implementation/data/strategy/OLAP lanes; first scientific fixed fit on preferred 5090 only, one heavy process per host. No duplicate fits to fill GPUs.",
     "seed_default": 6102026,
     "seed_maximum": 3,
@@ -28,6 +28,18 @@
     "h4_h72_poo_sequence": "PAUSED_NO_AUTOMATIC_RESTART"
   },
   "lanes": [
+    {
+      "priority": 0,
+      "id": "I6-DMO-SHORT-MATCHED",
+      "resource": "bounded_CPU_definition_implementation_review_then_admitted_GPU",
+      "state": "APPROVED_FOR_DEFINITION_AND_IMPLEMENTATION",
+      "dispatch_enabled": false,
+      "work": "Prepare new market-time MG1/MG2 short designs with common FIT/INNER/DEVELOPMENT per-head populations; test and review finite automation before scientific dispatch. Two newly matched fits are not repeats of the closed full-population baseline.",
+      "depends_on": [],
+      "produces": "sealed common support, per-horizon original-price MAE and naive, recipe decision, OLAP readback and mirrored closure",
+      "work_plan": "../../i6n/direct_multi_output_static/NEXT_CONTRASTS_PLAN_20261015.md",
+      "dispatch_gate": "new designs/support sealed and actual fit/report paths independently verified; no additional chat approval within approved scope"
+    },
     {
       "priority": 0,
       "id": "I6-DMO",
