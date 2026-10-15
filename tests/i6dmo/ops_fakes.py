@@ -94,10 +94,49 @@ def facts_provider(per_role=None, **defaults):
     return lambda role: facts(**{**defaults, **per_role.get(role, {})})
 
 
+def write_market_time_designs(tmp_path, *, name="mt", rule="MG2_MARKET_EXACT"):
+    """MG2/MG12 candidate designs for the ops graph (typed market-time fields; no elapsed span claim)."""
+    tmp_path = Path(tmp_path)
+    out = []
+    for family, spacing, span, horizons, long_rule in (
+            ("short", 2, 24, [2, 3, 4, 5, 6, 12], rule),
+            ("long", 12, 144, [18, 24, 36, 48, 60, 72], "MG12_MARKET_EXACT")):
+        design = load_design()
+        design["experiment_id"] = f"I6-DMO-{family.upper()}-{long_rule}-R0"
+        design["horizons_hours"] = horizons
+        design["input"] = {k: v for k, v in design["input"].items() if k != "history_span_hours"}
+        design["input"].update(sampling_rule=long_rule, spacing_open_market_hours=spacing,
+                               span_open_market_hours=span, observations=13,
+                               elapsed_span_hours_fixed=False)
+        path = tmp_path / f"{name}-{family}-design.json"
+        path.write_text(json.dumps(design))
+        out.append(path)
+    return out
+
+
+def make_market_time_campaign(tmp_path, *, name="mt", rule="MG2_MARKET_EXACT", prior_roots=(), **kw):
+    from tools.i6dmo import campaign
+    tmp_path = Path(tmp_path)
+    short_design, long_design = write_market_time_designs(tmp_path, name=name, rule=rule)
+    spec_path = tmp_path / "private_spec.json"
+    if not spec_path.exists():
+        spec_path.write_text(json.dumps(private_spec(tmp_path)))
+    root = tmp_path / name
+    pins = dict(DATA)
+    pins.update(strategy_pin_files(tmp_path))
+    campaign.init_campaign(short_design, spec_path, root, adapter=fake_adapter(), code_commit=CODE,
+                           data_pins=pins, entrypoints=trainer_entrypoints(),
+                           prior_roots=[str(p) for p in prior_roots], long_design=long_design,
+                           strategy_execution={"instrument": json.loads(json.dumps(INSTRUMENT))},
+                           mode=campaign.MODE_MARKET_TIME, **kw)
+    return root
+
+
 def trainer_entrypoints():
     """Every unit kind runs the fake trainer; the kind is passed so the fake can count fits."""
     base = [sys.executable, str(FAKE_TRAINER)]
-    return {kind: base + ["--kind", kind] for kind in ("fit", "report", "pair", "final_refit", "final_test")}
+    return {kind: base + ["--kind", kind]
+            for kind in ("fit", "report", "pair", "strategy", "final_refit", "final_test")}
 
 
 def fit_count(counter):

@@ -35,6 +35,11 @@ CPU_CAP = 4 * GIB
 TTL = 900
 POLL = 30.0
 TERMINAL_STATUSES = ("COMPLETE", "FAILED", "NOT_ELIGIBLE", "PAIR_NOT_ELIGIBLE")
+# A terminal may only be adopted when its own recorded identity components match this unit's.
+# Shape or horizon similarity is never sufficient: an elapsed-grid (DS2/ASOF) terminal must not be
+# reused for a market-time identity even though both carry six heads and the same window shape.
+IDENTITY_COMPONENT_KEYS = ("unit", "family", "kind", "cadence", "effective_config_sha256",
+                           "data_sha256", "code_commit", "seed", "upstream")
 
 
 def attempt_dir(root, unit_id, index):
@@ -232,8 +237,14 @@ def _verify_stored(folder, unit):
         raise ValueError("schema")
     if doc.get("identity_sha256") != unit["identity_sha256"]:
         raise ValueError("IDENTITY_MISMATCH")
-    if C.unit_identity(doc["identity"]) != unit["identity_sha256"]:
+    stored = doc.get("identity") or {}
+    if set(stored) != set(IDENTITY_COMPONENT_KEYS):
+        raise ValueError("IDENTITY_COMPONENTS_SCHEMA")
+    if C.unit_identity(stored) != unit["identity_sha256"]:
         raise ValueError("IDENTITY_COMPONENTS_MISMATCH")
+    if unit.get("identity") and stored != unit["identity"]:
+        # same digest claimed, different components: a forged or cross-treatment terminal
+        raise ValueError("IDENTITY_COMPONENTS_DIFFER_FROM_THIS_UNIT")
     child = Path(folder) / "CHILD_TERMINAL.json"
     if hashlib.sha256(child.read_bytes()).hexdigest() != doc["child_terminal_sha256"]:
         raise ValueError("CHILD_TERMINAL_DIGEST")

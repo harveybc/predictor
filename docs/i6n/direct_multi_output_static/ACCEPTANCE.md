@@ -86,3 +86,23 @@ Publish `STATUS.json`, `PRECHECK.json`, `EFFECTIVE_CONFIG.json`, `RESULT.json`,
 generated M1-M8 plot. Failures and exclusions are first-class metrics. Unit
 progress may count epochs/batches; stage progress counts declared terminals.
 Keep performance estimates separate from engineering completion percentages.
+
+
+## Market-time pair addendum (order 50d20d01, ops scope)
+
+The market-time campaign (`mode = MARKET_TIME_PAIR`) runs one finite graph and has **no TEST
+stage**: `short.fit -> short.report -> long.fit -> long.report -> pair.eligibility ->
+strategy.validation (only on a qualified pair) -> publication/mirror closure`.
+
+| ID | Required falsification / positive control | Test |
+|---|---|---|
+| MTP01 | The graph is exactly those six units with the declared dependencies, both designs sealed at init, and no unit is TEST-open. | `test_market_time_graph_is_finite_and_has_no_test_unit` |
+| MTP02 | The long family is fitted and reported even when the short family is scientifically NOT_ELIGIBLE. | `test_long_family_runs_even_when_short_is_not_eligible` |
+| MTP03 | A disqualified pair closes `PAIR_NOT_ELIGIBLE` with reasons; the strategy never runs and burns no attempt. | `test_disqualified_pair_closes_with_a_typed_disposition_and_no_strategy_run` |
+| MTP04 | A qualified pair runs the validation strategy. | `test_qualified_pair_runs_the_validation_strategy` |
+| MTP05 | No TEST unit is enumerable (`TEST_NOT_ENUMERABLE_IN_MARKET_TIME_PAIR`) or claimable even if injected into the queue. | `test_no_test_unit_can_be_enumerated_or_claimed` |
+| MTP06 | An elapsed-grid (DS2/ASOF) terminal is refused for a market-time identity even with matching shapes and horizons. | `test_an_elapsed_grid_terminal_is_never_adopted_by_shape_or_horizon_match` |
+| MTP07 | A technical failure is a typed terminal with no retry and no false COMPLETE. | `test_a_technical_failure_is_a_typed_terminal_without_retries` |
+
+All seven are in `tests/i6dmo/test_ops_market_time_pair.py`. PRE: collection error (the market-time
+mode did not exist). POST: 7 passed; whole suite 326 passed.

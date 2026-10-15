@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S8_MARKET_TIME_SUCCESSOR_TEST_DESIGN",
- "execution_status": "EXACT_SHORT_CLOSED_MARKET_PAIR_APPROVED_NOT_IMPLEMENTED",
+ "current_stage": "S12_MARKET_TIME_PAIR_INTEGRATION",
+ "execution_status": "MARKET_TIME_PAIR_OPS_INTEGRATED_AWAITING_LANE_SEALS_AND_REVIEW",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -21,10 +21,10 @@
  ],
  "definition_gate": "MAP_MARKET_TIME_REQUIREMENTS_AND_UNIT_TEST_DESIGN_BEFORE_NEW_RUNTIME; EXISTING_DEFINITION_STAGES_REFER_TO_CLOSED_DS2",
  "next_allowed_actions": [
-  "Implement and independently verify MARKET_TIME_PAIR_PLAN.md with per-example physical time encoding",
-  "Seal new MG2/MG12 identities and deploy finite short then long then gated pair development graph after acceptance",
-  "Recover value-level point-in-time FRED evidence and measured instrument costs independently; keep TEST closed",
-  "Keep the retained ASOF arm and the measured exact baseline immutable"
+  "Integrate the data (MG2/MG12 bundles) and model (physical-time encoder) seals",
+  "Independent reviewer negative controls and same-row MAE/naive replay before any fit",
+  "validate-design, preflight, init and deploy for the new market-time root (5090 first)",
+  "Let the services advance short -> long -> pair -> eligible strategy -> publication closure"
  ],
  "blocked_actions": [
   "Change consensus or silently reuse old identity/donors",
@@ -50,7 +50,11 @@
   {
    "date": "2026-10-15",
    "event": "Corrected exact-DS2 short release 2c03792e (reviewer ACCEPT_FOR_RELEASE, addendum 6a688a67): short.fit and short.report COMPLETE on the preferred GPU; six heads NOT_ELIGIBLE vs naive on 2024 development; 55 reports / 2011 metric rows delivered with exact readback, 28 files per mirror; long family held WAIT_DESIGN_RULING (LONG_EXACT_EMPTY_SUPPORT) pending the calendar market-time support study."
+  },
+  {
+   "date": "2026-10-15",
+   "event": "Market-time pair ops integration: finite graph short.fit->short.report->long.fit->long.report->pair.eligibility->strategy.validation with long progression independent of short eligibility, typed PAIR_NOT_ELIGIBLE closure, no enumerable or claimable TEST unit, and cross-treatment adoption refused; 7 new regressions (PRE collection error, POST pass), suite 326 passed."
   }
  ],
- "status_note": "The 2026-10-14 AUDIT_REVISE_BEFORE_CONTINUE applied to the superseded ASOF software and is retained as history; the corrected exact-DS2 short software passed the independent review (ACCEPT_FOR_RELEASE, addendum 6a688a67) and its measurement is closed: six heads NOT_ELIGIBLE on 2024 development, scoped to one minimal static R0 exact-DS2 model only."
+ "status_note": "Owner approved option (a). The ops finite graph for MG2/MG12 is integrated and tested (no new distributed runtime, no TEST stage); the measured elapsed-grid short baseline and the retained ASOF arm stay immutable and are never adopted by shape or horizon match. Scientific execution waits on the data and model lane seals and the independent reviewer."
 }

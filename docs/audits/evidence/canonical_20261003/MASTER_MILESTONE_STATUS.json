@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-10-15T01:30:00+00:00",
+  "as_of": "2026-10-15T03:00:00+00:00",
   "critical_path_eta": "feature-selection manifest after GPU queues (done/done/done) and the closure step; later milestones downstream",
   "milestones": [
     {
@@ -51,11 +51,11 @@
       "eta": "4-7 days after M5",
       "evidence": "I6-DMO short static exact-DS2 baseline MEASURED and closed: six heads NOT_ELIGIBLE vs naive on 2024 development (one minimal R0 model; no broader claim); long grid has empty exact support and awaits a market-time redesign",
       "id": "M6",
-      "next": "Calendar market-time support study (CPU), paired hourly-input control prepared unfitted, instrument/cost + FRED evidence recovery; strategy only after an eligible pair; TEST closed",
+      "next": "Market-time MG2/MG12 pair: data and model seals, independent review, then the finite short->long->pair->eligible-strategy graph on the preferred GPU; TEST stays closed",
       "progress": 24,
       "state": "SYNTHETIC_ONLY",
       "title": "Short/long forecasts + strategy",
-      "engineering_note": "scientific percentage unchanged; short closure / long support redesign (2026-10-15)"
+      "engineering_note": "scientific percentage unchanged; market-time pair integration awaiting lane seals and review (2026-10-15)"
     },
     {
       "eta": "5-10 days after M5",
