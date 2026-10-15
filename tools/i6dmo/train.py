@@ -112,19 +112,165 @@ def required_splits(effective):
     return FINAL_SPLITS if effective.get("mode") == "FINAL_REFIT" else SPLITS
 
 
-def load_data_bundle(bundle_dir, effective):
+MARKET_TIME_ARRAYS = ("offsets_hours", "closure_crossed")
+
+
+def is_market_time(effective):
+    return bool((effective.get("design") or {}).get("market_time"))
+
+
+def market_time_inputs(arrays):
+    """[observations, offsets_hours, closure_crossed] with the declared conventions enforced.
+
+    Typed ORDINAL_OR_INVALID_OFFSETS (review B-4) when the last offset is not exactly 0, any
+    offset is positive, the first adjacent delta is nonzero, the first closure flag is nonzero,
+    or the ladder is tighter than the slot grid can physically be (ordinal slot indices).
+    """
+    offsets = np.asarray(arrays["offsets_hours"], dtype=np.float64)
+    closure = np.asarray(arrays["closure_crossed"], dtype=np.float64)
+    x = np.asarray(arrays["x"])
+    if offsets.ndim != 2 or offsets.shape != closure.shape or len(offsets) != len(x) \
+            or offsets.shape[1] != x.shape[1]:
+        raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS",
+                               f"per-example time inputs must be (n, slots): got {offsets.shape} "
+                               f"and {closure.shape} for x {x.shape}")
+    if offsets.size:
+        if not np.all(offsets[:, -1] == 0):
+            raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS",
+                                   "the last offset must be exactly 0 (the origin tick)")
+        if not np.all(offsets <= 0):
+            raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS",
+                                   f"offsets must be <= 0; max {float(offsets.max())}")
+        deltas = np.diff(offsets, axis=1)
+        if not np.all(deltas > 0):
+            raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS",
+                                   "offsets must increase towards the origin")
+        minimum = float(deltas.min())
+        if minimum < 1.5:   # no declared market grid is tighter than 2 open-market hours
+            raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS",
+                                   f"adjacent elapsed hours {minimum} below the tightest declared "
+                                   "market spacing: ordinal slot indices or a compressed ladder")
+        if not np.all(closure[:, 0] == 0):
+            raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS", "the first closure flag must be 0")
+        if not np.all(np.isin(closure, (0.0, 1.0))):
+            raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS", "closure flags must be 0/1")
+    return [x, offsets.astype(np.float32), closure.astype(np.float32)]
+
+
+def load_market_split_arrays(bundle_dir, split, design_path):
+    """One authenticated market split, as the trainer consumes it."""
+    from tools.i6dmo import market_grid
+    market_design = market_grid.market_design(_elapsed_view(design_path))
+    try:
+        arrays = market_grid.load_market_split(bundle_dir, split, design=market_design)
+    except Exception as exc:  # DataContractError carries a typed code
+        raise TrainDisposition(getattr(exc, "code", "MARKET_BUNDLE_REFUSED"), str(exc)[:400]) from None
+    return arrays
+
+
+def _elapsed_view(design_path):
+    """The data lane's market design is derived from the elapsed design; rebuild that view."""
+    from tools.i6dmo import data as data_mod
+    sealed = D.load_design(design_path) if not isinstance(design_path, dict) else design_path
+    base = json.loads(_canonical(sealed))
+    elapsed = json.loads((Path(__file__).resolve().parents[2]
+                          / "docs/i6n/direct_multi_output_static/EXPERIMENT.short.json")
+                         .read_text(encoding="utf-8"))
+    if base["market_time"]["rule"].startswith("MG12"):
+        return data_mod.long_data_view(elapsed)
+    return elapsed
+
+
+def _load_market_bundle(bundle_dir, effective, design_path):
+    """Authenticate a market bundle and apply the same model-side boundary checks."""
+    from tools.i6dmo import market_grid
+    root = Path(bundle_dir)
+    # Read the declared schema BEFORE any body verification so a DS2/ASOF bundle under a
+    # market-time design is refused as a schema mismatch, not as a digest error.
+    try:
+        declared = json.loads((root / "BUNDLE.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise TrainDisposition("BUNDLE_UNREADABLE", str(exc)[:300]) from None
+    if declared.get("schema") != market_grid.BUNDLE_SCHEMA:
+        raise TrainDisposition("BUNDLE_SCHEMA",
+                               f"a market-time design requires {market_grid.BUNDLE_SCHEMA}, got "
+                               f"{declared.get('schema')!r}")
+    try:
+        manifest = market_grid.load_market_manifest(root)
+    except Exception as exc:
+        raise TrainDisposition(getattr(exc, "code", "BUNDLE_UNREADABLE"), str(exc)[:300]) from None
+    expected_rule = effective["design"]["market_time"]["rule"]
+    if (manifest.get("input_sampling") or {}).get("rule") != expected_rule:
+        raise TrainDisposition("MARKET_RULE_MISMATCH",
+                               f"bundle rule {(manifest.get('input_sampling') or {}).get('rule')!r} "
+                               f"!= design {expected_rule!r}")
+    identity = D.check_feature_identity(manifest["features"])
+    if manifest.get("feature_manifest_sha256") != identity["manifest_sha256"]:
+        raise TrainDisposition("FEATURE_IDENTITY_MISMATCH", "declared feature manifest differs")
+    if list(manifest.get("horizons_hours") or []) != effective["horizons_hours"]:
+        raise TrainDisposition("BUNDLE_HORIZONS", "bundle horizons differ from the design")
+    slots = effective["design"]["market_time"]["observations"]
+    test_start = _epoch(effective["splits"]["test"]["start"])
+    horizons = np.asarray(effective["horizons_hours"], dtype=np.int64) * 3600
+    out = {"kind": "market", "manifest": manifest, "feature_identity": identity,
+           "manifest_sha256": file_sha256(root / "BUNDLE.json")}
+    for name in SPLITS:
+        if name in manifest.get("splits", {}):
+            arrays = load_market_split_arrays(root, name, design_path)
+        else:
+            raise TrainDisposition("BUNDLE_SCHEMA", f"market bundle lacks the {name} split")
+        rows = len(arrays["row_id"])
+        if rows < 1 or arrays["x"].shape != (rows, slots, len(identity["features"])):
+            raise TrainDisposition("BUNDLE_SHAPE", f"{name}: x must be (n, {slots}, 19)")
+        for key in MARKET_TIME_ARRAYS:
+            if key not in arrays or np.asarray(arrays[key]).shape != (rows, slots):
+                raise TrainDisposition("BUNDLE_SCHEMA", f"{name}: {key} must be (n, {slots})")
+        origin = np.asarray(arrays["row_id"], dtype=np.int64)
+        if (origin >= test_start).any():
+            raise TrainDisposition("TEST_FORBIDDEN", f"{name}: origin at or after the TEST start")
+        start, end = (_epoch(effective["splits"][name][k]) for k in ("start", "end"))
+        if ((origin < start) | (origin >= end)).any():
+            raise TrainDisposition("SPLIT_BOUNDARY_VIOLATION", f"{name}: origin outside its split")
+        mask = np.asarray(arrays["mask"], dtype=bool)
+        crossing = mask & (origin[:, None] + horizons[None, :] >= end)
+        if crossing.any():
+            code = "PURGE_VIOLATION" if name == "fit" else "SPLIT_BOUNDARY_VIOLATION"
+            raise TrainDisposition(code, f"{name}: {int(crossing.sum())} valid labels reach {end}")
+        if not np.isfinite(arrays["x"]).all() or not np.isfinite(arrays["origin_price"]).all():
+            raise TrainDisposition("NONFINITE_INPUT", name)
+        if not np.isfinite(np.asarray(arrays["target_price"])[mask]).all():
+            raise TrainDisposition("NONFINITE_LABEL", f"{name}: a valid label is not finite")
+        kept = {"row_id": origin, "x": np.asarray(arrays["x"], dtype=np.float64),
+                "origin_price": np.asarray(arrays["origin_price"], dtype=np.float64),
+                "target_price": np.asarray(arrays["target_price"], dtype=np.float64), "mask": mask,
+                "offsets_hours": np.asarray(arrays["offsets_hours"], dtype=np.float64),
+                "closure_crossed": np.asarray(arrays["closure_crossed"], dtype=np.float64)}
+        market_time_inputs(kept)          # enforce the conventions at load time
+        out[name] = kept
+    return out
+
+
+def load_data_bundle(bundle_dir, effective, design_path=None):
     """Authenticate the frozen data bundle and run the model-side boundary checks."""
+    if is_market_time(effective):
+        return _load_market_bundle(bundle_dir, effective, design_path or effective["design"])
     expected = required_splits(effective)
     root = Path(bundle_dir)
     try:
         manifest = json.loads((root / "BUNDLE.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise TrainDisposition("BUNDLE_UNREADABLE", str(exc)) from None
+    if manifest.get("schema") == "i6dmo.market_bundle.v1":
+        raise TrainDisposition("BUNDLE_SCHEMA",
+                               "a market-time bundle is never adopted by an elapsed design")
     required = {"schema", "features", "feature_manifest_sha256", "horizons_hours", "offsets_hours", "splits"}
     if not isinstance(manifest, dict) or not required <= set(manifest):
         raise TrainDisposition("BUNDLE_SCHEMA", f"BUNDLE.json requires {sorted(required)}")
     if manifest["schema"] != BUNDLE_SCHEMA:
-        raise TrainDisposition("BUNDLE_SCHEMA", f"schema must be {BUNDLE_SCHEMA}")
+        raise TrainDisposition("BUNDLE_SCHEMA",
+                               f"schema must be {BUNDLE_SCHEMA}; a market-time bundle is never "
+                               "adopted by an elapsed design (got "
+                               f"{manifest['schema']!r})")
     splits = manifest["splits"]
     if not isinstance(splits, dict):
         raise TrainDisposition("BUNDLE_SCHEMA", "splits must be an object")
@@ -194,7 +340,8 @@ def load_data_bundle(bundle_dir, effective):
 def trainable_rows(arrays):
     """Rows with at least one valid head; the others are counted, not trained."""
     keep = arrays["mask"].any(axis=1)
-    return {k: v[keep] for k, v in arrays.items()}, int((~keep).sum())
+    return ({k: (v[keep] if isinstance(v, np.ndarray) and len(v) == len(keep) else v)
+             for k, v in arrays.items() if isinstance(v, np.ndarray)}, int((~keep).sum()))
 
 
 def fit_scales(fit):
@@ -301,6 +448,33 @@ MONITOR_INPUT = "i6dmo.monitor_input.v1:float64_cpu_normalize_single_float32_cas
 MONITOR_FORWARD = "i6dmo.monitor_forward.v1"
 
 
+def _parts(x):
+    """Model inputs as a list (market-time models take three tensors)."""
+    return list(x) if isinstance(x, (list, tuple)) else [x]
+
+
+def _rows(x):
+    return len(_parts(x)[0])
+
+
+def _take(x, idx):
+    """Index every model input consistently (a list stays a list)."""
+    if isinstance(x, (list, tuple)):
+        return [np.asarray(part)[idx] for part in x]
+    return np.asarray(x)[idx]
+
+
+def _as_float32(x):
+    if isinstance(x, (list, tuple)):
+        return [np.ascontiguousarray(np.asarray(part, dtype=np.float32)) for part in x]
+    return np.ascontiguousarray(np.asarray(x, dtype=np.float32))
+
+
+def _input_bytes(x):
+    """The exact bytes fed to the forward, across every input tensor."""
+    return b"".join(np.ascontiguousarray(part).tobytes() for part in _parts(x))
+
+
 def monitor_forward(model, x32, batch_size):
     """THE monitor's one dedicated forward (fit-time recording and replay call exactly this).
 
@@ -311,8 +485,9 @@ def monitor_forward(model, x32, batch_size):
     """
     import tensorflow as tf
     parts = []
-    for start in range(0, len(x32), batch_size):
-        out = model(tf.constant(x32[start:start + batch_size]), training=False)
+    for start in range(0, _rows(x32), batch_size):
+        chunk = [tf.constant(part[start:start + batch_size]) for part in _parts(x32)]
+        out = model(chunk if len(chunk) > 1 else chunk[0], training=False)
         parts.append(np.concatenate([np.asarray(o, dtype=np.float64) for o in out], axis=1))
     width = len(model.outputs)
     return np.concatenate(parts, axis=0) if parts else np.zeros((0, width))
@@ -325,9 +500,16 @@ def monitor_forward_identity():
 
 
 def materialize_monitor_inputs(rows, scales):
-    """The ONE shared monitor-input materialization (see MONITOR_INPUT)."""
+    """The ONE shared monitor-input materialization (see MONITOR_INPUT).
+
+    For a market-time split the model input is the three-tensor list
+    ``[observations, offsets_hours, closure_crossed]``; elapsed splits keep a single tensor.
+    """
     x, y, mask = transform(rows, scales)
-    return np.ascontiguousarray(x, dtype=np.float32), y, mask
+    x = np.ascontiguousarray(x, dtype=np.float32)
+    if "offsets_hours" in rows:
+        return market_time_inputs({**rows, "x": x}), y, mask
+    return x, y, mask
 #: Pre-declared, PROSPECTIVE monitor comparison floor (v2, approved by Satoshi after eight
 #: rounds): scope is ONLY the cross-process GPU comparison of the monitored value and the
 #: per-batch per-head float64 partial sums; everything else stays BITWISE (CPU end-to-end,
@@ -467,7 +649,7 @@ def evaluate_monitored(model, fit, inner, batch_size, ids=None):
     splits = {"fit": fit, "inner": inner}
     id_arrays = {}
     for index, name in enumerate(names):
-        n = len(splits[name][0])
+        n = _rows(splits[name][0])
         given = None if ids is None else np.asarray(ids[index], dtype=np.int64)
         if given is not None and len(given) != n:
             raise TrainDisposition("MONITOR_PATH_MISMATCH", f"{name} ids length {len(given)} != rows {n}")
@@ -484,12 +666,12 @@ def evaluate_monitored(model, fit, inner, batch_size, ids=None):
     results = {}
     for name in names:
         x, y, mask = splits[name]
-        x = np.ascontiguousarray(np.asarray(x, dtype=np.float32))  # the EXACT bytes fed below
+        x = _as_float32(x)                        # the EXACT bytes fed below
         pred = monitor_forward(model, x, batch_size)
         results[name] = masked_split_metrics(y, pred, mask)
         y64, mb_all = np.asarray(y, np.float64), np.asarray(mask, bool)
         batches = []
-        for b, start in enumerate(range(0, len(x), batch_size)):
+        for b, start in enumerate(range(0, _rows(x), batch_size)):
             stop = start + batch_size
             pb, yb, mb = pred[start:stop], y64[start:stop], mb_all[start:stop]
             sums = [math.fsum(np.abs(pb[mb[:, h], h] - yb[mb[:, h], h]).tolist())
@@ -497,15 +679,19 @@ def evaluate_monitored(model, fit, inner, batch_size, ids=None):
             counts = [int(mb[:, h].sum()) for h in range(yb.shape[1])]
             batches.append({"batch": b, "start": start, "rows": int(len(pb)),
                             "row_ids_sha256": _ids_sha(id_arrays[name][start:stop]),
-                            "input_sha256": hashlib.sha256(x[start:stop].tobytes()).hexdigest(),
+                            "input_sha256": hashlib.sha256(
+                                _input_bytes(_take(x, slice(start, stop)))).hexdigest(),
                             "partial_sums": sums, "partial_counts": counts})
         witness[name] = {"row_ids_sha256": _ids_sha(id_arrays[name]), "batches": batches,
                          # Input witness: post-normalization float32 bytes, digested before any
                          # forward; batch-0 rows individually, the first rows byte-complete.
-                         "input_sha256": hashlib.sha256(x.tobytes()).hexdigest(),
-                         "batch0_input_row_sha256": [hashlib.sha256(row.tobytes()).hexdigest()
-                                                     for row in x[:batch_size]],
-                         "batch0_input_rows_hex": [row.tobytes().hex() for row in x[:8]],
+                         "input_sha256": hashlib.sha256(_input_bytes(x)).hexdigest(),
+                         "batch0_input_row_sha256": [
+                             hashlib.sha256(_input_bytes(_take(x, slice(i, i + 1)))).hexdigest()
+                             for i in range(min(batch_size, _rows(x)))],
+                         "batch0_input_rows_hex": [
+                             _input_bytes(_take(x, slice(i, i + 1))).hex()
+                             for i in range(min(8, _rows(x)))],
                          # Row-level forward witness: batch-0 per-row per-head float64 hex, so a
                          # replay can tell a weight effect (localized rows) from a different
                          # matmul/conv execution mode (uniform small deltas on every row).
@@ -524,8 +710,13 @@ def monitor_self_check(model, fit, inner, record, expected, ids=None):
     independent computations and never the stored value against itself. A
     mismatch is a typed MONITOR_SELF_CHECK_FAILED, never silently accepted.
     """
-    fit = tuple(np.array(part, copy=True) for part in fit)
-    inner = tuple(np.array(part, copy=True) for part in inner)
+    def _copy(split):
+        x, y, mask = split
+        x = ([np.array(part, copy=True) for part in x] if isinstance(x, (list, tuple))
+             else np.array(x, copy=True))
+        return (x, np.array(y, copy=True), np.array(mask, copy=True))
+
+    fit, inner = _copy(fit), _copy(inner)
     fm, im, monitored, report = replay_monitored(model, fit, inner, record, ids=ids)
     if report["status"] != "EXACT":
         raise TrainDisposition("MONITOR_SELF_CHECK_FAILED",
@@ -863,11 +1054,12 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_
     initial = weights_hash(model)
     started = time.monotonic()
     while True:
-        perm = order_rng.permutation(len(x_fit))
+        perm = order_rng.permutation(_rows(x_fit))
         for start in range(0, len(perm), batch):
             idx = perm[start:start + batch]
-            loss = float(step(tf.constant(x_fit[idx]), tf.constant(y_fit[idx], tf.float32),
-                              tf.constant(m_fit[idx])))
+            chunk = [tf.constant(part) for part in _parts(_take(x_fit, idx))]
+            loss = float(step(chunk if len(chunk) > 1 else chunk[0],
+                              tf.constant(y_fit[idx], tf.float32), tf.constant(m_fit[idx])))
             if not math.isfinite(loss):
                 raise TrainDisposition("NONFINITE_LOSS", f"training batch loss {loss}")
             updates += 1
@@ -1021,6 +1213,14 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
         data = load_data_bundle(bundle_dir, effective)
         receipt["identity"].update(bundle_manifest_sha256=data["manifest_sha256"],
                                    feature_manifest_sha256=data["feature_identity"]["manifest_sha256"])
+        subset = os.environ.get("I6DMO_TEST_MAX_ROWS")
+        if subset:   # software tests only; already stamped scientific=false by the overrides
+            limit = int(subset)
+            receipt["overrides"] = {**receipt.get("overrides", {}), "max_rows": limit}
+            receipt["scientific"] = False
+            for name in required_splits(effective):
+                data[name] = {k: (v[:limit] if isinstance(v, np.ndarray) and v.ndim >= 1 else v)
+                              for k, v in data[name].items()}
         fit_rows, fit_dropped = trainable_rows(data["fit"])
         inner_rows, inner_dropped = trainable_rows(data["inner"])
         scales = fit_scales(fit_rows)
@@ -1041,8 +1241,9 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
             t0 = time.monotonic()
             predictions = {}
             for name in required_splits(effective):
-                x, _, _ = transform(data[name], scales)
-                predictions[name] = to_price(M.predict_matrix(bundle.forecast_model, x), data[name], scales)
+                x, _, _ = materialize_monitor_inputs(data[name], scales)
+                predictions[name] = to_price(M.predict_matrix(bundle.forecast_model, x),
+                                             data[name], scales)
             predict_s = time.monotonic() - t0
         model_doc = M.save_dmo(bundle, out / "model", extra={"scales_sha256": scales["scales_sha256"]})
         _atomic_json(out / "SCALES.json", scales)
@@ -1070,12 +1271,19 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
             "horizons_hours": effective["horizons_hours"],
             **{name: _summary(data[name], predictions[name]) for name in required_splits(effective)}}
         receipt["timings"] = {"fit_s": result["fit_seconds"], "predict_s": predict_s}
+        if is_market_time(effective):
+            mt = effective["design"]["market_time"]
+            receipt["market_time"] = {**mt, "slot_order_is_not_wall_clock": True,
+                                      "time_inputs": list(MARKET_TIME_ARRAYS),
+                                      "bundle_schema": "i6dmo.market_bundle.v1"}
         receipt.update(status="COMPLETED", code="COMPLETED")
     except TrainDisposition as exc:
         receipt.update(status="FAILED_TYPED", code=exc.code, detail=str(exc))
     except Exception as exc:  # noqa: BLE001 - every unit needs a terminal
+        import traceback
         receipt.update(status="FAILED_UNTYPED", code="UNHANDLED_EXCEPTION",
-                       detail=f"{type(exc).__name__}: {exc}"[:2000])
+                       detail=f"{type(exc).__name__}: {exc}"[:2000],
+                       traceback=traceback.format_exc()[-2500:])
     receipt.setdefault("timings", {})["wall_s"] = time.monotonic() - wall0
     try:
         receipt["resources"] = _resources(device)

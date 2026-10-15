@@ -554,3 +554,46 @@ Plan sections 2/3/6 treated as FROZEN. CPU only, no fit, no GPU.
    FINAL effective sha `287e4f11…` is unchanged. Serialization/reload covers
    ALL inputs including the time/closure channels; identity refusals are typed
    (`MARKET_TIME_INCOMPATIBLE`, `WEIGHTS_DIGEST_MISMATCH`).
+
+## Round 20: review B.1 repairs - the sealed market-time identity can now fit
+
+Reviewer verdict FIX_REQUIRED on `96d4787b`: the temporal and metric paths all
+PASS, but three seams refused the sealed identity. All three repaired against
+the REAL seams (tests first, CPU only, no fit, no GPU, no TEST):
+
+- **B-1 (RB04).** `design.effective_config()['model']` now builds:
+  `normalize_model_config` accepts the sealed block's `offsets_hours: None`
+  (refusing any non-null fixed grid) and the sealed `time_encoder` identity
+  (verifying layer, version, the 24 h unit conversion, `fitted: false` and the
+  two context channels), and is byte-equal to the `model_config(...,
+  family=...)` positive control. Both sealed effective configs build 3-input
+  78-channel networks.
+- **B-2 (RB03 J1).** The trainer consumes market bundles: `load_data_bundle`
+  routes market designs to a market loader that reads the declared schema
+  BEFORE body verification (so a DS2 bundle is a typed `BUNDLE_SCHEMA`, not a
+  digest error), authenticates through the data lane's
+  `load_market_manifest` / `load_market_split` (rule and data-identity), and
+  re-applies every model-side boundary check. `market_time_inputs` assembles
+  `[observations, offsets_hours, closure_crossed]`, and the fit loop, monitor
+  forward, witnesses and export paths slice all inputs consistently. The REAL
+  CLI now completes on both sealed designs against REAL bundles built by the
+  data lane from synthetic inputs (48-row subset, 2 epochs).
+- **B-4 (RB02 E2).** Ordinal or impossible time inputs are now CAUGHT at both
+  seams (encoder `tf.debugging.Assert` and the trainer assembly) as typed
+  `ORDINAL_OR_INVALID_OFFSETS`: last offset exactly 0, all offsets <= 0,
+  increasing towards the origin, adjacent elapsed hours >= the design's
+  `spacing_open_market_hours` (so `arange(-12..0)` is refused), first adjacent
+  delta 0, first closure flag 0. The reviewer's two accepted cases are
+  regressions.
+
+Because the encoder identity gained those guards, both designs were RESEALED:
+
+| | design sha | seal sha | effective sha |
+|---|---|---|---|
+| MG2 | `1fa48222…` | `4b64b4ee…` | `920332ae…` |
+| MG12 | `4da1d3e0…` | `97541764…` | `0853f6d9…` |
+
+(superseding the pre-review `169fbece` / `8c10a9ca`). The elapsed DS2 path,
+the frozen recipe and the numerical policy are untouched; the short FINAL
+effective sha `287e4f11…` is unchanged. B-3 (campaign `_design_checks`
+hard-requiring `i6dmo.design.v1`) is the ops lane's seam.

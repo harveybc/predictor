@@ -33,12 +33,12 @@ def market(tmp_path_factory):
     """A REAL MG2 + MG12 bundle pair built by the data lane from synthetic inputs."""
     root = tmp_path_factory.mktemp("mtfit")
     src = _synth.make_input(root / "input")
-    short = market_grid.build_market_bundle(
+    market_grid.build_market_bundle(
         src, market_grid.market_design(_synth.load_design()), root / "mg2", code_commit="TEST")
-    long_ = market_grid.build_market_bundle(
+    market_grid.build_market_bundle(
         src, market_grid.market_design(data.long_data_view(_synth.load_design())),
         root / "mg12", code_commit="TEST")
-    return {"root": root, "input": src, "mg2": short, "mg12": long_}
+    return {"root": root, "input": src, "mg2": root / "mg2", "mg12": root / "mg12"}
 
 
 # ------------------------------------------------------------------ B-1 (RB04)

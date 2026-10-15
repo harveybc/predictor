@@ -193,7 +193,7 @@
     "data_bundle": "a bundle for this family must declare offsets -24..0 step 1 (25) and horizons 2..12; a 13-slot bundle is a typed BUNDLE_OFFSETS refusal"
   },
   "market_time": {
-    "status": "IMPLEMENTED_CPU_TESTED_NO_FIT",
+    "status": "FIT_PATH_IMPLEMENTED_CPU_TESTED_NO_FIT (review B-1/B-2/B-4 repaired)",
     "owned": [
       "tools/i6dmo/design.py (market-time schema + seal-market-time)",
       "tools/i6dmo/model.py (DynamicPhysicalTimeEncoder, market-time families)",
@@ -220,20 +220,30 @@
     "sealed": {
       "mg2": {
         "experiment_id": "I6-DMO-SHORT-MG2-MARKET-EXACT-R0",
-        "design_sha256": "169fbece3f6936a8528f3d3884812f1d1c157294d8a8187d01371e76dcbc0544",
-        "seal_sha256": "e7c2f3e7c75109bba7db42b85765cdc8d6cc1a7de9c5749bea16c457162ff369",
-        "effective_config_sha256": "5798baaa772b6d6015612b08d39ce982ce759bc7f7e40177ad830c6ee7bea356",
-        "file": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg2.json"
+        "design_sha256": "1fa48222a7136111b245f70ae07c47c3c67cf56e276e50e3d52edeadd35e3cb2",
+        "seal_sha256": "4b64b4ee321e23ce3c2dcb183fda00fd1488af2494bb15f68c89dd9775344ec8",
+        "effective_config_sha256": "920332aed3997b56a0fce19ced25c2d48abeff77ebb227ce6cff368c311ad768",
+        "file": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg2.json",
+        "supersedes": "169fbece (pre-review seal; the encoder identity gained the ordinal/compressed-ladder guards)"
       },
       "mg12": {
         "experiment_id": "I6-DMO-LONG-MG12-MARKET-EXACT-R0",
-        "design_sha256": "8c10a9cafadb30c8943dc77c34a77a5e878c74e089752c89b4a9d2f4525d7c81",
-        "seal_sha256": "ef562ba41405ff7fe61f6abcf58202b62d4aac3bb4ff629be21e7aa4cba85bf8",
-        "effective_config_sha256": "0b1b63e348129a31adae9ef94d372316340d78f17fe231f54806340f5f90374a",
-        "file": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg12.json"
+        "design_sha256": "4da1d3e09fc8df36445a080b0c07b1ca58a6c9674e0fa8249c10bc2d66166039",
+        "seal_sha256": "97541764436cc1356600999dd7b68e702a66fab37d82e676522709744dda89c6",
+        "effective_config_sha256": "0853f6d95bc3b70166a469011ba7a8d7f92e740089378e355bb6692c3810dd2f",
+        "file": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg12.json",
+        "supersedes": "8c10a9ca (pre-review seal)"
       }
     },
     "model_api": "tools.i6dmo.model.model_config(features, family='short_mg2'|'long_mg12') -> market config (slots + market_time block, NO offsets_hours grid); build_dmo returns a 3-input model [observations(b,13,19), offsets_hours(b,13), closure_crossed(b,13)]; predict_matrix accepts the list of inputs; save/load carry market_time metadata (slot_order_is_not_wall_clock) and refuse metadata/config disagreement (MARKET_TIME_INCOMPATIBLE)",
-    "short_effective_unchanged": "287e4f11e4ef385234becf02d9ed31864d8a3a58fc0b4c7f3e4c6a765a76e097 (verified after the market-time work)"
+    "short_effective_unchanged": "287e4f11e4ef385234becf02d9ed31864d8a3a58fc0b4c7f3e4c6a765a76e097 (verified after the market-time work)",
+    "fit_path": {
+      "build": "design.effective_config(sealed)['model'] now builds directly: normalize_model_config accepts the sealed block's offsets_hours=None and time_encoder identity (verifying layer/version/unit conversion/context channels) and is byte-equal to model_config(features, family=...)",
+      "bundle": "train.load_data_bundle(dir, effective, design_path) routes market designs to _load_market_bundle: schema read BEFORE body verification (a DS2 bundle is BUNDLE_SCHEMA, never a digest error), market_grid.load_market_manifest + load_market_split authentication (MARKET_RULE_MISMATCH / MARKET_DATA_IDENTITY_MISMATCH), feature/horizon identity, TEST_FORBIDDEN, split and purge boundaries, finiteness, then the time-input conventions",
+      "inputs": "train.market_time_inputs(arrays) -> [x, offsets_hours, closure_crossed] (float32); materialize_monitor_inputs returns that list for market splits and a single tensor for elapsed ones; fit loop, monitor forward, witnesses and prediction/export paths all slice every input consistently",
+      "guards": "typed ORDINAL_OR_INVALID_OFFSETS at BOTH seams (encoder call via tf.debugging.Assert and the trainer assembly): last offset exactly 0, all offsets <= 0, increasing towards the origin, adjacent elapsed hours >= the design's spacing_open_market_hours (ordinal ladders and future offsets refused), first adjacent delta 0, first closure flag 0, flags 0/1",
+      "receipt": "market_time block (rule, spacing/span, slot_order_is_not_wall_clock, time_inputs, bundle_schema); MODEL.json keeps the same metadata",
+      "software_test_knobs": "I6DMO_TEST_TRAINING_OVERRIDES (max_epochs/patience) and I6DMO_TEST_MAX_ROWS (tiny row subset); both stamp scientific=false"
+    }
   }
 }
