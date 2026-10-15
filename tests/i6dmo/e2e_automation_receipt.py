@@ -8,8 +8,11 @@ report artifacts (sealed MG2/MG12 designs, real market bundles from the syntheti
 report writer; the trainer is a prediction fixture that trains nothing) -> pair.eligibility
 NEGATIVE without OHLC pins -> strategy.validation typed abstention -> outbox delivered with exact
 readback into the repository's local test sink (``FakeWarehouse``, not the production OLAP) ->
-two scratch mirrors verified -> automatic CLOSE with closure-input snapshots -> a re-tick,
-re-publish and worker run change nothing. Paths in the receipt are relative to ``$SCRATCH``.
+two scratch mirrors verified -> automatic CLOSE with closure-input snapshots -> ONLY this
+campaign's own timers/services (from its DEPLOY.json, rendered into a scratch unit dir) stopped
+through an INJECTED ``systemctl --user`` recorder (the real user systemd is never touched) with a
+durable TIMERS_STOPPED.json receipt -> a re-tick, re-publish and worker run change nothing and
+call systemctl no more. Paths in the receipt are relative to ``$SCRATCH``.
 """
 import argparse
 import hashlib
@@ -44,7 +47,15 @@ def main(argv=None):
     started = time.time()
     from tests.i6dmo import ops_real_chain as R
     from tests.i6dmo.ops_fakes import FakeWarehouse
-    from tools.i6dmo import campaign, status
+    from tools.i6dmo import campaign, deploy, status
+
+    class Recorder:
+        def __init__(self):
+            self.calls = []
+
+        def __call__(self, *args):
+            self.calls.append(list(args))
+            return dict(rc=0, stdout="")
 
     head = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
                           cwd=Path(__file__).resolve().parents[2]).stdout.strip()
@@ -52,6 +63,8 @@ def main(argv=None):
                            text=True, cwd=Path(__file__).resolve().parents[2]).stdout.strip()
     data_root = R.build_market_data(scratch / "data")
     root = R.make_real_chain_campaign(scratch, data_root, name="campaign")
+    deploy_rec = Recorder()
+    deployed = deploy.deploy(root, unit_dir=scratch / "systemd-units", systemctl=deploy_rec, start=False)
     effective = campaign.load_effective(root)
     assert "strategy_bars" not in effective["data_pins"] and "strategy_calendar" not in effective["data_pins"]
     counter = scratch / "fit_invocations.txt"
@@ -66,9 +79,14 @@ def main(argv=None):
         q.close()
     decision_path = root / "terminals" / pair["identity_sha256"] / "out" / "pair" / "ELIGIBILITY.json"
     decision = json.loads(decision_path.read_text())
-    tick_before_publish = campaign.tick(root)
+    stop_rec = Recorder()
+    cid = campaign.load_plan(root)["campaign_id"]
+    me = f"{deploy.prefix(cid)}publish.service"
+    tick_before_publish = campaign.tick(root, systemctl=stop_rec, self_unit=me)
     warehouse = FakeWarehouse()
-    published = campaign.publish(root, warehouse=warehouse)
+    published = campaign.publish(root, warehouse=warehouse, systemctl=stop_rec, self_unit=me)
+    timers = json.loads((root / "TIMERS_STOPPED.json").read_text())
+    stop_calls = [list(c) for c in stop_rec.calls]
     close_path = root / "CLOSE.json"
     close = json.loads(close_path.read_text())
     spec = campaign.load_deployment(root)
@@ -82,8 +100,8 @@ def main(argv=None):
                              files=sum(1 for p in target.rglob("*") if p.is_file()))
     mirrors_doc = json.loads((root / "MIRRORS.json").read_text())
     before = _tree(root)
-    retick = campaign.tick(root)
-    republish = campaign.publish(root, warehouse=warehouse)
+    retick = campaign.tick(root, systemctl=stop_rec, self_unit=me)
+    republish = campaign.publish(root, warehouse=warehouse, systemctl=stop_rec, self_unit=me)
     rework = R.worker(root, "coordinator")
     after = _tree(root)
     camp = status.compute(root, level="campaign")
@@ -115,7 +133,16 @@ def main(argv=None):
                    snapshots_verify=snapshots_ok),
         mirrors=dict(state=mirrors_doc["state"], files=mirrors_doc["files"], close_sha256=mirrors_doc["close_sha256"],
                      publication_sha256=mirrors_doc["publication_sha256"], targets=mirrors),
-        idempotence=dict(retick=retick.get("close"), republish=republish.get("result"), worker=rework["result"],
+        deployment=dict(rendered_units=deployed["units"], timers=deployed["timers"], enabled_nothing=True,
+                        systemctl_calls_during_deploy=[list(c) for c in deploy_rec.calls],
+                        unit_dir="$SCRATCH/systemd-units (scratch; never the user's systemd directory)"),
+        timer_stop=dict(state=timers["state"], trigger=timers["trigger"], close_sha256=timers["close_sha256"],
+                        receipt_sha256=_sha(root / "TIMERS_STOPPED.json"), at=timers["at"],
+                        units=timers["units"], systemctl_calls=stop_calls,
+                        only_this_campaign=all(c[-1].startswith(deploy.prefix(cid)) for c in stop_calls),
+                        mirrored=mirrors_doc.get("timers_sha256") == _sha(root / "TIMERS_STOPPED.json"),
+                        runner="INJECTED recorder (tests); production uses systemctl --user"),
+        idempotence=dict(retick=retick.get("close"), systemctl_calls_after_close=len(stop_rec.calls) - len(stop_calls), republish=republish.get("result"), worker=rework["result"],
                          files=len(before), tree_unchanged=before == after,
                          tree_sha256=hashlib.sha256(json.dumps(before, sort_keys=True).encode()).hexdigest()),
         status=dict(state=camp["state"], failures=camp["failures"], decisions=camp["decisions"],
@@ -125,7 +152,10 @@ def main(argv=None):
           and published["publication"]["state"] == "DELIVERED" and close["trigger"] == "AUTOMATIC"
           and snapshots_ok and before == after and all(m["close_identical"] and m["snapshots_present"]
                                                        for m in mirrors.values())
-          and receipt["fit_invocations"] == ["fit:short.fit", "fit:long.fit"])
+          and receipt["fit_invocations"] == ["fit:short.fit", "fit:long.fit"]
+          and timers["state"] == "STOPPED" and receipt["timer_stop"]["only_this_campaign"]
+          and receipt["timer_stop"]["mirrored"] and len(stop_rec.calls) == len(stop_calls)
+          and sorted(c[-1] for c in stop_calls if c[:2] == ["disable", "--now"]) == sorted(deployed["timers"]))
     receipt["verdict"] = "PASS" if ok else "FAIL"
     text = json.dumps(receipt, indent=1, sort_keys=True).replace(str(scratch), "$SCRATCH")
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

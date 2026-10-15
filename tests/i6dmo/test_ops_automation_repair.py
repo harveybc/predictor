@@ -416,3 +416,127 @@ def test_cli_status_accepts_the_systemd_probe_flag():
     proc = subprocess.run([sys.executable, "-m", "tools.i6dmo", "status", "--help"], cwd=REPO,
                           capture_output=True, text=True, timeout=120)
     assert proc.returncode == 0 and "--probe-systemd" in proc.stdout
+
+
+# ------------------------------------------------- terminal: stop ONLY this campaign's own timers
+class Recorder:
+    """Injected ``systemctl --user`` runner: records calls; the real user systemd is never touched."""
+
+    def __init__(self, fail=()):
+        self.calls, self.fail = [], set(fail)
+
+    def __call__(self, *args):
+        self.calls.append(args)
+        return dict(rc=1 if args[-1] in self.fail else 0, stdout="failed" if args[-1] in self.fail else "")
+
+
+def _deployed(tmp_path, name, **kw):
+    from tools.i6dmo import deploy
+    root = make_market_time_campaign(tmp_path, name=name, **kw)
+    deploy.deploy(root, unit_dir=tmp_path / "units", systemctl=Recorder(), start=False)
+    return root
+
+
+@pytest.fixture(autouse=True)
+def _real_systemctl_forbidden(monkeypatch):
+    from tools.i6dmo import deploy
+    monkeypatch.setattr(deploy, "default_systemctl", lambda *a: pytest.fail(f"real systemctl called: {a}"))
+
+
+def test_close_stops_only_this_campaigns_own_units_with_a_durable_receipt(tmp_path):
+    from tests.i6dmo.test_ops_market_time_pair import _drive
+    from tools.i6dmo import campaign, deploy, status
+    root = _deployed(tmp_path, "mine")
+    other = _deployed(tmp_path, "other", prior_roots=[tmp_path / "elsewhere"])  # a second live campaign
+    cid, other_cid = (campaign.load_plan(r)["campaign_id"] for r in (root, other))
+    assert cid != other_cid
+    _drive(root, tmp_path / "c.txt", pair_mode="ineligible")
+    systemctl = Recorder()
+    me = f"{deploy.prefix(cid)}publish.service"
+    out = campaign.publish(root, warehouse=FakeWarehouse(), systemctl=systemctl, self_unit=me)
+    assert out["close"] == "CLOSED" and out["timers"] == "STOPPED"
+    receipt = json.loads((root / "TIMERS_STOPPED.json").read_text())
+    listed = json.loads((root / "DEPLOY.json").read_text())["units"]
+    assert receipt["state"] == "STOPPED" and receipt["trigger"] == "CLOSED:PAIR_NOT_ELIGIBLE"
+    assert receipt["close_sha256"] == hashlib.sha256((root / "CLOSE.json").read_bytes()).hexdigest()
+    assert sorted(u["unit"] for u in receipt["units"]) == sorted(listed)
+    timers = sorted(n for n in listed if n.endswith(".timer"))
+    assert sorted(a[-1] for a in systemctl.calls if a[:2] == ("disable", "--now")) == timers
+    assert all(a[-1].startswith(deploy.prefix(cid)) for a in systemctl.calls)
+    assert not any(other_cid in a[-1] for a in systemctl.calls)
+    assert ("stop", me) not in systemctl.calls  # the invoking oneshot exits by itself
+    assert next(u for u in receipt["units"] if u["unit"] == me)["action"] == "SELF_NOT_STOPPED"
+    mirrors = json.loads((root / "MIRRORS.json").read_text())
+    assert mirrors["timers_sha256"] == hashlib.sha256((root / "TIMERS_STOPPED.json").read_bytes()).hexdigest()
+    camp = status.compute(root, level="campaign")
+    assert camp["state"] == "CLOSED" and camp["timers"]["state"] == "STOPPED"
+    calls = len(systemctl.calls)
+    before = _tree_digest(root)
+    assert campaign.tick(root, systemctl=systemctl)["close"] == "ALREADY_CLOSED"
+    assert campaign.publish(root, warehouse=FakeWarehouse(), systemctl=systemctl)["result"] == \
+        "ALREADY_CLOSED_AND_MIRRORED"
+    assert len(systemctl.calls) == calls and _tree_digest(root) == before  # idempotent
+
+
+def test_a_failed_stop_is_typed_visible_and_never_alters_close(tmp_path):
+    from tests.i6dmo.test_ops_market_time_pair import _drive
+    from tools.i6dmo import campaign, deploy, status
+    root = _deployed(tmp_path, "mine")
+    cid = campaign.load_plan(root)["campaign_id"]
+    _drive(root, tmp_path / "c.txt", pair_mode="ineligible")
+    tick_timer = f"{deploy.prefix(cid)}tick.timer"
+    out = campaign.publish(root, warehouse=FakeWarehouse(), systemctl=Recorder(fail=[tick_timer]), self_unit="")
+    assert out["close"] == "CLOSED" and out["timers"] == "TIMER_STOP_FAILED"
+    close_bytes = (root / "CLOSE.json").read_bytes()
+    camp = status.compute(root, level="campaign")
+    assert camp["state"] == "CLOSED" and camp["close"]["disposition"] == "PAIR_NOT_ELIGIBLE"
+    failure = next(f for f in camp["failures"] if f["kind"] == "TIMER_STOP_FAILED")
+    assert failure["units"] == [tick_timer]
+    assert next(u for u in json.loads((root / "TIMERS_STOPPED.json").read_text())["units"]
+                if u["unit"] == tick_timer)["rc"] == 1
+    retry = Recorder()
+    assert campaign.tick(root, systemctl=retry, self_unit="")["timers"] == "STOPPED"  # retried, then final
+    assert (root / "CLOSE.json").read_bytes() == close_bytes
+    assert not [f for f in status.compute(root, level="campaign")["failures"] if f["kind"] == "TIMER_STOP_FAILED"]
+
+
+def test_foreign_units_in_the_deploy_record_are_refused_never_touched(tmp_path):
+    from tests.i6dmo.test_ops_market_time_pair import _drive
+    from tools.i6dmo import campaign
+    root = _deployed(tmp_path, "mine")
+    record = json.loads((root / "DEPLOY.json").read_text())
+    record["units"] += ["postgres.service", "metabase.timer", "i6dmo-*.timer", "fs4-weekly.timer"]
+    (root / "DEPLOY.json").write_text(json.dumps(record))
+    _drive(root, tmp_path / "c.txt", pair_mode="ineligible")
+    systemctl = Recorder()
+    out = campaign.publish(root, warehouse=FakeWarehouse(), systemctl=systemctl, self_unit="")
+    assert out["close"] == "CLOSED" and out["timers"] == "TIMER_STOP_FAILED"
+    touched = {a[-1] for a in systemctl.calls}
+    assert not touched & {"postgres.service", "metabase.timer", "i6dmo-*.timer", "fs4-weekly.timer"}
+    receipt = json.loads((root / "TIMERS_STOPPED.json").read_text())
+    assert sorted(receipt["failed"]) == sorted(["postgres.service", "metabase.timer", "i6dmo-*.timer",
+                                                "fs4-weekly.timer"])
+
+
+def test_a_technical_terminal_stops_its_timers_without_closing(tmp_path):
+    from tools.i6dmo import campaign
+    root = _deployed(tmp_path, "failed")
+    assert run_worker(root, "preferred", tmp_path / "c.txt", mode="fail")["result"] == "FAILED"
+    systemctl = Recorder()
+    out = campaign.publish(root, warehouse=FakeWarehouse(), systemctl=systemctl, self_unit="")
+    assert out["timers"] == "STOPPED" and not (root / "CLOSE.json").exists()
+    receipt = json.loads((root / "TIMERS_STOPPED.json").read_text())
+    assert receipt["trigger"] == "TECHNICAL_TERMINAL:UNIT_FAILED:short.fit" and receipt["close_sha256"] is None
+    assert any(a[:2] == ("disable", "--now") for a in systemctl.calls)
+
+
+def test_an_uninjected_systemctl_under_test_is_a_typed_failure_not_a_real_call(tmp_path, monkeypatch):
+    from tests.i6dmo.test_ops_market_time_pair import _drive
+    from tools.i6dmo import campaign
+    root = _deployed(tmp_path, "mine")
+    _drive(root, tmp_path / "c.txt", pair_mode="ineligible")
+    out = campaign.publish(root, warehouse=FakeWarehouse(), self_unit="")
+    assert out["close"] == "CLOSED" and out["timers"] == "TIMER_STOP_FAILED"
+    receipt = json.loads((root / "TIMERS_STOPPED.json").read_text())
+    assert all(u["stdout"].startswith("RuntimeError:SYSTEMCTL_NOT_INJECTED_UNDER_TEST") for u in receipt["units"]
+               if u.get("rc") is None and str(u.get("action", "")).startswith("systemctl"))

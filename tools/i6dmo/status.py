@@ -294,6 +294,10 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
         failures.extend(dict(kind="ATTEMPT_STALE", unit=v["unit_id"], cause=v["cause"],
                              heartbeat_age_seconds=v["heartbeat_age_seconds"])
                         for u, v in views.items() if v["state"] == "STALE")
+    timers = _read_json(root / "TIMERS_STOPPED.json")
+    if timers and timers.get("state") == "TIMER_STOP_FAILED":  # visible even after CLOSE; never reopens it
+        failures.append(dict(kind="TIMER_STOP_FAILED", units=timers.get("failed"), trigger=timers.get("trigger"),
+                             at=timers.get("at")))
     service_failed = any(f["kind"].startswith("SERVICE_") for f in failures)
     if closed:
         state = "CLOSED"
@@ -334,6 +338,9 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
         pins.setdefault(v["code"]["unit_code_commit"] or "UNSEALED", []).append(v["unit_id"])
     campaign = dict(schema="i6dmo.status.v1", campaign_id=plan["campaign_id"], state=state, counts=counts,
                     failures=failures, services=service_views, decisions=decisions,
+                    timers=None if not timers else dict(state=timers.get("state"), trigger=timers.get("trigger"),
+                                                        units=[u.get("unit") for u in timers.get("units", [])],
+                                                        failed=timers.get("failed"), at=timers.get("at")),
                     code_identity=dict(campaign_code_commit=(effective or {}).get("code_commit"),
                                        units_by_code_commit={k: sorted(v) for k, v in sorted(pins.items())}),
                     reuse=[dict(unit_id=v["unit_id"], **v["reuse"]) for v in views.values() if v["reuse"]],

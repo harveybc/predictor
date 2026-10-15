@@ -17,7 +17,7 @@ from pathlib import Path
 from tools.i6n_swarm.common import atomic_json, file_sha256, sha256_json
 
 INCLUDE = ("EFFECTIVE_CONFIG.json", "LONG_EFFECTIVE_CONFIG.json", "PLAN.json", "STATUS.json", "REPORTS.json",
-           "PUBLICATION.json", "CLOSE.json")
+           "PUBLICATION.json", "CLOSE.json", "TIMERS_STOPPED.json")
 INCLUDE_DIRS = ("gates", "terminals", "backup")
 
 
@@ -93,6 +93,7 @@ def sync_all(root, spec, run=None):
     doc = dict(schema="i6dmo.mirrors.v1", state="VERIFIED" if all(t["state"] == "VERIFIED" for t in targets.values())
                else "MISMATCH", manifest_sha256=digest, files=len(entries), targets=targets,
                publication_sha256=entries.get("PUBLICATION.json"), close_sha256=entries.get("CLOSE.json"),
+               timers_sha256=entries.get("TIMERS_STOPPED.json"),
                verified_at=time.time())
     atomic_json(root / "MIRRORS.json", doc)
     return doc

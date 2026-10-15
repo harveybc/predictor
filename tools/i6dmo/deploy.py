@@ -33,7 +33,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from tools.i6n_swarm.common import atomic_json
+from tools.i6n_swarm.common import atomic_json, file_sha256
 
 from tools.i6dmo import campaign as C
 
@@ -161,3 +161,104 @@ def render_bootstrap(private_spec, root, out):
     os.chmod(tmp, 0o700)
     os.replace(tmp, out)
     return dict(out=str(out), mode="0700")
+
+
+# ---------------------------------------------------------------- terminal: stop this campaign's units
+TIMER_RECEIPT = "TIMERS_STOPPED.json"
+TIMER_RECEIPT_SCHEMA = "i6dmo.timer_stop.v1"
+STOP_DONE = ("STOPPED", "NOT_DEPLOYED")
+
+
+def own_unit(cgroup_path="/proc/self/cgroup"):
+    """The systemd unit this process runs in (its own oneshot service is never stopped from inside)."""
+    try:
+        text = Path(cgroup_path).read_text()
+    except OSError:
+        return None
+    for part in reversed(text.replace("\n", "/").split("/")):
+        if part.endswith(".service"):
+            return part
+    return None
+
+
+def campaign_units(root):
+    """Exactly the units THIS campaign's own deployment record lists (never a glob).
+
+    A name must carry this campaign's prefix and the record must name this campaign; anything else
+    is reported as REFUSED_NOT_THIS_CAMPAIGN and never touched.
+    """
+    import json
+    root = Path(root)
+    cid = C.load_plan(root)["campaign_id"]
+    path = root / "DEPLOY.json"
+    if not path.exists():
+        return cid, None, []
+    record = json.loads(path.read_text())
+    if record.get("campaign_id") != cid:
+        return cid, record, [dict(unit=None, action="REFUSED_NOT_THIS_CAMPAIGN",
+                                  detail="DEPLOY.json names another campaign")]
+    listed, refused = [], []
+    for name in record.get("units") or []:
+        if not isinstance(name, str) or not name.startswith(prefix(cid)) or "*" in name or "?" in name \
+                or not name.endswith((".timer", ".service")):
+            refused.append(dict(unit=name, action="REFUSED_NOT_THIS_CAMPAIGN"))
+        else:
+            listed.append(name)
+    return cid, record, refused + [dict(unit=n) for n in listed]
+
+
+def stop_campaign_units(root, *, trigger, systemctl=None, self_unit=None, clock=None):
+    """Disable and stop this campaign's timers, stop its idle services; durable idempotent receipt.
+
+    ``TIMERS_STOPPED.json`` (sibling of CLOSE.json) records every unit, the exact ``systemctl --user``
+    call and its result, and the time. STOPPED / NOT_DEPLOYED receipts are final (a re-run is a no-op);
+    a TIMER_STOP_FAILED receipt is retried by the next tick/publish and is visible in status. It
+    never reopens or alters the scientific CLOSE.
+    """
+    import json
+    import time
+    root = Path(root)
+    path = root / TIMER_RECEIPT
+    if path.exists():
+        previous = json.loads(path.read_text())
+        if previous.get("state") in STOP_DONE:
+            return previous
+    import os
+    clock = clock or time.time
+    if systemctl is None and os.environ.get("PYTEST_CURRENT_TEST"):
+        def systemctl(*args):  # tests must inject a runner: the real user systemd is never touched
+            raise RuntimeError("SYSTEMCTL_NOT_INJECTED_UNDER_TEST")
+    systemctl = systemctl or default_systemctl
+    self_unit = own_unit() if self_unit is None else self_unit
+    cid, record, entries = campaign_units(root)
+    close = root / "CLOSE.json"
+    results = []
+    for entry in entries:
+        name = entry["unit"]
+        if entry.get("action"):
+            results.append(entry)
+            continue
+        if name.endswith(".timer"):
+            args = ("disable", "--now", name)
+        elif name == self_unit:
+            results.append(dict(unit=name, action="SELF_NOT_STOPPED",
+                                detail="the invoking oneshot service exits by itself; its timer is disabled"))
+            continue
+        else:
+            args = ("stop", name)
+        try:
+            out = systemctl(*args)
+            rc, stdout = out.get("rc"), str(out.get("stdout", ""))[:200]
+        except Exception as exc:  # an unavailable systemctl is a typed failure, never a crash
+            rc, stdout = None, f"{type(exc).__name__}:{str(exc)[:160]}"
+        results.append(dict(unit=name, action=" ".join(("systemctl", "--user") + args), rc=rc, stdout=stdout))
+    failed = [r for r in results if r.get("action") == "REFUSED_NOT_THIS_CAMPAIGN"
+              or (str(r.get("action", "")).startswith("systemctl") and r.get("rc") != 0)]
+    state = "NOT_DEPLOYED" if record is None else ("TIMER_STOP_FAILED" if failed else "STOPPED")
+    doc = dict(schema=TIMER_RECEIPT_SCHEMA, campaign_id=cid, state=state, trigger=trigger,
+               close_sha256=file_sha256(close) if close.exists() else None,
+               deploy_record_sha256=file_sha256(root / "DEPLOY.json") if record is not None else None,
+               units=results, failed=[r.get("unit") for r in failed], at=clock(),
+               note="only units listed in this campaign's own DEPLOY.json and carrying its id are touched")
+    atomic_json(path, doc)
+    return doc

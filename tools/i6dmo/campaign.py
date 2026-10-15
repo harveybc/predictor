@@ -1081,22 +1081,84 @@ def _apply_design_block(root):
     return held
 
 
-def tick(root, now=None, adapter=None):
+def _technical_terminal(root, closing):
+    """A typed technical terminal (e.g. UNIT_FAILED): nothing can run any more, every retained fact is
+    delivered (or there is none) and the mirrors verify that publication. It is not closed automatically
+    (a human rules on it), but its timers stop."""
+    ready = closing.get("readiness") or {}
+    if closing.get("result") != "NOT_CLOSABLE" or ready.get("state") != "TERMINAL" or \
+            ready.get("disposition") in AUTO_CLOSE_DISPOSITIONS:
+        return False
+    q = open_queue(root)
+    try:
+        if q.running() or any(u["state"] in ("QUEUED", "WAIT_RESOURCE", "INTERRUPTED", "RUNNING")
+                              for u in q.units()):
+            return False
+    finally:
+        q.close()
+    pub = _read_json_file(Path(root) / "PUBLICATION.json")
+    mirrors = _read_json_file(Path(root) / "MIRRORS.json") or {}
+    return bool(pub) and pub.get("state") in ("DELIVERED", "NO_ITEMS") and not pub.get("pending") and \
+        not pub.get("mismatch") and mirrors.get("state") == "VERIFIED" and \
+        mirrors.get("publication_sha256") == file_sha256(Path(root) / "PUBLICATION.json")
+
+
+def _finalized(root):
+    """Terminal work done: this campaign's units are stopped and the mirrors carry CLOSE + receipt."""
+    from tools.i6dmo import deploy
+    root = Path(root)
+    receipt = _read_json_file(root / deploy.TIMER_RECEIPT)
+    if not receipt or receipt.get("state") not in deploy.STOP_DONE:
+        return False
+    mirrors = _read_json_file(root / "MIRRORS.json") or {}
+    close = _paths(root)["close"]
+    return mirrors.get("state") == "VERIFIED" and \
+        mirrors.get("timers_sha256") == file_sha256(root / deploy.TIMER_RECEIPT) and \
+        (not close.exists() or mirrors.get("close_sha256") == file_sha256(close))
+
+
+def finalize_terminal(root, *, trigger, systemctl=None, run=None, self_unit=None):
+    """At a scientific CLOSE or a typed technical terminal: stop and disable ONLY this campaign's own
+    units (from its DEPLOY.json), record the durable receipt, then mirror CLOSE + receipt. A failed stop
+    is TIMER_STOP_FAILED in the receipt and in status; it never reopens or alters CLOSE."""
+    from tools.i6dmo import deploy
+    from tools.i6dmo import mirror as M
+    root = Path(root)
+    receipt = deploy.stop_campaign_units(root, trigger=trigger, systemctl=systemctl, self_unit=self_unit)
+    write_status(root)
+    mirrors = M.sync_all(root, load_deployment(root), run=run)
+    return dict(timers=receipt["state"], timer_failures=receipt.get("failed", []), mirrors=mirrors["state"])
+
+
+def tick(root, now=None, adapter=None, systemctl=None, self_unit=None):
     """One finite, atomic advance. Never waits, never trains, never reads a token.
 
-    A CLOSED campaign is inert: the tick returns without writing anything. Otherwise it advances
-    the graph and, when the scientific disposition is terminal and delivery plus mirrors verify,
-    writes the explicit CLOSE (``maybe_close``).
+    It advances the graph and, when the scientific disposition is terminal and delivery plus mirrors
+    verify, writes the explicit CLOSE (``maybe_close``). At CLOSE, or at a typed technical terminal,
+    it stops this campaign's own timers (``finalize_terminal``). A CLOSED and finalized campaign is
+    inert: the tick returns without writing anything; an unfinished stop is retried.
     """
     root = Path(root)
     closed = closed_doc(root)
+    base = dict(activated=[], blocked=[], gates_written=[], finals_enumerated=False)
     if closed is not None:
-        return dict(activated=[], blocked=[], gates_written=[], readiness=closed.get("readiness"),
-                    finals_enumerated=False, campaign_state="CLOSED", close="ALREADY_CLOSED")
+        if _finalized(root):
+            return dict(base, readiness=closed.get("readiness"), campaign_state="CLOSED", close="ALREADY_CLOSED")
+        done = finalize_terminal(root, trigger=f"CLOSED:{closed.get('disposition')}", systemctl=systemctl,
+                                 self_unit=self_unit)
+        return dict(base, readiness=closed.get("readiness"), campaign_state="CLOSED", close="ALREADY_CLOSED",
+                    **done)
     from tools.i6dmo import services
     with services.run(root, "tick") as outcome:
         out = _tick(root, now=now, adapter=adapter)
         outcome["result"] = out["campaign_state"]
+    if out["close"] == "CLOSED":
+        out.update(finalize_terminal(root, trigger=f"CLOSED:{out['readiness'].get('disposition')}",
+                                     systemctl=systemctl, self_unit=self_unit))
+    elif _technical_terminal(root, dict(result=out["close"], problems=out["close_problems"],
+                                        readiness=out["readiness"])) and not _finalized(root):
+        out.update(finalize_terminal(root, trigger=f"TECHNICAL_TERMINAL:{out['readiness'].get('disposition')}",
+                                     systemctl=systemctl, self_unit=self_unit))
     return out
 
 
@@ -1183,33 +1245,42 @@ def _delivery_gate(root, plan):
 
 
 # ------------------------------------------------------------------- publish
-def publish(root, *, warehouse=None, mirror=True, run=None):
+def publish(root, *, warehouse=None, mirror=True, run=None, systemctl=None, self_unit=None):
     """Bounded delivery pass (outbox + exact readback) and physical mirrors. Never trains.
 
-    After the mirrors verify, a terminal campaign advances to CLOSE automatically and one more
-    mirror pass copies CLOSE.json and its closure-input snapshots. Once the mirrors carry that
-    CLOSE, publication of a closed campaign is a no-op.
+    After the mirrors verify, a terminal campaign advances to CLOSE automatically; this campaign's
+    own timers are then stopped (durable receipt) and one more mirror pass copies CLOSE.json, its
+    closure-input snapshots and the stop receipt. A closed, finalized campaign is a no-op.
     """
-    from tools.i6dmo import mirror as M
     from tools.i6dmo import services
     root = Path(root)
     closed = closed_doc(root)
-    if closed is not None:
-        mirrors = _read_json_file(root / "MIRRORS.json") or {}
-        if mirrors.get("state") == "VERIFIED" and mirrors.get("close_sha256") == file_sha256(_paths(root)["close"]):
-            return dict(result="ALREADY_CLOSED_AND_MIRRORED", close="ALREADY_CLOSED",
-                        publication=_read_json_file(root / "PUBLICATION.json"), mirrors=mirrors)
+    if closed is not None and _finalized(root):
+        return dict(result="ALREADY_CLOSED_AND_MIRRORED", close="ALREADY_CLOSED",
+                    publication=_read_json_file(root / "PUBLICATION.json"),
+                    mirrors=_read_json_file(root / "MIRRORS.json"))
     with services.run(root, "publish") as outcome:
-        out = _publish(root, warehouse=warehouse, mirror=mirror, run=run)
-        if closed is None and mirror:
-            closing = maybe_close(root)
-            out.update(close=closing["result"], close_problems=closing.get("problems", []))
-            if closing["result"] == "CLOSED":
-                out["mirrors"] = M.sync_all(root, load_deployment(root), run=run)
-                write_status(root)
-        elif closed is not None:
-            out["close"] = "ALREADY_CLOSED"
-        outcome["result"] = out["publication"]["state"]
+        if closed is not None:
+            out = dict(result="FINALIZED_AFTER_CLOSE", close="ALREADY_CLOSED",
+                       publication=_read_json_file(root / "PUBLICATION.json"),
+                       **finalize_terminal(root, trigger=f"CLOSED:{closed.get('disposition')}", systemctl=systemctl,
+                                           run=run, self_unit=self_unit))
+        else:
+            out = _publish(root, warehouse=warehouse, mirror=mirror, run=run)
+            if mirror:
+                closing = maybe_close(root)
+                out.update(close=closing["result"], close_problems=closing.get("problems", []))
+                trigger = None
+                if closing["result"] == "CLOSED":
+                    trigger = f"CLOSED:{closing['close'].get('disposition')}"
+                elif _technical_terminal(root, closing) and not _finalized(root):
+                    trigger = f"TECHNICAL_TERMINAL:{closing['readiness'].get('disposition')}"
+                if trigger:
+                    done = finalize_terminal(root, trigger=trigger, systemctl=systemctl, run=run,
+                                             self_unit=self_unit)
+                    out.update(timers=done["timers"], timer_failures=done["timer_failures"],
+                               mirrors=_read_json_file(root / "MIRRORS.json"))
+        outcome["result"] = (out.get("publication") or {}).get("state")
     return out
 
 
