@@ -15,8 +15,16 @@ y simulacion de la estrategia solo con pareja elegible. El preentrenamiento
 de ramas R2 no es requisito para completar ese bloque y queda aplazado.
 Esta rectificacion sustituye el orden R2-antes-de-transferencia-larga citado
 mas abajo; esas menciones conservan procedencia historica, no autorizacion.
-Estado: corto MG1/MG2m comparado; larga MG12 medida, sin control horario largo
-emparejado; ninguna pareja habilitada para estrategia. Los 19 donantes y R0
+Estado: corto MG1/MG2m comparado; larga MG12 medida, sin resultado del control
+horario largo emparejado; ninguna pareja habilitada para estrategia. El control
+RAW MG12m/MG1l ya tiene implementacion y revision independiente; su flujo finito
+compara 13/145 observaciones en las mismas 144 horas de mercado, informa las
+seis cabezas largas y evalua la pareja sin repetir el corto. Solo una pareja
+elegible ejecuta la estrategia. Publicacion OLAP, lectura de vuelta, dos espejos
+y cierre pertenecen al mismo flujo automatico. El estado generado de la campana
+prevalece sobre este snapshot. Diseno y ejecucion:
+[matched_long/AUTOMATION.md](../i6n/direct_multi_output_static/matched_long/AUTOMATION.md).
+Los 19 donantes y R0
 del ensayo R2 se conservan. R2 fallo antes de entrenar al no encontrar los
 donantes en el worker; no se reintenta en el camino critico RAW.
 Detalle ejecutable y criterios de cierre:

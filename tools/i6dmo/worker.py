@@ -665,8 +665,9 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         atomic_json(folder / "UNIT_SPEC.json", unit_spec)
         name = f"{plan['campaign_id']}-{unit['unit_id'].replace('.', '-')}-a{attempt['index']:02d}"
         role_env = {k: str(v) for k, v in (role_spec.get("environment") or {}).items() if k != "CUDA_VISIBLE_DEVICES"}
-        env = dict(os.environ, **extra_env, **role_env, CUDA_VISIBLE_DEVICES=gpu["uuid"] if gpu else "",
-                   PYTHONDONTWRITEBYTECODE="1", TF_CPP_MIN_LOG_LEVEL="2", I6DMO_FORWARD_ENV=",".join(sorted(role_env)))
+        env = {**os.environ, **extra_env, **role_env, "CUDA_VISIBLE_DEVICES": gpu["uuid"] if gpu else "",
+               "PYTHONDONTWRITEBYTECODE": "1", "TF_CPP_MIN_LOG_LEVEL": "2",
+               "I6DMO_FORWARD_ENV": ",".join(sorted(role_env))}
         argv = _wrap(launcher, name, cap, _child_argv(effective["entrypoints"], unit["kind"],
                                                      role_spec.get("python", "python3"), folder))
         info = dict(index=attempt["index"], kind=attempt["kind"], role=role, device_class=device_class,

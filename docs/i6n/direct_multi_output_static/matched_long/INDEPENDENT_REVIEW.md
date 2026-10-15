@@ -347,3 +347,32 @@ FRED publication-clock and assumed-calendar limitations remain; TEST stays
 closed. One seed and synthetic backtests do not establish predictive or trading
 performance. No GPU, production fit, service operation, network request, TEST
 read or automatic monitoring was performed by this reviewer. Review ends here.
+
+## Worker Environment Qualification - 2026-10-15
+
+**GO / ACCEPT_FOR_EXECUTION for the minimal worker environment-merge fix.**
+Reviewed only the worker delta against f8903d78 and the new
+`tests/i6dmo/test_worker_environment_overlap.py` (the actual filename).
+The dictionary literal safely implements inherited -> extra -> role -> forced
+precedence, preserves role string conversion and forwarding, and prevents role
+or injected CUDA settings from replacing the worker-selected device.
+
+Independent replay: `crispdm-run -q -m 2G -t 180s` with hidden CUDA,
+`pytest --noconftest -q -p no:cacheprovider --tb=short` on that test file:
+**2 passed in 0.12 s, exit 0**. CPU and synthetic-GPU cases execute the real
+_worker_locked claim/spec/environment path; the capture executor deliberately
+refuses before creating any process. No fit, GPU access, network or service
+operation was performed. The hashes were stable across this replay:
+
+```text
+625914d4cb2a213b0b95d93c88c6aa931e506a9c86a7ad8a48557b57bbe4fda0  tools/i6dmo/worker.py
+3160ac8d6c5bbb40b754c59721f8987fe6d86ef09d4ca5875a183a51fdaabbcc  tests/i6dmo/test_worker_environment_overlap.py
+```
+
+No remaining blocker in this minimal delta. The earlier accepted manifest is
+left unchanged as requested; the parent must update its worker pin to the new
+hash before freezing the successor source/release identity. Retain the failed
+prefit dispatch i6dmo-6672a4eb53ae and retirement evidence; do not hot-patch or
+retry that identity. The reported private source-repository correction is a
+successor deployment-config change, not a reviewed code change here. Existing
+population/runtime/admission gates and the closed TEST boundary still apply.

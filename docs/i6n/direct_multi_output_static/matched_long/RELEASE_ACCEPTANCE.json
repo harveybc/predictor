@@ -5,8 +5,8 @@
   "review": "INDEPENDENT_REVIEW.md#release-addendum---2026-10-15",
   "verification": {
     "parent_focused": {
-      "passed": 157,
-      "seconds": 19.75,
+      "passed": 159,
+      "seconds": 18.17,
       "device": "CPU"
     },
     "independent_final": {
@@ -63,7 +63,7 @@
     "tools/i6dmo/traceability.py": "7309e4523b1200aaf6133f72ac8c4400d86d302fc1a23e4004b41e328a6e3b4e",
     "tools/i6dmo/train.py": "4587b312728880314489481a4234f2a79b6f7100d8da279d411bed2ea44f7cbd",
     "tools/i6dmo/unit_runner.py": "115637efe345523035a5c33fa1627c9f21ca805c428f70605218d43f4e0d8c23",
-    "tools/i6dmo/worker.py": "95b251c8d419bef622206f2b1d1d6be79dc42d0de0a184adf98589af29f27a7c",
+    "tools/i6dmo/worker.py": "625914d4cb2a213b0b95d93c88c6aa931e506a9c86a7ad8a48557b57bbe4fda0",
     "tools/i6n_external_clock_audit_v2.py": "f2b096301b1f361e4440cf1f42614f09307cd531516166555aa0810913b00a7e",
     "tools/i6n_swarm/__init__.py": "225e5c019c5a8a08839517cdb14927c50242bcb9d8b6b0f4ceb4f0f132ea826d",
     "tools/i6n_swarm/agent.py": "d8e684d988f329243206d8e6775a5790321fd0d595c3c1e5f12bf932969da59c",
