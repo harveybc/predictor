@@ -239,3 +239,28 @@ def test_market_time_campaign_refuses_elapsed_grid_bundle_pins(tmp_path):
     campaign._check_bundle_pins({"short_bundle": market}, mode=campaign.MODE_MARKET_TIME)
     with pytest.raises(campaign.Refused, match="BUNDLE_SAMPLING: short_bundle must be DS2_EXACT"):
         campaign._check_bundle_pins({"short_bundle": market}, mode=campaign.MODE_ELAPSED)
+
+
+def test_a_swapped_market_bundle_is_caught_before_the_claim(tmp_path):
+    """The pinned data identity must be the one the bundle manifest itself declares."""
+    from tools.i6dmo import status
+    root = make_market_time_campaign(tmp_path)
+    bundle = tmp_path / "bundles" / "mg2"
+    bundle.mkdir(parents=True)
+    (bundle / "BUNDLE.json").write_text(json.dumps(dict(data_identity_sha256="d" * 64)))
+    import hashlib
+    from tools.i6dmo import campaign
+    effective = json.loads((root / "EFFECTIVE_CONFIG.json").read_text())
+    pin = dict(relpath="bundles/mg2", sha256=hashlib.sha256((bundle / "BUNDLE.json").read_bytes()).hexdigest(),
+               bundle_sha256="2" * 64, input_sampling="MG2_MARKET_EXACT", data_contract_sha256="e" * 64)
+    effective["data_pins"]["short_bundle"] = pin
+    body = {k: v for k, v in effective.items() if k != "seal_sha256"}
+    from tools.i6n_swarm.common import sha256_json
+    effective["seal_sha256"] = sha256_json(body)
+    (root / "EFFECTIVE_CONFIG.json").write_text(json.dumps(effective))
+    plan = campaign.load_plan(root)
+    plan["effective_config_sha256"] = sha256_json(effective)
+    campaign._write_plan(root, plan)
+    out = run_worker(root, "preferred", tmp_path / "c.txt")
+    assert out["result"] == "WAIT_ARTIFACT" and out["cause"].startswith("DATA_IDENTITY_MISMATCH:short_bundle")
+    assert status.compute(root, level="unit", unit="short.fit")["attempts"] == []

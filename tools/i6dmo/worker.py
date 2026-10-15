@@ -606,6 +606,12 @@ def _artifacts(root, effective, unit, role_spec):
     if pin is not None:
         bundle = dict(key=key, path=str(Path(role_spec.get("data_root") or "") / pin["relpath"]), sha256=pin["sha256"],
                       bundle_sha256=pin.get("bundle_sha256"))
+    # A pin that IS present is verified whatever entrypoint runs the unit: a swapped or
+    # re-materialized bundle must never reach a claim because of the entrypoint in use.
+    if pin is not None and pin.get("data_contract_sha256") and unit["family"] in ("short", "long"):
+        cause = _data_identity_problem(effective, unit, bundle, key, pin)
+        if cause:
+            return bundle, cause
     if unit["kind"] in ("pair", "final_test"):
         problem = C._execution_policy_problem(root)
         if problem in ("INSTRUMENT_CONFIG_MISSING", "ABSENT"):
@@ -640,12 +646,6 @@ def _artifacts(root, effective, unit, role_spec):
             return bundle, f"ENTRY_UNAVAILABLE:{module}.run_unit owner={owner}"
     if key is not None and pin is None:
         return bundle, f"BUNDLE_PIN_MISSING:{key} owner=data lane (tools.i6dmo.data.build_frozen_bundle)"
-    if pin is not None and pin.get("data_contract_sha256") and unit["family"] in ("short", "long"):
-        design = effective["long"]["design"] if unit["family"] == "long" else effective["design"]
-        from tools.i6dmo import data as data_lane
-        if data_lane.data_contract_sha256(design) != pin["data_contract_sha256"]:
-            return bundle, (f"DATA_CONTRACT_MISMATCH:{key} sealed {unit['family']} design differs from the bundle's "
-                            "data view owner=data lane / model lane")
     hook = importlib.import_module(module)
     if hasattr(hook, "preconditions"):
         cause = hook.preconditions(dict(unit=unit, effective_config=effective, data_root=role_spec.get("data_root")))
@@ -681,6 +681,27 @@ def _pair_inputs_missing(root, effective, unit, role_spec):
                 return f"UPSTREAM_ARTIFACT_MISSING:{dep}:validation_predictions owner=ops report unit"
     finally:
         q.close()
+    return None
+
+
+def _data_identity_problem(effective, unit, bundle, key, pin):
+    """The pinned data identity must match the treatment's own declaration, or the unit waits."""
+    design = effective["long"]["design"] if unit["family"] == "long" else effective["design"]
+    if design.get("market_time"):
+        # A market-time bundle declares its identity in its own sealed manifest (the data-lane
+        # market design document is not carried in the campaign).
+        declared = None
+        manifest = Path(bundle["path"], "BUNDLE.json") if bundle else None
+        if manifest is not None and manifest.is_file():
+            declared = json.loads(manifest.read_text()).get("data_identity_sha256")
+        if declared != pin["data_contract_sha256"]:
+            return (f"DATA_IDENTITY_MISMATCH:{key} the pinned data identity is not the one the bundle "
+                    "manifest declares owner=data lane")
+        return None
+    from tools.i6dmo import data as data_lane
+    if data_lane.data_contract_sha256(design) != pin["data_contract_sha256"]:
+        return (f"DATA_CONTRACT_MISMATCH:{key} sealed {unit['family']} design differs from the bundle's "
+                "data view owner=data lane / model lane")
     return None
 
 
