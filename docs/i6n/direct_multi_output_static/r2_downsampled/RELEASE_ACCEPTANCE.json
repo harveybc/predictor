@@ -7,11 +7,11 @@
   "docs/i6n/direct_multi_output_static/matched_short/R2_CONTRAST_DESIGN.ruled.json": "4ea0415b75f03ecb917753b039d494d4c947718037f645a5f9f07cf4697ced45",
   "docs/i6n/direct_multi_output_static/r2_downsampled/AUTOMATION.md": "21683a6332ba713647ca0a29633993766d5c8bcbda6e39e4f9716558cd9de36e",
   "docs/i6n/direct_multi_output_static/r2_downsampled/DATA_MODEL_RETURN.md": "b91755b4c4a86fab96ddfe711d3a8c2855921959c4a9501aee23f5040dd3ea63",
-  "docs/i6n/direct_multi_output_static/r2_downsampled/INDEPENDENT_REVIEW.md": "0145c3676ad586eceb45c5ac3830e865b68d5aaf6bbc7cced073928e7172a432",
+  "docs/i6n/direct_multi_output_static/r2_downsampled/INDEPENDENT_REVIEW.md": "44deeb048cc847ca3d1473fea4b75146dc19911ed15687e3dce06f739d7a103d",
   "docs/i6n/direct_multi_output_static/r2_downsampled/PLAN.md": "93aa27595c7fadf994b2234d28d804deb83226f138f66a62821f28b30826688b",
   "docs/i6n/direct_multi_output_static/r2_downsampled/PROJECT_METHOD_STATE.json": "75365244c945f5633eeed4efed4e105ce547aecf8653ad1e68976f4ab10cfccd",
   "docs/i6n/direct_multi_output_static/r2_downsampled/R2_CONTRAST_DESIGN.long.json": "2013868697df579a87808f55cf6753a200432204e82381361ac05cb1ad424443",
-  "docs/i6n/direct_multi_output_static/r2_downsampled/R2_CONTRAST_DESIGN.long.ruled.json": "8d55076fea44266a1b5fb5ff040518fb9e8d91472995f3d955c6b28e34fd7e54",
+  "docs/i6n/direct_multi_output_static/r2_downsampled/R2_CONTRAST_DESIGN.long.ruled.json": "4d67f323db8f954060c97c3dbec7295973b7adfbd46049f512329b4e49ea5c7d",
   "docs/i6n/direct_multi_output_static/r2_downsampled/RECOVERY_RETURN.md": "0242edae404c89978d64c416af17846f066b7a17fa32f4c59292a1578a483642",
   "docs/i6n/direct_multi_output_static/r2_downsampled/SOURCE_PINS.json": "7aa6c2f7ee156dab23dcb9a1cbbd788af454693a61c193b738cfcd286d2858cf",
   "docs/i6n/direct_multi_output_static/r2_downsampled/long_source/CAPACITY_MATCHED.json": "88f92744da184abe7e4d156776556c6ccb4abda0647d3279636a8ef9cabe8333",
@@ -38,7 +38,7 @@
   "tools/i6dmo/model.py": "e97dd0fd32ce87f6559ac1561fd49d57a68509d8a6052ebba9a07e33e875d85d",
   "tools/i6dmo/naive.py": "3eca65866eb11aaaddd1476ffd939d870144a089ac5f1143c019814042336168",
   "tools/i6dmo/outbox.py": "8c4417d64eea678d81718be6b01b88d7d5dc6ed9819708b7508e04f353d964bc",
-  "tools/i6dmo/preflight.py": "1d3f574c62deb9b103bde32ca3e87c8de29236728e7396f3088660618d506cd2",
+  "tools/i6dmo/preflight.py": "8cabe4e0f0f694b28e65fb647f6f37059c2a1a9046a4889462393cda983bb44d",
   "tools/i6dmo/provenance.py": "bab7d5878b1b744082ce8e75366a2049d576130864571ef8182ce23d71978ec1",
   "tools/i6dmo/queue.py": "68bb7059c15bcfeb74d41dab73ba840d33cdb23710723e19e614f384f7e0d0af",
   "tools/i6dmo/r2_design.py": "9d40c53846137344a31f3260b56ea52fd593192cbd87d1b4e461835388bc4cc8",
@@ -91,11 +91,12 @@
   "tools/i6n_swarm/status.py": "a14fa0207cb650583dac5ea1ff9159e23a6ac03af3fbaeca91fb75f06e76ea09",
   "tools/i6n_swarm/units.py": "df8022b7255937aa8963898c168464f5f010c5e9beeb8b0f2020f765b568b248"
  },
- "implementation_commit": "6844f6203fcbdf1157ca6e5b4d666a54d5c15fe9",
+ "implementation_commit": "2c64ac231548a28bc3aca2a420248943da4e7656",
  "review": "INDEPENDENT_REVIEW.md",
- "review_sha256": "0145c3676ad586eceb45c5ac3830e865b68d5aaf6bbc7cced073928e7172a432",
+ "review_sha256": "44deeb048cc847ca3d1473fea4b75146dc19911ed15687e3dce06f739d7a103d",
  "schema": "i6dmo.r2_downsampled_release.v1",
  "scope": "Static R0/R2 MG2m then MG12m; original short donors adopted; TEST closed",
+ "supersedes_unexecuted_long_contract_file_sha256": "8d55076fea44266a1b5fb5ff040518fb9e8d91472995f3d955c6b28e34fd7e54",
  "verdict": "ACCEPT_FOR_EXECUTION",
  "verification": {
   "actual_custody_files": 115,
@@ -104,9 +105,12 @@
   "actual_source_donors": 19,
   "actual_source_readbacks": 115,
   "full_suite_claim": false,
+  "independent_readonly_probe_passed": 3,
   "independent_review_passed": 11,
   "independent_storage_regression_passed": 10,
   "parent_final_sequence_review_passed": 50,
-  "parent_frozen_focused_passed": 86
+  "parent_frozen_focused_passed": 86,
+  "parent_readonly_probe_passed": 3,
+  "retired_predeploy_fits": 0
  }
 }

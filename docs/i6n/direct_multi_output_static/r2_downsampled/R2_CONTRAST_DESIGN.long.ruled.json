@@ -153,9 +153,9 @@
     "loss": "mse"
    },
    "ruling": {
-    "review_commit": "6844f6203fcbdf1157ca6e5b4d666a54d5c15fe9",
+    "review_commit": "2c64ac231548a28bc3aca2a420248943da4e7656",
     "review_document": "../INDEPENDENT_REVIEW.md",
-    "review_document_sha256": "0145c3676ad586eceb45c5ac3830e865b68d5aaf6bbc7cced073928e7172a432",
+    "review_document_sha256": "44deeb048cc847ca3d1473fea4b75146dc19911ed15687e3dce06f739d7a103d",
     "review_verdict": "ACCEPT_FOR_RELEASE",
     "ruled_by": "Codex independent release reviewer"
    },
@@ -218,7 +218,7 @@
   "separate_facts": true
  },
  "schema": "i6dmo.r2_contrast_design.v1",
- "seal_sha256": "40f97fdc11f4903ad564008c6f72c3cddb400d5b53f7d6bbf04a4915f1ad74d5",
+ "seal_sha256": "72f2fb482b1661a5638a3bfc8568eee8847ec87d9b854af1ed683a04f361cc35",
  "selection": {
   "campaign_id": "i6dmo-0f9e6c8d5d74",
   "comparison_sha256": "22d9ac6ce7ce5a5ff3a78f3ce5d2b29672cdd79d7f0d35d6f2ae155963a01fa3",
