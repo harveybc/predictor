@@ -1,0 +1,29 @@
+{
+ "batch_id": "i6dmo-continuation-41c3a7698150",
+ "code_commit": "e0626cd9b2ac491a4508487883d04f40692d798c",
+ "complete": 1,
+ "first_best_epoch": 43,
+ "first_cell": "dmo_short_ds2_conv",
+ "first_cgroup_peak_bytes": 2624724992,
+ "first_epochs": 53,
+ "first_result_sha256": "fa7c60c5ab2deb27b8e4a3d261fdfd8dbf4f71902de63e45206d7522ddece0b2",
+ "first_training_seconds": 266.7072775089764,
+ "next_observed": {
+  "at": 1792158488.3364737,
+  "best_epoch": 26,
+  "cell": "dmo_short_ds4_conv",
+  "elapsed_s": 144.82958448998397,
+  "epoch": 29,
+  "monitored": 0.8344928694084307,
+  "stage": "heads",
+  "stale": 3,
+  "state": "RUNNING",
+  "train_loss": 0.8940787619968545,
+  "updates": 1885,
+  "validation_loss": 0.7749069768200069
+ },
+ "publication_delivered": 1,
+ "schema": "i6dmo.continuation_relay_receipt.v1",
+ "test_read": false,
+ "total": 407
+}
