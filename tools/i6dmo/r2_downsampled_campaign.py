@@ -407,8 +407,29 @@ def _deploy_family(config, family, code, files):
     return campaign_status(root)
 
 
+def _coordinator_storage(spec):
+    storage = spec.get("roles", {}).get("coordinator", {}).get("experiment_storage_root")
+    if not isinstance(storage, str) or not Path(storage).is_absolute():
+        raise ValueError("SEQUENCE_STORAGE_ROOT_REQUIRED: absolute coordinator experiment_storage_root")
+    return storage
+
+
 def run(config):
     config = validate_config(config)
+    spec = json.loads(Path(config["source_deployment"]).read_text())
+    storage = _coordinator_storage(spec)
+    previous = os.environ.get("EXPERIMENT_STORAGE_ROOT")
+    os.environ["EXPERIMENT_STORAGE_ROOT"] = storage
+    try:
+        return _run(config)
+    finally:
+        if previous is None:
+            os.environ.pop("EXPERIMENT_STORAGE_ROOT", None)
+        else:
+            os.environ["EXPERIMENT_STORAGE_ROOT"] = previous
+
+
+def _run(config):
     root = Path(config["work_root"])
     root.mkdir(parents=True, exist_ok=True, mode=0o700)
     with (root / "sequence.lock").open("a+") as lock:
@@ -454,6 +475,7 @@ def install(spec_path):
     config = validate_config(json.loads(path.read_text()))
     release()
     spec = json.loads(Path(config["source_deployment"]).read_text())
+    storage_environment = json.dumps("EXPERIMENT_STORAGE_ROOT=" + _coordinator_storage(spec)).replace("%", "%%")
     name = "i6dmo-r2-sequence-" + C.sha256_json(config)[:12]
     unit_dir = Path.home() / ".config/systemd/user"
     marker = "X-I6DMO-Sequence=" + C.sha256_json(config)
@@ -461,6 +483,7 @@ def install(spec_path):
             spec["coordinator"]["python"], "-m", "tools.i6dmo.r2_downsampled_campaign", "run", "--spec", str(path)]
     docs = dict(service=f"[Unit]\nDescription=Finite downsampled R0/R2 continuation\n{marker}\n\n[Service]\n"
         f"Type=oneshot\nWorkingDirectory={REPO}\nEnvironment=CUDA_VISIBLE_DEVICES=\n"
+        f"Environment={storage_environment}\n"
         "Environment=PYTHONDONTWRITEBYTECODE=1\nEnvironment=OPENBLAS_NUM_THREADS=2\nEnvironment=OMP_NUM_THREADS=2\n"
         f"ExecStart={shlex.join(argv)}\nMemoryMax=5G\nMemorySwapMax=0\nTimeoutStartSec=1900\nNice=10\n",
         timer=f"[Unit]\nDescription=Short to long R2 continuation\n{marker}\n\n[Timer]\nOnBootSec=30s\n"

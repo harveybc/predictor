@@ -1,6 +1,7 @@
 """Finite short-to-long continuation; no model, services or network."""
 import json
 import copy
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -90,7 +91,8 @@ def sequence(tmp_path, monkeypatch):
     env = SimpleNamespace(head="c" * 40, dirty=False, calls=[], crash=False, deploy_crash=False)
     monkeypatch.setattr(S.C, "_git_head", lambda: env.head)
     monkeypatch.setattr(S.L, "_run", lambda *a, **kw: "dirty" if env.dirty else "")
-    spec = dict(roles={"coordinator": dict(workdir=str(tmp_path / "runtime"))})
+    spec = dict(roles={"coordinator": dict(workdir=str(tmp_path / "runtime"),
+                experiment_storage_root=str(tmp_path / "experiment_storage"))})
     source_spec = write(tmp_path / "source_deployment.json", spec)
     source = tmp_path / "source"
     long_work = tmp_path / "raw_long"
@@ -388,3 +390,85 @@ def test_real_deploy_adapter_uses_final_path_and_runtime_checks_without_services
     assert (env.root / "short/campaign/DEPLOY.json").exists()
     assert ("enable", "--now", "i6dmo-fixture-tick.timer") in recorded
     assert not any(c[0] == "init" and c[1] != "campaign.building" for c in env.calls)
+
+
+@pytest.mark.parametrize("previous", [None, "/fixture/unrelated-storage"])
+@pytest.mark.parametrize("crash", [False, True])
+def test_run_scopes_coordinator_storage_before_factory_and_restores_environment(sequence, monkeypatch, previous, crash):
+    env = sequence
+    if previous is None:
+        monkeypatch.delenv("EXPERIMENT_STORAGE_ROOT", raising=False)
+    else:
+        monkeypatch.setenv("EXPERIMENT_STORAGE_ROOT", previous)
+    spec = json.loads(Path(env.config["source_deployment"]).read_text())
+    expected = spec["roles"]["coordinator"]["experiment_storage_root"]
+    init = S.C.init_r2_contrast
+    observed = []
+    def checked(*args, **kwargs):
+        observed.append(os.environ.get("EXPERIMENT_STORAGE_ROOT"))
+        assert observed[-1] == expected
+        return init(*args, **kwargs)
+    monkeypatch.setattr(S.C, "init_r2_contrast", checked)
+    env.crash = crash
+    if crash:
+        with pytest.raises(RuntimeError, match="after PLAN"):
+            S.run(env.config)
+    else:
+        assert S.run(env.config)["action"] == "WAIT_SHORT"
+    assert observed == [expected]
+    assert os.environ.get("EXPERIMENT_STORAGE_ROOT") == previous
+
+
+@pytest.mark.parametrize("value", [None, "relative/storage"])
+def test_run_refuses_missing_or_relative_coordinator_storage_before_factory(sequence, value):
+    env = sequence
+    path = Path(env.config["source_deployment"])
+    spec = json.loads(path.read_text())
+    spec["roles"]["coordinator"]["experiment_storage_root"] = value
+    write(path, spec)
+    with pytest.raises(ValueError, match="SEQUENCE_STORAGE_ROOT_REQUIRED"):
+        S.run(env.config)
+    assert not any(c[0] == "init" for c in env.calls)
+
+
+@pytest.mark.parametrize("directory", ["experiment_storage", "storage with spaces %f"])
+def test_install_service_explicitly_binds_storage_without_real_systemctl(sequence, monkeypatch, directory):
+    env = sequence
+    source = Path(env.config["source_deployment"])
+    spec = json.loads(source.read_text())
+    storage = str(env.root.parent / directory)
+    spec["roles"]["coordinator"]["experiment_storage_root"] = storage
+    spec.update(launcher=dict(crispdm_run="/fixture/crispdm-run"),
+                coordinator=dict(python="/fixture/python"))
+    write(source, spec)
+    path = write(env.root.parent / "sequence_config.json", env.config)
+    home = env.root.parent / "fixture_home"
+    monkeypatch.setattr(S.Path, "home", lambda: home)
+    calls = []
+    def systemctl(*args):
+        calls.append(args)
+        return dict(rc=0, stdout="")
+    monkeypatch.setattr(deploy, "default_systemctl", systemctl)
+    result = S.install(path)
+    assert result["state"] == "ARMED"
+    service = home / ".config/systemd/user" / result["unit"].replace(".timer", ".service")
+    expected = json.dumps("EXPERIMENT_STORAGE_ROOT=" + storage).replace("%", "%%")
+    assert "Environment=" + expected in service.read_text().splitlines()
+    assert calls == [("daemon-reload",), ("enable", "--now", result["unit"])]
+    assert not any(c[0] in ("init", "deploy") for c in env.calls)
+
+
+@pytest.mark.parametrize("value", [None, "relative/storage"])
+def test_install_refuses_missing_or_relative_storage_before_writing_units(sequence, monkeypatch, value):
+    env = sequence
+    source = Path(env.config["source_deployment"])
+    spec = json.loads(source.read_text())
+    spec["roles"]["coordinator"]["experiment_storage_root"] = value
+    write(source, spec)
+    config = write(env.root.parent / "sequence_config.json", env.config)
+    home = env.root.parent / "fixture_home"
+    monkeypatch.setattr(S.Path, "home", lambda: home)
+    monkeypatch.setattr(deploy, "default_systemctl", lambda *a: pytest.fail("unexpected systemctl"))
+    with pytest.raises(ValueError, match="SEQUENCE_STORAGE_ROOT_REQUIRED"):
+        S.install(config)
+    assert not home.exists()
