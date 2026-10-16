@@ -141,7 +141,15 @@ def load_plan(root):
 
 
 def load_deployment(root):
-    return json.loads(_paths(root)["deployment"].read_text())
+    spec = json.loads(_paths(root)["deployment"].read_text())
+    effective_path = _paths(root)["effective"]
+    if effective_path.exists():
+        declared = json.loads(effective_path.read_text())
+        if declared.get("experiment_id") == "I6-DMO-LONG-SHORT-INPUT-CONTEXT-BRIDGE-R0":
+            effective = load_effective(root)
+            if effective.get("deployment_sha256") != sha256_json(spec):
+                raise Refused("BRIDGE_DEPLOYMENT_DIGEST_MISMATCH")
+    return spec
 
 
 def _write_plan(root, plan):
@@ -459,6 +467,7 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
         engineering_cpu_fixture=bool(engineering_cpu_fixture),
         comparison=dict(rule=MR.RULE, tolerance=MR.TOLERANCE, tie_keeps=profile["tie_keeps"],
                                    horizons=list(profile["horizons"]), split="DEVELOPMENT"),
+        **({"fit_gpu_class": "rtx5090"} if profile.get("context_bridge") else {}),
         **({"raw_pair": raw_pair} if raw_pair is not None else {})))
     eff_sha = sha256_json(effective)
     campaign_id = "i6dmo-" + sha256_json(dict(experiment=effective["experiment_id"], cadence=effective["cadence"],
@@ -538,7 +547,8 @@ def _storage_gate(spec, stage):
         return None
     from tools.i6dmo import storage as S
     try:
-        base = S.storage_root()
+        base = (Path(spec["roles"]["coordinator"]["experiment_storage_root"])
+                if spec.get("context_bridge") else S.storage_root())
     except S.StorageRefusal as exc:
         raise Refused(f"STORAGE_GATE_{exc.code}: stage={stage}") from None
     result = S.run_preflight(Path(base) / S.APP_SUBDIR, estimate,
@@ -692,6 +702,8 @@ def _matched_units(effective):
             family = "long" if mode_of(effective) == MODE_MATCHED_LONG else "short"
             unit = _base(unit_id, family, kind, st[0], device, deps, w, calls_fit=calls_fit)
             unit.update(arm=arm, resource_class=effective["arms"][arm]["resource_class"])
+            if effective.get("fit_gpu_class") and kind == "fit":
+                unit["gpu_class"] = effective["fit_gpu_class"]
             _identify(unit, effective, sha, [upstream[d] for d in deps])
             upstream[unit_id] = unit["identity_sha256"]
             unit["_state"] = "QUEUED" if not deps else "WAIT_DEPENDENCY"

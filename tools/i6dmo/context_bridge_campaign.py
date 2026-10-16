@@ -38,7 +38,8 @@ def release():
     if doc.get("schema") != "i6dmo.context_bridge_release.v1" or doc.get("verdict") != "ACCEPT_FOR_EXECUTION":
         raise ValueError("BRIDGE_NOT_REVIEWED")
     required = {f"tools/i6dmo/{n}.py" for n in ("context_bridge_campaign", "campaign", "design", "model",
-        "common_population", "train", "worker", "unit_runner", "matched_runner", "reporting", "deploy")}
+        "common_population", "train", "worker", "unit_runner", "matched_runner", "reporting", "deploy",
+        "raw_long_campaign", "market_grid", "storage")}
     if not required.issubset(doc.get("code_files", {})):
         raise ValueError("BRIDGE_REVIEW_SCOPE")
     for rel, digest in doc["code_files"].items():
@@ -64,10 +65,13 @@ def prepare(config):
     """Freeze both designs and the common population before any scientific fit."""
     from tools.i6dmo import common_population as CP, design as D
     config = validate_config(config)
+    if L._run(["git", "-C", str(REPO), "status", "--porcelain"]).strip():
+        raise ValueError("SOURCE_NOT_FROZEN")
     work = Path(config["work_root"])
     if MR._inside_git(work if work.exists() else work.parent):
         raise ValueError("PRIVATE_OUTPUT_INSIDE_GIT")
     source = json.loads(Path(config["source_deployment"]).read_text())
+    storage_preflight(source, work)
     storage = Path(source["roles"]["coordinator"]["experiment_storage_root"])
     design_dir = work / "designs"
     D.seal_context_bridge(REPO / "docs/i6n/direct_multi_output_static/EXPERIMENT.short.json", design_dir,
@@ -79,13 +83,21 @@ def prepare(config):
     checkpoint = work / "POPULATION_BUILD.json"
     binding = dict(input_sha256=file_sha256(Path(config["input_dir"]) / "INPUT.npz"),
                    seals={a: d["seal_sha256"] for a, d in experiments.items()},
-                   source_deployment_sha256=file_sha256(config["source_deployment"]))
+                   source_deployment_sha256=file_sha256(config["source_deployment"]),
+                   generator_files=CP._code_digests())
     prepared_path = work / "PREPARED.json"
     if prepared_path.exists():
         old = json.loads(prepared_path.read_text())
         if old["launch_config"] != config or old["binding"] != binding:
             raise ValueError("BRIDGE_PREPARATION_CHANGED")
     L.record(work, "population", "RUNNING", completed=1, total=4)
+    staging = population_dir.with_name("population.building")
+    if not population_dir.exists() and (staging / "POPULATION.json").exists():
+        saved = json.loads(checkpoint.read_text())
+        if saved["binding"] != binding:
+            raise ValueError("BRIDGE_STAGING_BINDING_CHANGED")
+        CP.load_common_population(staging, expected_digest=saved["population_digest"], input_dir=config["input_dir"])
+        staging.rename(population_dir)
     if (population_dir / "POPULATION.json").exists():
         saved = json.loads(checkpoint.read_text())
         if saved["binding"] != binding:
@@ -97,11 +109,14 @@ def prepare(config):
             raise ValueError("BRIDGE_PARTIAL_POPULATION")
         pop = CP.build_common_population(config["input_dir"], experiments, data_designs, code_commit=C._git_head())
         atomic_json(checkpoint, dict(binding=binding, population_digest=pop.digest), mode=0o600)
-        staging = population_dir.with_name("population.building-" + str(time.time_ns()))
+        if staging.exists():
+            staging.rename(staging.with_name("population.incomplete-" + str(time.time_ns())))
         CP.write_common_population(pop, staging)
         if population_dir.exists():
             population_dir.rmdir()  # only the verified empty preparation directory
         staging.rename(population_dir)
+    if pop.identities["code"]["files_sha256"] != binding["generator_files"]:
+        raise ValueError("BRIDGE_GENERATOR_BYTES_CHANGED")
     seal = CP.seal_summary(json.loads((population_dir / "POPULATION.json").read_text()),
                            file_sha256(population_dir / "POPULATION.json"))
     seal["private_location"] = "$EXPERIMENT_STORAGE_ROOT/" + str(population_dir.relative_to(storage))
@@ -124,22 +139,24 @@ def run(config):
         if (campaign / "PLAN.json").exists():
             saved = json.loads((work / "PREPARED.json").read_text())
             effective = C.load_effective(campaign)
+            deployment = C.load_deployment(campaign)  # checks sealed deployment digest
             if saved["launch_config"] != config or set(effective["arms"]) != set(MR.CONTEXT_BRIDGE_ARMS) \
                     or file_sha256(config["source_deployment"]) != saved["binding"]["source_deployment_sha256"] \
                     or effective["data_pins"]["common_population"]["population_sha256"] != saved["population_digest"]:
                 raise ValueError("BRIDGE_RESUME_IDENTITY")
             state = status(work)
-            if not (campaign / "DEPLOY.json").exists() and state["state"] not in ("CLOSED", "FAILED", "BLOCKED"):
+            if state["state"] not in ("CLOSED", "FAILED", "BLOCKED"):
                 from tools.i6dmo import deploy
-                for role in C.load_deployment(campaign)["roles"].values():
+                for role in deployment["roles"].values():
                     L._verify_runtime(role, role["workdir"], effective["code_commit"], reviewed_files=files)
-                deploy.deploy(campaign)
+                ensure_deployed(campaign)
             return status(work)
         if L._run(["git", "-C", str(REPO), "status", "--porcelain"]).strip():
             raise ValueError("SOURCE_NOT_FROZEN")
         code = C._git_head()
         prepared = prepare(config)
         spec = copy.deepcopy(json.loads(Path(config["source_deployment"]).read_text()))
+        spec["context_bridge"] = dict(required_gpu_class="rtx5090")
         spec["launcher"]["initial_cap_bytes"] = 4 * 1024 ** 3
         spec["timer_cadence"] = dict(worker_seconds=5, cpu_worker_seconds=10, tick_seconds=10,
                                       publish_seconds=30, boot_seconds=30, accuracy_seconds=1)
@@ -163,11 +180,73 @@ def run(config):
         if precheck["state"] != "PASS":
             return L.record(work, "preflight", "BLOCKED_RESOURCE", launch_blockers=precheck["launch_blockers"])
         pins = json.loads((work / "matched.prepared.json").read_text())["data_pins"]
-        C.init_matched_contrast(paths, private, campaign, code_commit=code, data_pins=pins)
-        from tools.i6dmo import deploy
-        deploy.deploy(campaign)
+        initialize_atomic(paths, private, campaign, code, pins)
+        ensure_deployed(campaign)
         L.record(work, "dispatch", "DISPATCHED", completed=3, total=4)
         return status(work)
+
+
+def storage_preflight(spec, work):
+    """Reject missing/unwritable storage and non-ext4 state before any large write."""
+    from tools.i6dmo import storage as S
+    state = S.probe_mount(work if work.exists() else work.parent)
+    if state.get("fstype") != "ext4" or not state.get("writable"):
+        raise ValueError("BRIDGE_STATE_REQUIRES_WRITABLE_EXT4")
+    coordinator = Path(spec["roles"]["coordinator"]["experiment_storage_root"])
+    result = S.run_preflight(coordinator / "i6dmo", int(spec["storage"]["estimate_bytes"]),
+                             int(spec["storage"]["reserve_bytes"]))
+    if result["returncode"]:
+        raise ValueError("BRIDGE_STORAGE_NOT_READY")
+    for name, role in spec["roles"].items():
+        path = role["experiment_storage_root"]
+        script = ("import json,pathlib,os,shutil; p=pathlib.Path(" + repr(path) + "); "
+                  "print(json.dumps(dict(exists=p.is_dir(),writable=os.access(p,os.W_OK),"
+                  "free=shutil.disk_usage(p).free if p.is_dir() else 0)))")
+        fact = json.loads(L._remote(role, ["python3", "-c", script], 30))
+        if not fact["exists"] or not fact["writable"] or fact["free"] < 6 * 1024 ** 3:
+            raise ValueError("BRIDGE_STORAGE_ROLE_NOT_READY:" + name)
+    heavy = [g for g in spec["roles"]["preferred"].get("gpus", []) if g.get("heavy")]
+    if len(heavy) != 1 or heavy[0].get("class") != "rtx5090":
+        raise ValueError("BRIDGE_PREFERRED_MUST_BE_5090")
+    from tools.i6dmo.preflight import probe_role
+    facts = probe_role(spec, "preferred", files=[], check_strategy=False)
+    if not any(g["uuid"] == heavy[0]["uuid"] and "5090" in g["name"] for g in facts.get("gpus", [])):
+        raise ValueError("BRIDGE_5090_HARDWARE_NOT_VISIBLE")
+
+
+def initialize_atomic(paths, private, campaign, code, pins):
+    """Stage campaign initialization before publishing its final root; never reset a live queue."""
+    intent = dict(code=code, deployment_sha256=file_sha256(private), data_pins=pins,
+                  designs={a: file_sha256(p) for a, p in paths.items()})
+    intent_path = campaign.parent / "INIT_INTENT.json"
+    if intent_path.exists() and json.loads(intent_path.read_text()) != intent:
+        raise ValueError("BRIDGE_INITIALIZATION_INTENT_CHANGED")
+    atomic_json(intent_path, intent, mode=0o600)
+    staging = campaign.with_name("campaign.building")
+    if staging.exists() and not (staging / "PLAN.json").exists():
+        staging.rename(staging.with_name("campaign.incomplete-" + str(time.time_ns())))
+    if not staging.exists():
+        C.init_matched_contrast(paths, private, staging, code_commit=code, data_pins=pins)
+    effective = C.load_effective(staging)
+    if effective["code_commit"] != code or effective["data_pins"] != pins \
+            or effective["deployment_sha256"] != C.sha256_json(json.loads(private.read_text())):
+        raise ValueError("BRIDGE_STAGED_IDENTITY_CHANGED")
+    C.load_deployment(staging)
+    if (staging / "DEPLOY.json").exists():
+        raise ValueError("BRIDGE_STAGING_ALREADY_DEPLOYED")
+    staging.rename(campaign)
+    C.write_status(campaign)
+
+
+def ensure_deployed(campaign):
+    """Idempotently reconcile owned timers; activation failure never becomes a deployment."""
+    from tools.i6dmo import deploy
+    def checked(*args):
+        result = deploy.default_systemctl(*args)
+        if args[0] in ("daemon-reload", "enable") and result["rc"]:
+            raise RuntimeError("BRIDGE_SYSTEMCTL_ACTIVATION_FAILED")
+        return result
+    return deploy.deploy(campaign, systemctl=checked)
 
 
 def install(spec_path):
