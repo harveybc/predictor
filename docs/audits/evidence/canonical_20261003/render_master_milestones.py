@@ -62,7 +62,7 @@ def main() -> None:
     for index, item in enumerate(items):
         row, col = divmod(index, 4)
         x, y = xs[col], ys[row]
-        color = COLORS[item["state"]]
+        color = COLORS.get(item["state"], "#2878b5")
         if index:
             previous_row, previous_col = divmod(index - 1, 4)
             px, py = xs[previous_col], ys[previous_row]
@@ -105,7 +105,7 @@ def main() -> None:
         x = 0.65 + col * 8.7
         y = 3.62 - row * 0.56
         ax.text(x, y, f"{item['id']}", fontsize=8.2, fontweight="bold",
-                color=COLORS[item["state"]], va="top")
+                color=COLORS.get(item["state"], "#2878b5"), va="top")
         ax.text(x + 0.37, y, wrapped(item["next"], 95), fontsize=7.8,
                 color="#334155", va="top")
 

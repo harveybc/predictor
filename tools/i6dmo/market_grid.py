@@ -132,12 +132,25 @@ class MarketOriginTable:
         return (self.split == split) & self.input_ok & self.label_ok.any(axis=1)
 
 
-def build_market_table(bundle: data.InputBundle, design: Mapping[str, Any]) -> MarketOriginTable:
-    """Evaluate every candidate origin on the expected market-hour grid + C1 masks."""
+def build_market_table(bundle: data.InputBundle, design: Mapping[str, Any], *,
+                       evaluation_splits=None) -> MarketOriginTable:
+    """Evaluate expected market-hour origins + C1 masks; default splits are unchanged.
+
+    Explicit pre-TEST splits support fit-free master tables with later fold
+    maturity filtering. Their bounds become part of the returned identity.
+    """
     design = data.validate_design(design)
     spec = MarketWindowSpec.from_design(design)
     rule = market_rule_name(spec)
-    splits = data.split_bounds(design)
+    splits = data.split_bounds(design) if evaluation_splits is None else tuple(evaluation_splits)
+    if evaluation_splits is not None:
+        limit = data.test_start(design)
+        if not splits or any(not isinstance(s, c1.SplitBounds) for s in splits) \
+                or len({s.split_id for s in splits}) != len(splits) \
+                or any(s.end > limit or (s.label_available_by is not None and s.label_available_by > limit)
+                       for s in splits) \
+                or any(a.end > b.start for a, b in zip(splits, splits[1:])):
+            raise data.DataContractError("EVALUATION_SPLITS_INVALID", "ordered disjoint pre-TEST bounds required")
     ref, weeks = data._weeks(bundle)
     hs = data.horizons(design)
     ts = bundle.ts
@@ -151,6 +164,11 @@ def build_market_table(bundle: data.InputBundle, design: Mapping[str, Any]) -> M
     opens = [w.market_open for w in weeks]
     lo, hi = int(splits[0].start.timestamp()), int(splits[-1].end.timestamp())
     cand = np.flatnonzero((ts >= lo) & (ts < hi))
+    if evaluation_splits is not None:
+        active = np.zeros(ts.shape, dtype=bool)
+        for s in splits:
+            active |= (ts >= int(s.start.timestamp())) & (ts < int(s.end.timestamp()))
+        cand = np.flatnonzero(active)
     n, nh, obs = len(cand), len(hs), spec.observations
     out_split = np.empty(n, dtype=object)
     out_week = np.empty(n, dtype=object)
@@ -167,7 +185,8 @@ def build_market_table(bundle: data.InputBundle, design: Mapping[str, Any]) -> M
     counts = {s: {"origins": {"candidates": 0, "input_ok": 0, **{r: 0 for r in reasons}},
                   "heads": {str(h): {"label_valid": 0, "entry_valid": 0, "reasons": Counter()}
                             for h in hs},
-                  "rows_materialized": 0} for s in data.SPLITS}
+                  "rows_materialized": 0} for s in
+              (data.SPLITS if evaluation_splits is None else tuple(s.split_id for s in splits))}
     step = spec.spacing_market_hours
     for k, i in enumerate(cand):
         t = int(ts[i])
@@ -266,6 +285,9 @@ def build_market_table(bundle: data.InputBundle, design: Mapping[str, Any]) -> M
         slot_index=slot_index, closure_crossed=closure, label_ok=label_ok, entry_ok=entry_ok,
         counts=counts, split_weeks=split_weeks)
     table.index = {int(t): k for k, t in enumerate(table.origin_ts)}
+    if evaluation_splits is not None:
+        table.identity["evaluation_splits"] = [s.to_json() for s in splits]
+        table.identity["evaluation_splits_sha256"] = provenance.canonical_sha256(table.identity["evaluation_splits"])
     # synthetic fixture calendars carry FIXTURE in the id; the real assumed one carries ASSUMED
     if "ASSUMED" not in ref.calendar_id and "FIXTURE" not in ref.calendar_id:
         table.identity["calendar_status"] = "SUPPLIED_UNVERIFIED"

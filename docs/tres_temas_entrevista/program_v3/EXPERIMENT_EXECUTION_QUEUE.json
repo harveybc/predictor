@@ -1,9 +1,9 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-15",
+  "updated_on": "2026-10-16",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "I6_DMO_RAW_SAMPLING_AND_ELIGIBLE_STRATEGY_BEFORE_R2",
+    "focus": "AUTONOMOUS_RAW_PREDICTIVE_CONTINUATION_TRAIN_VALIDATION_MONITOR",
     "parallelism": "Parallel bounded implementation/data/strategy/OLAP lanes; first scientific fixed fit on preferred 5090 only, one heavy process per host. No duplicate fits to fill GPUs.",
     "seed_default": 6102026,
     "seed_maximum": 3,
@@ -13,12 +13,13 @@
       "dragon_4090",
       "omega_4070"
     ],
-    "gpu_use_now": "No scientific fit running at the last read: R2 import failed before training; defer it. The missing RAW long matched control requires tested factory support, not another pretraining job.",
+    "gpu_use_now": "Prepare corrected full-TRAIN/VALIDATION continuation, then sequential 5090; previous 19-cell batch CLOSED. No 5070 Ti concurrency.",
     "financial_gate": "MAE in original price must beat naive para el horizonte de X horas on identical rows before strategy evaluation",
     "test_policy": "2024 is development due to feature selection. TEST 2025 closed until full pair, procedure freeze and source provenance gates pass.",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
     "snapshot_policy": "verified physical DuckDB copies on coordinator and worker_b; Git contains code, manifest and SHA-256, never the 3.4 GiB binary",
-    "retraining_frequency": "NONE for initial static baseline; QUARTERLY/MONTHLY/WEEKLY later validation-only comparisons"
+    "retraining_frequency": "STATIC -> QUARTERLY -> MONTHLY_IF_BENEFICIAL -> WEEKLY_IF_BENEFICIAL",
+    "monitor": "0.5*(TRAIN_all_four_years+VALIDATION_evaluation_period); no extra INNER holdout; 2024 DEVELOPMENT not OOS"
   },
   "superseded": {
     "neat_hyperparameter_campaigns": "DIAGNOSTIC_ONLY_STOPPED",
@@ -29,13 +30,28 @@
   },
   "lanes": [
     {
+      "priority": 0,
+      "id": "I6-DMO-CONTINUATION",
+      "resource": "sequential_5090_bounded_CPU_control_and_verified_mirrors",
+      "state": "IMPLEMENTING_FULL_AUTONOMOUS_GRAPH",
+      "dispatch_enabled": true,
+      "executor": "Musashi",
+      "depends_on": [],
+      "work": "269 static logical cells plus calendar-derived conditional quarterly/monthly/weekly periods. Correct TRAIN/VALIDATION stopping, no sinusoidal sum, private Conv/LSTM head controls crossed jointly with window/core/spacing, exact adoption, per-horizon naive, automatic eligibility/OLAP/mirrors/close.",
+      "work_plan": "../../i6n/direct_multi_output_static/continuation/PLAN.md",
+      "dispatch_gate": "machine-verifiable test/data/runtime gates only; no stage chat approval",
+      "test_open": false
+    },
+    {
       "priority": 10,
       "id": "I6-DMO-R2",
       "resource": "preferred_and_secondary_pretraining_then_same_preferred_GPU_class_predictors",
-      "state": "DEFERRED_PREFIT_IMPORT_FAILURE_RAW_BLOCK_FIRST",
+      "state": "CLOSED_R0_RETAINED_QUALIFIED",
       "dispatch_enabled": false,
-      "work": "Preserve 19 completed donors, completed R0/probe and R2_DONOR_TERMINAL_DIGEST failure. No fit started for R2. All donor terminals absent on preferred worker. Do not retry before RAW short/long sampling and eligible strategy block closes.",
-      "depends_on": ["I6-DMO-RAW-LONG-CONTROL"],
+      "work": "Retain completed static short/long R0/R2 contrasts and qualified donors; no R2 dispatch ahead of the current RAW continuation.",
+      "depends_on": [
+        "I6-DMO-RAW-LONG-CONTROL"
+      ],
       "produces": "per-feature pretraining diagnostics, per-horizon R0/R2 errors and own naives, official comparison and mirrored OLAP closure",
       "work_plan": "../../i6n/direct_multi_output_static/matched_short/R2_CONTRAST_DESIGN.ruled.json",
       "audit": "../../i6n/direct_multi_output_static/matched_short/MUSASHI_R2_AUDIT_20261015.md"
@@ -44,10 +60,10 @@
       "priority": 0,
       "id": "I6-DMO-RAW-LONG-CONTROL",
       "resource": "bounded_cpu_definition_then_admitted_gpu",
-      "state": "MISSING_MATCHED_LONG_FACTORY",
+      "state": "CLOSED_PAIR_NOT_ELIGIBLE",
       "dispatch_enabled": false,
       "executor": "Musashi",
-      "work": "Implement and review missing RAW long hourly/downsampled matched control; then use finite campaign automation, per-horizon naive and business masks. No pretraining, R2 or TEST. Strategy only after full-pair eligibility.",
+      "work": "Retain verified RAW long matched closure; successor is I6-DMO-CONTINUATION, not another missing-factory or donor repair.",
       "depends_on": [],
       "produces": "Complete RAW sampling evidence and explicit pair eligibility or strategy metrics",
       "work_plan": "../../i6n/direct_multi_output_static/RAW_PRIORITY_20261015.md"

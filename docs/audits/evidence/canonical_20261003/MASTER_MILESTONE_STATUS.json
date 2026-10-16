@@ -1,10 +1,10 @@
 {
- "as_of": "2026-10-16T04:07:43+00:00",
- "critical_path_eta": "Context bridge i6dmo-e5b3dd7cd27e deployed from ab22099f; finite five-unit R0 comparison progressing by timers. New regime timings remain measured/unknown by phase, not inherited. No TEST or strategy.",
+ "as_of": "2026-10-16T13:34:27.552Z",
+ "critical_path_eta": "Corrected autonomous continuation PREPARING: 269 static logical cells plus conditional calendar cadence periods. No measured end-to-end ETA before the new protocol runs.",
  "milestones": [
   {
    "eta": "1-3 development days",
-   "evidence": "Retained short/long FIT/INNER/DEVELOPMENT audit: exact business masks, open+12/close-12 buffers, t included, no future or invented closed-hour input slots; assumed calendar remains unverified against broker. Full weekly validation remains open.",
+   "evidence": "Business masks retain open+12/close-12 and exact horizon naive. New owner protocol uses all four TRAIN years plus actual VALIDATION for stopping, no extra holdout; 2024 is retrospective development.",
    "id": "M1",
    "next": "Run one complete weekly validation pilot with MAE, short/long horizons and idempotent strategy delivery",
    "progress": 66,
@@ -48,13 +48,13 @@
    "title": "Pretrained temporal core"
   },
   {
-   "engineering_note": "Context bridge has 80 focused passing tests and independent acceptance; wider suite timed out at240s, not a full pass. Milestone percentages retained.",
-   "eta": "See generated context bridge status; no measured end-to-end ETA yet",
-   "evidence": "RAW long MG12m/MG1l relative MAE +26.285134%/+47.377774%; subsequent MG12m R0/R2 +26.285134%/+26.607801%. Neither long arm has an eligible head, so no eligible strategy pair, trading or TEST. Short R0 retains eligible 4/6/12 h heads on DEVELOPMENT. Full per-horizon naive and metrics retained in returns.",
+   "engineering_note": "Prior 19 fits retained under old FIT/INNER protocol. Historical milestone percentages unchanged; 129 focused continuation tests passed before final control corrections.",
+   "eta": "New protocol: UNMEASURED; query generated continuation status",
+   "evidence": "Previous batch CLOSED: 19/19, 19 OLAP readbacks, two 159-file mirrors. DS2 wins means; best h72 +5.071% vs naive. Corrected TRAIN/VALIDATION, no sine addition, private temporal heads and full continuation are preparing.",
    "id": "M6",
-   "next": "Complete both matched R0 fits, reports, comparison, OLAP readback and two physical mirrors automatically; then close only this campaign. No other contrast or TEST implicitly launched.",
+   "next": "Run corrected head controls, joint window/core/head grid and conditional quarterly/monthly/weekly cadence automatically; then eligibility, OLAP, two mirrors and close. TEST closed.",
    "progress": 24,
-   "state": "CONTEXT_BRIDGE_RUNNING",
+   "state": "PARTIAL_MEASUREMENT",
    "title": "Short/long forecasts + strategy"
   },
   {

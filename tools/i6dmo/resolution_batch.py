@@ -49,7 +49,14 @@ def verify_code(spec):
         path = (REPO / rel).resolve()
         if not path.is_relative_to(REPO) or file_sha256(path) != sha:
             raise ValueError("BATCH_CODE_CHANGED:" + rel)
-    if spec["cells"] != cells() or spec["seed"] != SEED or spec["training"] != TRAINING:
+    if spec.get("protocol"):
+        from tools.i6dmo import continuation as N
+        if spec["protocol"] != N.PROTOCOL:
+            raise ValueError("BATCH_PROTOCOL_UNKNOWN")
+        expected = N.cells(spec["periods"])
+    else:
+        expected = cells()
+    if spec["cells"] != expected or spec["seed"] != SEED or spec["training"] != TRAINING:
         raise ValueError("BATCH_PLAN_CHANGED")
     if "deployment_sha256" in spec and Path(spec["deployment"]).is_file() \
             and file_sha256(spec["deployment"]) != spec["deployment_sha256"]:
@@ -66,6 +73,8 @@ def terminal(root, cell, spec):
         raise ValueError("BATCH_TERMINAL_IDENTITY:" + cell["id"])
     if d.get("state") == "COMPLETE":
         required = {"CONFIG.json", "TRAINING.json", "model.weights.h5", "FIT.npz", "INNER.npz", "VALIDATION.npz"}
+        if spec.get("protocol"):
+            required.remove("INNER.npz")
         if set(d.get("files", {})) != required:
             raise ValueError("BATCH_TERMINAL_ARTIFACTS:" + cell["id"])
         if d.get("population", {}).get("manifest_sha256") != spec["population_digest"]:
@@ -98,6 +107,9 @@ def selected_spacing(results):
 
 
 def next_cell(spec, results):
+    if spec.get("protocol"):
+        from tools.i6dmo import continuation
+        return continuation.next_cell(spec, results)
     for cell in spec["cells"]:
         if cell["id"] in results:
             continue
@@ -142,6 +154,18 @@ def fit_next(spec):
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         results = {c["id"]: t for c in spec["cells"] if (t := terminal(root, c, spec))}
         cell = next_cell(spec, results)
+        if spec.get("protocol"):
+            from tools.i6dmo import continuation
+            while cell is not None:
+                ruling = continuation.resolve(spec, cell, results)
+                if "disposition" not in ruling:
+                    break
+                skipped = dict(batch_id=spec["batch_id"], cell=cell, state=ruling["disposition"],
+                               reason=ruling["reason"], files={})
+                skipped["sha256"] = digest(skipped)
+                put(root/"results"/cell["id"]/"RESULT.json", skipped)
+                results[cell["id"]] = skipped
+                cell = next_cell(spec, results)
         if cell is None:
             if len(results) < len(spec["cells"]):
                 for blocked in spec["cells"]:
@@ -184,6 +208,9 @@ def fit_next(spec):
 
 
 def fit_cell(spec, cell, results, folder):
+    if spec.get("protocol"):
+        from tools.i6dmo import continuation
+        return continuation.fit_cell(spec, cell, results, folder)
     # train imports the pinned determinism initializer before TensorFlow.
     from tools.i6dmo import train as T, resolution_models as M, resolution_data as D
     from predictor_plugins.modular_temporal import weights_hash
@@ -263,7 +290,11 @@ def report(spec, result):
                                       ("Relative_Error_Vs_Naive", "relative_error", "ratio"),
                                       ("Prediction_Movement_MAE", "predicted_movement_mae", "USD_per_EUR"),
                                       ("N_Paired", "n", "count")):
-                rows.append(dict(metric=metric, value=r[key], unit=unit, horizon=r["horizon"],
+                if r[key] is not None:
+                    rows.append(dict(metric=metric, value=r[key], unit=unit, horizon=r["horizon"],
+                                     split="validation" if split == "VALIDATION" else split.lower()))
+            if not r["n"]:
+                rows.append(dict(metric="Horizon_Available", value=0, unit="bool", horizon=r["horizon"],
                                  split="validation" if split == "VALIDATION" else split.lower()))
     rows.extend(dict(metric=k, value=result[key], unit=unit, horizon=None, split="train")
                 for k, key, unit in (("Parameters", "parameters", "count"),
@@ -288,7 +319,7 @@ def generated_status(spec, root):
     root = Path(root)
     results = {c["id"]: t for c in spec["cells"] if (t := terminal(root, c, spec))}
     good = [r for r in results.values() if r["state"] == "COMPLETE"]
-    failed = [r["cell"]["id"] for r in results.values() if r["state"] != "COMPLETE"]
+    failed = [r["cell"]["id"] for r in results.values() if r["state"] != "COMPLETE" and not r["state"].startswith("SKIPPED_")]
     p = read(root / "PROGRESS.json") if (root / "PROGRESS.json").exists() else {}
     remaining = len(spec["cells"]) - len(results)
     eta = dict(kind="DONE", seconds=0) if remaining == 0 else dict(kind="UNMEASURED")
@@ -302,13 +333,24 @@ def generated_status(spec, root):
                             fit_seconds=results[c["id"]].get("training_seconds"),
                             development=results[c["id"]].get("metrics", {}).get("VALIDATION"))
                if c["id"] in results else dict(state="PENDING") for c in spec["cells"]}
+    stages = {}
+    if spec.get("protocol"):
+        for c in spec["cells"]:
+            stage = stages.setdefault(c["stage"], dict(total=0, complete=0, skipped=0, failed=0))
+            stage["total"] += 1
+            if c["id"] in results:
+                state = results[c["id"]]["state"]
+                stage["complete" if state == "COMPLETE" else "skipped" if state.startswith("SKIPPED_") else "failed"] += 1
     return dict(schema="i6dmo.resolution_batch_status.v1", batch_id=spec["batch_id"], at=time.time(),
                 state="COMPUTE_DONE" if not remaining else "STALE" if p.get("state") == "RUNNING" and
                 time.time()-p.get("at", 0)>180 else "RUNNING" if p.get("state") == "RUNNING"
                 else p["state"] if p.get("state", "").startswith(("WAIT_", "FAILED_"))
                 else "BLOCKED_DEPENDENCY" if nxt is None else "PENDING",
                 complete=len(good), terminal=len(results), total=len(spec["cells"]), failed=failed,
-                progress=p, eta=eta, selected_long_spacing=selected_spacing(results), cells=details, test_read=False)
+                progress=p, eta=eta, selected_long_spacing=selected_spacing(results) if not spec.get("protocol") else None,
+                stages=stages, skipped=sum(r["state"].startswith("SKIPPED_") for r in results.values()),
+                actual_fits=sum(not r.get("reused_from") for r in good), adopted=sum(bool(r.get("reused_from")) for r in good),
+                cells=details, test_read=False)
 
 
 def summarize(spec, root):
@@ -325,7 +367,7 @@ def summarize(spec, root):
                            for v in r.get("metrics", {}).get("VALIDATION", []))
         lines.append(f"| {c['id']} | {r.get('state', 'PENDING')} | {r.get('parameters', '')} | "
                      f"{r.get('training_seconds', '')} | {values} |")
-    lines.extend(["", "Long spacing chosen automatically: " + str(selected_spacing(results)), "",
+    lines.extend(["", "Long spacing chosen automatically: " + str(selected_spacing(results) if not spec.get("protocol") else "per-stage conditional recipe"), "",
                   "The DLinear arm is a multivariate adaptation, not a literature reproduction.",
                   "No change to feature selection, pretrained extractors, DOIN or business masks.",
                   "An unsupported or failed head never becomes eligible from the aggregate."])
@@ -403,6 +445,30 @@ def tick(spec):
                     state=x["state"], readback_sha256=x["readback_sha256"]) for x in box.items()])
                 put(artifacts / "BATCH_PUBLIC.json", {k: spec[k] for k in
                     ("batch_id", "cells", "seed", "training", "code_files", "code_commit", "population_digest")})
+                if spec.get("protocol"):
+                    from tools.i6dmo import continuation, continuation_strategy
+                    all_results = {c["id"]: terminal(artifacts, c, spec) for c in spec["cells"]}
+                    selection = continuation.selections(spec, all_results, artifacts)
+                    put(artifacts/"SELECTION.json", selection)
+                    decision = continuation_strategy.finalize(spec, selection, artifacts)
+                    put(artifacts/"PAIR_STRATEGY.json", decision)
+                    if decision.get("state") == "WAIT_ARTIFACT":
+                        state.update(state="WAIT_ARTIFACT", missing=decision.get("missing", []))
+                        put(root/"STATUS.json", state)
+                        return state
+                    if decision.get("status") == "FAILED" or decision.get("strategy_status") == "EXECUTION_FAILURES":
+                        state["failed"].append("final_strategy:"+str(decision.get("code", "EXECUTION_FAILURES")))
+                    for item in continuation.decision_reports(spec, selection, decision):
+                        box.enqueue(item, source_unit="continuation.final_decision")
+                    pub = box.pump(HttpWarehouse(wh["url"], wh["token_env"]))
+                    state["publication"] = pub
+                    if pub["pending"] or pub["mismatch"]:
+                        state["state"] = "WAIT_FINAL_PUBLICATION"
+                        put(root/"STATUS.json", state)
+                        return state
+                    put(artifacts/"PUBLICATION.json", pub)
+                    put(artifacts/"READBACK.json", [dict(report_sha256=x["report_sha256"], state=x["state"],
+                        readback_sha256=x["readback_sha256"]) for x in box.items()])
                 close_input = dict(batch_id=spec["batch_id"], state="COMPUTE_AND_DELIVERY_COMPLETE",
                                    population_digest=spec["population_digest"], failed=state["failed"],
                                    expected_cells=len(spec["cells"]), publication=pub,
@@ -546,9 +612,11 @@ def bootstrap(config_path):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("action", choices=("bootstrap", "fit-next", "tick", "install", "status"))
+    p.add_argument("action", choices=("bootstrap", "continue-bootstrap", "fit-next", "tick", "install", "status"))
     p.add_argument("--spec", type=Path, required=True)
     p.add_argument("--cell", help="status for one exact cell id")
+    p.add_argument("--stage", help="status for one declared continuation stage")
+    p.add_argument("--level", choices=("summary", "full"), default="summary")
     a = p.parse_args()
     spec = read(a.spec)
     if a.action == "status":
@@ -558,10 +626,21 @@ def main():
             state = dict(batch_id=spec["batch_id"], cell=a.cell,
                          status=state.get("cells", {}).get(a.cell, dict(state="PENDING")),
                          progress=state.get("progress", {}) if state.get("progress", {}).get("cell") == a.cell else {})
+        elif a.stage:
+            allowed = {c["id"] for c in spec["cells"] if c.get("stage") == a.stage}
+            state = dict(batch_id=spec["batch_id"], stage=a.stage,
+                         status=state.get("stages", {}).get(a.stage, {}),
+                         cells={k: v for k, v in state.get("cells", {}).items() if k in allowed},
+                         progress=state.get("progress", {}) if state.get("progress", {}).get("cell") in allowed else {})
+        elif spec.get("protocol") and a.level != "full":
+            state.pop("cells", None)
         print(json.dumps(state, sort_keys=True))
         return
     try:
-        if a.action == "bootstrap":
+        if a.action == "continue-bootstrap":
+            from tools.i6dmo import continuation
+            print(json.dumps(continuation.bootstrap(a.spec), sort_keys=True))
+        elif a.action == "bootstrap":
             print(json.dumps(bootstrap(a.spec), sort_keys=True))
         elif a.action == "fit-next":
             fit_next(spec)

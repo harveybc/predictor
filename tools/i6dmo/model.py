@@ -580,6 +580,9 @@ def build_dmo(config):
     if isinstance(config, dict) and config.get("schema") == "i6dmo.resolution_model.v1":
         from tools.i6dmo.resolution_models import build
         return build(config)
+    if isinstance(config, dict) and config.get("schema") == "i6dmo.continuation_model.v1":
+        from tools.i6dmo.continuation_models import build
+        return build(config)
     c = normalize_model_config(config)
     enable_determinism()
     keras.utils.set_random_seed(c["seed"])
