@@ -7,6 +7,21 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Prioridad del propietario, 2026-10-16: antes de otro entrenamiento, auditar
+las predicciones cortas downsampled y las metricas largas, con sus mascaras
+de negocio tanto en FIT como INNER y DEVELOPMENT. Los buffers vigentes son
+12 horas despues de apertura y 12 antes de cierre; no se cambian a 8.
+La auditoria de arrays retenidos reprodujo ventanas, targets, mascaras,
+escaladores FIT-only y MAE/naive; NO certifica disponibilidad de proveedores
+ni vintages. Siete features siguen sin disponibilidad verificada y dos
+productores pendientes. TEST cerrado. El salto 12/18 h persiste en origenes
+comunes; la corta es casi persistencia y la larga presenta brecha de
+generalizacion. No demuestra una causa concreta. No se lanzo otro fit.
+Antes del contraste trimestral, resolver la auditoria y definir el pequeno
+contraste de contexto/resolucion de 18 h si corresponde; el orden anterior
+queda subordinado a esta prioridad, sin reabrir mediciones cerradas.
+[Auditoria y resultados](../i6n/direct_multi_output_static/r2_downsampled/DIAGNOSTIC_RETURN.md).
+
 Continuacion aprobada por el propietario, 2026-10-15: tras cerrar el bloque
 RAW, ejecutar R0 frente a R2 sobre las recetas downsampled seleccionadas,
 primero corto MG2m y despues largo MG12m, todavia sin reajustes durante el ano.

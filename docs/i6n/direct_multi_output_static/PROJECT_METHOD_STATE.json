@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-16",
- "current_stage": "S8_R2_DOWNSAMPLED_SEQUENCE_CLOSED",
- "execution_status": "SHORT_AND_LONG_CLOSED_R0_RETAINED",
+ "current_stage": "S8_RETAINED_ARRAY_AUDIT_COMPLETE_UPSTREAM_UNRESOLVED",
+ "execution_status": "STATIC_SEQUENCE_CLOSED_BUSINESS_AND_METRICS_REPLAY_PASS",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -12,7 +12,9 @@
   "RAW_PRIORITY_20261015.md",
   "r2_downsampled/PLAN.md",
   "r2_downsampled/SHORT_RETURN.md",
-  "r2_downsampled/LONG_RETURN.md"
+  "r2_downsampled/LONG_RETURN.md",
+  "r2_downsampled/DIAGNOSTIC_PLAN.md",
+  "r2_downsampled/DIAGNOSTIC_RETURN.md"
  ],
  "completed_definition_stages": [
   "S0_DISCOVERY",
@@ -29,7 +31,8 @@
   "Retain campaign i6dmo-9e1ebad89ff2 CLOSE.json and its verified metrics, mirrors and original fit identities",
   "Retain the closed matched campaign and selected MG2m recipe without another matched-control fit",
   "Retain both R0_RETAINED closures: 50/50 units, 288 report readbacks and 177 files per mirror in each campaign; no further fits in this closed sequence",
-  "Prepare the separate quarterly-versus-static contrast with a fixed recipe; it has not been launched",
+  "Owner priority 2026-10-16: verify short/long causal support, business masks and metrics before any fit; retained-array audit passed, but upstream availability/vintage and producer qualifications remain unresolved",
+  "Define the small 18 h context/resolution bridge only after audit disposition; quarterly-versus-static follows, not currently launched",
   "Retain 19 R2 donors, completed R0/probe and typed pre-fit import failure; no R2 retry or new pretraining in the RAW critical path",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],

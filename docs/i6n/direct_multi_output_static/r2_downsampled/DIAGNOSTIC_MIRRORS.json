@@ -1,0 +1,10 @@
+{
+ "files": {
+  "DIAGNOSTIC_RESULT.json": "be4e5f84750d6b8ad443491302fd332586da0e37019e94d80a0262fa1c5b34b7",
+  "DIAGNOSTIC_STATUS.json": "18c93d8e51ebcbebc2f6aa67cf1509bbb3e70c2bfbc04e6356ffce698043406f"
+ },
+ "local_disk": "VERIFIED",
+ "publication_delivered": 228,
+ "schema": "i6dmo.diagnostic_mirrors.v1",
+ "second_host": "VERIFIED"
+}

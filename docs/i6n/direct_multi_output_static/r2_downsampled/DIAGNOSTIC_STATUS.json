@@ -1,0 +1,15 @@
+{
+ "compute": "COMPLETE",
+ "fits_started": 0,
+ "publication": {
+  "delivered": 228,
+  "expected": 228,
+  "last_errors": [],
+  "mismatch": 0,
+  "pending": 0,
+  "posted": 0
+ },
+ "result_sha256": "be4e5f84750d6b8ad443491302fd332586da0e37019e94d80a0262fa1c5b34b7",
+ "schema": "i6dmo.prediction_diagnostics.v1",
+ "test_open": false
+}

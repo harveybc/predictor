@@ -1,10 +1,10 @@
 {
   "as_of": "2026-10-16T04:07:43+00:00",
-  "critical_path_eta": "Approved downsampled R0/R2 sequence CLOSED: 50/50 units, 288 verified report readbacks, both physical mirrors verified for both families. Both retain R0. Next separate fixed-recipe quarterly/static contrast is not launched and has no measured ETA. TEST remains closed.",
+  "critical_path_eta": "Static R0/R2 sequence CLOSED. Owner now prioritizes causal/business audit before any new fit. Retained-array/metric audit PASS: 228 diagnostic reports read back and both copies verified; seven feature availability records and two producers remain unresolved. No cadence/bridge fit launched; no measured ETA for those open evidence gaps. TEST closed.",
   "milestones": [
     {
       "eta": "1-3 development days",
-      "evidence": "Weekly/monthly/static contracts and four-year windows implemented; paired-naive scorer: 72 focused tests. Full weekly validation remains open.",
+      "evidence": "Retained short/long FIT/INNER/DEVELOPMENT audit: exact business masks, open+12/close-12 buffers, t included, no future or invented closed-hour input slots; assumed calendar remains unverified against broker. Full weekly validation remains open.",
       "id": "M1",
       "next": "Run one complete weekly validation pilot with MAE, short/long horizons and idempotent strategy delivery",
       "progress": 66,
@@ -51,7 +51,7 @@
       "eta": "Static contrasts complete; quarterly contrast not launched",
       "evidence": "RAW long MG12m/MG1l relative MAE +26.285134%/+47.377774%; subsequent MG12m R0/R2 +26.285134%/+26.607801%. Neither long arm has an eligible head, so no eligible strategy pair, trading or TEST. Short R0 retains eligible 4/6/12 h heads on DEVELOPMENT. Full per-horizon naive and metrics retained in returns.",
       "id": "M6",
-      "next": "Prepare the separate fixed-recipe quarterly-versus-static contrast. No strategy on ineligible heads; TEST stays closed pending its procedure and source-clock gates.",
+      "next": "Owner priority: complete source availability/vintage/producer audit before further fits. Then define the small 18 h context/resolution bridge before the separate cadence contrast. Do not infer a bug or causal attribution from the 12/18 h gap; no strategy on ineligible heads; TEST closed.",
       "progress": 24,
       "state": "PARTIAL_MEASUREMENT",
       "title": "Short/long forecasts + strategy",
