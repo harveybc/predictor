@@ -22,6 +22,14 @@ mensual y semanal requieren su estudio separado de beneficio y coste. Las
 prohibiciones anteriores de iniciar R2 solo rigen la etapa RAW ya cerrada,
 no esta continuacion expresamente aprobada. TEST sigue cerrado.
 
+Estado ejecutado: corto i6dmo-fed57e1d7696 cerrado R0_RETAINED, con media
+de error relativo R0 -0.007738% frente a R2 +0.020282%, 25/25 unidades,
+116 lecturas de vuelta OLAP y 177 archivos por espejo. Los 19 donantes
+cortos fueron adoptados, no reentrenados. El relevo automatico arranco el
+largo i6dmo-319c029a316f en las GPU preferida y secundaria, sin intervencion
+del propietario. El modelo original y el revisado comparten clase GPU para
+los ajustes predictivos. [Resultado corto y limites](../i6n/direct_multi_output_static/r2_downsampled/SHORT_RETURN.md).
+
 Rectificacion del propietario, 2026-10-15, posterior al lanzamiento R2:
 Musashi asume la ejecucion; no se delega trabajo nuevo a Satoshi. La prioridad
 es terminar la evaluacion RAW direct multi-output de las dos familias, primero

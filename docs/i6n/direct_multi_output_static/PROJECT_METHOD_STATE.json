@@ -1,15 +1,17 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S7_R2_DOWNSAMPLED_SEQUENCE_IMPLEMENTATION",
- "execution_status": "PREPARING_APPROVED_R0_R2_SHORT_THEN_LONG",
+ "current_stage": "S8_R2_DOWNSAMPLED_SEQUENCE_EXECUTING",
+ "execution_status": "SHORT_CLOSED_R0_RETAINED_LONG_AUTOMATICALLY_RUNNING",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
   "ACCEPTANCE.md",
   "MARKET_TIME_PAIR_PLAN.md",
   "NEXT_CONTRASTS_PLAN_20261015.md",
-  "RAW_PRIORITY_20261015.md"
+  "RAW_PRIORITY_20261015.md",
+  "r2_downsampled/PLAN.md",
+  "r2_downsampled/SHORT_RETURN.md"
  ],
  "completed_definition_stages": [
   "S0_DISCOVERY",
@@ -25,7 +27,7 @@
  "next_allowed_actions": [
   "Retain campaign i6dmo-9e1ebad89ff2 CLOSE.json and its verified metrics, mirrors and original fit identities",
   "Retain the closed matched campaign and selected MG2m recipe without another matched-control fit",
-  "Owner approved static downsampled R0/R2 short then long: implement and test r2_downsampled/PLAN.md; authenticate retained short donors, repair attempt-local transport, independently review and execute automatic sequence",
+  "Retain short R0_RETAINED CLOSE and its 116 readbacks; continue the automatically launched long MG12m R0/R2 under r2_downsampled/PLAN.md, with its own donors, same-class predictive fits and automatic publication/mirror/CLOSE",
   "Retain 19 R2 donors, completed R0/probe and typed pre-fit import failure; no R2 retry or new pretraining in the RAW critical path",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],
@@ -94,7 +96,19 @@
   "audit": "matched_short/MUSASHI_R2_AUDIT_20261015.md",
   "operational_cadence": "matched_short/R2_OPERATIONAL_CADENCE_20261015.json"
  },
- "status_note": "RAW long campaign i6dmo-0f9e6c8d5d74 closed automatically: 6/6 COMPLETE, 112/112 reports read back, 61 files per physical mirror. MG12m selected over MG1l (mean relative MAE +26.285134% versus +47.377774%), but zero eligible long heads; retained short has 4/6/12 h eligible. PAIR_NOT_ELIGIBLE, no strategy or TEST. No new Satoshi work or R2 restart. Engineering populations and pre-fit failures preserved separately; only ac635820 governing population used in science.",
+ "status_note": "RAW long i6dmo-0f9e6c8d5d74 remains CLOSED and PAIR_NOT_ELIGIBLE. The owner separately approved downsampled R0/R2: short successor i6dmo-fed57e1d7696 executes from 5d430951 with 19 authenticated original donors adopted without new short pretraining; long MG12m advances only after verified short CLOSE. Two predeployment refusals were preserved with zero fits; explicit storage and read-only remote probe fixes independently accepted. No Satoshi, core pretraining, DOIN, cadence change, strategy or TEST dispatch.",
+ "active_r2_successor": {
+  "campaign_id": "i6dmo-fed57e1d7696",
+  "runtime_code_commit": "5d430951cbb27248512172c9c20fcd8ea7fc39b3",
+  "state": "SHORT_CLOSED_LONG_RUNNING",
+  "short_donors_adopted": 19,
+  "short_donor_fits_repeated": 0,
+  "short_disposition": "R0_RETAINED",
+  "long_campaign_id": "i6dmo-319c029a316f",
+  "next": "LONG_PRETRAIN_R0_R2_REPORT_COMPARE_PUBLISH_MIRROR_CLOSE",
+  "test_open": false,
+  "plan": "r2_downsampled/PLAN.md"
+ },
  "closed_raw_long": {
   "campaign_id": "i6dmo-0f9e6c8d5d74",
   "code_commit": "ac635820d37083a83c5b1c240543598b6476bf7d",

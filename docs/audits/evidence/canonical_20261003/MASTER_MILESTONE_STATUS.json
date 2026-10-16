@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-10-15T20:27:10+00:00",
-  "critical_path_eta": "RAW matched long and pair block CLOSED; no eligible long heads. Follow-up capacity/window or cadence contrasts are not running and have no measured ETA. TEST and R2 remain deferred.",
+  "as_of": "2026-10-16T00:49:10+00:00",
+  "critical_path_eta": "Approved downsampled R0/R2 sequence executing: short MG2m then long MG12m after verified CLOSE. Phase timings are measured by the campaign, not inherited from RAW controls. TEST remains closed; core and cadence contrasts are not running.",
   "milestones": [
     {
       "eta": "1-3 development days",
@@ -30,12 +30,12 @@
       "title": "Exact literature controls"
     },
     {
-      "eta": "Deferred behind RAW sampling/strategy block",
-      "evidence": "19/19 donors and R0 complete. R2 failed before training: donor terminals absent on GPU host. No R2 predictive verdict.",
+      "eta": "Running contrast; end-to-end ETA not measured yet",
+      "evidence": "Short i6dmo-fed57e1d7696 CLOSED R0_RETAINED: mean relative MAE R0 -0.007738%, R2 +0.020282%; 25/25 units, 116 readbacks, 177 files per mirror. Nineteen short donors adopted, not retrained. Long i6dmo-319c029a316f automatically started on preferred/secondary GPUs under 5d430951.",
       "id": "M4",
-      "next": "Preserve donors/R0/failure; resume only after RAW block, with verified cross-host donor staging and reviewed recovery",
+      "next": "Retain the verified short CLOSE; complete the automatically launched long MG12m R0/R2 and its publication/mirror/CLOSE chain. Keep the original failure and short INNER-only donor qualification.",
       "progress": 48,
-      "state": "PARTIAL_MEASUREMENT",
+      "state": "R0_R2_CONTRAST_RUNNING",
       "title": "Pretrained branches: R0/R1/R2"
     },
     {
@@ -51,7 +51,7 @@
       "eta": "RAW matched block complete; follow-up unmeasured",
       "evidence": "RAW long MG12m/MG1l CLOSED: relative MAE +26.285134%/+47.377774%; zero eligible long heads. PAIR_NOT_ELIGIBLE with retained short 4/6/12 h. 112 reports read back, 61 files per mirror. No trading or TEST.",
       "id": "M6",
-      "next": "Retain negative RAW result; separately freeze capacity/window or cadence contrasts before further fitting. Do not restart deferred R2 implicitly.",
+      "next": "Retain negative RAW result; consume the explicitly owner-approved R0/R2 downsampled contrast before separately ruling cadence/capacity changes. No strategy on ineligible heads.",
       "progress": 24,
       "state": "PARTIAL_MEASUREMENT",
       "title": "Short/long forecasts + strategy",
