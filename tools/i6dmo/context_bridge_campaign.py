@@ -173,6 +173,8 @@ def run(config):
         spec["mirrors"]["second_host_path"] = str(Path(spec["roles"]["secondary"]["experiment_storage_root"]) /
                                                    "i6dmo-mirrors" / work.name)
         L.record(work, "replication", "RUNNING", completed=2, total=4)
+        input_rel = str(Path(config["input_dir"]).relative_to(Path(spec["roles"]["coordinator"]["data_root"])))
+        storage_preflight(spec, work, population_relpath=prepared["population_relpath"], input_relpath=input_rel)
         spec = L._provision(spec, prepared, code, reviewed_files=files)
         private = work / "deployment.json"
         atomic_json(private, spec, mode=0o600)
@@ -190,7 +192,18 @@ def run(config):
         return status(work)
 
 
-def storage_preflight(spec, work):
+def mount_fact(role, path):
+    """Read actual destination mount facts without creating a fallback directory."""
+    script = ("import json,pathlib,os,shutil,subprocess; p=pathlib.Path(" + repr(str(path)) + "); q=p; "
+              "\nwhile not q.exists() and q!=q.parent: q=q.parent"
+              "\nr=subprocess.run(['findmnt','-rn','-T',str(q),'-o','TARGET,FSTYPE,OPTIONS'],capture_output=True,text=True); "
+              "v=r.stdout.strip().split(); print(json.dumps(dict(exists=p.is_dir(),writable=os.access(q,os.W_OK),"
+              "free=shutil.disk_usage(q).free,target=v[0] if len(v)>2 else None,"
+              "fstype=v[1] if len(v)>2 else None,options=v[2] if len(v)>2 else 'ro')))" )
+    return json.loads(L._remote(role, ["python3", "-B", "-c", script], 30))
+
+
+def storage_preflight(spec, work, *, population_relpath=None, input_relpath=None):
     """Reject missing/unwritable storage and non-ext4 state before any large write."""
     from tools.i6dmo import storage as S
     state = S.probe_mount(work if work.exists() else work.parent)
@@ -202,13 +215,20 @@ def storage_preflight(spec, work):
     if result["returncode"]:
         raise ValueError("BRIDGE_STORAGE_NOT_READY")
     for name, role in spec["roles"].items():
-        path = role["experiment_storage_root"]
-        script = ("import json,pathlib,os,shutil; p=pathlib.Path(" + repr(path) + "); "
-                  "print(json.dumps(dict(exists=p.is_dir(),writable=os.access(p,os.W_OK),"
-                  "free=shutil.disk_usage(p).free if p.is_dir() else 0)))")
-        fact = json.loads(L._remote(role, ["python3", "-c", script], 30))
-        if not fact["exists"] or not fact["writable"] or fact["free"] < 6 * 1024 ** 3:
-            raise ValueError("BRIDGE_STORAGE_ROLE_NOT_READY:" + name)
+        for label, path, rel in (("storage", role["experiment_storage_root"], population_relpath),
+                                  ("input", role["data_root"], input_relpath)):
+            fact = mount_fact(role, path)
+            allowed = S.ALLOWED_FSTYPES if name == "coordinator" and label == "storage" else ("ext4",)
+            if not fact["exists"] or not fact["writable"] or fact["free"] < 6 * 1024 ** 3 \
+                    or fact["fstype"] not in allowed or "ro" in fact["options"].split(","):
+                raise ValueError("BRIDGE_MOUNT_NOT_READY:" + name + ":" + label)
+            if rel is not None:
+                dest = (Path(path) / rel).resolve()
+                if not dest.is_relative_to(Path(path).resolve()):
+                    raise ValueError("BRIDGE_DESTINATION_ESCAPE")
+                target = mount_fact(role, dest)
+                if not target["writable"] or (target["target"], target["fstype"]) != (fact["target"], fact["fstype"]):
+                    raise ValueError("BRIDGE_MOUNT_NOT_READY:" + name + ":" + label + ":destination")
     heavy = [g for g in spec["roles"]["preferred"].get("gpus", []) if g.get("heavy")]
     if len(heavy) != 1 or heavy[0].get("class") != "rtx5090":
         raise ValueError("BRIDGE_PREFERRED_MUST_BE_5090")
@@ -299,6 +319,13 @@ def stop_launcher(config):
         raise RuntimeError("BRIDGE_TIMER_STOP_FAILED")
 
 
+def retryable(exc):
+    """Transient admission/host/activation failures retry; identity failures stop."""
+    return type(exc).__name__ in ("TimeoutExpired", "ConnectionError", "TimeoutError") or \
+        str(exc).startswith(("BRIDGE_SYSTEMCTL_ACTIVATION_FAILED", "BRIDGE_STORAGE_NOT_READY",
+            "BRIDGE_MOUNT_NOT_READY", "BRIDGE_5090_HARDWARE_NOT_VISIBLE", "COMMAND_FAILED:ssh:rc=255"))
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("action", choices=("run", "install", "status", "prepare"))
@@ -316,10 +343,14 @@ def main():
         try:
             result = install(a.spec) if a.action == "install" else prepare(config) if a.action == "prepare" else run(config)
         except Exception as exc:
-            L.record(config["work_root"], "automation", "FAILED", error_type=type(exc).__name__, error=str(exc))
-            if a.action == "run":
-                stop_launcher(config)
-            raise
+            if a.action == "run" and retryable(exc):
+                result = L.record(config["work_root"], "automation", "WAIT_RESOURCE",
+                                  error_type=type(exc).__name__, error=str(exc), retry_seconds=60)
+            else:
+                L.record(config["work_root"], "automation", "FAILED", error_type=type(exc).__name__, error=str(exc))
+                if a.action == "run":
+                    stop_launcher(config)
+                raise
         if a.action == "run" and result.get("state") in ("CLOSED", "FAILED", "BLOCKED"):
             stop_launcher(config)
     print(json.dumps(result, sort_keys=True, default=str))

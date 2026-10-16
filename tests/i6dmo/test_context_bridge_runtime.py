@@ -130,3 +130,33 @@ def test_decision_requires_actual_equal_initial_weights_and_retains_control_tie(
     b["matched"]["initial_weights_sha256"] = "b" * 64
     with pytest.raises(R.ReportFailure, match="INITIAL_WEIGHTS"):
         R.decide_matched(a, b)
+
+
+@pytest.mark.parametrize("text", ["BRIDGE_SYSTEMCTL_ACTIVATION_FAILED", "COMMAND_FAILED:ssh:rc=255",
+    "BRIDGE_MOUNT_NOT_READY:secondary:input", "BRIDGE_5090_HARDWARE_NOT_VISIBLE"])
+def test_transient_deployment_errors_retry_without_disabling_timer(text):
+    from tools.i6dmo.context_bridge_campaign import retryable
+    assert retryable(RuntimeError(text))
+    assert not retryable(ValueError("BRIDGE_POPULATION_NOT_ACCEPTED"))
+    assert not retryable(ValueError("BRIDGE_DEPLOYMENT_DIGEST_MISMATCH"))
+
+
+def test_remote_input_destination_mount_gate_precedes_replication(tmp_path, monkeypatch):
+    from tools.i6dmo import context_bridge_campaign as B, storage
+    monkeypatch.setattr(storage, "probe_mount", lambda p: dict(fstype="ext4", writable=True))
+    monkeypatch.setattr(storage, "run_preflight", lambda *a: dict(returncode=0))
+    visited = []
+    def facts(role, path):
+        visited.append(str(path))
+        is_storage = str(path).startswith("/storage")
+        result = dict(exists=True, writable=True, free=100*1024**3, target="/mnt/storage" if is_storage else "/home",
+                      fstype="ntfs3" if is_storage else "ext4", options="rw")
+        if str(path) == "/data/inputs":
+            result["target"] = "/unexpected-mount"
+        return result
+    monkeypatch.setattr(B, "mount_fact", facts)
+    spec = dict(roles=dict(coordinator=dict(experiment_storage_root="/storage", data_root="/data")),
+                storage=dict(estimate_bytes=1, reserve_bytes=1))
+    with pytest.raises(ValueError, match="MOUNT_NOT_READY.*input:destination"):
+        B.storage_preflight(spec, tmp_path, population_relpath="population", input_relpath="inputs")
+    assert "/storage/population" in visited and "/data/inputs" in visited
