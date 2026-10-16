@@ -193,3 +193,47 @@ distinct from the 10 tests independently executed here.
 Freeze the accepted delta and refresh the release manifest and prospective
 long objective's review-document hash. All previously stated production
 runtime, custody and scientific execution qualifications remain mandatory.
+
+## Preflight Bytecode Fix Acceptance
+
+Verdict: **ACCEPT_FOR_RELEASE** for the one-line preflight delta. The owner
+reported a subsequent pre-fit production refusal: remote preflight created
+ignored bytecode in a freshly attested runtime, and the later strict runtime
+check correctly refused `RUNTIME_IMPORT_OVERRIDE`. This is a technical
+predeployment failure, not a scientific result. The production reproduction
+is owner evidence; no production probe or runtime cleanup was reviewer-run.
+
+Reviewed only `preflight.probe_role()` changing remote Python arguments from
+`[python, '-m', ...]` to `[python, '-B', '-m', ...]` and the three regressions
+in `tests/i6dmo/test_probe_no_bytecode.py`. Argument order is correct; other
+probe arguments, quoting, behavior and strict attestation are unchanged.
+
+Accepted SHA256:
+
+```text
+8cabe4e0f0f694b28e65fb647f6f37059c2a1a9046a4889462393cda983bb44d  tools/i6dmo/preflight.py
+5ac938816faad83176ea3676f4bbde4f5ec8107e90cfa5ded3efd7d6550d92dc  tests/i6dmo/test_probe_no_bytecode.py
+```
+
+Independent replay: hidden CUDA, bounded threads, disabled pytest plugin
+autoload, `crispdm-run -q -m 2G -t 180s`, and:
+
+```sh
+python -m pytest --noconftest -q -p no:cacheprovider --tb=short \
+tests/i6dmo/test_probe_no_bytecode.py
+```
+
+Result: **3 passed, 0.19 seconds**. Two cases check remote argv, strategy flag
+and a filename containing spaces. The actual subprocess case uses the real
+copied `probe_local` and common helper in a temporary module entrypoint,
+removes inherited bytecode environment flags, verifies TensorFlow was not
+imported, and verifies no pyc/cache directories or file byte/mtime changes.
+SSH transport and external health/service commands are intercepted. This is
+not a production SSH/GPU probe or a replay of the complete CLI import graph.
+
+No new P1 remains in this minimal delta. No broad tests, fits, deployments,
+service operations, runtime mutations or automatic monitoring were executed;
+all reviewer tool sessions completed. Freeze this source, update the release
+and review-document hashes, and use a new prospective work root/identity.
+Do not hotpatch or relax attestation for the failed pre-fit attempt. Earlier
+scope limits and all production runtime/custody/admission gates still apply.
