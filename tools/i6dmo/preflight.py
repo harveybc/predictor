@@ -153,7 +153,7 @@ def probe_role(spec, role, *, files=(), check_strategy=None, run=subprocess.run)
     if not role_spec.get("ssh_alias"):
         return probe_local(run_root=role_spec.get("run_root"), data_root=role_spec.get("data_root"), files=files,
                            check_strategy=check_strategy, run=run)
-    args = [role_spec["python"], "-m", "tools.i6dmo", "probe", "--json", "--run-root", role_spec["run_root"],
+    args = [role_spec["python"], "-B", "-m", "tools.i6dmo", "probe", "--json", "--run-root", role_spec["run_root"],
             "--data-root", role_spec.get("data_root") or ""]
     for rel in files:
         args += ["--file", rel]
