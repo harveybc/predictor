@@ -653,6 +653,15 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
         if problems:
             raise ReportFailure("MANUAL_REPLAY_DISAGREES", "; ".join(problems))
         selection = selection_score(result["per_horizon"], horizons)
+        bridge_initial = None
+        if arm in ("mg12c", "mg2l"):
+            stored_path = Path(spec["upstream"][_fit_key(spec)]["path"])
+            stored = json.loads(stored_path.read_text())
+            art = stored["terminal"]["artifacts"]["TRAINING.json"]
+            training_path = stored_path.parent / "out" / art["path"]
+            if _sha(training_path) != art["sha256"]:
+                raise ReportFailure("BRIDGE_TRAINING_DIGEST", "training receipt differs")
+            bridge_initial = json.loads(training_path.read_text())["initial_weights_sha256"]
     except ReportFailure as exc:
         return _failed(exc.code, exc, started)
     except Exception as exc:  # typed errors from other lanes keep their code
@@ -674,6 +683,8 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
                    "same_rows": "model and naive per horizon on identical common rows, common "
                                 "mask and original-price units; C2, saved-prediction replay "
                                 "and disk naive replay agree"}
+    if bridge_initial is not None:
+        matched_doc["initial_weights_sha256"] = bridge_initial
     _atomic(out / "METRICS.json", dict(result, matched=matched_doc, predictions_sha256=pred_sha))
     import shutil
     shutil.copyfile(pred_doc_path(spec), out / "validation_predictions.npz")
@@ -736,6 +747,11 @@ def decide_matched(mg1_metrics, mg2_metrics, *, require_scientific=True):
     control, downsampled = profile["arms"]
     if a.get("arm") != control or b.get("arm") != downsampled:
         raise ReportFailure("ARM_DESIGN_MISMATCH", "control/reference order differs")
+    if profile.get("context_bridge"):
+        initial = a.get("initial_weights_sha256")
+        if not isinstance(initial, str) or len(initial) != 64 or any(c not in "0123456789abcdef" for c in initial) \
+                or b.get("initial_weights_sha256") != initial:
+            raise ReportFailure("BRIDGE_INITIAL_WEIGHTS_MISMATCH", "matched R0 initialization must agree")
     selections = None
     if profile["family"] == "long":
         if any(not isinstance(block.get("selection"), dict) or

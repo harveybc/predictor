@@ -130,7 +130,8 @@ def prepare(config):
 
 def run(config):
     config = validate_config(config)
-    files = release()["code_files"]
+    accepted = release()
+    files = accepted["code_files"]
     work = Path(config["work_root"])
     work.mkdir(parents=True, exist_ok=True, mode=0o700)
     with (work / "launch.lock").open("a+") as lock:
@@ -142,6 +143,7 @@ def run(config):
             deployment = C.load_deployment(campaign)  # checks sealed deployment digest
             if saved["launch_config"] != config or set(effective["arms"]) != set(MR.CONTEXT_BRIDGE_ARMS) \
                     or file_sha256(config["source_deployment"]) != saved["binding"]["source_deployment_sha256"] \
+                    or saved["population_digest"] != accepted["population_digest"] \
                     or effective["data_pins"]["common_population"]["population_sha256"] != saved["population_digest"]:
                 raise ValueError("BRIDGE_RESUME_IDENTITY")
             state = status(work)
@@ -155,6 +157,8 @@ def run(config):
             raise ValueError("SOURCE_NOT_FROZEN")
         code = C._git_head()
         prepared = prepare(config)
+        if prepared["population_digest"] != accepted["population_digest"]:
+            raise ValueError("BRIDGE_POPULATION_NOT_ACCEPTED")
         spec = copy.deepcopy(json.loads(Path(config["source_deployment"]).read_text()))
         spec["context_bridge"] = dict(required_gpu_class="rtx5090")
         spec["launcher"]["initial_cap_bytes"] = 4 * 1024 ** 3

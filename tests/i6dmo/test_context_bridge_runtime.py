@@ -116,3 +116,17 @@ def test_missing_storage_refused_before_remote_or_population_write(tmp_path, mon
                 storage=dict(estimate_bytes=1, reserve_bytes=1))
     with pytest.raises(ValueError, match="STORAGE_NOT_READY"):
         B.storage_preflight(spec, tmp_path)
+
+
+def test_decision_requires_actual_equal_initial_weights_and_retains_control_tie(monkeypatch):
+    from tests.i6dmo.test_raw_long_operations import _metrics
+    from tools.i6dmo import reporting as R, model as M
+    monkeypatch.setattr(M, "matched_capacity_delta", lambda a, b: dict(total=0, heads=0))
+    a, b = _metrics("mg12c", -.01), _metrics("mg2l", -.01)
+    for m in (a, b):
+        m["matched"]["initial_weights_sha256"] = "a" * 64
+    verdict = R.decide_matched(a, b)
+    assert verdict["decision"] == "TIE_RETAIN_CONTROL" and verdict["selected"] == "mg12c"
+    b["matched"]["initial_weights_sha256"] = "b" * 64
+    with pytest.raises(R.ReportFailure, match="INITIAL_WEIGHTS"):
+        R.decide_matched(a, b)
