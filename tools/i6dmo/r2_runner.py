@@ -118,9 +118,32 @@ def _metric(name, value, unit, split="train", horizon=None):
 
 
 def _terminal(spec, status, disposition, *, artifacts=None, reports=None, costs=None, extra=None, gates=None):
+    if spec.get("kind") == "pretrain":
+        costs = dict(costs or {})
+        if "cgroup_peak_bytes" not in costs:
+            costs.update(pretrain_memory_cost())
     return dict(schema="i6dmo.terminal.v1", unit_id=spec.get("unit_id"), identity_sha256=spec.get("identity_sha256"),
                 status=status, disposition=disposition, artifacts=artifacts or {}, eligibility={}, gates=gates or {},
                 reports=reports or [], costs=costs or {}, **(extra or {}))
+
+
+def pretrain_memory_cost(proc_cgroup=Path("/proc/self/cgroup"), cgroup_root=Path("/sys/fs/cgroup")):
+    """Read cgroup-v2 full-subtree high-water bytes; never substitute RSS, reset or trim it."""
+    try:
+        relative = next(line.split(":", 2)[2] for line in Path(proc_cgroup).read_text().splitlines()
+                        if line.startswith("0::"))
+        root = Path(cgroup_root).resolve()
+        group = (root / relative.lstrip("/")).resolve()
+        if not group.is_relative_to(root):
+            raise ValueError("cgroup escapes hierarchy")
+        peak = int((group / "memory.peak").read_text().strip())
+        if peak <= 0:
+            raise ValueError("nonpositive cgroup peak")
+        return dict(cgroup_peak_bytes=peak, cgroup_peak_state="MEASURED",
+                    cgroup_peak_source="cgroup_v2.memory.peak:full_subtree_high_water_bytes")
+    except (OSError, StopIteration, ValueError):
+        return dict(cgroup_peak_bytes=None, cgroup_peak_state="UNAVAILABLE",
+                    cgroup_peak_source="cgroup_v2.memory.peak:unavailable_not_replaced_by_RSS")
 
 
 # --------------------------------------------------------------------- pretraining unit
@@ -205,16 +228,17 @@ def run_pretrain(spec, out_dir, progress_path):
         if isinstance(value, (int, float)) and not isinstance(value, bool):
             recon_metrics.append(_metric(f"Reconstruction_{key}", value, "z", "inner"))
     costs = dict(fit_seconds=fit_seconds, wall_seconds=time.time() - started, score_seconds=0.0,
-                 cgroup_peak_bytes=None, updates=fit.get("observed_updates"))
+                 **pretrain_memory_cost(), updates=fit.get("observed_updates"))
     reports = [
         _report(spec, "pretrain_loss", loss_metrics, {"fact": "r2.pretraining.loss_curve", "feature": feature}),
         _report(spec, "reconstruction", recon_metrics or [_metric("Reconstruction_Reported", 0, "bool", "inner")],
                 {"fact": "r2.pretraining.reconstruction", "feature": feature, "use": "REPORT_ONLY_NEVER_SELECTS",
                  "state": str(recon.get("state"))}),
         _report(spec, "compute", [_metric("Pretrain_Fit_Seconds", fit_seconds, "seconds"),
-                                  _metric("Pretrain_Updates", fit.get("observed_updates"), "count")],
+                                  _metric("Pretrain_Updates", fit.get("observed_updates"), "count"),
+                                  _metric("Pretrain_Cgroup_Peak_Bytes", costs["cgroup_peak_bytes"], "bytes")],
                 {"fact": "r2.pretraining.compute_cost", "feature": feature, "device": device,
-                 "device_class": str(device_class)})]
+                 "device_class": str(device_class), "cgroup_peak_state": costs["cgroup_peak_state"]})]
     _progress(progress_path, 4, 4, "done")
     return _terminal(spec, "COMPLETE", "DONOR_WRITTEN", artifacts=artifacts, reports=reports, costs=costs,
                      extra=dict(feature=feature, feature_index=index, applied_seed=pretrained["applied_seed"],
@@ -378,6 +402,16 @@ def run_comparison(spec, out_dir, progress_path):
             up = (spec.get("upstream") or {}).get(unit_id)
             if up:
                 metrics[regime], inputs[unit_id] = MR._authenticated_report(unit_id, up, expected)
+                if (metrics[regime].get("matched") or {}).get("arm") == "mg12m" or \
+                        (view.get("r2") or {}).get("strict_reports") is True:
+                    from tools.i6dmo import strategy_adapter as SA, reporting as REPORT
+                    _, _, child = SA._authenticated_stored(unit_id, up)
+                    try:
+                        arm = metrics[regime]["matched"]["arm"]
+                        heads = MR.LONG_HORIZONS if arm == "mg12m" else MR.HORIZONS
+                        REPORT.validate_matched_report(metrics[regime], horizons=heads, arm=arm, child=child)
+                    except REPORT.ReportFailure as exc:
+                        raise MR._Refusal(f"{exc.code}:{str(exc)}") from None
         record = _import_record(spec)
         if len(metrics) < 2 or record is None:
             verdict = dict(schema="i6dmo.r2_decision.v1", decision="INCOMPLETE_COMPARISON", selected=None,
@@ -386,7 +420,8 @@ def run_comparison(spec, out_dir, progress_path):
         else:
             try:
                 verdict = R2.decide_r2(metrics["R0"], metrics["R2"], r2_import_record=record,
-                                       require_scientific=require)
+                                       require_scientific=require,
+                                       **({"strict_reports": True} if (view.get("r2") or {}).get("strict_reports") is True else {}))
             except R2.R2DesignError as exc:
                 raise MR._Refusal(f"{exc.code}:{str(exc).split(': ', 1)[-1][:120]}") from None
         disposition = disposition_of(verdict)
@@ -441,8 +476,8 @@ def _contract(path=None):
     doc = json.loads(path.read_text())
     try:
         R2.validate_r2_design(doc, for_execution=True)
-    except R2.R2DesignError as exc:
-        raise MR.PrepareRefused(f"R2_CONTRACT_NOT_EXECUTABLE:{exc.code}") from None
+    except (R2.R2DesignError, R2.D.DesignError, OSError, KeyError) as exc:
+        raise MR.PrepareRefused(f"R2_CONTRACT_NOT_EXECUTABLE:{getattr(exc, 'code', type(exc).__name__)}") from None
     return path, doc
 
 
@@ -450,7 +485,10 @@ def _bind(contract, matched_doc):
     """Scientific binding: the prepared mg2m design, population and runtime are the ruled contract's."""
     from tools.i6dmo import matched_runner as MR
     shared = contract["shared"]
-    design = matched_doc["designs"]["mg2m"]
+    arm = shared["arm"]
+    if arm not in ("mg2m", "mg12m") or arm not in matched_doc.get("designs", {}):
+        raise MR.PrepareRefused("R2_CONTRACT_BINDING:arm")
+    design = matched_doc["designs"][arm]
     problems = [name for name, ok in (
         ("design_seal", design["seal_sha256"] == shared["experiment_seal_sha256"]),
         ("population", matched_doc["data_pins"]["common_population"]["population_sha256"]
@@ -461,7 +499,8 @@ def _bind(contract, matched_doc):
 
 
 def prepare(*, deployment, input_dir, out, role="coordinator", contract=None, mg2m_design=None,
-            population_seal=None, population_dir=None, test=False, probe=None, env=None):
+            population_seal=None, population_dir=None, test=False, probe=None, env=None,
+            arm=None, arm_design=None):
     """``r2 prepare``: the matched preparation (pins by path, population verified, memory/disk, no
     TEST) plus the RULED R2 contract and its binding. Writes ``<out>`` and its matched companion
     ``<out>.matched.json`` (both private, 0600). The R0 reference is always fitted fresh here."""
@@ -469,11 +508,27 @@ def prepare(*, deployment, input_dir, out, role="coordinator", contract=None, mg
     if test:
         raise MR.PrepareRefused("TEST_REQUEST: the R2 contrast has no TEST stage (R2-12)")
     contract_path, doc = _contract(contract)
+    selected = doc["shared"]["arm"]
+    if arm is not None and arm != selected or selected == "mg12m" and mg2m_design is not None:
+        raise MR.PrepareRefused("R2_CONTRACT_BINDING:arm")
+    selected_path = arm_design or mg2m_design
+    if selected == "mg12m" and selected_path is None:
+        from tools.i6dmo import r2_design as R2
+        selected_path = R2.source_dir(selected) / f"EXPERIMENT.{selected}.json"
+    if selected == "mg12m" and population_seal is None:
+        from tools.i6dmo import r2_design as R2
+        population_seal = R2.source_dir(selected) / "POPULATION_SEAL.json"
+    designs = None
+    if selected_path:
+        pair = MR.ARMS if selected == "mg2m" else MR.LONG_ARMS
+        original = MR.MATCHED_DIR if selected == "mg2m" else MR.MATCHED_DIR.parent / "matched_long"
+        designs = {a: selected_path if a == selected else original / f"EXPERIMENT.{a}.json" for a in pair}
     out = Path(out).resolve()
     companion = out.with_name(out.name + ".matched.json")
     matched = MR.prepare(deployment=deployment, input_dir=input_dir, out=companion, role=role,
-                         designs={"mg2m": mg2m_design} if mg2m_design else None, population_seal=population_seal,
-                         population_dir=population_dir, prior_roots=(), test=False, probe=probe, env=env)
+                         designs=designs, population_seal=population_seal,
+                         population_dir=population_dir, prior_roots=(), test=False, probe=probe, env=env,
+                         **({"long": True} if selected == "mg12m" else {}))
     _bind(doc, matched)
     prepared = dict(schema=R2_PREPARED_SCHEMA, matched=dict(path=str(companion), sha256=_sha(companion)),
                     contract=dict(path=str(contract_path.resolve()), sha256=_sha(contract_path),
@@ -504,9 +559,14 @@ def validate(prepared_path):
     matched = MR.validate(doc["matched"]["path"])
     _, contract = _contract(doc["contract"]["path"])
     _bind(contract, json.loads(Path(doc["matched"]["path"]).read_text()))
-    return dict(state="VALID", contract_seal_sha256=contract["seal_sha256"], mg2m_design=matched["designs"]["mg2m"],
-                runtime=matched["runtime"]["mg2m"], common_population_sha256=matched["common_population_sha256"],
-                r0_policy=doc["r0_policy"])
+    arm = contract["shared"]["arm"]
+    result = dict(state="VALID", contract_seal_sha256=contract["seal_sha256"],
+                  runtime=matched["runtime"][arm], common_population_sha256=matched["common_population_sha256"],
+                  r0_policy=doc["r0_policy"])
+    result["mg2m_design" if arm == "mg2m" else "mg12m_design"] = matched["designs"][arm]
+    if arm == "mg12m":
+        result["arm"] = arm
+    return result
 
 
 def preflight(prepared_path, out_dir, *, probe=None):
@@ -524,5 +584,7 @@ def init(prepared_path, root, *, code_commit=None, entrypoints=None):
     validate(prepared_path)
     doc = _load_prepared(prepared_path)
     matched = json.loads(Path(doc["matched"]["path"]).read_text())
-    return C.init_r2_contrast(doc["contract"]["path"], matched["designs"]["mg2m"]["path"], matched["deployment"],
+    _, contract = _contract(doc["contract"]["path"])
+    arm = contract["shared"]["arm"]
+    return C.init_r2_contrast(doc["contract"]["path"], matched["designs"][arm]["path"], matched["deployment"],
                               root, code_commit=code_commit, data_pins=matched["data_pins"], entrypoints=entrypoints)

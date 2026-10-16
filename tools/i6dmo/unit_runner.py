@@ -268,6 +268,12 @@ def main(argv=None):
     if spec.get("test_open") and args.kind != "final_test":
         print("TEST_OPEN_OUTSIDE_FINAL_TEST", file=sys.stderr)
         return 2
+    if spec.get("r2_donors") is not None or spec.get("r2_staging") is not None:
+        from tools.i6dmo import donor_transport
+        try:
+            spec = donor_transport.resolve(spec, Path(args.spec).parent)
+        except donor_transport.TransportError as exc:
+            return _terminal(spec, args.out, "FAILED", str(exc), {}, {}, [])
     if args.kind in FIT_KINDS:
         return run_fit(spec, args.out, args.progress)
     return run_hook(args.kind, spec, args.out, args.progress)

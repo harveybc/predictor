@@ -7,6 +7,21 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Continuacion aprobada por el propietario, 2026-10-15: tras cerrar el bloque
+RAW, ejecutar R0 frente a R2 sobre las recetas downsampled seleccionadas,
+primero corto MG2m y despues largo MG12m, todavia sin reajustes durante el ano.
+Recuperar los 19 donantes cortos compatibles con su identidad original,
+corregir el transporte y verificar los bytes en el host consumidor; no repetir
+preentrenamientos completados. Los donantes largos son propios de su contexto
+y usan el promedio FIT/INNER para parada; los cortos heredados conservan su
+calificacion INNER-only. No es preentrenamiento del nucleo. El flujo automatico
+y las compuertas se detallan en
+[r2_downsampled/PLAN.md](../i6n/direct_multi_output_static/r2_downsampled/PLAN.md).
+El contraste trimestral contra estatico queda despues, con receta fija;
+mensual y semanal requieren su estudio separado de beneficio y coste. Las
+prohibiciones anteriores de iniciar R2 solo rigen la etapa RAW ya cerrada,
+no esta continuacion expresamente aprobada. TEST sigue cerrado.
+
 Rectificacion del propietario, 2026-10-15, posterior al lanzamiento R2:
 Musashi asume la ejecucion; no se delega trabajo nuevo a Satoshi. La prioridad
 es terminar la evaluacion RAW direct multi-output de las dos familias, primero

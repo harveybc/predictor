@@ -990,6 +990,96 @@ def _objective_fit_settings(objective):
                                "min_delta", "max_updates", "max_seconds")}
 
 
+def fit_branch_mean_monitor(model, fit_windows, selection_windows, settings, *, loss="mse"):
+    """Versioned O1 orchestration: evaluate FIT/INNER at identical end-of-epoch weights."""
+    import time
+    from predictor_plugins.modular_temporal import objectives as O
+    from tools.i6dmo.r2_design import MEAN_MONITOR_VERSION
+    s = O._settings(settings)
+    x, vx = np.asarray(fit_windows), np.asarray(selection_windows)
+    if x.ndim != 3 or vx.ndim != 3 or x.shape[1:] != vx.shape[1:] or not len(x) or not len(vx) or \
+            not np.isfinite(x).all() or not np.isfinite(vx).all() or loss not in ("mse", "mae"):
+        raise DonorImportError("R2_PRETRAINING_INPUT", "finite nonempty matching FIT/INNER windows required")
+    model.compile(optimizer=keras.optimizers.AdamW(learning_rate=s["learning_rate"],
+                  weight_decay=s["weight_decay"]), loss=loss)
+    started = time.monotonic()
+    updates, stale, best_epoch, selected_updates = 0, 0, 0, 0
+    best, weights, history, selected_inner = math.inf, None, [], None
+    initial_updates = int(model.optimizer.iterations.numpy())
+    rng = np.random.default_rng(s["seed"])
+
+    def budget():
+        if updates >= s["max_updates"] or time.monotonic() - started >= s["max_seconds"]:
+            raise DonorImportError("R2_PRETRAINING_BUDGET_STOP", "hard update/time budget; no donor selected")
+
+    def evaluate(values):
+        sums, absolute, count = [], [], 0
+        for start in range(0, len(values), s["batch_size"]):
+            budget()
+            batch = values[start:start + s["batch_size"]]
+            pred = np.asarray(model(batch, training=False), dtype=np.float64)
+            if pred.shape != batch.shape or not np.isfinite(pred).all():
+                raise DonorImportError("R2_PRETRAINING_NONFINITE", "invalid reconstruction")
+            error = pred - batch
+            sums.append(float(np.square(error).sum(dtype=np.float64)))
+            absolute.append(float(np.abs(error).sum(dtype=np.float64)))
+            count += error.size
+        return dict(mse_z=math.fsum(sums) / count, mae_z=math.fsum(absolute) / count)
+
+    stop = "max_epochs"
+    for epoch in range(1, s["max_epochs"] + 1):
+        order = rng.permutation(len(x))
+        for start in range(0, len(x), s["batch_size"]):
+            budget()
+            batch = x[order[start:start + s["batch_size"]]]
+            model.reset_metrics()
+            before = int(model.optimizer.iterations.numpy())
+            value = model.train_on_batch(batch, batch)
+            if not np.isfinite(np.asarray(value)).all():
+                raise DonorImportError("R2_PRETRAINING_NONFINITE", "invalid update loss")
+            delta = int(model.optimizer.iterations.numpy()) - before
+            if delta != 1:
+                raise DonorImportError("R2_PRETRAINING_UPDATES", "expected one actual optimizer update")
+            updates += delta
+        digest = _array_digests(model.get_weights())
+        fit, inner = evaluate(x), evaluate(vx)
+        if digest != _array_digests(model.get_weights()):
+            raise DonorImportError("R2_MONITOR_WEIGHT_CHANGE", "inference monitor changed weights")
+        key = "mse_z" if loss == "mse" else "mae_z"
+        monitored = .5 * (fit[key] + inner[key])
+        if not math.isfinite(monitored):
+            raise DonorImportError("R2_PRETRAINING_NONFINITE", "nonfinite end-of-epoch mean")
+        history.append(dict(epoch=epoch, train_loss=fit[key], validation_loss=inner[key],
+                            monitored_loss=monitored, updates=updates, weights_sha256=_sha_arrays(model.get_weights())))
+        if monitored < best - s["min_delta"]:
+            best, best_epoch, stale, selected_updates = monitored, epoch, 0, updates
+            selected_inner = inner[key]
+            weights = [np.array(w, copy=True) for w in model.get_weights()]
+        else:
+            stale += 1
+        budget()
+        if stale >= s["patience"]:
+            stop = "patience"
+            break
+    if weights is None:
+        raise DonorImportError("R2_PRETRAINING_NO_CHECKPOINT", "no complete monitored epoch")
+    model.set_weights(weights)
+    if _array_digests(model.get_weights()) != _array_digests(weights):
+        raise DonorImportError("R2_RESTORE_MISMATCH", "best weights did not restore")
+    if int(model.optimizer.iterations.numpy()) - initial_updates != updates:
+        raise DonorImportError("R2_PRETRAINING_UPDATES", "optimizer updates changed outside training")
+    reconstruction = dict(state="MEASURED", fit=evaluate(x), inner=evaluate(vx))
+    return dict(selected_epoch=best_epoch, selected_updates=selected_updates, observed_updates=updates,
+                best_validation_loss=selected_inner, best_monitored_loss=best, stop_reason=stop,
+                stop_class="no_improvement" if stop == "patience" else "max_epochs",
+                monitor_version=MEAN_MONITOR_VERSION, restored_best_weights=True,
+                elapsed_seconds=time.monotonic() - started, history=history, reconstruction=reconstruction)
+
+
+def _sha_arrays(values):
+    return hashlib.sha256(_canonical(_array_digests(values)).encode()).hexdigest()
+
+
 def pretrain_branch(bundle, feature, fit_windows, selection_windows, objective):
     """ONE pretraining unit body: the ruled registered objective trains this branch IN PLACE.
 
@@ -1009,15 +1099,29 @@ def pretrain_branch(bundle, feature, fit_windows, selection_windows, objective):
     branch.trainable = True
     seed = r2_seed(index)
     keras.utils.set_random_seed(seed)                       # immediately before the AE is built
-    result = cls(identity["params"]).fit(branch, fit_windows, selection_windows, settings)
+    fs = objective["fit_settings"]
+    if market_family(bundle.config) == "long_mg12" and "monitor_version" not in fs:
+        raise DonorImportError("R2_OBJECTIVE_UNKNOWN", "new long pretraining requires the versioned mean monitor")
+    if "monitor_version" in fs:
+        from tools.i6dmo.r2_design import MEAN_MONITOR, MEAN_MONITOR_VERSION
+        if fs["monitor_version"] != MEAN_MONITOR_VERSION or fs.get("monitor") != MEAN_MONITOR or \
+                market_family(bundle.config) != "long_mg12" or objective["name"] != "autoencoder_reconstruction":
+            raise DonorImportError("R2_OBJECTIVE_UNKNOWN", "unsupported versioned branch monitor")
+        from predictor_plugins.modular_temporal.pretraining import build_autoencoder
+        ae = build_autoencoder(branch, channels=identity["params"]["decoder_channels"])
+        result = fit_branch_mean_monitor(ae, fit_windows, selection_windows, settings, loss=identity["params"]["loss"])
+    else:
+        result = cls(identity["params"]).fit(branch, fit_windows, selection_windows, settings)
     if result.get("stop_reason") in R2_BUDGET_STOPS:
         raise DonorImportError("R2_PRETRAINING_BUDGET_STOP",
                                f"{feature}: stopped by {result.get('stop_reason')}; no donor selected")
+    fit = {k: result.get(k) for k in ("selected_epoch", "selected_updates", "observed_updates",
+                                    "best_validation_loss", "stop_reason", "stop_class", "elapsed_seconds", "history")}
+    if "monitor_version" in result:
+        fit.update({k: result[k] for k in ("monitor_version", "best_monitored_loss", "restored_best_weights")})
     return {"applied_seed": seed, "objective_identity": identity,
             "weights": [np.array(w) for w in branch.get_weights()],
-            "fit": {k: result.get(k) for k in ("selected_epoch", "selected_updates", "observed_updates",
-                                               "best_validation_loss", "stop_reason", "stop_class",
-                                               "elapsed_seconds", "history")},
+            "fit": fit,
             "reconstruction": result.get("reconstruction")}
 
 

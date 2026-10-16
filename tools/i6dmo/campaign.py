@@ -590,13 +590,19 @@ def _family_sha(effective, family):
     if family == "raw_pair":
         return sha256_json(dict(raw_pair=effective["raw_pair"], comparison=_family_sha(effective, "comparison")))
     if family == "r2_pretrain":
-        return sha256_json(dict(arm=_family_sha(effective, "mg2m"), objective=effective["r2"]["objective"],
-                                contract=effective["r2"]["contract_seal_sha256"]))
+        identity = dict(arm=_family_sha(effective, r2_arm(effective)), objective=effective["r2"]["objective"],
+                        contract=effective["r2"]["contract_seal_sha256"])
+        if effective["r2"].get("donor_recovery"):
+            identity["donor_recovery"] = effective["r2"]["donor_recovery"]
+        return sha256_json(identity)
     if family in ("r2_R0", "r2_R2"):
-        return sha256_json(dict(arm=_family_sha(effective, "mg2m"), regime=family[3:],
-                                contract=effective["r2"]["contract_seal_sha256"]))
+        identity = dict(arm=_family_sha(effective, r2_arm(effective)), regime=family[3:],
+                        contract=effective["r2"]["contract_seal_sha256"])
+        if family == "r2_R2" and effective["r2"].get("donor_recovery"):
+            identity["donor_recovery"] = effective["r2"]["donor_recovery"]
+        return sha256_json(identity)
     if family == "r2_comparison":
-        return sha256_json(dict(arm=_family_sha(effective, "mg2m"), rule=effective["comparison"],
+        return sha256_json(dict(arm=_family_sha(effective, r2_arm(effective)), rule=effective["comparison"],
                                 contract=effective["r2"]["contract_seal_sha256"]))
     if family in (effective.get("arms") or {}):
         entry = effective["arms"][family]
@@ -728,8 +734,12 @@ R2_DEFAULT_CLASS_CAPS = {
 }
 
 
+def r2_arm(effective):
+    return (effective.get("r2") or {}).get("selected_arm", "mg2m")
+
+
 def r2_features(effective):
-    return list(effective["arms"]["mg2m"]["adapter_effective"]["feature_manifest"]["features"])
+    return list(effective["arms"][r2_arm(effective)]["adapter_effective"]["feature_manifest"]["features"])
 
 
 def r2_pretrain_unit_id(index):
@@ -739,13 +749,15 @@ def r2_pretrain_unit_id(index):
 def _r2_units(effective):
     """19 pretraining units -> r2.fit; r0.fit; reports; r2.probe (report only); comparison."""
     st = R2_STAGES
-    w = _windows(effective["arms"]["mg2m"]["design"])
+    arm = r2_arm(effective)
+    family = "long" if arm == "mg12m" else "short"
+    w = _windows(effective["arms"][arm]["design"])
     device = effective.get("fit_device", "gpu")
     units, upstream = [], {}
 
     def add(unit_id, family, kind, stage, dev, deps, sha, **extra):
         unit = _base(unit_id, family, kind, stage, dev, deps, w, calls_fit=kind in ("fit", "pretrain"))
-        unit.update(arm="mg2m", **extra)
+        unit.update(arm=arm, **extra)
         _identify(unit, effective, sha, [upstream[d] for d in deps])
         upstream[unit_id] = unit["identity_sha256"]
         unit["_state"] = "QUEUED" if not deps else "WAIT_DEPENDENCY"
@@ -754,18 +766,26 @@ def _r2_units(effective):
     pretrain = []
     for index, feature in enumerate(r2_features(effective)):
         uid = r2_pretrain_unit_id(index)
-        add(uid, "short", "pretrain", st[0], device, [], _family_sha(effective, "r2_pretrain"),
+        add(uid, family, "pretrain", st[0], device, [], _family_sha(effective, "r2_pretrain"),
             feature=feature, feature_index=index, regime="R2_PRETRAIN", resource_class=R2_PRETRAIN_CLASS)
+        recovered = (effective["r2"].get("recovered_unit_specs") or {}).get(feature)
+        if recovered is not None:
+            # Reused donors keep their original scientific identity, not the successor's code pin.
+            import copy
+            old = copy.deepcopy(recovered)
+            old.update(execution_policy="ADOPT_ONLY", _state="WAIT_ARTIFACT")
+            units[-1] = old
+            upstream[uid] = old["identity_sha256"]
         pretrain.append(uid)
     # C1: both fits carry the sealed GPU class; the worker holds them for it (FIT_GPU_CLASS_HOLD)
     gpu_class = effective.get("fit_gpu_class")
-    add("r0.fit", "short", "fit", st[1], device, [], _family_sha(effective, "r2_R0"),
+    add("r0.fit", family, "fit", st[1], device, [], _family_sha(effective, "r2_R0"),
         regime="R0", resource_class=R2_FIT_CLASS["R0"], gpu_class=gpu_class)
-    add("r2.fit", "short", "fit", st[1], device, pretrain, _family_sha(effective, "r2_R2"),
+    add("r2.fit", family, "fit", st[1], device, pretrain, _family_sha(effective, "r2_R2"),
         regime="R2", resource_class=R2_FIT_CLASS["R2"], gpu_class=gpu_class)
-    add("r0.report", "short", "report", st[2], "cpu", ["r0.fit"], _family_sha(effective, "r2_R0"), regime="R0")
-    add("r2.report", "short", "report", st[2], "cpu", ["r2.fit"], _family_sha(effective, "r2_R2"), regime="R2")
-    add("r2.probe", "short", "evaluation", st[2], "cpu", pretrain, _family_sha(effective, "r2_pretrain"),
+    add("r0.report", family, "report", st[2], "cpu", ["r0.fit"], _family_sha(effective, "r2_R0"), regime="R0")
+    add("r2.report", family, "report", st[2], "cpu", ["r2.fit"], _family_sha(effective, "r2_R2"), regime="R2")
+    add("r2.probe", family, "evaluation", st[2], "cpu", pretrain, _family_sha(effective, "r2_pretrain"),
         regime="R2_PROBE")
     add("comparison", "comparison", "comparison", st[3], "cpu", ["r0.report", "r2.report", "r2.fit"],
         _family_sha(effective, "r2_comparison"), regime="DECISION")
@@ -775,6 +795,9 @@ def _r2_units(effective):
 def r2_provenance(effective, plan):
     """The campaign provenance every donor binds (model.R2_PROVENANCE_KEYS minus the corpus, which
     the consumer recomputes from the authenticated population)."""
+    if effective["r2"].get("recovered_donor_provenance") is not None:
+        import copy
+        return copy.deepcopy(effective["r2"]["recovered_donor_provenance"])
     return {"campaign_id": plan["campaign_id"], "ruling_seal_sha256": effective["r2"]["contract_seal_sha256"],
             "code_pin": effective["code_commit"],
             "units": {f: r2_pretrain_unit_id(i) for i, f in enumerate(r2_features(effective))}}
@@ -796,9 +819,32 @@ def r2_donor_references(root, q, effective):
     return refs
 
 
+def _enqueue_recovery_report(root, plan, effective, recovery):
+    from tools.i6dmo.outbox import Outbox
+    campaign_id = plan["campaign_id"]
+    r2_fit = next(u for u in plan["units"] if u["unit_id"] == "r2.fit")
+    report = dict(experiment_key=f"i6dmo:{campaign_id}:donor_recovery",
+        experiment_set_key=f"i6dmo:{campaign_id}", actor="predictor", lake="LOCAL_RETAINED",
+        lineage="UNVERIFIED", config_sha256=r2_fit["identity_sha256"],
+        code_commit=effective["code_commit"], project="predictor", phase="I6DMO",
+        tags=dict(fact="r2.donor_recovery", test_read="false", no_new_pretraining="true",
+                  source_campaign=recovery["source"]["campaign_id"],
+                  recovery_manifest_sha256=recovery["manifest_sha256"],
+                  legacy_pretraining_monitor="INNER_ONLY_UNCHANGED"),
+        metrics=[dict(metric="Reused_Branch_Donors", value=len(recovery["donors"]),
+                      split="train", horizon=None, unit="count"),
+                 dict(metric="New_Short_Pretraining_Fits", value=0,
+                      split="train", horizon=None, unit="count")])
+    box = Outbox(Path(root) / "state/outbox.sqlite3")
+    try:
+        box.enqueue(report, source_unit="r2.fit")
+    finally:
+        box.close()
+
+
 def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=None, code_commit=None, data_pins=None,
                      entrypoints=None, engineering_cpu_fixture=False, engineering_objective_overrides=None,
-                     class_caps=None, r0_reuse=None):
+                     class_caps=None, r0_reuse=None, donor_recovery=None):
     """Seal the R0-versus-R2 contrast from the RULED contract and enumerate its finite graph.
 
     Scientific campaigns bind the contract exactly (the mg2m design seal, the population digest and
@@ -817,14 +863,17 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
     except R2.R2DesignError as exc:
         raise Refused(f"{exc.code}: {str(exc)[:160]}") from None
     design = json.loads(Path(design_path).read_text())
+    arm = contract["shared"].get("arm", "mg2m")
+    if arm not in ("mg2m", "mg12m"):
+        raise Refused("R2_ARM_CHANGE: only selected downsampled short or long")
     if design.get("splits", {}).get("test", {}).get("open") is not False:
         raise Refused("TEST_OPEN_IN_DESIGN: mg2m")
     try:
-        if D.matched_arm(design) != "mg2m":
-            raise Refused("R2_ARM_CHANGE: the R2 contrast runs on the selected mg2m arm only")
+        if D.matched_arm(design) != arm:
+            raise Refused("R2_ARM_CHANGE: design differs from the contract's selected arm")
     except D.DesignError as exc:
         raise Refused(f"{exc.code}: mg2m") from None
-    sealed = _seal_family(design, adapter, "mg2m", mode=MODE_MATCHED)
+    sealed = _seal_family(design, adapter, arm, mode=MODE_MATCHED_LONG if arm == "mg12m" else MODE_MATCHED)
     data_pins = dict(data_pins or {})
     missing = [k for k in MATCHED_REQUIRED_PINS if k not in data_pins]
     if missing or len(str(data_pins["common_population"].get("population_sha256", ""))) != 64:
@@ -859,6 +908,27 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
     if r0_reuse is not None and r0_reuse.get("decision") != "FRESH_R0_REQUIRED":
         raise Refused("R0_REUSE_NOT_SUPPORTED_BY_THIS_RUNNER: the graph fits a fresh R0 (the predicate must "
                       "say FRESH_R0_REQUIRED)")
+    recovery = None
+    if donor_recovery is not None:
+        from tools.i6dmo import r2_recovery as RR
+        if arm != "mg2m" or engineering_cpu_fixture:
+            raise Refused("RECOVERY_ONLY_ORIGINAL_SHORT_SCIENTIFIC_DONORS")
+        recovery = RR.load_manifest(donor_recovery["path"], expected_sha256=donor_recovery["sha256"],
+                                    r0_target=donor_recovery["r0_target"])
+        context = recovery["donor_context"]
+        if context["population_sha256"] != shared["population_sha256"] or context["objective"] != objective \
+                or context["features"] != sealed["adapter_effective"]["feature_manifest"]["features"]:
+            raise Refused("RECOVERY_CONTEXT_DIFFERS_FROM_CONTRACT")
+        physical = donor_recovery.get("physical_custody") or {}
+        proof_path = Path(physical.get("path", ""))
+        if not proof_path.is_file() or file_sha256(proof_path) != physical.get("sha256"):
+            raise Refused("RECOVERY_PHYSICAL_CUSTODY_PROOF_MISSING")
+        proof = json.loads(proof_path.read_text())
+        if proof.get("schema") != "i6dmo.remote_custody_view.v1" \
+                or proof.get("source_pins") != recovery["source"]["pins"] \
+                or proof.get("verification") != "REMOTE_SHA_BEFORE_AND_AFTER_COPY_EQUALS_LOCAL_BYTES" \
+                or any((proof.get("files") or {}).get(p) != sha for p, sha in recovery["custody"]["files"].items()):
+            raise Refused("RECOVERY_PHYSICAL_CUSTODY_PROOF_MISMATCH")
     root = Path(root)
     if root.exists() and any(root.iterdir()):
         raise Refused("ROOT_NOT_NEW: init never reuses or resurrects an existing campaign root")
@@ -877,7 +947,7 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
                                    required=("fit", "report", "comparison", "pretrain", "evaluation"))
     if entries["fit"] in (entries["report"], entries["comparison"], entries["evaluation"]):
         raise Refused("REPORT_ENTRY_CALLS_FIT")
-    arms = {"mg2m": dict(sealed, resource_class="short_mg2_matched")}
+    arms = {arm: dict(sealed, resource_class="long_mg12_matched" if arm == "mg12m" else "short_mg2_matched")}
     effective = _seal(dict(
         schema="i6dmo.effective_config.v1", experiment_id=contract["contrast_id"],
         design=sealed["design"], design_sha256=sealed["design_sha256"], validator=sealed["validator"],
@@ -893,6 +963,24 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
                 r0_reuse=(r0_reuse or {}).get("decision", "NOT_EVALUATED_FRESH_R0_FIT")),
         comparison=dict(rule="tools.i6dmo.r2_design.decide_r2", tolerance=1e-8, tie_keeps="R0",
                         horizons=list(shared["horizons_hours"]), split="DEVELOPMENT")))
+    if arm == "mg12m":
+        effective["r2"]["selected_arm"] = arm
+        effective["r2"]["strict_reports"] = True
+        effective = _seal(effective)
+    if recovery is not None:
+        effective["r2"].update(
+            strict_reports=True,
+            recovered_donor_provenance=copy.deepcopy(recovery["donor_provenance"]),
+            recovered_unit_specs=copy.deepcopy(recovery["unit_specs"]),
+            donor_recovery=dict(manifest_sha256=recovery["manifest_sha256"],
+                file_sha256=donor_recovery["sha256"], source_campaign=recovery["source"]["campaign_id"],
+                physical_custody_sha256=physical["sha256"],
+                original_donors={f: dict(identity_sha256=ref["identity_sha256"],
+                    stored_terminal_sha256=ref["sha256"],
+                    donor_terminal_sha256=ref["donor_terminal"]["sha256"],
+                    donor_weights_sha256=ref["donor_npz"]["sha256"])
+                                 for f, ref in recovery["pretraining_refs"].items()}))
+        effective = _seal(effective)
     eff_sha = sha256_json(effective)
     campaign_id = "i6dmo-" + sha256_json(dict(experiment=effective["experiment_id"], cadence=effective["cadence"],
                                               effective=eff_sha))[:12]
@@ -913,9 +1001,26 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
     try:
         for unit in units:
             q.ensure_unit(unit["unit_id"], unit, state=unit.pop("_state"))
+        if recovery is not None:
+            import shutil
+            from tools.i6dmo.worker import _verify_stored
+            for unit in units:
+                if unit["kind"] != "pretrain":
+                    continue
+                ref = recovery["pretraining_refs"][unit["feature"]]
+                source = Path(ref["path"]).parent
+                target = root / "terminals" / unit["identity_sha256"]
+                shutil.copytree(source, target)
+                stored = _verify_stored(target, unit)
+                q.adopt(unit["unit_id"], stored["terminal"], stored["child_terminal_sha256"],
+                    identity_sha256=unit["identity_sha256"], source_detail=dict(
+                        source_campaign=recovery["source"]["campaign_id"],
+                        recovery_manifest_sha256=recovery["manifest_sha256"], no_new_fit=True))
     finally:
         q.close()
     _write_plan(root, plan)
+    if recovery is not None:
+        _enqueue_recovery_report(root, plan, effective, recovery)
     _storage_gate(spec, "init")
     write_status(root)
     return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root), mode=MODE_R2,

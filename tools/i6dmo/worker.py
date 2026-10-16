@@ -662,6 +662,13 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         (folder / "out").mkdir(exist_ok=True)
         unit_spec = build_unit_spec(root, q, plan, effective, unit, role_spec, device_class=device_class,
                                     gpu=gpu, cap=cap, bundle=bundle, attempt=attempt)
+        if unit_spec.get("r2_donors") is not None:
+            from tools.i6dmo import donor_transport
+            try:
+                unit_spec = donor_transport.stage(unit_spec, folder)
+            except donor_transport.TransportError as exc:
+                q.fail(unit["unit_id"], claim["token"], "FAILED", str(exc)[:200])
+                return dict(result="FAILED", unit_id=unit["unit_id"], cause=str(exc)[:200])
         atomic_json(folder / "UNIT_SPEC.json", unit_spec)
         name = f"{plan['campaign_id']}-{unit['unit_id'].replace('.', '-')}-a{attempt['index']:02d}"
         role_env = {k: str(v) for k, v in (role_spec.get("environment") or {}).items() if k != "CUDA_VISIBLE_DEVICES"}

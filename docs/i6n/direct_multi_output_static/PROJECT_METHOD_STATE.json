@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S12_RAW_LONG_MATCHED_AND_PAIR_CLOSED",
- "execution_status": "CLOSED_PAIR_NOT_ELIGIBLE",
+ "current_stage": "S7_R2_DOWNSAMPLED_SEQUENCE_IMPLEMENTATION",
+ "execution_status": "PREPARING_APPROVED_R0_R2_SHORT_THEN_LONG",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -25,7 +25,7 @@
  "next_allowed_actions": [
   "Retain campaign i6dmo-9e1ebad89ff2 CLOSE.json and its verified metrics, mirrors and original fit identities",
   "Retain the closed matched campaign and selected MG2m recipe without another matched-control fit",
-  "RAW long matched control is closed; retain its negative pair decision and authenticated short evidence. Any capacity/window or cadence follow-up needs a separately frozen contrast, not a hidden repetition or R2 restart",
+  "Owner approved static downsampled R0/R2 short then long: implement and test r2_downsampled/PLAN.md; authenticate retained short donors, repair attempt-local transport, independently review and execute automatic sequence",
   "Retain 19 R2 donors, completed R0/probe and typed pre-fit import failure; no R2 retry or new pretraining in the RAW critical path",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],
@@ -36,7 +36,7 @@
   "Read TEST before final pair/procedure/provenance freeze",
   "Refit the measured short identity or run the strategy on ineligible heads",
   "Restart retired H4/H72 DOIN campaign",
-  "Dispatch branch/core pretraining before the RAW sampling and eligible-pair strategy block closes",
+  "Dispatch core pretraining, DOIN, RL or cadence changes as implicit dependencies of the approved static branch R0/R2 contrast",
   "Delegate new work to Satoshi under the owner's latest instruction"
  ],
  "history": [

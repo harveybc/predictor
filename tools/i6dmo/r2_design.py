@@ -35,6 +35,15 @@ R2_CONTRAST_ID = "I6-DMO-SHORT-MG2M-R0-VS-R2-BRANCH"
 UNDECIDED = "UNDECIDED_REQUIRES_REVIEW"
 SELECTED_ARM = "mg2m"
 MATCHED_DIR = Path(__file__).resolve().parents[2] / "docs/i6n/direct_multi_output_static/matched_short"
+LONG_SOURCE_DIR = MATCHED_DIR.parent / "r2_downsampled/long_source"
+SELECTED_ARMS = (SELECTED_ARM, "mg12m")
+LONG_R2_CONTRAST_ID = "I6-DMO-LONG-MG12M-R0-VS-R2-BRANCH"
+MEAN_MONITOR = "mean_end_of_epoch_fit_purged_inner_same_weights"
+MEAN_MONITOR_VERSION = "i6dmo.branch_mean_fit_inner.v1"
+LONG_SELECTION = {"campaign_id": "i6dmo-0f9e6c8d5d74", "decision": "OWNER_SELECTED_DOWNSAMPLED_LONG",
+                  "comparison_sha256": "22d9ac6ce7ce5a5ff3a78f3ce5d2b29672cdd79d7f0d35d6f2ae155963a01fa3",
+                  "selected_arm": "mg12m", "rule": "owner-approved static downsampled R0/R2 control; "
+                  "not a claim that the RAW comparison selected this arm"}
 #: The closed matched comparison that selected the input recipe (campaign CLOSED, automatic).
 SELECTION = {"campaign_id": "i6dmo-6004b711281c", "decision": "MG2_SELECTED",
              "comparison_sha256": "2ee85a125c3603e4069dbde42f1ccbf7ad32ac0b6c75ca798b7a8300cece13ee",
@@ -173,23 +182,34 @@ def _read(path):
 
 # --------------------------------------------------------------------------- contract
 
-def build_contract(matched_dir=MATCHED_DIR):
+def source_dir(arm=SELECTED_ARM):
+    """Canonical retained source by explicit arm; never infer a source from the contract path."""
+    if arm not in SELECTED_ARMS:
+        raise R2DesignError("R2_ARM_CHANGE", f"expected one of {SELECTED_ARMS}, got {arm!r}")
+    return MATCHED_DIR if arm == SELECTED_ARM else LONG_SOURCE_DIR
+
+
+def build_contract(matched_dir=None, *, arm=SELECTED_ARM):
     """The R0-vs-R2 contract derived deterministically from the sealed matched artifacts."""
-    matched_dir = Path(matched_dir)
-    design = D.load_design(matched_dir / "EXPERIMENT.mg2m.json")
-    if D.matched_arm(design) != SELECTED_ARM:
-        raise R2DesignError("R2_RECIPE_MISMATCH", "EXPERIMENT.mg2m.json is not the mg2m arm")
+    canonical = source_dir(arm)
+    matched_dir = Path(matched_dir) if matched_dir is not None else canonical
+    selection = SELECTION if arm == SELECTED_ARM else LONG_SELECTION
+    if not (matched_dir / f"EXPERIMENT.{arm}.json").is_file():
+        raise R2DesignError("R2_SOURCE_MISSING", f"sealed EXPERIMENT.{arm}.json is absent")
+    design = D.load_design(matched_dir / f"EXPERIMENT.{arm}.json")
+    if D.matched_arm(design) != arm:
+        raise R2DesignError("R2_RECIPE_MISMATCH", f"EXPERIMENT.{arm}.json is not the {arm} arm")
     effective = D.effective_config(design)
     seal = _read(matched_dir / "POPULATION_SEAL.json")
-    capacity = _read(matched_dir / "CAPACITY_MATCHED.json")["arms"][SELECTED_ARM]
-    sealed_arm = seal["identities"]["arms"][SELECTED_ARM]
+    capacity = _read(matched_dir / "CAPACITY_MATCHED.json")["arms"][arm]
+    sealed_arm = seal["identities"]["arms"][arm]
     if sealed_arm["experiment_design_sha256"] != effective["design_sha256"] or \
             capacity["sealed_design_sha256"] != effective["design_sha256"]:
-        raise R2DesignError("R2_RECIPE_MISMATCH", "population/capacity seals bind another mg2m design")
+        raise R2DesignError("R2_RECIPE_MISMATCH", f"population/capacity seals bind another {arm} design")
     mt = effective["design"]["market_time"]
     splits = {k: effective["splits"][k] for k in ("fit", "inner", "validation", "test")}
     shared = {
-        "arm": SELECTED_ARM, "experiment_id": effective["experiment_id"],
+        "arm": arm, "experiment_id": effective["experiment_id"],
         "experiment_design_sha256": effective["design_sha256"],
         "experiment_seal_sha256": design["seal_sha256"],
         "effective_config_sha256": effective["effective_config_sha256"],
@@ -216,16 +236,16 @@ def build_contract(matched_dir=MATCHED_DIR):
                         "gpu_class": "R0 and R2 fits on the SAME recorded GPU class "
                                      "(receipt resources.gpu_device_names); scientific GPU fits only",
                         "enforced_by": "tools.i6dmo.r2_design.decide_r2"},
-        "accessor": "tools.i6dmo.common_population.arm_tensors(pop, EXPERIMENT.mg2m.json, split)",
+        "accessor": f"tools.i6dmo.common_population.arm_tensors(pop, EXPERIMENT.{arm}.json, split)",
     }
     contract = {
-        "schema": R2_SCHEMA, "contrast_id": R2_CONTRAST_ID,
+        "schema": R2_SCHEMA, "contrast_id": R2_CONTRAST_ID if arm == SELECTED_ARM else LONG_R2_CONTRAST_ID,
         "status": "FROZEN_BEFORE_FIT_DESIGN_ONLY",
         "authority": ["NEXT_CONTRASTS_PLAN_20261015.md section 3",
                       "MUSASHI_TO_SATOSHI_MATCHED_AUDIT_FOLLOWUP_20261015.md section 4"],
         "question": "On the selected MG2m input recipe, do compatible pretrained per-feature branch "
                     "encoders, imported and fine-tuned (R2), improve on the matched R0 reference?",
-        "selection": dict(SELECTION),
+        "selection": dict(selection),
         "shared": shared,
         "arms": {
             "R0": {"regime": "R0", "branch_init": "SEED_BUILD", "non_branch_init": "SEED_BUILD",
@@ -237,7 +257,7 @@ def build_contract(matched_dir=MATCHED_DIR):
         },
         "r0_reference": {
             "policy": "REUSE_IF_ALL_COMPONENTS_AGREE_AND_R1_ACCEPTS_ELSE_FRESH_R0",
-            "candidate": {"campaign_id": SELECTION["campaign_id"], "unit": "mg2m.fit"},
+            "candidate": {"campaign_id": selection["campaign_id"], "unit": f"{arm}.fit"},
             "components": list(R0_REUSE_COMPONENTS),
             "predicate": "tools.i6dmo.r2_design.r0_reuse_decision",
             "r1_verifier": "the ONE common OPS donor verifier governing prepare and adoption "
@@ -322,6 +342,21 @@ def build_contract(matched_dir=MATCHED_DIR):
                          "objective or architecture search"],
         "acceptance_tests": dict(ACCEPTANCE_TESTS),
     }
+    if arm == "mg12m":
+        contract["authority"] = ["r2_downsampled/PLAN.md (owner approved 2026-10-15)"]
+        contract["question"] = ("On the retained MG12m long input recipe, do compatible trainable "
+                                "pretrained branches improve on the identical static R0 reference?")
+        for key in ("inputs", "time_inputs"):
+            contract["pretraining"][key] = contract["pretraining"][key].replace("mg2m", "mg12m").replace("MG2m", "MG12m")
+        contract["pretraining"]["early_stopping"] = dict(
+            monitor=MEAN_MONITOR, monitor_version=MEAN_MONITOR_VERSION, patience=10, min_delta=1e-8,
+            restore="best_monitored_epoch", disclosure="FIT and purged INNER evaluated at identical "
+            "end-of-epoch weights; DEVELOPMENT/TEST never read; legacy short donors remain INNER-only")
+        contract["out_of_scope"] = ["core pretraining", "cadence changes", "other input recipes", "TEST",
+                                    "R1 frozen arm", "objective or architecture search"]
+        contract["acceptance_tests"]["R2-01"] = ACCEPTANCE_TESTS["R2-01"].replace("MG2m", "MG12m")
+        contract["acceptance_tests"]["R2-04"] = "FIT updates only; select mean FIT/purged-INNER at identical end-of-epoch weights; no DEVELOPMENT/TEST"
+        contract["acceptance_tests"]["R2-12"] = "Only retained MG12m static branch R2; no core/DOIN/RL/cadence/TEST"
     contract["seal_sha256"] = _sha(contract)
     return contract
 
@@ -386,7 +421,7 @@ def _code_for(path):
     return "R2_CONTRACT_MISMATCH"
 
 
-def _validate_objective(objective, matched_dir=MATCHED_DIR):
+def _validate_objective(objective, matched_dir=MATCHED_DIR, *, arm=SELECTED_ARM):
     """A ruled objective must be EXECUTABLE by the registered component exactly as written (D1).
 
     Registered option with its identity sha; every declared parameter and every fit setting
@@ -408,13 +443,23 @@ def _validate_objective(objective, matched_dir=MATCHED_DIR):
     if not isinstance(params, dict) or sorted(params) != sorted(option["declared_params"]):
         raise R2DesignError("R2_OBJECTIVE_UNKNOWN",
                             f"every declared parameter must be fixed: {option['declared_params']}")
-    if not isinstance(fit, dict) or sorted(fit) != sorted(OBJECTIVE_FIT_SETTINGS):
+    fit_keys = set(OBJECTIVE_FIT_SETTINGS) | ({"monitor_version"} if arm == "mg12m" else set())
+    if not isinstance(fit, dict) or set(fit) != fit_keys:
         raise R2DesignError("R2_OBJECTIVE_UNKNOWN",
                             f"fit settings must be exactly {list(OBJECTIVE_FIT_SETTINGS)}")
     for value in list(params.values()) + list(fit.values()):
         if value is None or value == UNDECIDED or (isinstance(value, float) and not math.isfinite(value)):
             raise R2DesignError("R2_OBJECTIVE_UNDECIDED", "an objective parameter is still open")
-    for key, value in OBJECTIVE_FIXED_SETTINGS.items():
+    fixed = dict(OBJECTIVE_FIXED_SETTINGS)
+    if arm == "mg12m":
+        fixed.update(monitor=MEAN_MONITOR, monitor_version=MEAN_MONITOR_VERSION,
+                     **{k: LEAD_RULING["fit_settings"][k] for k in
+                        ("learning_rate", "weight_decay", "batch_size", "max_epochs", "patience", "min_delta")})
+        if objective["option"] != "O1":
+            raise R2DesignError("R2_OBJECTIVE_NOT_EXECUTABLE", "long mean monitor supports registered O1 only")
+        if params != LEAD_RULING["params"]:
+            raise R2DesignError("R2_OBJECTIVE_NOT_EXECUTABLE", "long O1 decoder/loss are fixed")
+    for key, value in fixed.items():
         if fit[key] != value:
             raise R2DesignError("R2_OBJECTIVE_NOT_EXECUTABLE",
                                 f"{key}={fit[key]!r}: the registered loop executes {value!r}")
@@ -447,10 +492,23 @@ def _validate_objective(objective, matched_dir=MATCHED_DIR):
         raise R2DesignError("R2_OBJECTIVE_UNREVIEWED", "the review document bytes are not the ruled ones")
 
 
-def lead_objective(matched_dir=MATCHED_DIR):
+def lead_objective(matched_dir=None, *, arm=SELECTED_ARM, ruling=None):
     """The technical lead's ruling as a complete objective block (identity and review bound)."""
     from predictor_plugins.modular_temporal import objectives as O
+    matched_dir = Path(matched_dir) if matched_dir is not None else source_dir(arm)
     objective = copy.deepcopy(LEAD_RULING)
+    if arm == "mg12m":
+        objective["fit_settings"].update(monitor=MEAN_MONITOR, monitor_version=MEAN_MONITOR_VERSION)
+        objective["disclosures"] = ["Owner-approved mean FIT/purged-INNER at identical end-of-epoch weights; "
+            "legacy short INNER-only donor qualification is unchanged", "registered O1 loss/version/decoder "
+            "unchanged; the orchestration monitor is a separately versioned rule", "budgets stop with typed "
+            "failure and no donor; no DEVELOPMENT, TEST, core, DOIN or RL"]
+        objective["ruling"] = dict(ruled_by="owner-approved downsampled protocol", review_commit="OWNER_20261015",
+            review_verdict="OWNER_APPROVED_PENDING_INDEPENDENT_REVIEW", review_document="../DATA_MODEL_RETURN.md")
+    if ruling is not None:
+        if not isinstance(ruling, dict) or set(ruling) != set(RULING_KEYS) - {"review_document_sha256"}:
+            raise R2DesignError("R2_OBJECTIVE_UNREVIEWED", "supply the four actual review reference fields")
+        objective["ruling"] = copy.deepcopy(ruling)
     objective["identity_sha256"] = O.objective_identity({"plugin": objective["name"],
                                                          "params": objective["params"]})["sha256"]
     document = Path(matched_dir) / objective["ruling"]["review_document"]
@@ -458,11 +516,14 @@ def lead_objective(matched_dir=MATCHED_DIR):
     return objective
 
 
-def validate_r2_design(doc, *, for_execution=False, matched_dir=MATCHED_DIR):
+def validate_r2_design(doc, *, for_execution=False, matched_dir=None):
     """Typed validation. PREPARING while the objective is undecided; READY only once ruled."""
     if not isinstance(doc, dict) or doc.get("schema") != R2_SCHEMA:
         raise R2DesignError("R2_SCHEMA_REQUIRED", f"schema must be {R2_SCHEMA}")
-    expected = build_contract(matched_dir)
+    arm = (doc.get("shared") or {}).get("arm")
+    canonical = source_dir(arm)
+    matched_dir = Path(matched_dir) if matched_dir is not None else canonical
+    expected = build_contract(matched_dir, arm=arm)
     body = {k: v for k, v in doc.items() if k != "seal_sha256"}
     reference = {k: v for k, v in expected.items() if k != "seal_sha256"}
     objective = _get(body, ("pretraining", "objective"))
@@ -485,7 +546,11 @@ def validate_r2_design(doc, *, for_execution=False, matched_dir=MATCHED_DIR):
                                 "pretraining.objective is UNDECIDED_REQUIRES_REVIEW; R2 cannot be "
                                 "executed until the objective is ruled (R2_DESIGN_PROPOSAL.md)")
         return {"status": "PREPARING", "objective": UNDECIDED}
-    _validate_objective(objective, matched_dir)
+    _validate_objective(objective, matched_dir, arm=arm)
+    if arm == "mg12m" and objective["ruling"]["review_verdict"] not in ("ACCEPT", "ACCEPT_FOR_RELEASE"):
+        if for_execution:
+            raise R2DesignError("R2_INDEPENDENT_REVIEW_REQUIRED", "long execution needs independent release acceptance")
+        return {"status": "PREPARING_INDEPENDENT_REVIEW", "objective": objective}
     return {"status": "READY_FOR_EXECUTION", "objective": objective}
 
 
@@ -572,7 +637,7 @@ def verify_import_record(record, n_features=19):
     return record["import_sha256"]
 
 
-def decide_r2(r0_metrics, r2_metrics, *, r2_import_record=None, require_scientific=True):
+def decide_r2(r0_metrics, r2_metrics, *, r2_import_record=None, require_scientific=True, strict_reports=False):
     """Frozen R0-vs-R2 decision from the two matched METRICS.json documents (both mg2m).
 
     Strict by default (R3 parity with decide_matched): both fits scientific on GPU, the same runtime
@@ -581,8 +646,19 @@ def decide_r2(r0_metrics, r2_metrics, *, r2_import_record=None, require_scientif
     digests) and the R0 fit carries no import binding, so two plain R0 fits are never "R0 vs R2".
     """
     a, b = (r0_metrics or {}).get("matched") or {}, (r2_metrics or {}).get("matched") or {}
-    if a.get("arm") != SELECTED_ARM or b.get("arm") != SELECTED_ARM:
-        raise R2DesignError("R2_ARM_CHANGE", "both R0 and R2 are scored on the mg2m arm")
+    arm = a.get("arm")
+    if arm not in SELECTED_ARMS or b.get("arm") != arm:
+        raise R2DesignError("R2_ARM_CHANGE", "both regimes must use the same explicit downsampled arm")
+    long_selections = None
+    if arm == "mg12m" or strict_reports:
+        from tools.i6dmo import reporting as R
+        try:
+            long_selections = tuple(R.validate_matched_report(m, horizons=D.ALL_MATCHED_SCOPE[arm]["horizons_hours"], arm=arm)
+                                    for m in (r0_metrics, r2_metrics))
+        except R.ReportFailure as exc:
+            raise R2DesignError(exc.code, str(exc)) from None
+        if not isinstance(r2_import_record, dict) or r2_import_record.get("arm") != arm:
+            raise R2DesignError("R2_IMPORT_RECORD_INVALID", f"import record must bind {arm}")
     if require_scientific is not False:
         for name, block in (("R0", a), ("R2", b)):
             if block.get("scientific_fit") is not True or block.get("fit_device") != "gpu":
@@ -604,6 +680,8 @@ def decide_r2(r0_metrics, r2_metrics, *, r2_import_record=None, require_scientif
     if (a.get("capacity") or {}).get("capacity_sha256") != (b.get("capacity") or {}).get("capacity_sha256"):
         raise R2DesignError("R2_ARCHITECTURE_CHANGE", "R0 and R2 must have identical capacity")
     sa, sb = a.get("selection") or {}, b.get("selection") or {}
+    if long_selections is not None:
+        sa, sb = long_selections
     heads = sa.get("heads") or sb.get("heads") or []
     per_head = {str(h): {"R0": ((r0_metrics.get("per_horizon") or {}).get(str(h)) or {}).get("relative_error"),
                          "R2": ((r2_metrics.get("per_horizon") or {}).get(str(h)) or {}).get("relative_error")}
@@ -625,8 +703,8 @@ def decide_r2(r0_metrics, r2_metrics, *, r2_import_record=None, require_scientif
 
 # --------------------------------------------------------------------------- CLI
 
-def seal(matched_dir, out):
-    contract = build_contract(matched_dir)
+def seal(matched_dir, out, *, arm=SELECTED_ARM):
+    contract = build_contract(matched_dir, arm=arm)
     text = json.dumps(contract, indent=1, sort_keys=True) + "\n"
     out = Path(out)
     if out.exists():
@@ -637,10 +715,11 @@ def seal(matched_dir, out):
     return {"status": "SEALED", "idempotent": False, "seal_sha256": contract["seal_sha256"]}
 
 
-def write_ruled(design_path, out, matched_dir=MATCHED_DIR):
+def write_ruled(design_path, out, matched_dir=None, *, objective=None):
     base = _read(design_path)
     validate_r2_design(base, matched_dir=matched_dir)
-    ruled = rule_objective(base, lead_objective(matched_dir))
+    selected_objective = objective if objective is not None else lead_objective(matched_dir, arm=base["shared"]["arm"])
+    ruled = rule_objective(base, selected_objective)
     validate_r2_design(ruled, for_execution=True, matched_dir=matched_dir)
     text = json.dumps(ruled, indent=1, sort_keys=True) + "\n"
     out = Path(out)
@@ -654,23 +733,24 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog="python -m tools.i6dmo.r2_design")
     sub = parser.add_subparsers(dest="command", required=True)
     s = sub.add_parser("seal")
-    s.add_argument("--matched-dir", default=str(MATCHED_DIR))
+    s.add_argument("--matched-dir", default=None)
+    s.add_argument("--arm", choices=SELECTED_ARMS, default=SELECTED_ARM)
     s.add_argument("--out", required=True)
     s.add_argument("--json", action="store_true")
     r = sub.add_parser("rule", help="write the ruled contract (LEAD_RULING) beside the base contract")
     r.add_argument("--design", required=True)
-    r.add_argument("--matched-dir", default=str(MATCHED_DIR))
+    r.add_argument("--matched-dir", default=None)
     r.add_argument("--out", required=True)
     r.add_argument("--json", action="store_true")
     v = sub.add_parser("validate")
     v.add_argument("--design", required=True)
-    v.add_argument("--matched-dir", default=str(MATCHED_DIR))
+    v.add_argument("--matched-dir", default=None)
     v.add_argument("--for-execution", action="store_true")
     v.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     try:
         if args.command == "seal":
-            result = seal(args.matched_dir, args.out)
+            result = seal(args.matched_dir, args.out, arm=args.arm)
         elif args.command == "rule":
             result = write_ruled(args.design, args.out, args.matched_dir)
         else:

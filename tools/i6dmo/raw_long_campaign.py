@@ -216,7 +216,7 @@ def prepare(config):
     return doc
 
 
-def _provision(spec, prepared, code):
+def _provision(spec, prepared, code, *, reviewed_files=None):
     runtime = f"/var/tmp/i6dmo-runtime-{code[:8]}"
     source = Path(prepared["launch_config"]["input_dir"])
     coordinator = spec["roles"]["coordinator"]
@@ -231,7 +231,10 @@ def _provision(spec, prepared, code):
             _remote(setting, ["git", "-C", repo, "worktree", "add", "--detach", runtime, code], 180)
         if _remote(setting, ["git", "-C", runtime, "rev-parse", "HEAD"], 30).strip() != code:
             raise ValueError(f"RUNTIME_PIN_MISMATCH:{role}")
-        _verify_runtime(setting, runtime, code)
+        if reviewed_files is None:
+            _verify_runtime(setting, runtime, code)
+        else:
+            _verify_runtime(setting, runtime, code, reviewed_files=reviewed_files)
         if setting.get("ssh_alias"):
             dest = Path(setting["experiment_storage_root"]) / prepared["population_relpath"]
             _remote(setting, ["mkdir", "-p", str(dest)], 30)
@@ -248,9 +251,9 @@ def _provision(spec, prepared, code):
     return spec
 
 
-def _verify_runtime(role, runtime, code):
+def _verify_runtime(role, runtime, code, *, reviewed_files=None):
     """Check executing bytes and import resolution, not merely a same-HEAD label."""
-    files = verify_release()["code_files"]
+    files = verify_release()["code_files"] if reviewed_files is None else reviewed_files
     versions = RUNTIME if any(g.get("heavy") for g in role.get("gpus", [])) else {}
     script = "\n".join((
         "import hashlib,importlib.util,importlib.metadata,json,os,pathlib,subprocess,sys",
