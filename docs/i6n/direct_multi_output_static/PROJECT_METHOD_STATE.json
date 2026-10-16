@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-16",
- "current_stage": "S8_RESOLUTION_BATCH_IMPLEMENTATION",
- "execution_status": "CONTEXT_BRIDGE_CLOSED_NEW_DS4_H72_BATCH_APPROVED",
+ "current_stage": "S8_RESOLUTION_BATCH_EXECUTING",
+ "execution_status": "DS2_DS4_AND_H72_BATCH_RUNNING_AUTOMATICALLY_ON_5090",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -33,7 +33,7 @@
   "Retain both R0_RETAINED closures: 50/50 units, 288 report readbacks and 177 files per mirror in each campaign; no further fits in this closed sequence",
   "Owner clarification 2026-10-16: do not reopen feature selection or upstream vendor audit for the development contrast; retain those qualifications and TEST gates. Audit retained training histories and transformations; four histories independently replayed successfully",
   "Retain CLOSED i6dmo-e5b3dd7cd27e: 5/5 complete, 111 readbacks, two mirrors of 58 files. Short input wins all long heads, none beats its naive",
-  "Implement, test and execute resolution_batch/PLAN.md: four DS2/DS4 DMO fits, then fifteen h72 single-head window/model fits at the automatically selected long spacing. Sequential 5090 only, seed 6102026, static TRAIN/INNER/DEVELOPMENT, no TEST or reselection",
+  "Continue i6dmo-resolution-705d19ec84ae from pinned 17d8e785 without agent monitoring: four DS2/DS4 DMO fits, then fifteen h72 single-head window/model fits at the automatically selected long spacing. Sequential 5090 only, seed 6102026, static TRAIN/INNER/DEVELOPMENT, no TEST or reselection. Real short_ds2 epoch 2 and GPU workload verified; timers own publication, readback, mirrors and close",
   "Retain 19 R2 donors, completed R0/probe and typed pre-fit import failure; no R2 retry or new pretraining in the RAW critical path",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],

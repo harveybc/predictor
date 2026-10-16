@@ -18,6 +18,13 @@ vigentes. Publicacion OLAP con lectura exacta, copias verificadas y cierre
 automatico. El contexto mas largo NO presupone un modelo mas complejo.
 [Plan y requisitos ejecutables](../i6n/direct_multi_output_static/resolution_batch/PLAN.md).
 
+Lanzado y verificado: i6dmo-resolution-705d19ec84ae, ejecutor 17d8e785,
+poblacion 010bcd0b. Primer short_ds2 real observado en epoca 2, con 128
+actualizaciones, en la 5090; la segunda GPU no se usa en paralelo. Suite
+enfocada: 114 pruebas, mas 13 regresiones finales de orquestacion; prueba
+GPU sintetica de los tres modelos con monitor PASS. Timers propios toman
+el relevo, publican, verifican dos copias y cierran sin aprobaciones por etapa.
+
 Antecedente cerrado automaticamente: i6dmo-e5b3dd7cd27e, ab22099f,
 5/5 tareas, 111/111 publicaciones y dos espejos de 58 archivos verificados.
 La entrada de 24 h de mercado/paso 2 h mejora los seis targets largos frente
