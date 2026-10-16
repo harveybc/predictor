@@ -25,10 +25,17 @@ no esta continuacion expresamente aprobada. TEST sigue cerrado.
 Estado ejecutado: corto i6dmo-fed57e1d7696 cerrado R0_RETAINED, con media
 de error relativo R0 -0.007738% frente a R2 +0.020282%, 25/25 unidades,
 116 lecturas de vuelta OLAP y 177 archivos por espejo. Los 19 donantes
-cortos fueron adoptados, no reentrenados. El relevo automatico arranco el
-largo i6dmo-319c029a316f en las GPU preferida y secundaria, sin intervencion
-del propietario. El modelo original y el revisado comparten clase GPU para
-los ajustes predictivos. [Resultado corto y limites](../i6n/direct_multi_output_static/r2_downsampled/SHORT_RETURN.md).
+cortos fueron adoptados, no reentrenados. El relevo automatico completo el
+largo i6dmo-319c029a316f, tambien R0_RETAINED: error relativo medio R0
++26.285134% y R2 +26.607801%. Ninguna cabeza larga supera su naive. La
+secuencia cerro 50/50 unidades y 288 lecturas de vuelta OLAP; cada campana
+verifico 177 archivos por espejo y detuvo sus timers automaticamente.
+Los ajustes predictivos compartieron clase GPU. Estos resultados estaticos,
+con una semilla y en DEVELOPMENT, no son una conclusion general sobre R2.
+Sigue el contraste separado trimestral frente a estatico con receta fija,
+todavia no lanzado. Sin pareja elegible no se ejecuta trading ni TEST.
+[Resultado corto](../i6n/direct_multi_output_static/r2_downsampled/SHORT_RETURN.md)
+y [resultado largo y cierre](../i6n/direct_multi_output_static/r2_downsampled/LONG_RETURN.md).
 
 Rectificacion del propietario, 2026-10-15, posterior al lanzamiento R2:
 Musashi asume la ejecucion; no se delega trabajo nuevo a Satoshi. La prioridad

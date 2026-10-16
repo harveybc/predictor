@@ -1,39 +1,36 @@
 {
- "action": "WAIT_LONG",
- "as_of": "2026-10-16T00:51:37.173615+00:00",
+ "action": "CLOSED",
+ "as_of": "2026-10-16T04:10:59.166097+00:00",
  "families": {
   "long": {
    "adopted": 0,
    "campaign_id": "i6dmo-319c029a316f",
    "failed": 0,
-   "running": [
-    "r2.pretrain.04",
-    "r2.pretrain.05"
-   ],
-   "state": "RUNNING",
+   "running": [],
+   "state": "CLOSED",
    "steps": [
     {
-     "complete": 4,
+     "complete": 19,
      "label": "Donantes",
      "total": 19
     },
     {
-     "complete": 0,
+     "complete": 2,
      "label": "Ajustes R0/R2",
      "total": 2
     },
     {
-     "complete": 0,
+     "complete": 2,
      "label": "Informes",
      "total": 2
     },
     {
-     "complete": 0,
+     "complete": 1,
      "label": "Sonda diagnostica",
      "total": 1
     },
     {
-     "complete": 0,
+     "complete": 1,
      "label": "Comparacion",
      "total": 1
     }
@@ -103,12 +100,12 @@
    "title": "Exact literature controls"
   },
   {
-   "eta": "Running contrast; end-to-end ETA not measured yet",
-   "evidence": "Short i6dmo-fed57e1d7696 CLOSED R0_RETAINED: mean relative MAE R0 -0.007738%, R2 +0.020282%; 25/25 units, 116 readbacks, 177 files per mirror. Nineteen short donors adopted, not retrained. Long i6dmo-319c029a316f automatically started on preferred/secondary GPUs under 5d430951.",
+   "eta": "Approved static R0/R2 contrast complete; remaining M4 work not measured",
+   "evidence": "Both R0/R2 families CLOSED R0_RETAINED under 5d430951. Short relative MAE R0 -0.007738%, R2 +0.020282%; long R0 +26.285134%, R2 +26.607801%. 50/50 units, 288 readbacks, 177 files per mirror per campaign. Nineteen short donors adopted without retraining; nineteen long donors trained. One seed, DEVELOPMENT only.",
    "id": "M4",
-   "next": "Retain the verified short CLOSE; complete the automatically launched long MG12m R0/R2 and its publication/mirror/CLOSE chain. Keep the original failure and short INNER-only donor qualification.",
+   "next": "Retain both verified closures and per-horizon results; do not repeat these fits. Preserve short INNER-only donor qualification. Core pretraining and other representation contrasts remain separate future work.",
    "progress": 48,
-   "state": "R0_R2_CONTRAST_RUNNING",
+   "state": "STATIC_R0_R2_CONTRAST_CLOSED",
    "title": "Pretrained branches: R0/R1/R2"
   },
   {
@@ -122,10 +119,10 @@
   },
   {
    "engineering_note": "MG2/MG12 measured and closed; whole-M6 percentage unchanged. Prior estimates for other milestones are not fresh measured ETAs.",
-   "eta": "RAW matched block complete; follow-up unmeasured",
-   "evidence": "RAW long MG12m/MG1l CLOSED: relative MAE +26.285134%/+47.377774%; zero eligible long heads. PAIR_NOT_ELIGIBLE with retained short 4/6/12 h. 112 reports read back, 61 files per mirror. No trading or TEST.",
+   "eta": "Static contrasts complete; quarterly contrast not launched",
+   "evidence": "RAW long MG12m/MG1l relative MAE +26.285134%/+47.377774%; subsequent MG12m R0/R2 +26.285134%/+26.607801%. Neither long arm has an eligible head, so no eligible strategy pair, trading or TEST. Short R0 retains eligible 4/6/12 h heads on DEVELOPMENT. Full per-horizon naive and metrics retained in returns.",
    "id": "M6",
-   "next": "Retain negative RAW result; consume the explicitly owner-approved R0/R2 downsampled contrast before separately ruling cadence/capacity changes. No strategy on ineligible heads.",
+   "next": "Prepare the separate fixed-recipe quarterly-versus-static contrast. No strategy on ineligible heads; TEST stays closed pending its procedure and source-clock gates.",
    "progress": 24,
    "state": "PARTIAL_MEASUREMENT",
    "title": "Short/long forecasts + strategy"

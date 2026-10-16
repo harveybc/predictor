@@ -5,10 +5,12 @@ Short campaign: `i6dmo-fed57e1d7696`. Both predictive fits executed on the
 5090 class; R2 imported the 19 original donors successfully. No short donor
 was retrained. The diagnostic CPU probe completed independently. Short is
 now CLOSED with R0_RETAINED: 25/25 units, 116/116 reports read back and
-177 files verified in each physical mirror. Long MG12m is separately sealed
-and advanced automatically to campaign `i6dmo-319c029a316f`: two donor
-pretraining units were observed running concurrently on the preferred 5090
-and secondary 4090. The auxiliary shared-memory GPU is not used. No TEST read,
+177 files verified in each physical mirror. Long MG12m advanced automatically
+to campaign `i6dmo-319c029a316f`, then CLOSED R0_RETAINED with 25/25 units,
+172/172 reports read back and 177 files in each mirror. Its 19 donors were
+trained across the 5090/4090; both predictive fits used the 5090. The entire
+sequence and its campaign timers stopped automatically. The auxiliary
+shared-memory GPU was not used. No TEST read,
 core pretraining, DOIN, cadence change, RL, strategy or Satoshi dispatch.
 
 Before launch, source recovery authenticated 19 donors, 115 source/custody
@@ -39,7 +41,7 @@ relaxed for this release.
 ## Read-Only Status
 
 Use `AUTOMATION.md` for the sequence/campaign/stage/unit/publication commands.
-The running source is a clean immutable runtime checkout, separate from these
+The executing source was a clean immutable runtime checkout, separate from these
 post-launch reporting edits. Each campaign publishes governed metrics with
 readback and two physical mirrors. ETA remains phase-specific: an epoch
 ceiling is only an upper bound, and no short timing is a measured long ETA.
