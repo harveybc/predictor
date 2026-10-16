@@ -2,96 +2,83 @@
 
 Date: 2026-10-16
 
-Verdict: **BLOCKED_FOR_EXECUTION**. Two runtime blockers remain. Population
-acceptance and a release hash manifest do not resolve these failure paths.
+Verdict: **ACCEPT_FOR_EXECUTION**, conditional on the final release hash
+manifest binding the reviewed execution bytes and population pins below.
+No remaining blockers were found in this final pass's two-fix scope.
+This supersedes the previous blocked disposition; it is not deployment
+confirmation or a new full audit.
 
-Reviewed baseline: `0aa7c4164c5701add5e2d9ef5a9c0bd120cb2c14`.
-Also reviewed the narrow population-binding and actual-initialization patch at
-`3f9408df96e4dbd9e28eb312ae19a42d5cb4bd9b`, as requested during this pass.
-This is a bounded static review, not a deployment or scientific-result audit.
+Reviewed current commit:
+`4e8b3cb11dbecba911dd883a559b866e9dff8f95`
+(`fix: retry transient bridge activation and authenticate replication mounts`).
+Earlier review covered `0aa7c4164c5701add5e2d9ef5a9c0bd120cb2c14` and
+the narrow initialization/population-binding patch at
+`3f9408df96e4dbd9e28eb312ae19a42d5cb4bd9b`.
 
-## Remaining Blockers
+## Final Two Fixes
 
-### P1 Activation failure disables its own recovery mechanism
+1. **Transient activation recovery: resolved.** In
+   `tools/i6dmo/context_bridge_campaign.py:322-355`, `retryable` and `main`
+   distinguish transient activation, connectivity, mount and GPU-visibility
+   failures from identity faults. A retryable run records WAIT_RESOURCE
+   with a 60-second retry interval and does not disable its launcher timer.
+   Identity failures retain the stopping path. Recovery reuses the existing
+   campaign rather than authorizing a fresh fit. Invocations remain bounded;
+   admission may continue waiting while infrastructure is unavailable.
 
-References: `tools/i6dmo/context_bridge_campaign.py:245-253,318-322`.
+2. **Replication destination admission: resolved for the declared filesystem
+   policy.** In `tools/i6dmo/context_bridge_campaign.py:175-178,195-231`,
+   replication is preceded by actual findmnt facts for both storage and
+   input roots on every role. Coordinator archival storage requires the
+   existing NTFS policy; state, worker storage and input roots require ext4.
+   Missing, unwritable, read-only, low-space and disallowed-filesystem roots
+   are refused. The nearest existing destination mount must match its
+   checked root before provisioning. These are point-in-time filesystem
+   checks, not disk/device identity attestation or protection against a
+   mount changing after admission. The per-root free-space floor is 6 GiB;
+   coordinator archival storage also retains its estimate/reserve gate.
 
-`ensure_deployed` correctly raises when timer activation fails. However,
-`main` handles that recoverable infrastructure error by recording FAILED and
-disabling the launcher timer. One temporary systemd activation failure can
-therefore leave a published campaign with missing worker/publication timers
-and no automatic reconciliation. Calling `ensure_deployed` on each resume
-does not help when the timer responsible for resuming has been disabled.
-This does not itself duplicate a fit, but it breaks autonomous recovery.
+The added tests cover transient-error classification versus identity faults
+and an unexpected input-destination mount. This final static pass also
+traced the actual main-handler branch and the gate's placement before
+provisioning; it did not execute those paths.
 
-Minimal fix: distinguish retryable pre-execution deployment failures from
-identity violations and terminal scientific outcomes. Persist a typed wait
-and bounded retry budget for the existing launcher timer; do not disarm it
-on the first transient activation failure. Keep completed fits adopt-only
-through the existing authenticated-terminal path.
+## Exact Pins
 
-Missing regression: exercise the real `main -> run -> ensure_deployed` error
-path with mocked systemctl failure followed by success. Assert the first
-failure does not disable recovery, the same campaign/queue is retained, and
-no completed fit is launched again. The current activation test mocks
-`deploy.deploy` and does not exercise launcher shutdown.
+All SHA256 values below were read or calculated during this pass.
 
-### P1 Remote write admission does not authenticate destination mounts
+- `tools/i6dmo/context_bridge_campaign.py`:
+  `68d90fc5623d3f9863c44915638d0dde06a30ad62d63106531444c27588cab95`
+- `POPULATION_ACCEPTANCE.json` file:
+  `ea1ce3a8e90f3fe8400f1110fad7588ba9882bbb27ff46b012cbfe863f437e9a`
+- Accepted population digest:
+  `7b54f7ec60657f95f8b351318c0c7fdaedf2c2a786600d5715a6af93f23301e1`
+- Accepted `POPULATION.json` file digest:
+  `f23350ff671e1a771d993ab9a15e3e1fa6ac7b7fe038fb2d996e33a34975bf8e`
+- Accepted retained input digest:
+  `ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8`
 
-References: `tools/i6dmo/context_bridge_campaign.py:193-211` and
-`tools/i6dmo/raw_long_campaign.py:238-245`.
+The real population acceptance records PASS, zero fits, no TEST read and
+FIT-only scaler replay over 20,915 source rows. Both arms have 13,123 FIT,
+546 INNER and 3,762 DEVELOPMENT origins. DEVELOPMENT head counts for
+18/24/36/48/60/72 hours are 3,747/3,453/2,868/2,296/1,722/1,142.
+This pass inspected that acceptance artifact, not the private raw arrays.
+Its assumed-calendar and retained-data qualifications remain in force.
 
-The coordinator has a mount-qualified storage gate. The per-role remote
-check only tests directory existence, access and a fixed 6 GiB of free
-space at `experiment_storage_root`. An unavailable remote volume with a
-writable underlying mountpoint directory can pass and receive population
-replicas on the wrong filesystem. The separate `data_root` destination
-receives the retained input replica without a pre-write mount/capacity
-check. Later matched preflight runs after these writes.
+## Scope And Release Conditions
 
-Minimal fix: before remote mkdir/rsync, authenticate the actual filesystem
-and expected mount target for both destination roots using the private
-deployment contract. Check required replica bytes plus reserve on each
-distinct destination filesystem. Preserve intentional ext4 worker scratch;
-do not assume every worker uses the coordinator's archival filesystem.
+Only the two remaining runtime fixes, their tests and the real population
+acceptance were reviewed in this final pass. Earlier selection and
+design/model audits were not reopened. The parent reports 80 focused tests
+passing; this reviewer did not rerun them. The earlier broader-suite
+timeout is still not a full-suite pass.
 
-Missing regression: simulate an absent remote mount whose underlying
-directory is writable, and an insufficient-space input destination.
-Neither case may reach replication. Existing coverage tests only refusal
-by the coordinator's local storage gate.
+Before deployment, the final release manifest must bind the exact reviewed
+execution-file hashes and accepted population digest. Documentation-only
+commits may change HEAD without changing those execution bytes. This note
+does not substitute for that manifest or fresh runtime admission, and it
+does not authorize a changed scientific recipe, extra seeds, strategy
+promotion or TEST access.
 
-## Changes Confirmed
-
-- Campaign initialization now stages before atomic publication, binds its
-  intent and preserves partial preparation evidence.
-- Bridge deployment reads verify the sealed deployment digest; fits carry
-  the sealed 5090 class and other roles lose their heavy GPU slots.
-- Preparation refuses dirty source, binds generator file digests and
-  verifies persisted population bytes. Release scope now includes the
-  provisioning helper, market grid and storage adapter.
-- Actual initial-weight hashes are read through the authenticated fit
-  terminal's digest-pinned training artifact. The bridge decision refuses
-  absent, malformed or unequal hashes and retains the control on a tie.
-- Launch and resume compare the prepared population digest with release
-  acceptance. These additions do not introduce a fit or TEST stage.
-
-## Evidence And Limits
-
-`POPULATION_ACCEPTANCE.json` records PASS for population digest
-`7b54f7ec60657f95f8b351318c0c7fdaedf2c2a786600d5715a6af93f23301e1`:
-13,123 FIT origins, 546 INNER origins and 3,762 DEVELOPMENT origins.
-DEVELOPMENT head counts for 18/24/36/48/60/72 hours are
-3,747/3,453/2,868/2,296/1,722/1,142. It records FIT-only scaler replay,
-zero fits and no TEST read. This pass inspected that acceptance artifact;
-it did not reopen private arrays or independently repeat its audit.
-
-The parent reported 74 focused tests passing. The subsequent 75-test run
-was announced, not independently executed or verified here. The broader
-suite timed out at approximately 89 percent with no displayed failures;
-that is not a full-suite pass. No tests, fits, GPU work, services or
-monitoring were run during this re-review.
-
-After the two blockers are addressed, final release acceptance must bind
-the reviewed execution bytes and accepted population digest. Re-run the
-targeted failure-path regressions before scientific deployment. This note
-does not authorize additional seeds, strategy promotion or TEST access.
+No tests, fits, GPU work, services, TEST access, waits or monitoring were
+performed during this final pass. Only this review note was edited.
