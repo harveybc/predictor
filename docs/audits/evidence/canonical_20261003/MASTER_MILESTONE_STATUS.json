@@ -1,91 +1,91 @@
 {
-  "as_of": "2026-10-16T04:07:43+00:00",
-  "critical_path_eta": "Static sequence CLOSED. Retained business/metric audit PASS; four training histories replay correctly with identical settings and identical short/long R0 initial weights. Owner limits scope to training, not reopening selection/vendor audit. First short-input/long-target R0 bridge proposed, not launched; no measured ETA. Existing source qualifications and TEST closure retained.",
-  "milestones": [
-    {
-      "eta": "1-3 development days",
-      "evidence": "Retained short/long FIT/INNER/DEVELOPMENT audit: exact business masks, open+12/close-12 buffers, t included, no future or invented closed-hour input slots; assumed calendar remains unverified against broker. Full weekly validation remains open.",
-      "id": "M1",
-      "next": "Run one complete weekly validation pilot with MAE, short/long horizons and idempotent strategy delivery",
-      "progress": 66,
-      "state": "CORE_IMPLEMENTED",
-      "title": "Business-faithful evaluation"
-    },
-    {
-      "eta": "Selection DONE; source clocks unresolved",
-      "evidence": "6240 tasks closed; EURUSD/ETH unions 20/9. Current baseline: 19 RAW, no STLFSI4. Selection used 2024 development; TEST stays closed.",
-      "id": "M2",
-      "next": "Retain selected manifest; resolve source publication clocks before TEST, without rerunning the closed selection",
-      "progress": 78,
-      "state": "IN_PROGRESS",
-      "title": "Feature selection"
-    },
-    {
-      "eta": "1-2 days",
-      "evidence": "TimeFilter ECL A, Weather and Traffic operational replications with paired naive",
-      "id": "M3",
-      "next": "Consolidate comparable rows and retain static literature identity separately from business mode",
-      "progress": 78,
-      "state": "MULTIPLE_REPLICATIONS_COMPLETE",
-      "title": "Exact literature controls"
-    },
-    {
-      "eta": "Approved static R0/R2 contrast complete; remaining M4 work not measured",
-      "evidence": "Both R0/R2 families CLOSED R0_RETAINED under 5d430951. Short relative MAE R0 -0.007738%, R2 +0.020282%; long R0 +26.285134%, R2 +26.607801%. 50/50 units, 288 readbacks, 177 files per mirror per campaign. Nineteen short donors adopted without retraining; nineteen long donors trained. One seed, DEVELOPMENT only.",
-      "id": "M4",
-      "next": "Retain both verified closures and per-horizon results; do not repeat these fits. Preserve short INNER-only donor qualification. Core pretraining and other representation contrasts remain separate future work.",
-      "progress": 48,
-      "state": "STATIC_R0_R2_CONTRAST_CLOSED",
-      "title": "Pretrained branches: R0/R1/R2"
-    },
-    {
-      "eta": "3-5 days after M4",
-      "evidence": "Temporal-preserving fusion/core code and staged donor contracts exist",
-      "id": "M5",
-      "next": "Train the core AE from fused selected-branch sequences, then verify R1/R2 transfer",
-      "progress": 22,
-      "state": "DESIGNED_NOT_DEFINITIVE",
-      "title": "Pretrained temporal core"
-    },
-    {
-      "eta": "Static contrasts complete; quarterly contrast not launched",
-      "evidence": "RAW long MG12m/MG1l relative MAE +26.285134%/+47.377774%; subsequent MG12m R0/R2 +26.285134%/+26.607801%. Neither long arm has an eligible head, so no eligible strategy pair, trading or TEST. Short R0 retains eligible 4/6/12 h heads on DEVELOPMENT. Full per-horizon naive and metrics retained in returns.",
-      "id": "M6",
-      "next": "Define the small R0 short-input/long-target bridge (13 observations at 2 open-market-hour spacing; six long heads), with frozen common support/scalers and a new seal. Do not reopen selection. Broader context/resolution studies and quarterly cadence follow; existing TEST gates remain.",
-      "progress": 24,
-      "state": "PARTIAL_MEASUREMENT",
-      "title": "Short/long forecasts + strategy",
-      "engineering_note": "MG2/MG12 measured and closed; whole-M6 percentage unchanged. Prior estimates for other milestones are not fresh measured ETAs."
-    },
-    {
-      "eta": "5-10 days after M5",
-      "evidence": "Raw and modular four-arm integration complete; no final selected-data pilot",
-      "id": "M7",
-      "next": "Train SAC and DQN with and without frozen/fine-tuned modular representation under weekly updates",
-      "progress": 28,
-      "state": "INTEGRATED_NOT_TRAINED_ON_FINAL_DATA",
-      "title": "RL: SAC and DQN"
-    },
-    {
-      "eta": "2-4 days after M6/M7 finalist",
-      "evidence": "Alpaca paper and MT5 integration work exists; no promoted final model",
-      "id": "M8",
-      "next": "Promote only candidates passing validation, naive and risk gates; paper before live",
-      "progress": 15,
-      "state": "INTERFACES_ONLY",
-      "title": "Paper/live trading"
-    }
-  ],
-  "optional_after_critical_path": [
-    "hierarchical unsupervised market regimes",
-    "economic-calendar causal inputs",
-    "synthetic data generation",
-    "NEAT predictive or policy heads"
-  ],
-  "regenerated_by": {
-    "from": "fs_closure/STATUS.json",
-    "tool": "tools/fs_close_manifest.py",
-    "i6dmo_update": "2026-10-16: short and long downsampled R0/R2 campaigns automatically CLOSED and retain R0; all milestone percentages unchanged; r2_downsampled/SHORT_RETURN.md and LONG_RETURN.md record per-horizon results"
+ "as_of": "2026-10-16T04:07:43+00:00",
+ "critical_path_eta": "Context bridge i6dmo-e5b3dd7cd27e deployed from ab22099f; finite five-unit R0 comparison progressing by timers. New regime timings remain measured/unknown by phase, not inherited. No TEST or strategy.",
+ "milestones": [
+  {
+   "eta": "1-3 development days",
+   "evidence": "Retained short/long FIT/INNER/DEVELOPMENT audit: exact business masks, open+12/close-12 buffers, t included, no future or invented closed-hour input slots; assumed calendar remains unverified against broker. Full weekly validation remains open.",
+   "id": "M1",
+   "next": "Run one complete weekly validation pilot with MAE, short/long horizons and idempotent strategy delivery",
+   "progress": 66,
+   "state": "CORE_IMPLEMENTED",
+   "title": "Business-faithful evaluation"
   },
-  "schema": "predictor.master_milestones.v1"
+  {
+   "eta": "Selection DONE; source clocks unresolved",
+   "evidence": "6240 tasks closed; EURUSD/ETH unions 20/9. Current baseline: 19 RAW, no STLFSI4. Selection used 2024 development; TEST stays closed.",
+   "id": "M2",
+   "next": "Retain selected manifest; resolve source publication clocks before TEST, without rerunning the closed selection",
+   "progress": 78,
+   "state": "IN_PROGRESS",
+   "title": "Feature selection"
+  },
+  {
+   "eta": "1-2 days",
+   "evidence": "TimeFilter ECL A, Weather and Traffic operational replications with paired naive",
+   "id": "M3",
+   "next": "Consolidate comparable rows and retain static literature identity separately from business mode",
+   "progress": 78,
+   "state": "MULTIPLE_REPLICATIONS_COMPLETE",
+   "title": "Exact literature controls"
+  },
+  {
+   "eta": "Approved static R0/R2 contrast complete; remaining M4 work not measured",
+   "evidence": "Both R0/R2 families CLOSED R0_RETAINED under 5d430951. Short relative MAE R0 -0.007738%, R2 +0.020282%; long R0 +26.285134%, R2 +26.607801%. 50/50 units, 288 readbacks, 177 files per mirror per campaign. Nineteen short donors adopted without retraining; nineteen long donors trained. One seed, DEVELOPMENT only.",
+   "id": "M4",
+   "next": "Retain both verified closures and per-horizon results; do not repeat these fits. Preserve short INNER-only donor qualification. Core pretraining and other representation contrasts remain separate future work.",
+   "progress": 48,
+   "state": "STATIC_R0_R2_CONTRAST_CLOSED",
+   "title": "Pretrained branches: R0/R1/R2"
+  },
+  {
+   "eta": "3-5 days after M4",
+   "evidence": "Temporal-preserving fusion/core code and staged donor contracts exist",
+   "id": "M5",
+   "next": "Train the core AE from fused selected-branch sequences, then verify R1/R2 transfer",
+   "progress": 22,
+   "state": "DESIGNED_NOT_DEFINITIVE",
+   "title": "Pretrained temporal core"
+  },
+  {
+   "engineering_note": "Context bridge has 80 focused passing tests and independent acceptance; wider suite timed out at240s, not a full pass. Milestone percentages retained.",
+   "eta": "See generated context bridge status; no measured end-to-end ETA yet",
+   "evidence": "RAW long MG12m/MG1l relative MAE +26.285134%/+47.377774%; subsequent MG12m R0/R2 +26.285134%/+26.607801%. Neither long arm has an eligible head, so no eligible strategy pair, trading or TEST. Short R0 retains eligible 4/6/12 h heads on DEVELOPMENT. Full per-horizon naive and metrics retained in returns.",
+   "id": "M6",
+   "next": "Complete both matched R0 fits, reports, comparison, OLAP readback and two physical mirrors automatically; then close only this campaign. No other contrast or TEST implicitly launched.",
+   "progress": 24,
+   "state": "CONTEXT_BRIDGE_RUNNING",
+   "title": "Short/long forecasts + strategy"
+  },
+  {
+   "eta": "5-10 days after M5",
+   "evidence": "Raw and modular four-arm integration complete; no final selected-data pilot",
+   "id": "M7",
+   "next": "Train SAC and DQN with and without frozen/fine-tuned modular representation under weekly updates",
+   "progress": 28,
+   "state": "INTEGRATED_NOT_TRAINED_ON_FINAL_DATA",
+   "title": "RL: SAC and DQN"
+  },
+  {
+   "eta": "2-4 days after M6/M7 finalist",
+   "evidence": "Alpaca paper and MT5 integration work exists; no promoted final model",
+   "id": "M8",
+   "next": "Promote only candidates passing validation, naive and risk gates; paper before live",
+   "progress": 15,
+   "state": "INTERFACES_ONLY",
+   "title": "Paper/live trading"
+  }
+ ],
+ "optional_after_critical_path": [
+  "hierarchical unsupervised market regimes",
+  "economic-calendar causal inputs",
+  "synthetic data generation",
+  "NEAT predictive or policy heads"
+ ],
+ "regenerated_by": {
+  "from": "fs_closure/STATUS.json",
+  "i6dmo_update": "2026-10-16: short and long downsampled R0/R2 campaigns automatically CLOSED and retain R0; all milestone percentages unchanged; r2_downsampled/SHORT_RETURN.md and LONG_RETURN.md record per-horizon results",
+  "tool": "tools/fs_close_manifest.py"
+ },
+ "schema": "predictor.master_milestones.v1"
 }

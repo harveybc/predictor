@@ -7,6 +7,19 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Ejecucion aprobada y lanzada, 2026-10-16: campana i6dmo-e5b3dd7cd27e,
+codigo ejecutor ab22099f, contrasta dos R0 de igual capacidad e inicializacion:
+13 observaciones cada 12 horas de mercado (144 h de contexto) frente a las
+13 cada 2 h de la receta corta (24 h de contexto), ambos con targets largos
+18/24/36/48/60/72 h. Soporte comun sellado: 13.123 origenes FIT, 546 INNER y
+3.762 DEVELOPMENT. Primera carga GPU real verificada en la 5090; ajustes
+secuenciales, sin 5070 Ti concurrente. Ochenta pruebas enfocadas pasan;
+suite amplia interrumpida por limite de 240 s, no certificada. Revision
+independiente y comprobacion de arrays reales aceptadas. Timers propios
+continuan hasta reportes, comparacion, OLAP, dos espejos y cierre; no se
+requieren agentes pendientes de logs. No se lanza otro experimento ni TEST.
+[Plan y automatizacion](../i6n/direct_multi_output_static/context_bridge/PLAN.md).
+
 Precision posterior del propietario, 2026-10-16: no reabrir seleccion ni la
 auditoria de proveedores para este contraste de desarrollo. La revision debe
 centrarse en entrenamiento y transformaciones de esta etapa. Cuatro historiales

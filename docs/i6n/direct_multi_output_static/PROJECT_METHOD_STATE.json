@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-16",
- "current_stage": "S8_CONTEXT_BRIDGE_IMPLEMENTATION_APPROVED",
- "execution_status": "CONTEXT_BRIDGE_DEFINITION_AND_IMPLEMENTATION_NO_FIT_YET",
+ "current_stage": "S8_CONTEXT_BRIDGE_EXECUTING",
+ "execution_status": "MATCHED_R0_CONTEXT_BRIDGE_RUNNING_AUTOMATICALLY",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -32,7 +32,7 @@
   "Retain the closed matched campaign and selected MG2m recipe without another matched-control fit",
   "Retain both R0_RETAINED closures: 50/50 units, 288 report readbacks and 177 files per mirror in each campaign; no further fits in this closed sequence",
   "Owner clarification 2026-10-16: do not reopen feature selection or upstream vendor audit for the development contrast; retain those qualifications and TEST gates. Audit retained training histories and transformations; four histories independently replayed successfully",
-  "Owner approved execution 2026-10-16: implement/test/review/seal/deploy the finite context bridge under context_bridge/PLAN.md. Two matched fresh R0 fits on the preferred 5090, automatic reports/comparison/OLAP readback/mirrors/CLOSE and bounded status. No agent polling or stage approvals. Wider context/resolution studies and quarterly cadence follow separately",
+  "Continue campaign i6dmo-e5b3dd7cd27e automatically from runtime ab22099f: two matched R0 fits on the 5090, then reports/comparison/OLAP readback/mirrors/CLOSE. First real fit verified with epoch progress and visible GPU workload; no agent polling or stage approvals. Wider context/resolution studies and quarterly cadence remain separate",
   "Retain 19 R2 donors, completed R0/probe and typed pre-fit import failure; no R2 retry or new pretraining in the RAW critical path",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],
