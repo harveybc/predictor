@@ -144,6 +144,7 @@ FAMILIES = {
 #: Market-time families (MARKET_TIME_PAIR_PLAN section 2/3): offsets are NOT a fixed grid, so the
 #: config declares the slot count and the market_time block instead of offsets_hours, and the model
 #: takes per-example time inputs. Elapsed spans vary across closures and DST by construction.
+CONTEXT_BRIDGE_MODEL_FAMILIES = ("long_mg12_bridge_control", "long_mg2_bridge")
 MARKET_FAMILIES = {
     "short_mg2": {"slots": 13, "horizons_hours": [2, 3, 4, 5, 6, 12], "rule": "MG2_MARKET_EXACT",
                   "spacing_open_market_hours": 2, "span_open_market_hours": 24},
@@ -156,13 +157,19 @@ MARKET_FAMILIES = {
                   "spacing_open_market_hours": 1, "span_open_market_hours": 24},
     "long_mg1": {"slots": 145, "horizons_hours": [18, 24, 36, 48, 60, 72], "rule": "MG1_MARKET_EXACT",
                  "spacing_open_market_hours": 1, "span_open_market_hours": 144},
+    "long_mg12_bridge_control": {
+        "slots": 13, "horizons_hours": [18, 24, 36, 48, 60, 72], "rule": "MG12_MARKET_EXACT",
+        "spacing_open_market_hours": 12, "span_open_market_hours": 144},
+    "long_mg2_bridge": {
+        "slots": 13, "horizons_hours": [18, 24, 36, 48, 60, 72], "rule": "MG2_MARKET_EXACT",
+        "spacing_open_market_hours": 2, "span_open_market_hours": 24},
 }
 #: The sealed effective config's model block is the authority: it carries ``offsets_hours: None``
 #: (variable per example, never a fixed grid) and the sealed ``time_encoder`` identity, so both
 #: are accepted here and normalized away. Review B-1 (RB04).
 MARKET_KEYS = {"schema", "features", "slots", "market_time", "horizons_hours", "branch", "core",
                "heads", "positional_encoding", "regime", "seed"}
-MARKET_OPTIONAL_KEYS = {"offsets_hours", "time_encoder"}
+MARKET_OPTIONAL_KEYS = {"offsets_hours", "time_encoder", "family"}
 TIME_ENCODER_VERSION = "1.0.0"
 
 
@@ -180,6 +187,7 @@ def model_config(features, seed=6102026, family="short"):
             "branch": json.loads(_canonical(_FIXED["branch"])),
             "core": json.loads(_canonical(_FIXED["core"])),
             "heads": json.loads(_canonical(_FIXED["heads"])),
+            **({"family": family} if family in CONTEXT_BRIDGE_MODEL_FAMILIES else {}),
             "positional_encoding": "dynamic_physical_time_after_fusion",
             "slots": spec["slots"], "horizons_hours": list(spec["horizons_hours"]),
             "market_time": {"rule": spec["rule"],
@@ -197,11 +205,18 @@ def is_market_time(config):
 
 
 def market_family(config):
-    """Match rule AND slots AND physical horizons (MG1 short and long share a rule)."""
+    """Match rule/slots/heads; bridge tags distinguish its control from legacy MG12."""
     if not is_market_time(config):
         return None
     rule = (config.get("market_time") or {}).get("rule")
-    return next((name for name, spec in MARKET_FAMILIES.items()
+    tagged = config.get("family")
+    if "family" in config:
+        if tagged not in CONTEXT_BRIDGE_MODEL_FAMILIES:
+            return None
+        candidates = ((tagged, MARKET_FAMILIES[tagged]),)
+    else:
+        candidates = MARKET_FAMILIES.items()
+    return next((name for name, spec in candidates
                  if spec["rule"] == rule and spec["slots"] == config.get("slots")
                  and spec["horizons_hours"] == config.get("horizons_hours")), None)
 
@@ -625,11 +640,15 @@ CAPACITY_SCHEMA = "i6dmo.capacity.v1"
 #: Data-lane arm ids (design.MATCHED_SCOPE) -> model family. The sealed matched design families
 #: short_mg1_matched / short_mg2_matched build exactly these recipes (MATCHED_MODEL_FAMILIES).
 MATCHED_ARMS = {"mg1": "short_mg1", "mg2m": "short_mg2",
-                "mg1l": "long_mg1", "mg12m": "long_mg12"}
+                "mg1l": "long_mg1", "mg12m": "long_mg12",
+                "mg12c": "long_mg12_bridge_control", "mg2l": "long_mg2_bridge"}
 MATCHED_MODEL_FAMILIES = {"short_mg1_matched": "short_mg1", "short_mg2_matched": "short_mg2",
-                          "long_mg1_matched": "long_mg1", "long_mg12_matched": "long_mg12"}
+                          "long_mg1_matched": "long_mg1", "long_mg12_matched": "long_mg12",
+                          "long_mg12_bridge_control": "long_mg12_bridge_control",
+                          "long_mg2_bridge": "long_mg2_bridge"}
 MATCHED_HEAD_DELTA = (25 - 13) * 4 * 8 * 6
 LONG_MATCHED_HEAD_DELTA = (145 - 13) * 4 * 8 * 6
+CONTEXT_BRIDGE_HEAD_DELTA = (13 - 13) * 4 * 8 * 6
 #: Declared per-component trainable parameter counts of the fixed R0 recipe with the 19 RAW
 #: features, written out literally so a code change that alters capacity cannot pass silently:
 #: the build must reproduce BOTH the analytic recipe count and this literal disclosure.
@@ -654,6 +673,18 @@ DECLARED_CAPACITY = {
                   "core": 1980, "core_layers": [1880, 100],
                   "per_head": 433, "per_head_hidden": 424, "per_head_output": 9,
                   "heads": 2598, "total": 4882},
+    "long_mg12_bridge_control": {
+        "slots": 13, "features": 19, "core_input_channels": 78,
+        "branches": 304, "per_branch": 16, "fusion": 0, "time_encoder": 0,
+        "core": 1980, "core_layers": [1880, 100],
+        "per_head": 433, "per_head_hidden": 424, "per_head_output": 9,
+        "heads": 2598, "total": 4882},
+    "long_mg2_bridge": {
+        "slots": 13, "features": 19, "core_input_channels": 78,
+        "branches": 304, "per_branch": 16, "fusion": 0, "time_encoder": 0,
+        "core": 1980, "core_layers": [1880, 100],
+        "per_head": 433, "per_head_hidden": 424, "per_head_output": 9,
+        "heads": 2598, "total": 4882},
 }
 
 
@@ -763,7 +794,7 @@ def capacity_record(bundle):
 
 
 def matched_capacity_delta(record_mg1, record_mg2):
-    """Disclosed hourly-minus-downsampled capacity for exactly one matched contrast."""
+    """Disclosed ordered-arm capacity delta for exactly one matched contrast."""
     if not isinstance(record_mg1, dict) or not isinstance(record_mg2, dict):
         raise CapacityError("two matched capacity records required")
     arms = (record_mg1.get("arm"), record_mg2.get("arm"))
@@ -771,14 +802,19 @@ def matched_capacity_delta(record_mg1, record_mg2):
         head_delta, formula = MATCHED_HEAD_DELTA, "(25-13)*4*8*6"
     elif arms == ("mg1l", "mg12m"):
         head_delta, formula = LONG_MATCHED_HEAD_DELTA, "(145-13)*4*8*6"
+    elif arms == ("mg12c", "mg2l"):
+        head_delta, formula = CONTEXT_BRIDGE_HEAD_DELTA, "(13-13)*4*8*6"
     else:
         raise CapacityError(f"not an ordered matched arm pair: {arms}")
     for record, arm in zip((record_mg1, record_mg2), arms):
         if not isinstance(record, dict) or record.get("schema") != CAPACITY_SCHEMA or \
                 record.get("arm") != arm:
             raise CapacityError(f"{arm} capacity record missing or not the {arm} arm")
+        if "family" in record and record["family"] != MATCHED_ARMS[arm]:
+            raise CapacityError(f"{arm} record declares another model family")
         literal = DECLARED_CAPACITY[MATCHED_ARMS[arm]]
-        if any(record["counts"].get(k) != v for k, v in literal.items()):
+        if not isinstance(record.get("counts"), dict) or \
+                any(record["counts"].get(k) != v for k, v in literal.items()):
             raise CapacityError(f"{arm} record disagrees with the declared disclosure")
     a, b = record_mg1["counts"], record_mg2["counts"]
     delta = {k: a[k] - b[k] for k in ("branches", "fusion", "time_encoder", "core", "heads",

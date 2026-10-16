@@ -192,7 +192,20 @@ LONG_MATCHED_SCOPE = {
               "horizons_hours": [18, 24, 36, 48, 60, 72], "family": "long_mg12_matched",
               "role": "MATCHED_REFERENCE", "partner": "mg1l"},
 }
-ALL_MATCHED_SCOPE = {**MATCHED_SCOPE, **LONG_MATCHED_SCOPE}
+CONTEXT_BRIDGE_CONTRAST_ID = "I6-DMO-LONG-SHORT-INPUT-CONTEXT-BRIDGE-R0"
+CONTEXT_BRIDGE_SCOPE = {
+    "mg12c": {"experiment_id": "I6-DMO-LONG-MG12-CONTEXT-BRIDGE-CONTROL-R0",
+              "rule": "MG12_MARKET_EXACT", "observations": 13,
+              "spacing_open_market_hours": 12, "span_open_market_hours": 144,
+              "horizons_hours": [18, 24, 36, 48, 60, 72],
+              "family": "long_mg12_bridge_control", "role": "CONTROL", "partner": "mg2l"},
+    "mg2l": {"experiment_id": "I6-DMO-LONG-MG2-CONTEXT-BRIDGE-R0",
+             "rule": "MG2_MARKET_EXACT", "observations": 13,
+             "spacing_open_market_hours": 2, "span_open_market_hours": 24,
+             "horizons_hours": [18, 24, 36, 48, 60, 72],
+             "family": "long_mg2_bridge", "role": "TREATMENT", "partner": "mg12c"},
+}
+ALL_MATCHED_SCOPE = {**MATCHED_SCOPE, **LONG_MATCHED_SCOPE, **CONTEXT_BRIDGE_SCOPE}
 MATCHED_FAMILIES = tuple(v["family"] for v in ALL_MATCHED_SCOPE.values())
 #: Frozen BEFORE either fit (plan section 2 "Common population"); both sealed designs bind its sha256.
 MATCHED_POPULATION_RULES = {
@@ -241,15 +254,32 @@ LONG_MATCHED_POPULATION_RULES["scaler"] = (
 LONG_MATCHED_POPULATION_RULES["rules_sha256"] = hashlib.sha256(json.dumps(
     LONG_MATCHED_POPULATION_RULES, sort_keys=True, separators=(",", ":"),
     allow_nan=False).encode("utf-8")).hexdigest()
+CONTEXT_BRIDGE_POPULATION_RULES = copy.deepcopy(MATCHED_POPULATION_RULES)
+CONTEXT_BRIDGE_POPULATION_RULES.pop("rules_sha256")
+CONTEXT_BRIDGE_POPULATION_RULES.update({
+    "contrast_id": CONTEXT_BRIDGE_CONTRAST_ID,
+    "scaler": ("ONE FIT-only feature mean/std (ddof=0) over the UNION of MG12c/MG2l input-source "
+               "bars of the common FIT origins, with its exact source-row digest; the same "
+               "statistics serve both arms; INNER/DEVELOPMENT cannot change them"),
+    "input_recipe": ("13 observations including t in both arms; MG12c at spacing12/span144 "
+                     "versus MG2l at spacing2/span24 open-market hours, with identical long "
+                     "elapsed heads; a whole input-recipe comparison, not separate causal "
+                     "effects of span and spacing"),
+    "slot_subset_required": False,
+    "capacity_delta": 0,
+})
+CONTEXT_BRIDGE_POPULATION_RULES["rules_sha256"] = hashlib.sha256(json.dumps(
+    CONTEXT_BRIDGE_POPULATION_RULES, sort_keys=True, separators=(",", ":"),
+    allow_nan=False).encode("utf-8")).hexdigest()
 
 
 def matched_arm_set(arms):
     """Infer exactly one supported contrast; mixed, partial and combined pairs are refused."""
     keys = set(arms)
-    for scope in (MATCHED_SCOPE, LONG_MATCHED_SCOPE):
+    for scope in (MATCHED_SCOPE, LONG_MATCHED_SCOPE, CONTEXT_BRIDGE_SCOPE):
         if keys == set(scope):
             return tuple(scope)
-    raise DesignError("ARMS_REQUIRED", "exactly mg1/mg2m or mg1l/mg12m")
+    raise DesignError("ARMS_REQUIRED", "exactly mg1/mg2m, mg1l/mg12m or mg12c/mg2l")
 
 
 def matched_population_rules(arm):
@@ -258,6 +288,8 @@ def matched_population_rules(arm):
         return copy.deepcopy(MATCHED_POPULATION_RULES)
     if arm in LONG_MATCHED_SCOPE:
         return copy.deepcopy(LONG_MATCHED_POPULATION_RULES)
+    if arm in CONTEXT_BRIDGE_SCOPE:
+        return copy.deepcopy(CONTEXT_BRIDGE_POPULATION_RULES)
     raise DesignError("MATCHED_ARM_UNKNOWN", repr(arm))
 
 
@@ -868,6 +900,9 @@ def _market_time_effective(d, features):
     if fam in MATCHED_FAMILIES:
         effective["matched_population"] = copy.deepcopy(d["matched_population"])
         effective["matched_population_rules"] = matched_population_rules(matched_arm(d))
+    if fam in (scope["family"] for scope in CONTEXT_BRIDGE_SCOPE.values()):
+        # The control recipe equals legacy MG12; only new configs carry its distinct identity.
+        effective["model"]["family"] = fam
     effective["effective_config_sha256"] = effective_config_sha256(effective)
     return effective
 
@@ -1294,6 +1329,12 @@ def seal_matched_long(short_design_path, out_dir, *, calendar=None, runtime=None
     """Seal the distinct RAW 144-market-hour MG1-long/MG12 contrast, without data or fits."""
     return _seal_matched(short_design_path, out_dir, LONG_MATCHED_SCOPE,
                          "i6dmo.seal_matched_long.v1", calendar=calendar, runtime=runtime)
+
+
+def seal_context_bridge(short_design_path, out_dir, *, calendar=None, runtime=None):
+    """Seal fresh MG12 control/MG2 long-head identities; no data, fit or old-source rewrite."""
+    return _seal_matched(short_design_path, out_dir, CONTEXT_BRIDGE_SCOPE,
+                         "i6dmo.seal_context_bridge.v1", calendar=calendar, runtime=runtime)
 
 
 def _seal_matched(short_design_path, out_dir, scope, schema, *, calendar=None, runtime=None):

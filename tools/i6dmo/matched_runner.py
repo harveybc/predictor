@@ -45,10 +45,14 @@ from pathlib import Path
 #: Arm ids are the data lane's (``design.matched_arm``): ``mg1`` control, ``mg2m`` matched reference.
 ARMS = ("mg1", "mg2m")
 LONG_ARMS = ("mg1l", "mg12m")
+CONTEXT_BRIDGE_ARMS = ("mg12c", "mg2l")
 ARM_SLOTS = {"mg1": 25, "mg2m": 13, "mg1l": 145, "mg12m": 13}
 ARM_SPACING = {"mg1": 1, "mg2m": 2, "mg1l": 1, "mg12m": 12}
 ARM_RESOURCE_CLASS = {"mg1": "short_mg1_matched", "mg2m": "short_mg2_matched",
                       "mg1l": "long_mg1_matched", "mg12m": "long_mg12_matched"}
+ARM_SLOTS.update(mg12c=13, mg2l=13)
+ARM_SPACING.update(mg12c=12, mg2l=2)
+ARM_RESOURCE_CLASS.update(mg12c="long_mg12_bridge_control", mg2l="long_mg2_bridge")
 MATCHED_DIR = Path(__file__).resolve().parents[2] / "docs/i6n/direct_multi_output_static/matched_short"
 HORIZONS = (2, 3, 4, 5, 6, 12)
 LONG_HORIZONS = (18, 24, 36, 48, 60, 72)
@@ -70,6 +74,9 @@ def contrast_profile(arms):
         return dict(arms=ARMS, horizons=HORIZONS, tie_keeps=TIE_KEEPS, family="short")
     if len(arms) == 2 and set(arms) == set(LONG_ARMS):
         return dict(arms=LONG_ARMS, horizons=LONG_HORIZONS, tie_keeps="mg12m", family="long")
+    if len(arms) == 2 and set(arms) == set(CONTEXT_BRIDGE_ARMS):
+        return dict(arms=CONTEXT_BRIDGE_ARMS, horizons=LONG_HORIZONS, tie_keeps="mg12c",
+                    family="long", context_bridge=True)
     raise ValueError(f"MATCHED_ARMS_REQUIRED: expected {ARMS} or {LONG_ARMS}, got {arms}")
 
 
@@ -102,6 +109,9 @@ VERDICTS = {("LOWER_SCORE", "mg1"): "MG1_SELECTED", ("LOWER_SCORE", "mg2m"): "MG
             ("LOWER_SCORE", "mg1l"): "MG1_LONG_SELECTED", ("LOWER_SCORE", "mg12m"): "MG12_SELECTED",
             ("TIE_RETAIN_CHEAPER", "mg12m"): "MG12_RETAINED_WITHIN_TOLERANCE",
             ("INCOMPLETE_COMPARISON", None): "INCOMPLETE_COMPARISON"}
+VERDICTS.update({("LOWER_SCORE", "mg2l"): "SHORT_CONTEXT_SELECTED",
+                 ("LOWER_SCORE", "mg12c"): "LONG_CONTEXT_RETAINED",
+                 ("TIE_RETAIN_CONTROL", "mg12c"): "LONG_CONTEXT_RETAINED_WITHIN_TOLERANCE"})
 
 
 def disposition_of(verdict):

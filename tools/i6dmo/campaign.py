@@ -447,7 +447,8 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
         raise Refused("REPORT_ENTRY_CALLS_FIT")
     base = arms[profile["tie_keeps"]]
     effective = _seal(dict(
-        schema="i6dmo.effective_config.v1", experiment_id=("I6-DMO-MATCHED-LONG-MG1-MG12-R0"
+        schema="i6dmo.effective_config.v1", experiment_id=("I6-DMO-LONG-SHORT-INPUT-CONTEXT-BRIDGE-R0"
+            if profile.get("context_bridge") else "I6-DMO-MATCHED-LONG-MG1-MG12-R0"
             if profile["family"] == "long" else "I6-DMO-MATCHED-SHORT-MG1-MG2-R0"),
         design=base["design"], design_sha256=base["design_sha256"], validator=base["validator"],
         adapter_effective=base["adapter_effective"], arms=arms, cadence=first["retraining_frequency"],
@@ -1727,7 +1728,8 @@ AUTO_CLOSE_DISPOSITIONS = ("R2_SELECTED", "R0_RETAINED",
                            "PAIR_NOT_ELIGIBLE", "MARKET_TIME_PAIR_VALIDATION_COMPLETE", "FINAL_PAIR_TEST_COMPLETE",
                            "MG1_SELECTED", "MG2_SELECTED", "MG2_RETAINED_WITHIN_TOLERANCE", "INCOMPLETE_COMPARISON",
                            "MG1_LONG_SELECTED", "MG12_SELECTED", "MG12_RETAINED_WITHIN_TOLERANCE",
-                           "RAW_PAIR_VALIDATION_COMPLETE")
+                           "RAW_PAIR_VALIDATION_COMPLETE", "SHORT_CONTEXT_SELECTED", "LONG_CONTEXT_RETAINED",
+                           "LONG_CONTEXT_RETAINED_WITHIN_TOLERANCE")
 CLOSURE_INPUTS_DIR = Path("backup") / "closure_inputs"
 CLOSURE_INPUT_FILES = ("PUBLICATION.json", "MIRRORS.json", "REPORTS.json")
 

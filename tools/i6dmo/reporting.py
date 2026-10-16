@@ -772,5 +772,7 @@ def decide_matched(mg1_metrics, mg2_metrics, *, require_scientific=True):
         return dict(doc, decision="INCOMPLETE_COMPARISON", selected=None, missing=missing)
     diff = selections[0]["score"] - selections[1]["score"]
     if abs(diff) <= SELECTION_TIE:
+        if profile.get("context_bridge"):
+            return dict(doc, decision="TIE_RETAIN_CONTROL", selected=control, difference=diff)
         return dict(doc, decision="TIE_RETAIN_CHEAPER", selected=downsampled, difference=diff)
     return dict(doc, decision="LOWER_SCORE", selected=control if diff < 0 else downsampled, difference=diff)

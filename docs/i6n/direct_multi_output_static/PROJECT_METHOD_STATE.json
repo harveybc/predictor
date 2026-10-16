@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-16",
- "current_stage": "S8_TRAINING_AUDIT_COMPLETE_BRIDGE_PROPOSED",
- "execution_status": "STATIC_SEQUENCE_CLOSED_TRAINING_AND_METRIC_CHECKS_PASS_NO_BRIDGE_FIT",
+ "current_stage": "S8_CONTEXT_BRIDGE_IMPLEMENTATION_APPROVED",
+ "execution_status": "CONTEXT_BRIDGE_DEFINITION_AND_IMPLEMENTATION_NO_FIT_YET",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -32,7 +32,7 @@
   "Retain the closed matched campaign and selected MG2m recipe without another matched-control fit",
   "Retain both R0_RETAINED closures: 50/50 units, 288 report readbacks and 177 files per mirror in each campaign; no further fits in this closed sequence",
   "Owner clarification 2026-10-16: do not reopen feature selection or upstream vendor audit for the development contrast; retain those qualifications and TEST gates. Audit retained training histories and transformations; four histories independently replayed successfully",
-  "Define first the short-input long-target R0 bridge: 13 slots at 2 open-market hours, six long heads, fixed minimal model and optimizer. Common support/scalers and new seals are required; no fit launched. Wider context/resolution studies and quarterly cadence follow separately",
+  "Owner approved execution 2026-10-16: implement/test/review/seal/deploy the finite context bridge under context_bridge/PLAN.md. Two matched fresh R0 fits on the preferred 5090, automatic reports/comparison/OLAP readback/mirrors/CLOSE and bounded status. No agent polling or stage approvals. Wider context/resolution studies and quarterly cadence follow separately",
   "Retain 19 R2 donors, completed R0/probe and typed pre-fit import failure; no R2 retry or new pretraining in the RAW critical path",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],
