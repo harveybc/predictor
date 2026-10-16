@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-16T13:44:07.554Z",
+ "as_of": "2026-10-16T13:48:44.747Z",
  "critical_path_eta": "407 logical cells: 269 static + 138 conditional cadence. RUNNING on 5090; new-protocol end-to-end ETA unmeasured. No stage chat approvals; TEST closed.",
  "milestones": [
   {
@@ -50,7 +50,7 @@
   {
    "engineering_note": "129 focused tests plus 23 final control regressions. 5090 engineering passed all private heads; real annual support verified for 4/12/53 periods. Historical engineering percentages unchanged.",
    "eta": "UNMEASURED; automatic per-stage cost ETA",
-   "evidence": "1/407 COMPLETE, OLAP 1/1. Automatic relay to short DS4 private-Conv, epoch17. Heads 1/12, h72 0/15, joint 0/240, transfer 0/2, conditional cadence 0/138. TEST closed.",
+   "evidence": "1/407 COMPLETE, OLAP 1/1. Automatic relay to short DS4 private-Conv, epoch29. Heads 1/12, h72 0/15, joint 0/240, transfer 0/2, conditional cadence 0/138. TEST closed.",
    "id": "M6",
    "next": "Timers execute heads, joint window/core/head grid, transfers and beneficial cadence; then eligibility, OLAP, mirrors and closure. No agent polling.",
    "progress": 24,
