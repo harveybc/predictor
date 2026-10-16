@@ -13,6 +13,14 @@ Musashi ejecuta; no se asignan tareas nuevas a Satoshi. La autoridad ejecutable
 actual es [continuation/PLAN.md](../i6n/direct_multi_output_static/continuation/PLAN.md)
 y su lista completa de celdas, sellada antes de los ajustes.
 
+Estado de arranque verificado: i6dmo-continuation-41c3a7698150, codigo
+e0626cd9, poblacion 8dd12ec5, 407 celdas logicas (269 estaticas + 138 de
+cadencia condicional). Primer dmo_short_ds2_conv real observado en epoca 21
+en la 5090. Timers activos; no espera autorizaciones entre etapas. Prueba
+anual real: 4/12/53 periodos de trimestre/mes/semana cubren exactamente las
+mismas parejas por horizonte que el estatico, sin duplicaciones ni huecos.
+El estado generado prevalece sobre este snapshot; ETA nueva aun no medida.
+
 1. Corregir el protocolo: TRAIN completo 2020-2023 para gradientes; VALIDATION
    2024 para monitorizar M=(L_TRAIN+L_VALIDATION)/2 con los mismos pesos;
    sin particion adicional de ocho semanas. TEST 2025 permanece cerrado.

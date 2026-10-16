@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-16",
- "current_stage": "S8_CONTINUATION_IMPLEMENTATION",
- "execution_status": "PREVIOUS_19_CELLS_CLOSED_CORRECTED_AUTONOMOUS_GRAPH_IN_PREPARATION",
+ "current_stage": "S8_CONTINUATION_EXECUTING",
+ "execution_status": "FULL_407_CELL_GRAPH_RUNNING_ON_5090_WITH_AUTOMATIC_CONDITIONAL_CADENCE",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -34,7 +34,7 @@
   "Owner clarification 2026-10-16: do not reopen feature selection or upstream vendor audit for the development contrast; retain those qualifications and TEST gates. Audit retained training histories and transformations; four histories independently replayed successfully",
   "Retain CLOSED i6dmo-e5b3dd7cd27e: 5/5 complete, 111 readbacks, two mirrors of 58 files. Short input wins all long heads, none beats its naive",
   "Retain CLOSED i6dmo-resolution-705d19ec84ae: 19 fits, 19 exact readbacks, two mirrors of 159 files. Its FIT/INNER stopping and sinusoidal encoding are the old identity, not the corrected protocol",
-  "Implement/test/execute continuation/PLAN.md whole graph: full TRAIN plus actual VALIDATION monitor, no extra holdout, no sine addition, Dense/Conv/LSTM heads, joint context/core grid, conditional quarterly/monthly/weekly rolling comparisons, annual pooled naive, eligibility/strategy diagnostics, OLAP/mirrors/close. No stage chat approvals or Satoshi; TEST remains closed",
+  "Continue i6dmo-continuation-41c3a7698150 from e0626cd9 automatically: 407 logical cells, 269 static plus 138 conditional cadence periods. First private-Conv DMO epoch 21 observed on5090, actual TRAIN/VALIDATION monitor. No stage chat approvals or agent polling; TEST closed. See continuation/LAUNCH_RECEIPT.json and annual support probe",
   "Retain 19 R2 donors, completed R0/probe and typed pre-fit import failure; no R2 retry or new pretraining in the RAW critical path",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],

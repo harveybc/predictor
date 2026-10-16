@@ -1,6 +1,6 @@
 {
- "as_of": "2026-10-16T13:34:27.552Z",
- "critical_path_eta": "Corrected autonomous continuation PREPARING: 269 static logical cells plus conditional calendar cadence periods. No measured end-to-end ETA before the new protocol runs.",
+ "as_of": "2026-10-16T13:44:07.554Z",
+ "critical_path_eta": "407 logical cells: 269 static + 138 conditional cadence. RUNNING on 5090; new-protocol end-to-end ETA unmeasured. No stage chat approvals; TEST closed.",
  "milestones": [
   {
    "eta": "1-3 development days",
@@ -48,14 +48,14 @@
    "title": "Pretrained temporal core"
   },
   {
-   "engineering_note": "Prior 19 fits retained under old FIT/INNER protocol. Historical milestone percentages unchanged; 129 focused continuation tests passed before final control corrections.",
-   "eta": "New protocol: UNMEASURED; query generated continuation status",
-   "evidence": "Previous batch CLOSED: 19/19, 19 OLAP readbacks, two 159-file mirrors. DS2 wins means; best h72 +5.071% vs naive. Corrected TRAIN/VALIDATION, no sine addition, private temporal heads and full continuation are preparing.",
+   "engineering_note": "129 focused tests plus 23 final control regressions. 5090 engineering passed all private heads; real annual support verified for 4/12/53 periods. Historical engineering percentages unchanged.",
+   "eta": "UNMEASURED; automatic per-stage cost ETA",
+   "evidence": "RUNNING: private Conv DMO epoch21; heads 0/12, h72 0/15, joint 0/240, transfer 0/2, cadence 0/138. Full TRAIN + VALIDATION monitor; TEST closed.",
    "id": "M6",
-   "next": "Run corrected head controls, joint window/core/head grid and conditional quarterly/monthly/weekly cadence automatically; then eligibility, OLAP, two mirrors and close. TEST closed.",
+   "next": "Timers execute heads, joint window/core/head grid, transfers and beneficial cadence; then eligibility, OLAP, mirrors and closure. No agent polling.",
    "progress": 24,
    "state": "PARTIAL_MEASUREMENT",
-   "title": "Short/long forecasts + strategy"
+   "title": "Forecasts + strategy: 407-cell queue"
   },
   {
    "eta": "5-10 days after M5",

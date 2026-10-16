@@ -13,7 +13,7 @@
       "dragon_4090",
       "omega_4070"
     ],
-    "gpu_use_now": "Prepare corrected full-TRAIN/VALIDATION continuation, then sequential 5090; previous 19-cell batch CLOSED. No 5070 Ti concurrency.",
+    "gpu_use_now": "i6dmo-continuation-41c3a7698150 RUNNING on 5090 from e0626cd9; first actual private-Conv DMO epoch21 verified. All 407 logical cells persisted; no 5070 Ti concurrency.",
     "financial_gate": "MAE in original price must beat naive para el horizonte de X horas on identical rows before strategy evaluation",
     "test_policy": "2024 is development due to feature selection. TEST 2025 closed until full pair, procedure freeze and source provenance gates pass.",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
@@ -33,7 +33,7 @@
       "priority": 0,
       "id": "I6-DMO-CONTINUATION",
       "resource": "sequential_5090_bounded_CPU_control_and_verified_mirrors",
-      "state": "IMPLEMENTING_FULL_AUTONOMOUS_GRAPH",
+      "state": "RUNNING_FULL_AUTONOMOUS_GRAPH_407_CELLS",
       "dispatch_enabled": true,
       "executor": "Musashi",
       "depends_on": [],

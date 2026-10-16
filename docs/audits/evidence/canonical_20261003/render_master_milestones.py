@@ -53,7 +53,7 @@ def main() -> None:
     ax.text(0.55, 9.52, "Predictor: critical path to business trading",
             fontsize=24, fontweight="bold", color="#132238", va="top")
     ax.text(0.55, 9.08,
-            f"Measured status {doc['as_of']}  |  Critical-path ETA: {doc['critical_path_eta']}",
+            wrapped(f"Measured status {doc['as_of']}  |  Critical-path ETA: {doc['critical_path_eta']}", 150),
             fontsize=10.5, color="#526170", va="top")
 
     box_w, box_h = 4.05, 1.82
@@ -95,7 +95,9 @@ def main() -> None:
             evidence = evidence.rstrip(".") + "..."
         ax.text(x + 0.18, y + 0.73, evidence,
                 fontsize=7.35, color="#334155", va="top", linespacing=1.18)
-        ax.text(x + 0.18, y + 0.12, wrapped(f"ETA: {item['eta']}", 48),
+        eta_lines = wrapped(f"ETA: {item['eta']}", 48).splitlines()
+        eta = "\n".join(eta_lines[:2]) + ("..." if len(eta_lines) > 2 else "")
+        ax.text(x + 0.18, y + 0.12, eta,
                 fontsize=7.35, fontweight="bold", color=color, va="bottom",
                 linespacing=1.05)
 
