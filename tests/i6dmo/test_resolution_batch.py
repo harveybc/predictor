@@ -22,6 +22,15 @@ def test_plan_order_and_bounds():
     assert all(x["horizons"] == [72] and x["spacing"] == "SELECTED_LONG" for x in c[4:])
 
 
+def test_installed_environment_retains_cuda_library_paths_and_rejects_injection():
+    text = B.role_environment(dict(environment=dict(LD_LIBRARY_PATH="/example/cuda/lib",
+                                                    XLA_FLAGS="--xla_gpu_cuda_data_dir=/example/nvcc")))
+    assert 'Environment="LD_LIBRARY_PATH=/example/cuda/lib"' in text
+    assert 'Environment="XLA_FLAGS=--xla_gpu_cuda_data_dir=/example/nvcc"' in text
+    with pytest.raises(ValueError, match="ENVIRONMENT_INVALID"):
+        B.role_environment(dict(environment=dict(LD_LIBRARY_PATH="x\nExecStart=bad")))
+
+
 def test_choose_spacing_negative_is_better_tie_retains_ds2():
     r = {f"long_ds{s}": fixture_result(s, v) for s, v in ((2, .1), (4, -.01))}
     assert B.selected_spacing(r) == 4
@@ -91,6 +100,18 @@ def test_metadata_only_terminal_is_not_a_fit(tmp_path):
     B.put(tmp_path/"results"/cell["id"]/"RESULT.json", d)
     with pytest.raises(ValueError, match="TERMINAL_ARTIFACTS"):
         B.terminal(tmp_path, cell, dict(batch_id="unit-test", population_digest="population"))
+
+
+def test_close_repairs_status_after_interruption(tmp_path, monkeypatch):
+    closed = dict(state="CLOSED", complete=19)
+    B.put(tmp_path/"CLOSE.json", closed)
+    B.put(tmp_path/"STATUS.json", dict(state="RUNNING"))
+    monkeypatch.setattr(B, "verify_code", lambda spec: None)
+    stops = []
+    monkeypatch.setattr(B, "stop_timers", lambda spec: stops.append(True))
+    assert B.tick(dict(root=str(tmp_path))) == closed
+    assert B.read(tmp_path/"STATUS.json") == closed
+    assert stops == [True]
 
 
 def test_code_and_plan_changes_refused(tmp_path, monkeypatch):

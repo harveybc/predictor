@@ -374,8 +374,10 @@ def tick(spec):
     with (root / "tick.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         if (root / "CLOSE.json").exists():
+            closed = read(root / "CLOSE.json")
+            put(root / "STATUS.json", closed)
             stop_timers(spec)
-            return read(root / "STATUS.json")
+            return closed
         deploy = read(spec["deployment"])
         role = deploy["roles"]["preferred"]
         artifacts = Path(spec["artifacts"])
@@ -446,6 +448,7 @@ def install(spec_path):
                "1800s" if target == "gpu" else "600s", "-n", name+"-"+target, "--", role["python"],
                "-B", "-m", "tools.i6dmo.resolution_batch", action, "--spec", path]
         env = ("EnvironmentFile="+d["warehouse"]["environment_file"]+"\n") if target == "tick" else ""
+        env += role_environment(role)
         text = ("[Unit]\nDescription=Finite resolution batch "+target+"\nX-I6DMO-Batch="+name+
                 "\n[Service]\nType=oneshot\nWorkingDirectory="+s["runtime"]+"\n"+env+
                 "Environment=PYTHONPATH="+s["runtime"]+"\nEnvironment=PYTHONDONTWRITEBYTECODE=1\n"
@@ -464,6 +467,17 @@ def install(spec_path):
         L._remote(role, ["systemctl", "--user", "daemon-reload"])
         L._remote(role, ["systemctl", "--user", "enable", "--now", name+"-"+target+".timer"])
     return dict(state="ARMED", batch_id=name)
+
+
+def role_environment(role):
+    """Retain the verified role's CUDA library/toolchain paths and runtime flags."""
+    result = ""
+    for key, value in sorted(role.get("environment", {}).items()):
+        if not isinstance(key, str) or not key.replace("_", "").isalnum() or not isinstance(value, str) \
+                or "\n" in value or "\r" in value:
+            raise ValueError("BATCH_ROLE_ENVIRONMENT_INVALID")
+        result += "Environment="+json.dumps(key+"="+value)+"\n"
+    return result
 
 
 def bootstrap(config_path):
