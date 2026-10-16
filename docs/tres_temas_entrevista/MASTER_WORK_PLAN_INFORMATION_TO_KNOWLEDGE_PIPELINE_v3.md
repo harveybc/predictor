@@ -1,34 +1,38 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-15. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-16. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
-Ejecucion aprobada y lanzada, 2026-10-16: campana i6dmo-e5b3dd7cd27e,
-codigo ejecutor ab22099f, contrasta dos R0 de igual capacidad e inicializacion:
-13 observaciones cada 12 horas de mercado (144 h de contexto) frente a las
-13 cada 2 h de la receta corta (24 h de contexto), ambos con targets largos
-18/24/36/48/60/72 h. Soporte comun sellado: 13.123 origenes FIT, 546 INNER y
-3.762 DEVELOPMENT. Primera carga GPU real verificada en la 5090; ajustes
-secuenciales, sin 5070 Ti concurrente. Ochenta pruebas enfocadas pasan;
-suite amplia interrumpida por limite de 240 s, no certificada. Revision
-independiente y comprobacion de arrays reales aceptadas. Timers propios
-continuan hasta reportes, comparacion, OLAP, dos espejos y cierre; no se
-requieren agentes pendientes de logs. No se lanza otro experimento ni TEST.
-[Plan y automatizacion](../i6n/direct_multi_output_static/context_bridge/PLAN.md).
+Directiva vigente 2026-10-16: lote secuencial en la 5090, sin Satoshi ni
+agentes vigilando. Primero DS2 frente a DS4, ambos con 13 ticks de entrada,
+DMO corto 2/3/4/5/6/12 h y DMO largo 18/24/36/48/60/72 h. Despues, en la
+resolucion larga ganadora, h72 individual con 6/9/13/18/24 ticks: lineal,
+DLinear adaptado y Conv1D minimo. Son 4+15 ajustes, una semilla, sin repetir,
+sin DOIN, R2, reajustes, estrategia ni TEST. Soporte comun por familia,
+escaladores solo FIT, naive propio de cada horizonte y mascaras de negocio
+vigentes. Publicacion OLAP con lectura exacta, copias verificadas y cierre
+automatico. El contexto mas largo NO presupone un modelo mas complejo.
+[Plan y requisitos ejecutables](../i6n/direct_multi_output_static/resolution_batch/PLAN.md).
+
+Antecedente cerrado automaticamente: i6dmo-e5b3dd7cd27e, ab22099f,
+5/5 tareas, 111/111 publicaciones y dos espejos de 58 archivos verificados.
+La entrada de 24 h de mercado/paso 2 h mejora los seis targets largos frente
+a 144 h/paso 12 h, pero ninguno supera su naive. Promedio relativo:
++8,561428% frente a +38,041691% en DEVELOPMENT comun. No demuestra que
+resolucion o contexto por separado causen el cambio; TEST permanece cerrado.
 
 Precision posterior del propietario, 2026-10-16: no reabrir seleccion ni la
 auditoria de proveedores para este contraste de desarrollo. La revision debe
 centrarse en entrenamiento y transformaciones de esta etapa. Cuatro historiales
 de entrenamiento reproducidos: configuracion identica, parada y restauracion
-correctas; R0 corto y largo parten de los mismos pesos. Primera propuesta:
-conservar la entrada corta (13 observaciones cada 2 horas de mercado, contexto
-24 horas) y predecir los seis targets largos, con modelo R0 minimo. No se ha
-lanzado; primero fijar soporte comun, escaladores y sellos. Barridos 4/8/12h,
-capacidad y reajuste trimestral quedan despues. Las limitaciones de fuentes
+correctas; R0 corto y largo parten de los mismos pesos. El contraste de
+conservar la entrada corta para targets largos ya cerro; la siguiente orden
+es el lote DS4/h72 definido arriba. Otros barridos de capacidad y reajuste
+trimestral quedan despues. Las limitaciones de fuentes
 se conservan para interpretar resultados y para TEST, no como nueva orden de
 rehacer la seleccion. [Auditoria y propuesta](../i6n/direct_multi_output_static/r2_downsampled/TRAINING_AUDIT.md).
 

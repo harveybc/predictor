@@ -577,6 +577,9 @@ def _probe_long_causal(model, in_grid, out_grid, label):
 
 def build_dmo(config):
     """Build the fixed R0 model. Seeds the global RNG first (explicit random init)."""
+    if isinstance(config, dict) and config.get("schema") == "i6dmo.resolution_model.v1":
+        from tools.i6dmo.resolution_models import build
+        return build(config)
     c = normalize_model_config(config)
     enable_determinism()
     keras.utils.set_random_seed(c["seed"])
