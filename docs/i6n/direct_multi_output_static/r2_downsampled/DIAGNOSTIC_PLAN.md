@@ -30,6 +30,9 @@ attribution to any of those factors follows from this audit. Report actual
 configuration differences and preserve all original results.
 
 The owner prioritized causal and business verification before any new fit.
+Subsequent clarification limits the new work to training/transformation checks,
+not reopening feature selection. First propose the small short-input/long-target
+R0 bridge in TRAINING_AUDIT.md; the broader three-grid design below is later.
 The configured offsets are 12 h after open and 12 h before close, not 8 h.
 Historical observed bars in those buffers may be inputs; closed-market hours
 are never counted as observations, interpolated or filled. Entry cutoff and

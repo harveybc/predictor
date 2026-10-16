@@ -7,6 +7,18 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Precision posterior del propietario, 2026-10-16: no reabrir seleccion ni la
+auditoria de proveedores para este contraste de desarrollo. La revision debe
+centrarse en entrenamiento y transformaciones de esta etapa. Cuatro historiales
+de entrenamiento reproducidos: configuracion identica, parada y restauracion
+correctas; R0 corto y largo parten de los mismos pesos. Primera propuesta:
+conservar la entrada corta (13 observaciones cada 2 horas de mercado, contexto
+24 horas) y predecir los seis targets largos, con modelo R0 minimo. No se ha
+lanzado; primero fijar soporte comun, escaladores y sellos. Barridos 4/8/12h,
+capacidad y reajuste trimestral quedan despues. Las limitaciones de fuentes
+se conservan para interpretar resultados y para TEST, no como nueva orden de
+rehacer la seleccion. [Auditoria y propuesta](../i6n/direct_multi_output_static/r2_downsampled/TRAINING_AUDIT.md).
+
 Prioridad del propietario, 2026-10-16: antes de otro entrenamiento, auditar
 las predicciones cortas downsampled y las metricas largas, con sus mascaras
 de negocio tanto en FIT como INNER y DEVELOPMENT. Los buffers vigentes son

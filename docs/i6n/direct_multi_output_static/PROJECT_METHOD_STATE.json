@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-16",
- "current_stage": "S8_RETAINED_ARRAY_AUDIT_COMPLETE_UPSTREAM_UNRESOLVED",
- "execution_status": "STATIC_SEQUENCE_CLOSED_BUSINESS_AND_METRICS_REPLAY_PASS",
+ "current_stage": "S8_TRAINING_AUDIT_COMPLETE_BRIDGE_PROPOSED",
+ "execution_status": "STATIC_SEQUENCE_CLOSED_TRAINING_AND_METRIC_CHECKS_PASS_NO_BRIDGE_FIT",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -31,8 +31,8 @@
   "Retain campaign i6dmo-9e1ebad89ff2 CLOSE.json and its verified metrics, mirrors and original fit identities",
   "Retain the closed matched campaign and selected MG2m recipe without another matched-control fit",
   "Retain both R0_RETAINED closures: 50/50 units, 288 report readbacks and 177 files per mirror in each campaign; no further fits in this closed sequence",
-  "Owner priority 2026-10-16: verify short/long causal support, business masks and metrics before any fit; retained-array audit passed, but upstream availability/vintage and producer qualifications remain unresolved",
-  "Define the small 18 h context/resolution bridge only after audit disposition; quarterly-versus-static follows, not currently launched",
+  "Owner clarification 2026-10-16: do not reopen feature selection or upstream vendor audit for the development contrast; retain those qualifications and TEST gates. Audit retained training histories and transformations; four histories independently replayed successfully",
+  "Define first the short-input long-target R0 bridge: 13 slots at 2 open-market hours, six long heads, fixed minimal model and optimizer. Common support/scalers and new seals are required; no fit launched. Wider context/resolution studies and quarterly cadence follow separately",
   "Retain 19 R2 donors, completed R0/probe and typed pre-fit import failure; no R2 retry or new pretraining in the RAW critical path",
   "Retain development/source/calendar/cost limitations and TEST closure"
  ],

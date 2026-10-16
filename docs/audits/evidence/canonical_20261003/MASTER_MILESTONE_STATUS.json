@@ -1,6 +1,6 @@
 {
   "as_of": "2026-10-16T04:07:43+00:00",
-  "critical_path_eta": "Static R0/R2 sequence CLOSED. Owner now prioritizes causal/business audit before any new fit. Retained-array/metric audit PASS: 228 diagnostic reports read back and both copies verified; seven feature availability records and two producers remain unresolved. No cadence/bridge fit launched; no measured ETA for those open evidence gaps. TEST closed.",
+  "critical_path_eta": "Static sequence CLOSED. Retained business/metric audit PASS; four training histories replay correctly with identical settings and identical short/long R0 initial weights. Owner limits scope to training, not reopening selection/vendor audit. First short-input/long-target R0 bridge proposed, not launched; no measured ETA. Existing source qualifications and TEST closure retained.",
   "milestones": [
     {
       "eta": "1-3 development days",
@@ -51,7 +51,7 @@
       "eta": "Static contrasts complete; quarterly contrast not launched",
       "evidence": "RAW long MG12m/MG1l relative MAE +26.285134%/+47.377774%; subsequent MG12m R0/R2 +26.285134%/+26.607801%. Neither long arm has an eligible head, so no eligible strategy pair, trading or TEST. Short R0 retains eligible 4/6/12 h heads on DEVELOPMENT. Full per-horizon naive and metrics retained in returns.",
       "id": "M6",
-      "next": "Owner priority: complete source availability/vintage/producer audit before further fits. Then define the small 18 h context/resolution bridge before the separate cadence contrast. Do not infer a bug or causal attribution from the 12/18 h gap; no strategy on ineligible heads; TEST closed.",
+      "next": "Define the small R0 short-input/long-target bridge (13 observations at 2 open-market-hour spacing; six long heads), with frozen common support/scalers and a new seal. Do not reopen selection. Broader context/resolution studies and quarterly cadence follow; existing TEST gates remain.",
       "progress": 24,
       "state": "PARTIAL_MEASUREMENT",
       "title": "Short/long forecasts + strategy",
