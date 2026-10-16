@@ -25,3 +25,17 @@ and strategy results are retrospective DEVELOPMENT, not independently
 out-of-sample or prospective deployment evidence. All older fits retain their
 original protocol and identity. Real population, GPU engineering, actual
 launch and closure are separate receipts, not conferred by this document.
+
+Real population preflight PASS for both groups: semantic digest
+8dd12ec51e62efd7505cc8d13f3d7b1ea7ef27e97c6ca3bc26cb0a677e940c35.
+Static ranges are TRAIN [2020-01-01,2024-01-01), VALIDATION
+[2024-01-01,2025-01-01); no INNER. Calendar periods: 4 quarterly, 12 monthly,
+53 weekly. The frozen graph therefore has 407 logical cells, of which 138
+are conditional cadence cells and some static identities may be adopted.
+
+5090 synthetic engineering under 4 GiB: Conv/Dense/LSTM private six-head
+models each completed two epochs with TRAIN/VALIDATION monitor self-check
+PASS and no additive sinusoid. Peak cgroup 2,625,724,416 bytes; parameter
+counts at the largest 24-tick test were 7,306 / 6,994 / 3,442 respectively.
+Code: 3d0dae41, whose subsequent changes before deployment are milestone
+rendering/docs only. This is not a full real-data per-case memory estimate.

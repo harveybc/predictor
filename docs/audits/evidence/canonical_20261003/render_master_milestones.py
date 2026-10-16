@@ -89,7 +89,11 @@ def main() -> None:
                                     (box_w - 0.36) * item["progress"] / 100, 0.13,
                                     boxstyle="round,pad=0,rounding_size=0.04",
                                     facecolor=color, edgecolor="none"))
-        ax.text(x + 0.18, y + 0.73, wrapped(item["evidence"], 53),
+        evidence_lines = wrapped(item["evidence"], 53).splitlines()
+        evidence = "\n".join(evidence_lines[:3])
+        if len(evidence_lines) > 3:
+            evidence = evidence.rstrip(".") + "..."
+        ax.text(x + 0.18, y + 0.73, evidence,
                 fontsize=7.35, color="#334155", va="top", linespacing=1.18)
         ax.text(x + 0.18, y + 0.12, wrapped(f"ETA: {item['eta']}", 48),
                 fontsize=7.35, fontweight="bold", color=color, va="bottom",
