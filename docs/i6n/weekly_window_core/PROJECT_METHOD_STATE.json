@@ -1,0 +1,14 @@
+{
+  "initiative": "weekly_paired_windows_then_joint_core",
+  "current_stage": "S11_SYSTEM_VERIFICATION",
+  "parent_runtime": "bd21fc2fc22a6e8607df14d68412223dc97a64d5",
+  "plan": "docs/i6n/weekly_window_core/PLAN.md",
+  "next_allowed_actions": ["implement scoped automation", "test", "paired data preparation", "fit-free GPU verification", "launch on secondary GPU"],
+  "blocked_actions": ["interrupt active primary GPU", "real money", "TEST", "ANY_HEAD monitor", "repeat completed fits"],
+  "traceability": "docs/i6n/weekly_window_core/TRACEABILITY.md",
+  "history": [
+    {"stage": "S0_THROUGH_S8", "status": "DESIGNED", "evidence": "PLAN.md"},
+    {"stage": "S9_S10", "status": "PASSED", "evidence": "40 focused worker/window tests; registry 24 tests. PRE missing-module failure retained in execution transcript."},
+    {"stage": "S11", "status": "IN_PROGRESS", "evidence": "CPU real-data preparation; GPU preflight required before scientific launch"}
+  ]
+}
