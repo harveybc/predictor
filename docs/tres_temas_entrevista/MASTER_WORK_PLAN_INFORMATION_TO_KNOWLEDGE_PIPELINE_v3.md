@@ -804,3 +804,14 @@ siendo posible. La aceptación exige pruebas de extremo a extremo con dataset
 propio y ajeno, reinicio, aislamiento de credenciales y paridad con la CLI de
 `feature-selector` sobre idénticos bytes y configuración. El chat no adelanta
 ni altera el manifiesto financiero final de I5.
+
+### Owner Order: Weekly TEST Replication, 2026-10-17
+
+The immediate I6 action is [the weekly TEST replication](../../i6n/weekly_test/PLAN.md)
+of both retained winning families. Evaluate 2025, with exactly the same fresh
+weekly four-calendar-year fits, model initialization, business masks, seed and
+mean TRAIN/evaluation-week early stopping. Do not substitute a static archived
+model or introduce another holdout. This explicit owner order supersedes the
+pair-retention execution hold; FRED/calendar limitations remain disclosed.
+Because the evaluated TEST week selects the checkpoint, report TEST checkpoint
+tuning rather than independent OOS. No TEST-driven new hyperparameter search.

@@ -133,7 +133,7 @@ class MarketOriginTable:
 
 
 def build_market_table(bundle: data.InputBundle, design: Mapping[str, Any], *,
-                       evaluation_splits=None) -> MarketOriginTable:
+                       evaluation_splits=None, authorized_evaluation_end=None) -> MarketOriginTable:
     """Evaluate expected market-hour origins + C1 masks; default splits are unchanged.
 
     Explicit pre-TEST splits support fit-free master tables with later fold
@@ -145,6 +145,10 @@ def build_market_table(bundle: data.InputBundle, design: Mapping[str, Any], *,
     splits = data.split_bounds(design) if evaluation_splits is None else tuple(evaluation_splits)
     if evaluation_splits is not None:
         limit = data.test_start(design)
+        if authorized_evaluation_end is not None:
+            if authorized_evaluation_end != datetime(2026, 1, 1, tzinfo=UTC):
+                raise data.DataContractError('AUTHORIZED_EVALUATION_END_INVALID')
+            limit = authorized_evaluation_end
         if not splits or any(not isinstance(s, c1.SplitBounds) for s in splits) \
                 or len({s.split_id for s in splits}) != len(splits) \
                 or any(s.end > limit or (s.label_available_by is not None and s.label_available_by > limit)
@@ -288,6 +292,8 @@ def build_market_table(bundle: data.InputBundle, design: Mapping[str, Any], *,
     if evaluation_splits is not None:
         table.identity["evaluation_splits"] = [s.to_json() for s in splits]
         table.identity["evaluation_splits_sha256"] = provenance.canonical_sha256(table.identity["evaluation_splits"])
+        if authorized_evaluation_end is not None:
+            table.identity['owner_authorized_test_end'] = authorized_evaluation_end.isoformat()
     # synthetic fixture calendars carry FIXTURE in the id; the real assumed one carries ASSUMED
     if "ASSUMED" not in ref.calendar_id and "FIXTURE" not in ref.calendar_id:
         table.identity["calendar_status"] = "SUPPLIED_UNVERIFIED"

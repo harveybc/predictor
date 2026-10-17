@@ -233,18 +233,25 @@ def fit_cell(spec, cell, results, folder):
     for name, a in arrays.items():
         x, y, mask = T.transform(a, scales)
         prepared[name] = ([x, a["offsets_hours"].astype("float32"), a["closure_crossed"].astype("float32")], y, mask)
+    evaluation_split = spec.get('evaluation_split', 'VALIDATION')
+    if evaluation_split not in ('VALIDATION', 'TEST'):
+        raise ValueError('EVALUATION_SPLIT_UNKNOWN')
+    test_read = evaluation_split == 'TEST'
     B.put(folder/"CONFIG.json", dict(cell=cell, resolved=resolved, model=config, training=B.TRAINING,
-        population=meta, protocol=PROTOCOL, monitor_splits=["TRAIN", "VALIDATION"], test_read=False))
+        population=meta, protocol=PROTOCOL, monitor_splits=["TRAIN", evaluation_split], test_read=test_read))
     def update(p):
         p = dict(p)
         p["train_loss"] = p.pop("fit_loss")
-        p["validation_loss"] = p.pop("inner_loss")
+        p["test_loss" if test_read else "validation_loss"] = p.pop("inner_loss")
         B.progress(spec["gpu_root"], state="RUNNING", cell=cell["id"], stage=cell["stage"], **p)
     B.progress(spec["gpu_root"], state="RUNNING", cell=cell["id"], stage=cell["stage"], epoch=0)
     training = T.fit_dmo(bundle, prepared["FIT"], prepared["VALIDATION"], B.TRAINING, B.SEED,
         ids=(arrays["FIT"]["row_ids"], arrays["VALIDATION"]["row_ids"]), record_device="gpu", progress=update)
-    training["split_roles"] = dict(fit="TRAIN_ALL_FOUR_YEARS", inner="VALIDATION_EVALUATION_PERIOD",
-        extra_holdout=False, qualification="DEVELOPMENT_CHECKPOINT_TUNING_NOT_INDEPENDENT_OOS")
+    training["split_roles"] = dict(fit="TRAIN_ALL_FOUR_YEARS", inner=evaluation_split+"_EVALUATION_PERIOD",
+        extra_holdout=False, qualification=("TEST_2025_CHECKPOINT_TUNING_NOT_INDEPENDENT_OOS" if test_read
+            else "DEVELOPMENT_CHECKPOINT_TUNING_NOT_INDEPENDENT_OOS"))
+    if test_read:
+        training['test_read'] = True
     bundle.forecast_model.save_weights(folder/"model.weights.h5")
     bundle.forecast_model.save(folder/"forecast_model.keras")
     fresh = M.build(config)
@@ -255,8 +262,9 @@ def fit_cell(spec, cell, results, folder):
     for name, a in arrays.items():
         p = T.monitor_forward(fresh.forecast_model, prepared[name][0], B.TRAINING["batch_size"])
         price = T.to_price(p, a, scales)
-        rows[name] = measured_metrics(a, price, cell["horizons"])
-        np.savez_compressed(folder/(name+".npz"), prediction=price, origin_ts=a["origin_ts"],
+        output_name = evaluation_split if name == 'VALIDATION' else name
+        rows[output_name] = measured_metrics(a, price, cell["horizons"])
+        np.savez_compressed(folder/(output_name+".npz"), prediction=price, origin_ts=a["origin_ts"],
             origin_price=a["origin_price"], target_price=a["target_price"], mask=a["mask"])
     B.put(folder/"TRAINING.json", training)
     peak = None
@@ -273,7 +281,7 @@ def fit_cell(spec, cell, results, folder):
         epochs=training["epochs_completed"], best_epoch=training["best_epoch"], stop_reason=training["stop_reason"],
         metrics=rows, population=meta, initial_weights_sha256=training["initial_weights_sha256"],
         restored_weights_sha256=training["restored_weights_sha256"], files=files, cgroup_peak_bytes=peak,
-        tensorflow=tf.__version__, keras=importlib.metadata.version("keras"), test_read=False)
+        tensorflow=tf.__version__, keras=importlib.metadata.version("keras"), test_read=test_read)
 
 
 def selections(spec, results, artifact_root):

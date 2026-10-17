@@ -1,0 +1,13 @@
+{
+  "initiative": "owner_authorized_weekly_test_replication",
+  "current_stage": "S11_S12_RELEASE_VERIFICATION",
+  "plan": "PLAN.md",
+  "traceability": "PLAN.md#acceptance-and-traceability",
+  "history": [
+    {"stage":"S0_THROUGH_S8","status":"DESIGNED","evidence":"WT01-WT07; explicit owner order; inspected original short/window13 and long-only data, initializations and trainer"},
+    {"stage":"S9_S10","status":"PASSED_FOCUSED","evidence":"23 focused tests passed; market/data/weekly regression:55 pass,2 historical source-pin refusals (new identity, not relaxed); source extension6225 bars, retained35398 unchanged"},
+    {"stage":"S11_S12","status":"READY_FOR_GPU_START","evidence":"Exact array/scale replay on six original weekly cases;106 prepared units,102 supported fits; unchanged trainer/model bytes; fresh initial tensor hash checked before each fit"}
+  ],
+  "next_allowed_actions": ["replay data recipe against retained 2024 arrays", "run bounded CPU contract tests", "launch identical weekly TEST recipe after checks", "record TEST checkpoint tuning honestly", "automated OLAP readback and physical mirrors"],
+  "blocked_actions": ["change winning architecture or training settings", "claim independent OOS while selecting checkpoints with TEST", "open real-money positions", "modify existing campaign artifacts", "run both preferred-host GPUs concurrently"]
+}
