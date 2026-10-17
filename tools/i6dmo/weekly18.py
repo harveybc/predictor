@@ -28,6 +28,8 @@ MODULE = "tools.i6dmo.weekly18"
 PHASE = "I6DMO_WEEKLY_PLUS18"
 TITLE = "# Weekly Short Plus 18 Hours"
 GPU_WALL = 1800
+GPU_ROLE = "preferred"
+GPU_HINT = "5090"
 FROZEN = ("tools/i6dmo/train.py", "tools/i6dmo/model.py", "tools/i6dmo/continuation.py",
           "tools/i6dmo/continuation_data.py", "tools/i6dmo/market_grid.py",
           "tools/i6n_contracts/eligibility.py")
@@ -311,7 +313,7 @@ def run(spec):
                 B.progress(root, state="WAIT_GPU", cell=cell["id"]); return
             gpu = run_cmd(["nvidia-smi", "-i", spec["gpu_uuid"], "--query-gpu=name", "--format=csv,noheader"])
             available = int(next(v.split()[1] for v in Path('/proc/meminfo').read_text().splitlines() if v.startswith('MemAvailable:'))) * 1024
-            if "5090" not in gpu or available < 7*1024**3:
+            if GPU_HINT not in gpu or available < 7*1024**3:
                 B.progress(root, state="WAIT_RESOURCES", cell=cell["id"], memory_available=available); return
             if (folder / "STARTED.json").exists():
                 result = dict(batch_id=NAME, cell=cell, state="FAILED_INTERRUPTED", files={}, reason="no automatic refit")
@@ -327,10 +329,10 @@ def run(spec):
                     meta=dict(record["population"], manifest_sha256=spec["population_digest"])
                     B.put(folder / "CONTRAST_PROOF.json", dict(parent_result_sha256=record["parent_result_sha256"],
                         projection=record["projection"], initialization=initialization_proof(record),
-                        parent_model=record["parent_model"], only_model_delta=dict(horizons_hours=HEADS)))
+                        parent_model=record["parent_model"], only_model_delta=record.get("model_delta",dict(horizons_hours=HEADS))))
                     B.put(folder / "SCALES.json", record["scales"])
                     def loader(*args, **kwargs):
-                        if args[:4] != (spec["gpu_data"], "short", 2, 13) or kwargs != dict(
+                        if args[:4] != (spec["gpu_data"], "short", record["model"]["spacing_open_market_hours"], record["model"]["slots"]) or kwargs != dict(
                                 horizons=HEADS, input_dir=spec["gpu_input"], period=cell["period"]):
                             raise ValueError("UNEXPECTED_DATA_ACCESS")
                         return arrays, record["scales"], meta
@@ -450,7 +452,7 @@ def launch(spec):
     if run_cmd(['git','-C',REPO,'status','--porcelain']).strip():raise ValueError('SOURCE_NOT_FROZEN')
     source_identity(read(spec['parent_spec']))
     p=prepare(spec);root=Path(spec['root']);root.mkdir(parents=True,exist_ok=True)
-    deploy=read(spec['source_deployment']);role=deploy['roles']['preferred']
+    deploy=read(spec['source_deployment']);role=deploy['roles'][GPU_ROLE]
     remote=lambda args:run_cmd(['ssh','-o','BatchMode=yes',role['ssh_alias'],shlex.join([str(x) for x in args])])
     commit=run_cmd(['git','-C',REPO,'rev-parse','HEAD']).strip()
     runtime='/var/tmp/i6dmo-weekly18-runtime-'+commit[:8]

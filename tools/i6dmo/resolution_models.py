@@ -24,7 +24,7 @@ from tools.i6dmo import model as M
 
 keras, tf = M.keras, M.tf
 SCHEMA = "i6dmo.resolution_model.v1"
-SLOTS = (6, 9, 13, 18, 24)
+SLOTS = (6, 7, 9, 13, 18, 24, 25, 49)
 SPACINGS = (2, 4)
 HORIZONS = ((2, 3, 4, 5, 6, 12), (18, 24, 36, 48, 60, 72), (72,))
 KINDS = ("conv", "linear", "dlinear")

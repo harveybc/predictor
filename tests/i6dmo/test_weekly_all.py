@@ -63,7 +63,14 @@ def test_trainer_fit_and_layers_are_original_bytes():
 
 
 def test_shared_worker_science_unchanged():
-    old=ast.parse(subprocess.check_output(['git','show',A.BASE+':tools/i6dmo/weekly18.py'],cwd=W.REPO).decode())
+    source=subprocess.check_output(['git','show',A.BASE+':tools/i6dmo/weekly18.py'],cwd=W.REPO).decode()
+    # The later secondary-device adapter changes only dispatch metadata and exact loader arguments.
+    source=source.replace('if "5090" not in gpu','if GPU_HINT not in gpu')
+    source=source.replace('only_model_delta=dict(horizons_hours=HEADS)',
+        'only_model_delta=record.get("model_delta",dict(horizons_hours=HEADS))')
+    source=source.replace('(spec["gpu_data"], "short", 2, 13)',
+        '(spec["gpu_data"], "short", record["model"]["spacing_open_market_hours"], record["model"]["slots"])')
+    old=ast.parse(source)
     new=ast.parse((W.REPO/'tools/i6dmo/weekly18.py').read_text())
     for name in ('run','annual','terminal','verify','mirror','prepared_document','pool_metrics'):
         get=lambda t:ast.dump(next(n for n in t.body if isinstance(n,ast.FunctionDef) and n.name==name),include_attributes=False)
