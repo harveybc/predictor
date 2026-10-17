@@ -1,0 +1,20 @@
+{
+ "schema": "i6dmo.all_horizons_method.v1",
+ "updated_on": "2026-10-16",
+ "current_stage": "S14_RELEASE_OPERATION",
+ "definition_and_test_design": "PLAN.md AH01-AH06 defined before governing implementation",
+ "verification": "46 focused CPU tests passed; real source/data identity and model equality checked before fit",
+ "runtime_commit": "1601e943",
+ "state": "RUNNING_ONE_FIT_ON_SECONDARY_GPU",
+ "next_allowed_actions": [
+  "Allow the owned timers to finish one fit, publish/read back and mirror automatically",
+  "Read status on request; do not periodically poll with an agent",
+  "Retain and report failures without modifying the recipe or repeating the fit"
+ ],
+ "blocked_actions": [
+  "Read TEST",
+  "Change the model, source rows, scaler or stopping protocol",
+  "Claim short results are guaranteed to survive the added multi-task objectives",
+  "Modify or stop the preferred GPU continuation"
+ ]
+}
