@@ -114,6 +114,33 @@ def test_complete_recipe_not_a_best_head_mosaic():
     assert m.common_board([one,all_heads])['families']['short']['winner']=='whole'
 
 
+@pytest.mark.parametrize('bad',[1.,0.,float('nan')])
+def test_family_promotion_requires_every_actual_output_to_win(bad):
+    m=module(); hs=(2,3,4,5,6,12,18)
+    scores={h:arrays() for h in hs}
+    scores[18]['prediction']=scores[18]['current']+bad
+    if not np.isfinite(bad):
+        with pytest.raises(ValueError,match='INVALID_PAIRED_SCORE'):
+            m.common_board([dict(id='mixed',scope='ANNUAL',scores=scores)])
+        return
+    # Worsen the seventh output while six other outputs improve strongly.
+    scores[18]['prediction']=scores[18]['current']-bad
+    board=m.common_board([dict(id='mixed',scope='ANNUAL',scores=scores)])
+    assert 'short' not in board['eligible_families']
+    assert 'family:short' not in m.entries(board)
+
+
+def test_family_promotion_keeps_all_winning_model_and_checks_native_scores():
+    m=module();scores={h:arrays() for h in (2,3,4,5,6,12)}
+    profile=dict(id='good',scope='ANNUAL',scores=scores,
+                 model={'horizons_hours':list(scores)},metrics=[m.score(a,h) for h,a in scores.items()])
+    board=m.common_board([profile])
+    assert board['eligible_families']['short']['winner']=='good'
+    assert 'family:short' in m.entries(board)
+    profile['metrics'][0]['relative_error']=0.
+    assert 'short' not in m.common_board([profile])['eligible_families']
+
+
 def test_cohort_changes_when_comparison_population_changes():
     m=module();a=arrays()
     first=m.common_board([dict(id='a',scope='ANNUAL',scores={4:a})])

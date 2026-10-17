@@ -246,6 +246,7 @@ def fit_cell(spec, cell, results, folder):
     training["split_roles"] = dict(fit="TRAIN_ALL_FOUR_YEARS", inner="VALIDATION_EVALUATION_PERIOD",
         extra_holdout=False, qualification="DEVELOPMENT_CHECKPOINT_TUNING_NOT_INDEPENDENT_OOS")
     bundle.forecast_model.save_weights(folder/"model.weights.h5")
+    bundle.forecast_model.save(folder/"forecast_model.keras")
     fresh = M.build(config)
     fresh.forecast_model.load_weights(folder/"model.weights.h5")
     if weights_hash(fresh.forecast_model) != training["restored_weights_sha256"]:

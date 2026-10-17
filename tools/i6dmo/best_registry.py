@@ -67,7 +67,7 @@ def common_board(profiles):
         ranks.sort(key=lambda r:(r['relative_error'],r['profile']))
         by_h[str(h)]=dict(horizon=h,cohort=ranks[0]['cohort'],n=len(origins),
                           winner=ranks[0]['profile'],relative_error=ranks[0]['relative_error'],ranking=ranks)
-    families={}
+    families={};eligible_families={}
     for name, required in FAMILIES.items():
         ranks=[]
         for p in annual:
@@ -79,7 +79,23 @@ def common_board(profiles):
             ranks.sort(key=lambda r:(r['relative_error'],r['profile']))
             families[name]=dict(winner=ranks[0]['profile'],relative_error=ranks[0]['relative_error'],
                 cohort=sha256_json([by_h[str(h)]['cohort'] for h in required]),ranking=ranks)
-    return dict(horizons=by_h,families=families)
+            eligible=[]
+            for r in ranks:
+                p=next(p for p in annual if p['id']==r['profile'])
+                actual=set(p.get('model',{}).get('horizons_hours',p['scores']))
+                native={m['horizon']:m for m in p.get('metrics',[])}
+                if not actual or not actual<=set(projected[p['id']]):continue
+                if any(projected[p['id']][h]['relative_error']>=0 for h in actual):continue
+                if native and (not actual<=set(native) or any(
+                        not math.isfinite(native[h]['relative_error']) or native[h]['relative_error']>=0
+                        for h in actual)):continue
+                eligible.append(r)
+            if eligible:
+                eligible_families[name]=dict(winner=eligible[0]['profile'],
+                    relative_error=eligible[0]['relative_error'],cohort=sha256_json(dict(
+                        support=families[name]['cohort'],rule='EVERY_ACTUAL_OUTPUT_STRICTLY_BEATS_OWN_NAIVE')),
+                    ranking=eligible,rule='EVERY_ACTUAL_OUTPUT_STRICTLY_BEATS_OWN_NAIVE')
+    return dict(horizons=by_h,families=families,eligible_families=eligible_families)
 
 
 def record_events(root, entries):
@@ -276,6 +292,11 @@ def cadence_profiles(spec, profiles):
             expected=[c['id'] for c in plan['cells'] if not source.get('annual_arm') or c.get('arm')==source['annual_arm']]
             if not expected:raise ValueError('WEEKLY_ANNUAL_EMPTY_ARM')
             results={p.parent.name:read(p) for p in (root/'results').glob('*/RESULT.json')}
+            for i in expected:
+                if i in results and results[i]['state']=='FAILED' and source.get('certify_empty_periods'):
+                    proof=certify_empty_period(plan,root/'results'/i/'RESULT.json')
+                    if proof is not None:
+                        results[i]=dict(results[i],state='SKIPPED_NO_EVAL_ROWS',supplemental_disposition=proof)
             if any(i not in results or results[i]['state'] not in ('COMPLETE','SKIPPED_NO_EVAL_ROWS') for i in expected):
                 continue
             measured={i for i in expected if results[i]['state']=='COMPLETE'}
@@ -348,10 +369,36 @@ def entries(board):
     for h,r in board['horizons'].items():
         out['h'+h]={k:r[k] for k in ('winner','cohort','relative_error','horizon','n')}
         out['h'+h].update({k:r['ranking'][0][k] for k in ('mae','naive_mae')})
-    for group,r in board['families'].items():
+    for group,r in board.get('eligible_families',{}).items():
         out['family:'+group]=dict(winner=r['winner'],cohort=r['cohort'],relative_error=r['relative_error'],
                                  metrics=r['ranking'][0]['metrics'])
     return out
+
+
+def certify_empty_period(plan, result_path):
+    """Supplement a known zero-label failure from pinned bytes; never edit its receipt."""
+    path=Path(result_path);r=read(path)
+    if r.get('state')!='FAILED' or r.get('reason')!='TrainDisposition:NO_SUPPORTED_HEAD: split has no valid label':
+        return None
+    if r.get('sha256')!=sha256_json({k:v for k,v in r.items() if k!='sha256'}):
+        raise ValueError('EMPTY_PERIOD_RESULT_DIGEST')
+    root=Path(plan['data_root']);prepared=read(root/'PREPARED.json')
+    if prepared.get('sha256')!=sha256_json({k:v for k,v in prepared.items() if k!='sha256'}):
+        raise ValueError('EMPTY_PERIOD_PREPARED_DIGEST')
+    cell=r['cell']['id'];rels=[cell+'/PERIOD.json',cell+'/VALIDATION.npz']
+    authenticated(root,{rel:prepared['files'][rel] for rel in rels})
+    period=read(root/rels[0]);hs=r['cell']['horizons']
+    if period['cell']!=r['cell'] or any(period['population']['counts']['VALIDATION']) or \
+            len(period['population']['counts']['VALIDATION'])!=len(hs):
+        raise ValueError('EMPTY_PERIOD_LABEL_COUNT')
+    with np.load(root/rels[1],allow_pickle=False) as z:
+        mask=z['mask']
+        if mask.ndim!=2 or mask.shape[1]!=len(hs) or mask.dtype!=np.bool_ or mask.any():
+            raise ValueError('EMPTY_PERIOD_HAS_LABELS')
+    return dict(state='SKIPPED_NO_EVAL_ROWS',original_state='FAILED',
+        result_sha256=file_sha256(path),prepared_sha256=prepared['sha256'],
+        files={rel:prepared['files'][rel] for rel in rels},
+        reason='ALL_RETAINED_HORIZONS_HAVE_ZERO_VALIDATION_LABELS',test_read=False)
 
 
 def read_json_tag(report, key):
@@ -457,6 +504,12 @@ def render(profiles, board):
             '|---|---|---:|---:|']
     for group,r in board['families'].items():
         lines.append(f"| {group} | {by_id[r['winner']]['label']} | {100*r['relative_error']:+.6f}% | {r['ranking'][0]['wins']}/6 |")
+    lines+=['','## Eligible Complete Recipes','',
+        'Promotion requires EVERY actual model output to beat its own naive on native AND common rows.',
+        '| Family | Profile | Winning outputs |','|---|---|---:|']
+    for group,r in board.get('eligible_families',{}).items():
+        p=by_id[r['winner']]
+        lines.append(f"| {group} | {p['label']} | {len(p['model']['horizons_hours'])}/{len(p['model']['horizons_hours'])} |")
     lines+=['','## Native Annual Short Results','',
             'Own original populations: descriptive records, not a controlled cross-population ranking.','',
             '| Profile | Mean relative error | Naive-winning heads | Profile identity |','|---|---:|---:|---|']

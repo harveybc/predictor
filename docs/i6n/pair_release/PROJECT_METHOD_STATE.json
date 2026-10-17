@@ -1,0 +1,12 @@
+{
+  "initiative": "separate_family_retention_and_business_csv_handoff",
+  "current_stage": "S11_SYSTEM_VERIFICATION",
+  "plan": "PLAN.md",
+  "traceability": "PLAN.md#requirements-and-test-design",
+  "history": [
+    {"stage":"S0_THROUGH_S8","status":"DESIGNED","evidence":"PR01..PR08; existing saved checkpoints, original immutable experiment terminals, pinned business policy inspected"},
+    {"stage":"S9_S10","status":"PASSED","evidence":"31 registry/retention tests and 81 business integration tests passed; heuristic CSV/policy 26 passed,1 skipped; PRE failures retained in execution output"}
+  ],
+  "next_allowed_actions": ["implement and test strict family eligibility", "verify zero-label supplemental proof", "fit-free checkpoint export", "strict CSV integration replay"],
+  "blocked_actions": ["touch running scientific workers", "retrain to recover existing weights", "promote by average with a failing output", "read TEST before its point-in-time gate", "execute live-money trades"]
+}

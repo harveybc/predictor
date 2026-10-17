@@ -63,6 +63,21 @@ def flat_predictions(week, long_values=ENTRY_LONG, short_value=P0):
     return short, long_
 
 
+def test_named_csv_route_enforces_business_force_flat_without_later_forecasts(tmp_path):
+    import csv
+    paths={}
+    for family,hs in (('short',SHORT),('long',LONG)):
+        row=dict(DATE_TIME=A.isoformat(),origin_price=P0,model_id='retained-weekly-checkpoint')
+        for h in hs:row.update({f'prediction_h{h}':P0+0.001,f'available_h{h}':1})
+        path=tmp_path/(family+'.csv');paths[family]=path
+        with path.open('w',newline='') as f:
+            writer=csv.DictWriter(f,fieldnames=list(row));writer.writeheader();writer.writerow(row)
+    result=sa.run_csv_backtest(short_csv=paths['short'],long_csv=paths['long'],
+        bars=bars_for(WEEK),weeks=[WEEK],execution=sa.ExecutionParameters(passive_reference=False))
+    assert result['trades'] and not result['open_positions'] and not result['failures']
+    assert all(c1.parse_instant('fill',t['exit_fill_time'])<=B for t in result['trades'])
+
+
 @pytest.fixture(scope="module")
 def policy():
     return sa.load_pinned_policy()

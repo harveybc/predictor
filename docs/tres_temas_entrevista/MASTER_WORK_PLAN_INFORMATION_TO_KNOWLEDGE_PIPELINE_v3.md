@@ -7,6 +7,30 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Directiva 2026-10-17: conservar dos recetas completas separadas de corto y
+largo como referencias para mejorar. Promover una receta SOLO si CADA salida
+real del modelo supera estrictamente SU naive, tanto en soporte nativo como
+comun. Un promedio negativo no admite una salida igual o peor que naive.
+Conservar ademas el historial por horizonte sin presentarlo como un solo modelo.
+Los modelos semanales ya retienen pesos Keras HDF5, configuracion, escalas,
+semilla y monitor; generar archivos completos `.keras` adicionales SIN refit,
+verificar tensores al recargar y conservar todos los checkpoints semanales.
+Exportar dos CSV con origen UTC, columnas nombradas por horizonte y mascara
+explicita de disponibilidad obtenida del calendario, no del target futuro.
+La ruta de estrategia debe consumirlos mediante politica de negocio fijada,
+nunca mediante el cargador posicional legado: una posicion por activo,
+apertura con largos y gestion con ambos en orden temporal SL/TP. Cierre
+obligatorio antes de mercado-cierre menos12h incluso sin predicciones, nuevas
+aperturas desde mercado-apertura mas12h y antes del cutoff vigente. No es
+12h despues del cierre. Ver [pair_release/PLAN.md](../i6n/pair_release/PLAN.md).
+TEST fue solicitado para las recetas congeladas; su disponibilidad point-in-time
+y el procedimiento prospectivo de reajuste sin seleccion de checkpoint con
+TEST siguen siendo requisitos tecnicos. No usar los checkpoints semanales
+seleccionados en 2024 como si fueran ajustes prospectivos de semanas de2025.
+No detener ni cambiar el barrido de ventanas/nucleo vigente. Las nuevas
+promociones y exportaciones deben ser idempotentes y consultables sin agentes
+monitoreando logs. Ninguna de estas tareas ejecuta dinero real.
+
 Contraste aprobado 2026-10-17: la campana semanal de doce salidas termino
 53/53 periodos, 52 ajustes por paciencia, sin fallos; los seis largos vencen
 su naive en VALIDATION2024. Repetir UNICAMENTE eliminando [2,3,4,5,6,12]

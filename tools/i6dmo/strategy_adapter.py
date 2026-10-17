@@ -63,6 +63,11 @@ STRATEGY_PIN = {
 LEGACY_PLUGIN_PATH = "app/plugins/plugin_long_short_predictions.py"
 LEGACY_POLICY_PATH = "app/policies/prediction_entry_exit.py"
 ENTRY_POINT = "heuristic_strategy.plugins:ls_pred_strategy"
+BUSINESS_CSV_PIN = {
+    "commit": "3a9c55b59ec314e1e3e14dbccac1d30a7cd657f9",
+    "path": "app/policies/business_prediction_csv.py",
+    "sha256": "adeaaed47dbe837661571e0d47b4fdd94313538917c710856f567774ca446fd9",
+}
 
 # Entry parameters: the legacy plugin defaults (plugin_params) plus the
 # market-week contract's proposed minimum of two distinct long heads.
@@ -827,6 +832,23 @@ def run_backtest(*, bars: Sequence[Bar], weeks: Sequence[c1.OperationalWeek],
         "label": "CONVENTIONAL_BUY_AND_HOLD_VIOLATES_NO_WEEKEND_POSITION",
         "units": units, "net_pnl_before_costs": units * (bars[-1].close - bars[0].open)}
     result["references"] = refs
+    return result
+
+
+def run_csv_backtest(*, short_csv, long_csv, bars, weeks, **kwargs):
+    """Strict named CSVs use the SAME mandatory business executor, never the legacy plugin."""
+    data,_=_read_pinned(BUSINESS_CSV_PIN['path'],BUSINESS_CSV_PIN['commit'])
+    if hashlib.sha256(data).hexdigest()!=BUSINESS_CSV_PIN['sha256']:
+        raise StrategyAdapterError('BUSINESS_CSV_PIN_MISMATCH','CSV adapter digest changed')
+    module=types.ModuleType('i6dmo_pinned_business_csv')
+    exec(compile(data,'<pinned-business-csv>','exec'),module.__dict__)
+    bars=list(bars);observed={b.close_time:b.close for b in bars}
+    if len(observed)!=len(bars):raise StrategyAdapterError('BAR_ORDER_INVALID','duplicate origins')
+    pair=module.load_pair(short_csv,long_csv,observed)
+    result=run_backtest(bars=bars,weeks=weeks,short_predictions=pair['short'],
+        long_predictions=pair['long'],**kwargs)
+    result['business_csv']=dict(BUSINESS_CSV_PIN,
+        short_sha256=_file_sha(Path(short_csv)),long_sha256=_file_sha(Path(long_csv)))
     return result
 
 
