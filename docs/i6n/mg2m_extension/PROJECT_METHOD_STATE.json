@@ -1,6 +1,8 @@
 {
   "schema": "i6dmo.mg2m_extension_method.v1",
-  "current_stage": "EXECUTING",
+  "current_stage": "COMPUTE_AND_DELIVERY_COMPLETE_WITH_REPAIR",
+  "original_graph": {"complete_fits": 4, "prefit_failures": 1, "publication_readbacks": 5, "mirror_files": 66},
+  "single18_successor": {"runtime_code_commit": "a433f4e89e36d8e262e34c53d361c75dc0636318", "state": "CLOSED", "complete_fits": 1, "publication_readbacks": 1, "mirror_files": 17},
   "requirements": "PLAN.md",
   "tests": "tests/i6dmo/test_mg2m_study.py",
   "runtime_code_commit": "3f126cf82fca842ffa30a56ba6d8d049283011e8",

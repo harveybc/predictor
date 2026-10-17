@@ -1,5 +1,31 @@
 # MG2m Extension Launch
 
+## Subsequent Completion And Single-Head Repair
+
+The original graph closed with four completed fits, one pre-fit failure,
+five exact report readbacks and 66 authenticated files per mirror. The +18h
+fit took 168.681 s, 39 epochs, selected29: final relative error for 18h
++15.172428%, versus -0.238899% at the predeclared diagnostic epoch2.
+The diagnostic is retained separately and is not the selected final result.
+
+The conditional single18 failed before any optimizer update because the
+adapter used heads instead of the actual head_models bundle field. The
+separate one-cell successor is pinned to a433f4e8. It reuses the same prepared
+arrays, scalers and untrained +18h head initialization; no completed fit is
+repeated. Its real GPU preflight and epoch7/371 updates were observed.
+
+Single-output Keras calls also return a tensor where the old multi-output
+code expected a list. The repair normalizes only that output container in
+prediction, monitoring and the training concat; existing list/tuple outputs
+pass through unchanged. Exact source-diff tests reject any other change to
+the trainer. Loss, optimizer, monitor formula and stopping parameters remain
+unchanged. The original graph stays on its original frozen runtime, including
+the CPU follower. The failed evidence is not overwritten or reclassified.
+Fifteen focused CPU tests now pass for the study; the best-result registry has
+27 focused tests including fixed-epoch exclusion from selected champions.
+
+Original launch receipt follows; generated STATUS remains authoritative.
+
 Runtime 3f126cf82fca842ffa30a56ba6d8d049283011e8, campaign
 i6dmo-mg2m-extension-20261017. The +18h scientific fit was observed at epoch2,
 130 updates, on the secondary 4090. The preferred 5090 remains on its existing
