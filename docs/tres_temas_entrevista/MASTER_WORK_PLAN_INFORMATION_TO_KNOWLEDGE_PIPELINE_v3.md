@@ -102,7 +102,7 @@ maxima 4.62e-14. Pesos iniciales, codigo, datos, configuracion y escalas iguales
 la trayectoria empieza a diferir despues de las actualizaciones. No se afirma
 que exista un defecto en los archivos originales, que no han cambiado.
 
-Orden vigente de diagnostico: una sola comprobacion adicional en la misma
+Orden de diagnostico completada: una sola comprobacion adicional en la misma
 5090 original y su entorno, sin cambios de arquitectura, semilla, seleccion
 ni parada. Es el tercer ajuste contando el historico y el replay secundario,
 no una busqueda de repeticiones favorables. El lanzador comprueba nombre y UUID
@@ -113,6 +113,19 @@ codex/i6dmo-short-replay-20261016. Se intercala entre fits sin matar el activo;
 el timer principal se reanuda automaticamente al salir el worker, con un timer
 independiente de recuperacion. TEST sigue cerrado y la continuacion no cambia
 de identidad ni reutiliza este ajuste como otro candidato.
+
+Cierre confirmado: i6dmo-short-reference-device-20261016, runtime a2c7fe6d,
+13 epocas, mejor 3, 54.2571 s. Los hashes de pesos y monitores de las 13 epocas
+son exactamente los historicos; tambien todas las matrices de predicciones,
+targets, mascaras y filas de FIT/INNER/VALIDATION. Se recuperan h6 -0.049615%
+y h12 -0.093170% sin alterar parametros cientificos. El defecto de reproduccion
+era no preservar el dispositivo/perfil original; no se ha demostrado un defecto
+en el constructor o entrenador, cuyos archivos siguen identicos. Se rechaza un
+nuevo lanzamiento sin el rol y dispositivo de referencia. 73 metricas del fit
+y 13 comprobaciones de trayectoria publicadas con lectura exacta; dos copias
+fisicas verificadas. Cola principal reanudada automaticamente. No repetir este
+ajuste: ya hay tres ejecuciones retenidas. Ver REFERENCE_DEVICE_RETURN.md en
+la rama de reproduccion. TEST sigue cerrado.
 
 Resultado retenido anterior: i6dmo-resolution-705d19ec84ae CLOSED, 19/19,
 19 reportes con lectura exacta y dos espejos de 159 archivos. DS2 mejor que
