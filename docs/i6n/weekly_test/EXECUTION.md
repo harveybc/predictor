@@ -41,3 +41,14 @@ never silently counted as complete. No new hyperparameter search is authorized.
 
 Results are TEST_2025_CHECKPOINT_TUNING_NOT_INDEPENDENT_OOS because the evaluated
 week participates in early stopping, exactly as in the owner-requested recipe.
+
+## Start Check
+
+Deployment e0af8f23 is armed. The first real short fit reached epoch 2 after
+matching the retained initial tensor digest. The two boundary no-label units
+were automatically skipped and delivered with exact warehouse readback. Both
+campaign timers are active. The unrelated secondary-GPU campaign continues;
+the second GPU sharing RAM with the preferred device is intentionally unused.
+The first deployment attempt stopped before installing timers because its
+remote private directory was absent; the launcher was corrected, that attempt
+was retained, and no fit ran under the earlier deployment commit.
