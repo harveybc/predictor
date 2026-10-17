@@ -29,7 +29,7 @@ keras, tf = M.keras, M.tf
 SCHEMA = "i6dmo.continuation_model.v1"
 HEADS = ("dense", "conv", "lstm")
 CORES = ((2,), (4,), (4, 2), (8, 4))
-HORIZONS = (*R.HORIZONS, (4,))
+HORIZONS = (*R.HORIZONS, (4,), (2, 3, 4, 5, 6, 12, 18))
 _KEYS = {"schema", "features", "slots", "spacing_open_market_hours", "horizons_hours",
          "kind", "seed", "head", "core"}
 
