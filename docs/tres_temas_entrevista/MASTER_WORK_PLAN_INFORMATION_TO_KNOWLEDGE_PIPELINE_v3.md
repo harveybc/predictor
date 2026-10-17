@@ -127,6 +127,17 @@ fisicas verificadas. Cola principal reanudada automaticamente. No repetir este
 ajuste: ya hay tres ejecuciones retenidas. Ver REFERENCE_DEVICE_RETURN.md en
 la rama de reproduccion. TEST sigue cerrado.
 
+Referencia de resultados obligatoria: no usar "el corto bueno" sin identificar
+experimento, configuracion/poblacion, particion y comparador. MG2 original gana
+su naive en 2/6 horizontes de DEVELOPMENT 2024; MG2m emparejado en 3/6. MG2m
+gana 6/6 frente al modelo horario MG1, que no es el naive. El MG2 original si
+tiene 6/6 negativos en FIT, pero no en DEVELOPMENT. El recalculo desde precios
+y mascaras confirma la reproduccion exacta y conserva estas distinciones en
+SHORT_REFERENCE_RECONCILIATION.md y SHORT_REFERENCE_SCORE_AUDIT.json.
+No lanzar nuevos fits para convertir una afirmacion no respaldada de 6/6
+en la supuesta referencia historica. La identidad del replay ya cerrado no se
+cambia para hacerlo corresponder a otro experimento.
+
 Resultado retenido anterior: i6dmo-resolution-705d19ec84ae CLOSED, 19/19,
 19 reportes con lectura exacta y dos espejos de 159 archivos. DS2 mejor que
 DS4 en media de corto (+0.258987%/+2.723207%) y largo

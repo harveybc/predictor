@@ -1,5 +1,11 @@
 # I6-DMO results
 
+Reference identity and comparator clarification:
+[short score reconciliation](SHORT_REFERENCE_RECONCILIATION.md). Original MG2
+has 2/6 annual DEVELOPMENT naive wins; matched MG2m has 3/6. The 6/6 matched
+downsampling wins are over the hourly learned control, not over naive. Exact
+original-device reproduction retained all original scores without a new model.
+
 | Stage | Result | Evidence |
 |---|---|---|
 | Exact elapsed DS2 short | Six heads above their own naive; 28 epochs, best 18, 94.3 s fit | [Release](RETURN_RELEASE.md) |
