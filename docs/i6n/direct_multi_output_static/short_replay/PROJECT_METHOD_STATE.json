@@ -2,7 +2,13 @@
  "schema": "i6dmo.short_replay_method.v1",
  "updated_on": "2026-10-16",
  "current_stage": "S14_RELEASE_OPERATION",
- "state": "ORIGINAL_SHORT_REPLAY_LAUNCHED_ON_SECONDARY",
+ "state": "CLOSED_RETRAINING_DIFFERENT_HISTORICAL_WEIGHT_INFERENCE_CONFIRMED",
+ "result": "RETURN.md",
+ "epochs_completed": 15,
+ "best_epoch": 5,
+ "stop_reason": "patience",
+ "historical_control_inference_fit_executed": false,
+ "max_historical_control_mae_delta": 4.619525248439338e-14,
  "runtime_commit": "ee40787e",
  "historical_base": "24f5a6cc",
  "plan": "PLAN.md",
@@ -13,8 +19,8 @@
  "patience_reset": "ORIGINAL_MEAN_FIT_INNER",
  "trainer_and_model_files": "BYTE_IDENTICAL_TO_HISTORICAL_BASE",
  "next_allowed_actions": [
-  "Let owned timers complete one fit, publish/read back, mirror and close",
-  "Compare six horizon-specific paired errors with the retained historical control",
+  "Retain completed replay and inference-only control with verified warehouse readbacks and two physical copies",
+  "Discuss differing training trajectory despite matching initial weights/data/config; do not assume a unique cause",
   "Read status on demand without an agent polling loop"
  ],
  "blocked_actions": [
