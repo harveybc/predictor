@@ -1,0 +1,13 @@
+{
+  "initiative": "weekly_long_only_parent_output_ablation",
+  "current_stage": "S11_SYSTEM_VERIFICATION",
+  "plan": "docs/i6n/weekly_long_only/PLAN.md",
+  "traceability": "PLAN.md#strict-contrast-contracts",
+  "next_allowed_actions": ["implement scoped adapter", "test", "authenticate and project parent preparation", "fit-free GPU checks", "launch on free primary GPU"],
+  "blocked_actions": ["change scientific source", "change training hyperparameters", "retune mask or cohorts", "TEST", "interrupt secondary sweep", "import trained parent weights"],
+  "history": [
+    {"stage":"S0_THROUGH_S8","status":"DESIGNED","evidence":"PLAN.md: LO01..LO07 and unit tests"},
+    {"stage":"S9_S10","status":"PASSED","evidence":"42 focused CPU tests; exact82 retained initial tensors/forwards; native shorter-list initialization is a detected negative control; monitor save/build/reload factory parity"},
+    {"stage":"S11","status":"IN_PROGRESS","evidence":"real-data PREPARED69fe24b1: all53 parent periods projected without row/mask/scaler change; per-period own naive suffixes match; fit-free actual-device proof next"}
+  ]
+}
