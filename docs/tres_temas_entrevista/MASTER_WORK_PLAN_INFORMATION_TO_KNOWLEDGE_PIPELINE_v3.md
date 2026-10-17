@@ -95,6 +95,25 @@ codex/i6dmo-short-replay-20261016, plan short_replay/PLAN.md. La continuacion
 principal permanece independiente. El resultado se compara con el historico
 sin prometer identidad numerica entre clases GPU, y TEST permanece cerrado.
 
+Cierre de esa reproduccion: 15 epocas, mejor 5; h6 +0.152144% y h12
++0.158741%, sin reproducir sus mejoras historicas. Cargar los pesos historicos
+en la GPU secundaria, sin entrenar, si reproduce los seis MAE con diferencia
+maxima 4.62e-14. Pesos iniciales, codigo, datos, configuracion y escalas iguales;
+la trayectoria empieza a diferir despues de las actualizaciones. No se afirma
+que exista un defecto en los archivos originales, que no han cambiado.
+
+Orden vigente de diagnostico: una sola comprobacion adicional en la misma
+5090 original y su entorno, sin cambios de arquitectura, semilla, seleccion
+ni parada. Es el tercer ajuste contando el historico y el replay secundario,
+no una busqueda de repeticiones favorables. El lanzador comprueba nombre y UUID
+visible de GPU y rechaza una sustitucion. Se comparan los hashes de pesos y
+monitores de cada epoca, checkpoint final y metricas por horizonte, sin tunear
+con 2024. Referencia: short_replay/REFERENCE_DEVICE_PLAN.md, rama
+codex/i6dmo-short-replay-20261016. Se intercala entre fits sin matar el activo;
+el timer principal se reanuda automaticamente al salir el worker, con un timer
+independiente de recuperacion. TEST sigue cerrado y la continuacion no cambia
+de identidad ni reutiliza este ajuste como otro candidato.
+
 Resultado retenido anterior: i6dmo-resolution-705d19ec84ae CLOSED, 19/19,
 19 reportes con lectura exacta y dos espejos de 159 archivos. DS2 mejor que
 DS4 en media de corto (+0.258987%/+2.723207%) y largo
