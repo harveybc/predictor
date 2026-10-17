@@ -66,6 +66,13 @@ con ampliacion conserva excepcionalmente la parada FIT/INNER y codificacion
 temporal historicas; no es el protocolo nuevo ni una reinterpretacion de sus
 resultados. Ver [contraste de doce salidas](../i6n/direct_multi_output_static/continuation/ALL_HORIZONS_SIDECAR.md).
 
+Contraste adicional cerrado: 25 epocas, mejor 15, 128.3243 s; 12 cabezas sin
+vencer su naive (6h +3.874222%, 12h +6.176801%, 18h +10.478196%). Auditoria
+independiente reprodujo la unica regla de negocio por salida y todas las
+ventanas reales, sin futuro. Publicacion/lectura exacta y dos copias cerradas;
+timers propios apagados. No repetir ni usar estas salidas en estrategia.
+La continuacion de 407 celdas de la 5090 no cambia por este resultado.
+
 Resultado retenido anterior: i6dmo-resolution-705d19ec84ae CLOSED, 19/19,
 19 reportes con lectura exacta y dos espejos de 159 archivos. DS2 mejor que
 DS4 en media de corto (+0.258987%/+2.723207%) y largo
