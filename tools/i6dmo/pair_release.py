@@ -3,9 +3,13 @@ import argparse
 import bisect
 import csv
 import fcntl
+import hashlib
 import json
 import math
 import os
+import shlex
+import subprocess
+import sys
 import time
 from datetime import datetime,timezone
 from pathlib import Path
@@ -161,18 +165,169 @@ def export_archives(root):
     B.put(progress,result);return result
 
 
+def follow(spec):
+    """One bounded transition; timers own retries, never an agent log-polling loop."""
+    root=Path(spec['root']);root.mkdir(parents=True,exist_ok=True)
+    with (root/'follow.lock').open('a+') as lock:
+        fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        board=B.read(Path(spec['registry'])/'LEADERBOARD.json')
+        expected={f:board['eligible_families'][f]['winner'] for f in B.FAMILIES}
+        current=B.read(root/'CURRENT.json') if (root/'CURRENT.json').exists() else None
+        if current:
+            manifest=B.read(Path(current['artifacts'])/'PAIR.json')
+            if {f:v['profile_id'] for f,v in manifest['families'].items()}!=expected:current=None
+        if current is None:current=prepare(spec)
+        target=Path(current['artifacts']);manifest=B.read(target/'PAIR.json')
+        remote=spec['archive_worker'];remote_root=remote['root'].rstrip('/')+'/'+manifest['id']
+        def ssh(args,check=True):
+            return subprocess.run(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10',remote['alias'],
+                shlex.join([str(a) for a in args])],check=check,capture_output=True,text=True,timeout=120)
+        def save(state,**extra):
+            doc=dict(current,state=state,at=time.time(),**extra);B.put(root/'STATUS.json',doc);return doc
+        result=ssh(['cat',remote_root+'/ARCHIVE_STATUS.json'],check=False)
+        status=json.loads(result.stdout) if result.returncode==0 else None
+        if status and status['state'].startswith('FAILED'):
+            return save('ARCHIVE_FAILED_ORIGINAL_WEIGHTS_RETAINED',archive=status)
+        if not status or status['state']!='COMPLETE':
+            unit='i6dmo-keras-export-'+manifest['id'][:12]
+            # Adopt the first operator-launched conversion rather than duplicate it.
+            for name in (remote.get('initial_unit',''),unit):
+                if name and ssh(['systemctl','--user','is-active',name+'.service'],check=False).returncode==0:
+                    return save('WAIT_ARCHIVES',archive=status)
+            ssh(['mkdir','-p',remote_root])
+            subprocess.run(['rsync','-a',str(target)+'/',remote['alias']+':'+remote_root+'/'],check=True,timeout=120)
+            command=['systemd-run','--user','--unit='+unit,'--property=MemoryMax=4G',
+                '--property=MemorySwapMax=0','--property=CPUQuota=100%','--property=TasksMax=64',
+                '--property=Nice=10','--property=RuntimeMaxSec=3600',
+                '--setenv=CUDA_VISIBLE_DEVICES=','--setenv=PYTHONPATH='+remote['runtime'],
+                '--setenv=OPENBLAS_NUM_THREADS=1','--setenv=OMP_NUM_THREADS=1',
+                '--setenv=TF_NUM_INTRAOP_THREADS=1','--setenv=TF_NUM_INTEROP_THREADS=1',
+                '--setenv=TF_ENABLE_ONEDNN_OPTS=0','--setenv=PYTHONDONTWRITEBYTECODE=1',
+                '--working-directory='+remote['runtime'],remote['python'],'-B','-m',
+                'tools.i6dmo.pair_release','archive','--root',remote_root]
+            ssh(command)
+            return save('WAIT_ARCHIVES',archive=status)
+        subprocess.run(['rsync','-a','--include=*/','--include=forecast_model.keras',
+            '--include=ARCHIVE.json','--include=ARCHIVE_STATUS.json','--exclude=*',
+            remote['alias']+':'+remote_root+'/',str(target)+'/'],check=True,timeout=120)
+        count=0
+        for family in manifest['families'].values():
+            for member in family['members']:
+                folder=target/member['folder'];B.authenticated(folder,member['files'])
+                proof=B.read(folder/'ARCHIVE.json')
+                if proof['weights_sha256']!=member['weights_sha256'] or \
+                        proof['archive_sha256']!=B.file_sha256(folder/'forecast_model.keras'):
+                    raise ValueError('ARCHIVE_FINAL_READBACK_MISMATCH')
+                count+=1
+        if status['completed']!=count:raise ValueError('ARCHIVE_MEMBER_COUNT')
+        csv_proof=verify_csvs(target)
+        from tools.i6dmo.outbox import Outbox,HttpWarehouse
+        warehouse=B.read(spec['registry_spec'])['warehouse'];box=Outbox(root/'outbox.sqlite3')
+        try:
+            for family,p in manifest['families'].items():
+                metrics=[]
+                for row in p['metrics']:
+                    for key,name,unit in (('mae','MAE','USD_per_EUR'),('naive_mae','Naive_MAE','USD_per_EUR'),
+                        ('relative_error','Relative_Error_Vs_Naive','ratio'),('n','N','count')):
+                        metrics.append(dict(metric=name,value=row[key],unit=unit,horizon=row['horizon'],split='validation'))
+                report=dict(experiment_key='i6dmo:pair-retention:'+manifest['id']+':'+family,
+                    experiment_set_key='i6dmo:pair-retention',project='predictor',phase='I6DMO_PAIR_RETENTION',
+                    actor='predictor',lake='LOCAL_RETAINED',lineage='UNVERIFIED',
+                    config_sha256=p['profile_id'],code_commit=p['members'][0]['source_code_commit'],metrics=metrics,
+                    tags=dict(pair_id=manifest['id'],family=family,profile_id=p['profile_id'],
+                        all_outputs_beat_naive='true',checkpoints=str(len(p['members'])),
+                        csv_sha256=p['csv_sha256'],pair_manifest_sha256=B.file_sha256(target/'PAIR.json'),
+                        test_read='false',fit_executed='false',model_json=json.dumps(p['model'],sort_keys=True)))
+                box.enqueue(report,source_unit='pair-retention:'+family)
+            publication=box.pump(HttpWarehouse(warehouse['url'],warehouse['token_env']))
+        finally:box.close()
+        state='READY_FOR_DEVELOPMENT_SIMULATION_TEST_BLOCKED' if not publication['pending'] and not publication['mismatch'] else 'WAIT_PUBLICATION'
+        proof=dict(state='VERIFIED',copies=2,checkpoints=count,
+            manifest_sha256=B.file_sha256(target/'PAIR.json'),archive_status=status,
+            note='Local artifact volume and distinct archive worker; source weights authenticated on both.')
+        B.put(target/'RETENTION_READBACK.json',proof)
+        return save(state,archive=status,retention=proof,publication=publication,csv_readback=csv_proof)
+
+
+def verify_csvs(target):
+    import types
+    from tools.i6dmo import strategy_adapter as S
+    target=Path(target);manifest=B.read(target/'PAIR.json');observed={}
+    for family in manifest['families'].values():
+        if B.file_sha256(target/family['csv'])!=family['csv_sha256']:raise ValueError('CSV_DIGEST_CHANGED')
+        for member in family['members']:
+            with np.load(target/member['folder']/'VALIDATION.npz',allow_pickle=False) as z:
+                for ts,price in zip(z['origin_ts'],z['origin_price']):
+                    t=datetime.fromtimestamp(int(ts),tz=timezone.utc)
+                    if t in observed and observed[t]!=float(price):raise ValueError('CSV_SOURCE_PRICE_CHANGED')
+                    observed[t]=float(price)
+    data,_=S._read_pinned(S.BUSINESS_CSV_PIN['path'],S.BUSINESS_CSV_PIN['commit'])
+    if hashlib.sha256(data).hexdigest()!=S.BUSINESS_CSV_PIN['sha256']:raise ValueError('CSV_PIN_CHANGED')
+    module=types.ModuleType('business_csv');exec(compile(data,'<pinned-business-csv>','exec'),module.__dict__)
+    pair=module.load_pair(target/'short.csv',target/'long.csv',observed)
+    result=dict(state='VERIFIED',origin_rows={k:len(v) for k,v in pair.items()},
+        price_alignment='EXACT',timestamp_semantics='ORIGIN_UTC',
+        calendar_sha256=manifest['calendar_sha256'],csv_pin=S.BUSINESS_CSV_PIN,test_read=False)
+    B.put(target/'CSV_READBACK.json',result);return result
+
+
+def install(spec_path):
+    spec=B.read(spec_path);warehouse=B.read(spec['registry_spec'])['warehouse']
+    folder=Path.home()/'.config/systemd/user';folder.mkdir(parents=True,exist_ok=True)
+    values=[str(Path(__file__).resolve().parents[2]),str(Path(spec_path).resolve()),sys.executable,
+        warehouse['environment_file']]
+    if any(not Path(v).is_absolute() or any(c.isspace() for c in v) for v in values):raise ValueError('SYSTEMD_PATH')
+    wd,path,python,env=values
+    service=f'''[Unit]
+Description=Retain strictly eligible forecast pair without refits
+[Service]
+Type=oneshot
+WorkingDirectory={wd}
+EnvironmentFile={env}
+Environment=CUDA_VISIBLE_DEVICES=
+Environment=OPENBLAS_NUM_THREADS=1
+Environment=OMP_NUM_THREADS=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+MemoryMax=768M
+MemorySwapMax=0
+CPUQuota=50%
+TasksMax=32
+Nice=10
+TimeoutStartSec=600
+ExecStart={python} -B -m tools.i6dmo.pair_release follow --spec {path}
+'''
+    timer='''[Timer]
+OnBootSec=90s
+OnUnitInactiveSec=120s
+Persistent=true
+[Install]
+WantedBy=timers.target
+'''
+    for suffix,body in (('service',service),('timer',timer)):
+        p=folder/('i6dmo-pair-retention.'+suffix);tmp=p.with_suffix('.tmp');tmp.write_text(body);tmp.replace(p)
+    subprocess.run(['systemctl','--user','daemon-reload'],check=True,timeout=30)
+    subprocess.run(['systemctl','--user','enable','--now','i6dmo-pair-retention.timer'],check=True,timeout=30)
+    return dict(state='TIMER_INSTALLED',fit_executed=False,test_read=False)
+
+
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=('prepare','archive','status'))
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=('prepare','archive','status','follow','install'))
     parser.add_argument('--spec');parser.add_argument('--root');args=parser.parse_args()
     try:
         if args.action=='prepare':result=prepare(B.read(args.spec))
         elif args.action=='archive':result=export_archives(args.root)
+        elif args.action=='follow':result=follow(B.read(args.spec))
+        elif args.action=='install':result=install(args.spec)
         else:
             root=Path(args.root)
             result=B.read(root/('ARCHIVE_STATUS.json' if (root/'PAIR.json').exists() else 'STATUS.json'))
     except Exception as exc:
         if args.action=='archive':
             B.put(Path(args.root)/'ARCHIVE_STATUS.json',dict(state='FAILED_ORIGINAL_WEIGHTS_RETAINED',
+                error=type(exc).__name__+':'+str(exc)[:500],at=time.time(),fit_executed=False,test_read=False))
+        elif args.action in ('follow','prepare'):
+            spec=B.read(args.spec)
+            B.put(Path(spec['root'])/'STATUS.json',dict(state='FAILED_EXISTING_ARTIFACTS_RETAINED',
                 error=type(exc).__name__+':'+str(exc)[:500],at=time.time(),fit_executed=False,test_read=False))
         raise
     print(json.dumps(result,sort_keys=True))
