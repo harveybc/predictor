@@ -204,7 +204,7 @@ def launch(spec):
     remote=lambda args:W.run_cmd(['ssh','-o','BatchMode=yes',role['ssh_alias'],shlex.join([str(v) for v in args])])
     code=W.run_cmd(['git','-C',W.REPO,'rev-parse','HEAD']).strip()
     runtime='/var/tmp/i6dmo-weekly-test-runtime-'+code[:8]
-    remote(['mkdir','-p',runtime,spec['gpu_data'],spec['gpu_root']])
+    remote(['mkdir','-p',str(root),runtime,spec['gpu_data'],spec['gpu_root']])
     for directory in ('tools','predictor_plugins','app','olap/store/src'):
         remote(['mkdir','-p',runtime+'/'+directory])
         W.run_cmd(['rsync','-a','--exclude=__pycache__',str(W.REPO/directory)+'/',role['ssh_alias']+':'+runtime+'/'+directory+'/'])
@@ -219,7 +219,13 @@ def launch(spec):
         cells=p['cells'],population_digest=p['sha256'],gpu_uuid=gpu['uuid'],ssh_alias=role['ssh_alias'],
         evaluation_split='TEST',qualification=D.QUALIFICATION,training=W.B.TRAINING,seed=W.B.SEED)
     path=root/'RUN.private.json'
-    if path.exists() and W.read(path)!=spec:raise ValueError('DEPLOYMENT_IDENTITY_CHANGED')
+    if path.exists() and W.read(path)!=spec:
+        old=W.read(path)
+        running=subprocess.run(['ssh',role['ssh_alias'],'systemctl','--user','is-enabled',NAME+'-gpu.timer'],
+            capture_output=True,text=True).returncode==0
+        if (root/'LAUNCH.json').exists() or running or old['population_digest']!=spec['population_digest']:
+            raise ValueError('DEPLOYMENT_IDENTITY_CHANGED')
+        path.rename(root/('UNDEPLOYED_'+old['code_commit'][:8]+'.private.json'))
     W.B.put(path,spec);W.run_cmd(['rsync','-a',str(path),role['ssh_alias']+':'+str(path)])
     for target,action in (('tick','tick'),('gpu','run')):
         wd=str(W.REPO) if target=='tick' else runtime
