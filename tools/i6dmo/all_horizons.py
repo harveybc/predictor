@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+import re
 from pathlib import Path
 import shlex
 import shutil
@@ -22,6 +23,26 @@ SHORT = [2, 3, 4, 5, 6, 12]
 LONG = [18, 24, 36, 48, 60, 72]
 HORIZONS = SHORT
 NAME = 'i6dmo-short-replay-20261016'
+
+
+def campaign_name(spec):
+    name = spec.get('batch_name', NAME)
+    if not isinstance(name, str) or not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,100}', name):
+        raise ValueError('INVALID_REPLAY_NAME')
+    return name
+
+
+def verify_reference_device(spec):
+    expected = spec.get('expected_gpu_name')
+    if expected is None:
+        return None  # Legacy cross-device evidence retains its original identity.
+    actual = command(['nvidia-smi', '-i', spec['gpu_uuid'], '--query-gpu=name',
+                      '--format=csv,noheader']).strip()
+    if actual != expected:
+        raise ValueError('REFERENCE_GPU_MISMATCH:'+actual)
+    if os.environ.get('CUDA_VISIBLE_DEVICES') != spec['gpu_uuid']:
+        raise ValueError('REFERENCE_GPU_VISIBILITY_MISMATCH')
+    return dict(gpu_name=actual, matches_reference=True)
 
 
 def read(path):
@@ -253,7 +274,7 @@ def terminal(root, spec):
     if not path.exists():
         return None
     d = read(path)
-    if d['batch_id'] != NAME or d['prepared_sha256'] != spec['prepared_sha256'] \
+    if d['batch_id'] != campaign_name(spec) or d['prepared_sha256'] != spec['prepared_sha256'] \
             or d['sha256'] != sha256_json({k:v for k,v in d.items() if k != 'sha256'}):
         raise ValueError('TERMINAL_IDENTITY_CHANGED')
     for rel, sha in d.get('files', {}).items():
@@ -275,6 +296,7 @@ def run(spec):
         for rel, sha in spec['code_files'].items():
             if file_sha256(REPO/rel) != sha:
                 raise ValueError('CODE_PIN_CHANGED:'+rel)
+        reference_device = verify_reference_device(spec)
         from tools.i6dmo import train as T, model as M
         import tensorflow as tf
         import importlib.metadata
@@ -314,6 +336,7 @@ def run(spec):
                                                 actual_model_config='IDENTICAL',entrypoint='ORIGINAL_TRAIN_UNIT'))
                 put(root/'CONFIG.json', config)
                 result = dict(state='COMPLETE', metrics=reports,
+                              reference_device=reference_device,
                               parameters=4882, epochs=training['epochs_completed'],
                               best_epoch=training['best_epoch'], fit_seconds=training['fit_seconds'],
                               seed=config['seed'], resources=T._resources('gpu'),
@@ -322,13 +345,14 @@ def run(spec):
                               test_read=False)
             except Exception as exc:
                 result = dict(state='FAILED', reason=type(exc).__name__+':'+str(exc)[:1500], files={})
-        result.update(batch_id=NAME, prepared_sha256=spec['prepared_sha256'])
+        result.update(batch_id=campaign_name(spec), prepared_sha256=spec['prepared_sha256'])
         result['sha256'] = sha256_json(result)
         put(root/'RESULT.json', result)
         put(root/'PROGRESS.json', dict(state=result['state'], at=time.time()))
 
 
 def report(spec, result):
+    name = campaign_name(spec)
     rows = []
     for split, values in result.get('metrics', {}).items():
         for r in values:
@@ -337,7 +361,7 @@ def report(spec, result):
                 rows.append(dict(metric=metric, value=r[key], unit=unit, horizon=r['horizon'], split=split))
     rows.append(dict(metric='Fit_Complete', value=int(result['state']=='COMPLETE'), unit='bool',
                      horizon=None, split='validation'))
-    return dict(experiment_key='i6dmo:'+NAME, experiment_set_key='i6dmo:'+NAME,
+    return dict(experiment_key='i6dmo:'+name, experiment_set_key='i6dmo:'+name,
                 actor='predictor', lake='LOCAL_RETAINED', lineage='UNVERIFIED',
                 config_sha256=spec['prepared_sha256'], code_commit=spec['code_commit'],
                 project='predictor', phase='I6DMO_ORIGINAL_SHORT_REPLAY', metrics=rows,
@@ -348,6 +372,7 @@ def report(spec, result):
 
 
 def tick(spec):
+    name = campaign_name(spec)
     from tools.i6dmo.outbox import Outbox, HttpWarehouse
     root = Path(spec['root'])
     artifacts = Path(spec['artifacts'])
@@ -359,7 +384,7 @@ def tick(spec):
         command(['rsync','-a','--checksum','--exclude=*.lock', spec['ssh_alias']+':'+spec['gpu_root']+'/',
                  str(artifacts)+'/'])
         result = terminal(artifacts, spec)
-        state = dict(state='RUNNING', batch_id=NAME, test_read=False)
+        state = dict(state='RUNNING', batch_id=name, test_read=False)
         if (artifacts/'PROGRESS.json').exists():
             state['progress'] = read(artifacts/'PROGRESS.json')
         if not result and (artifacts/'train/PROGRESS.json').exists():
@@ -395,8 +420,8 @@ def tick(spec):
                     state.update(state='CLOSED' if result['state']=='COMPLETE' else 'CLOSED_WITH_FAILURE',
                                  result=result, mirrors=dict(local='VERIFIED',second_host='VERIFIED',files=len(files)))
                     put(root/'CLOSE.json', state)
-                    command(['ssh',spec['ssh_alias'],'systemctl','--user','disable','--now',NAME+'-gpu.timer'])
-                    command(['systemctl','--user','disable','--now',NAME+'-tick.timer'])
+                    command(['ssh',spec['ssh_alias'],'systemctl','--user','disable','--now',name+'-gpu.timer'])
+                    command(['systemctl','--user','disable','--now',name+'-tick.timer'])
             finally:
                 box.close()
         put(root/'STATUS.json', state)
@@ -405,6 +430,7 @@ def tick(spec):
 
 def launch(spec, path):
     """Freeze, replicate and arm one GPU fit and its durable publication follower."""
+    name = campaign_name(spec)
     if command(['git','status','--porcelain']).strip():
         raise ValueError('SOURCE_NOT_COMMITTED')
     prepared = prepare(spec)
@@ -412,6 +438,11 @@ def launch(spec, path):
     root.mkdir(parents=True,exist_ok=True,mode=0o700)
     spec = dict(spec, prepared_sha256=prepared['sha256'],
                 code_commit=command(['git','rev-parse','HEAD']).strip())
+    deploy = read(spec['source_deployment'])
+    role = deploy['roles'][spec.get('gpu_role','secondary')]
+    if spec['ssh_alias'] != role['ssh_alias']:
+        raise ValueError('GPU_ROLE_HOST_MISMATCH')
+    spec['gpu_uuid'] = role['gpus'][0]['uuid']
     spec['code_files'] = {str(p.relative_to(REPO)):file_sha256(p)
                           for folder in ('tools/i6dmo','tools/i6n_contracts','tools/i6n_swarm',
                                          'predictor_plugins/modular_temporal')
@@ -439,40 +470,42 @@ def launch(spec, path):
         raise ValueError('DEPLOYMENT_IDENTITY_CHANGED')
     put(destination,spec)
     command(['rsync','-a','--checksum',str(destination),spec['ssh_alias']+':'+str(destination)])
-    deploy = read(spec['source_deployment'])
-    role = deploy['roles']['secondary']
     for target, action in [('tick','tick'),('gpu','run')]:
         run = [deploy['launcher']['crispdm_run'],'-m','1G' if target=='tick' else '4G',
-               '-t','600s' if target=='tick' else '1800s','-n',NAME+'-'+target,'--',
+               '-t','600s' if target=='tick' else '1800s','-n',name+'-'+target,'--',
                deploy['roles']['coordinator']['python'] if target=='tick' else role['python'],
                '-B','-m','tools.i6dmo.all_horizons',action,'--spec',str(destination)]
         workdir = str(REPO) if target=='tick' else runtime
         environment = 'EnvironmentFile='+deploy['warehouse']['environment_file']+'\n' if target=='tick' else ''
         if target=='gpu':
             environment += ''.join('Environment='+json.dumps(k+'='+v)+'\n' for k,v in role.get('environment',{}).items())
-        environment += 'Environment=CUDA_VISIBLE_DEVICES='+('' if target=='tick' else role['gpus'][0]['uuid'])+'\n'
-        text = ('[Unit]\nDescription=Exact short recipe with appended horizons\nX-I6DMO-Batch='+NAME+
+        environment += 'Environment=CUDA_VISIBLE_DEVICES='+('' if target=='tick' else spec['gpu_uuid'])+'\n'
+        text = ('[Unit]\nDescription=Original short recipe replay\nX-I6DMO-Batch='+name+
                 '\n[Service]\nType=oneshot\nWorkingDirectory='+workdir+'\n'+environment+
                 'Environment=PYTHONPATH='+workdir+'\nEnvironment=PYTHONDONTWRITEBYTECODE=1\n'
                 'Environment=OPENBLAS_NUM_THREADS=1\nEnvironment=OMP_NUM_THREADS=1\nExecStart='+shlex.join(run)+
                 '\nMemoryMax='+('2G' if target=='tick' else '5G')+'\nMemorySwapMax=0\nTimeoutStartSec=1900\nNice=10\n')
-        timer = ('[Unit]\nDescription=Automatic exact-recipe contrast\nX-I6DMO-Batch='+NAME+
+        if target == 'gpu' and spec.get('resume_timer'):
+            if not re.fullmatch(r'[a-z0-9-]+\.timer', spec['resume_timer']):
+                raise ValueError('INVALID_RESUME_TIMER')
+            text += 'ExecStopPost=/usr/bin/systemctl --user start '+spec['resume_timer']+'\n'
+        timer = ('[Unit]\nDescription=Automatic exact-recipe contrast\nX-I6DMO-Batch='+name+
                  '\n[Timer]\nOnBootSec=10s\nOnUnitInactiveSec=30s\nAccuracySec=1s\nPersistent=true\nUnit='+
-                 NAME+'-'+target+'.service\n[Install]\nWantedBy=timers.target\n')
+                 name+'-'+target+'.service\n[Install]\nWantedBy=timers.target\n')
         code = "import pathlib; d=pathlib.Path.home()/'.config/systemd/user'; d.mkdir(parents=True,exist_ok=True); "
         for suffix, body in [('service',text),('timer',timer)]:
-            code += 'p=d/'+repr(NAME+'-'+target+'.'+suffix)+'; assert not p.exists() or '+repr('X-I6DMO-Batch='+NAME)+' in p.read_text(); p.write_text('+repr(body)+'); '
+            code += 'p=d/'+repr(name+'-'+target+'.'+suffix)+'; assert not p.exists() or '+repr('X-I6DMO-Batch='+name)+' in p.read_text(); p.write_text('+repr(body)+'); '
         if target=='gpu':
             remote(['python3','-c',code])
             remote(['systemctl','--user','daemon-reload'])
-            remote(['systemctl','--user','enable','--now',NAME+'-gpu.timer'])
+            remote(['systemctl','--user','enable','--now',name+'-gpu.timer'])
         else:
             command(['python3','-c',code])
             command(['systemctl','--user','daemon-reload'])
-            command(['systemctl','--user','enable','--now',NAME+'-tick.timer'])
+            command(['systemctl','--user','enable','--now',name+'-tick.timer'])
     put(root/'LAUNCH.json',dict(state='ARMED',code_commit=spec['code_commit'],
                               prepared_sha256=prepared['sha256'],test_read=False))
-    return dict(state='ARMED',batch_id=NAME,prepared_sha256=prepared['sha256'])
+    return dict(state='ARMED',batch_id=name,prepared_sha256=prepared['sha256'])
 
 
 def main():

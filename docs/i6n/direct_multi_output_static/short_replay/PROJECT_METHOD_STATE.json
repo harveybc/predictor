@@ -2,7 +2,8 @@
  "schema": "i6dmo.short_replay_method.v1",
  "updated_on": "2026-10-16",
  "current_stage": "S14_RELEASE_OPERATION",
- "state": "CLOSED_RETRAINING_DIFFERENT_HISTORICAL_WEIGHT_INFERENCE_CONFIRMED",
+ "state": "REFERENCE_DEVICE_REPRODUCTION_DESIGNED_AND_TESTED",
+ "followup_plan": "REFERENCE_DEVICE_PLAN.md",
  "result": "RETURN.md",
  "epochs_completed": 15,
  "best_epoch": 5,
@@ -20,7 +21,8 @@
  "trainer_and_model_files": "BYTE_IDENTICAL_TO_HISTORICAL_BASE",
  "next_allowed_actions": [
   "Retain completed replay and inference-only control with verified warehouse readbacks and two physical copies",
-  "Discuss differing training trajectory despite matching initial weights/data/config; do not assume a unique cause",
+  "Run one bounded reproduction on the original preferred GPU with unchanged original trainer, model, bundle and seed",
+  "Compare every epoch digest and monitor; retain any failure rather than tune to validation",
   "Read status on demand without an agent polling loop"
  ],
  "blocked_actions": [
