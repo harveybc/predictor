@@ -1,11 +1,26 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-16. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-17. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
 
 ## 1. Autoridad vigente
+
+Directiva actual 2026-10-17: repetir exactamente la receta corta SEMANAL
+de la continuacion que obtuvo seis errores anuales negativos, agregando solo
+18h al arreglo [2,3,4,5,6,12]. La autoridad de este contraste es
+[weekly_plus18/PLAN.md](../i6n/weekly_plus18/PLAN.md). Conservar 53 periodos,
+cuatro anos moviles, 19 features, DS2/13 observaciones, nucleo Conv1D2,
+cabezales LSTM4->Dense8->Dense1, seed 6102026, AdamW .001/.0001 y batch 256.
+Parada original promedio TRAIN/VALIDATION, paciencia 10, min_delta 1e-8,
+maximo 200; no la regla ANY_HEAD. No reabrir seleccion ni lanzar barridos.
+Runtime bd21fc2f; inicializacion de 82 tensores y forward de los seis
+cabezales originales verificados exactos en la 5090 antes de arrancar.
+Solo cambia la nueva cabeza y su contribucion inevitable a perdida/monitor.
+La cola tiene publicacion/readback, copia local y segunda maquina, registro
+anual de campeones y cierre automaticos. TEST sigue cerrado. El resultado
+mantiene el alcance retrospectivo de desarrollo 2024 del padre.
 
 Directiva del propietario 2026-10-16: ejecutar toda la continuacion predictiva
 mediante una cola finita sin aprobaciones entre etapas ni agentes vigilando.
@@ -13,13 +28,14 @@ Musashi ejecuta; no se asignan tareas nuevas a Satoshi. La autoridad ejecutable
 actual es [continuation/PLAN.md](../i6n/direct_multi_output_static/continuation/PLAN.md)
 y su lista completa de celdas, sellada antes de los ajustes.
 
-Estado de arranque verificado: i6dmo-continuation-41c3a7698150, codigo
-e0626cd9, poblacion 8dd12ec5, 407 celdas logicas (269 estaticas + 138 de
-cadencia condicional). Primer dmo_short_ds2_conv real observado en epoca 21
-en la 5090. Timers activos; no espera autorizaciones entre etapas. Prueba
+Continuacion anterior cerrada: i6dmo-continuation-41c3a7698150, codigo
+e0626cd9, poblacion 8dd12ec5, 407/407 terminales: 340 completos (335 ajustes
+y cinco adopciones), 66 omisiones condicionales y un fallo retenido. Sus
+408 reportes tienen lectura de vuelta y ambas copias verifican 2464 archivos;
+sus timers estan apagados. No repetir estos ajustes. Prueba
 anual real: 4/12/53 periodos de trimestre/mes/semana cubren exactamente las
 mismas parejas por horizonte que el estatico, sin duplicaciones ni huecos.
-El estado generado prevalece sobre este snapshot; ETA nueva aun no medida.
+El estado generado de cada campana prevalece sobre su snapshot historico.
 
 1. Corregir el protocolo: TRAIN completo 2020-2023 para gradientes; VALIDATION
    2024 para monitorizar M=(L_TRAIN+L_VALIDATION)/2 con los mismos pesos;

@@ -261,6 +261,33 @@ def cadence_profiles(spec, profiles):
     from tools.i6dmo import continuation as C
     generated=[]
     for source in spec['sources']:
+        if source.get('weekly_annual'):
+            plan=read(source['weekly_annual']); root=Path(source['root'])
+            expected=[c['id'] for c in plan['cells']]
+            results={p.parent.name:read(p) for p in (root/'results').glob('*/RESULT.json')}
+            if any(i not in results or results[i]['state'] not in ('COMPLETE','SKIPPED_NO_EVAL_ROWS') for i in expected):
+                continue
+            measured={i for i in expected if results[i]['state']=='COMPLETE'}
+            members=[p for p in profiles if p['source_label']==source['label'] and p['scope']=='PERIOD'
+                     and p['label'].removeprefix(source['label']+':') in measured]
+            if len(members)!=len(measured) or not members:
+                raise ValueError('WEEKLY_ANNUAL_MEMBERS_MISSING')
+            horizons=members[0]['model']['horizons_hours']
+            if any(p['model']!=members[0]['model'] or sorted(p['scores'])!=sorted(horizons) for p in members):
+                raise ValueError('WEEKLY_ANNUAL_RECIPE_MISMATCH')
+            scores={h:{k:np.concatenate([p['scores'][h][k] for p in members])
+                       for k in members[0]['scores'][h]} for h in horizons}
+            payload=dict(label=source['label']+':ANNUAL_short_weekly_plus18',source_label=source['label'],
+                scope='ANNUAL',asset=source['asset'],code_commit=source['code_commit'],
+                model=members[0]['model'],parameters=members[0]['parameters'],seed=members[0]['seed'],
+                training=dict(cadence='weekly',member_profiles=[p['id'] for p in members],individual_rule=members[0]['training']),
+                data=dict(annual_period_ids=[p['data'].get('period') for p in members]),
+                metrics=[score(scores[h],h) for h in sorted(scores)],weights_sha256=None,
+                member_profiles=[p['id'] for p in members],qualifications=[
+                    'ANNUAL_ROLLING_ENSEMBLE_OF_PERIOD_CHECKPOINTS_NOT_ONE_MODEL',
+                    'DEVELOPMENT_2024_USED_FOR_CHECKPOINT_SELECTION_NOT_INDEPENDENT_OOS'],test_read=False)
+            payload['id']=sha256_json(payload);generated.append(dict(payload,scores=scores))
+            continue
         if not source.get('batch_spec'):
             continue
         batch=read(source['batch_spec']); batch['aggregation_root']=source['root']

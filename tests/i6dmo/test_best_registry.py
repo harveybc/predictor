@@ -49,6 +49,29 @@ def test_partial_period_never_becomes_annual_champion():
     assert m.common_board(p)['horizons']=={}
 
 
+def test_weekly_extension_registers_all_seven_heads_only_after_complete_year(tmp_path):
+    m=module();hs=[2,3,4,5,6,12,18]
+    specpath=tmp_path/'plan.json'
+    m.put(specpath,dict(cells=[{'id':i} for i in ('a','b')]))
+    source=dict(label='weekly18',root=str(tmp_path),layout='batch',asset='EURUSD',code_commit='c',weekly_annual=str(specpath))
+    profiles=[]
+    for i in ('a','b'):
+        folder=tmp_path/'results'/i;folder.mkdir(parents=True)
+        if i=='a':m.put(folder/'RESULT.json',dict(cell={'id':i},state='COMPLETE'))
+        a=arrays()
+        if i=='b':a['origin']=a['origin']+3
+        profiles.append(dict(id=i,label='weekly18:'+i,source_label='weekly18',scope='PERIOD',
+            scores={h:a for h in hs},model={'horizons_hours':hs},parameters=9,seed=7,
+            training={'early_stop':{'monitor':'mean'}},data={'period':{'id':i}}))
+    assert m.cadence_profiles({'sources':[source]},profiles)==[]
+    m.put(tmp_path/'results/b/RESULT.json',dict(cell={'id':'b'},state='COMPLETE'))
+    p=m.cadence_profiles({'sources':[source]},profiles)[0]
+    assert p['scope']=='ANNUAL' and sorted(p['scores'])==hs
+    assert all(x['n']==6 for x in p['metrics']) and p['training']['cadence']=='weekly'
+    m.put(tmp_path/'results/b/RESULT.json',dict(cell={'id':'b'},state='FAILED'))
+    assert m.cadence_profiles({'sources':[source]},profiles)==[]
+
+
 def test_complete_recipe_not_a_best_head_mosaic():
     m=module();a=arrays()
     one=dict(id='only-h4',scope='ANNUAL',scores={4:a})
