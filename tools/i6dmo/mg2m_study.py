@@ -22,6 +22,20 @@ BASE="796ec8f48b0b1621fb9fa9e60e12c1c37079e51e"
 SHORT=[2,3,4,5,6,12]
 CELLS=["plus18","single18","window7","window13","window25"]
 NAME="i6dmo-mg2m-extension-20261017"
+PREFIT_HEAD_ERROR="AttributeError:'DmoBundle' object has no attribute 'heads'"
+
+
+def campaign_name(spec):
+    return NAME+"-single18-repair" if spec.get("study_mode")=="single18_repair" else NAME
+
+
+def active_cells(spec):
+    if not spec.get("study_mode"):return CELLS
+    r=spec.get("repair_authority",{})
+    if spec["study_mode"]!="single18_repair" or r.get("state")!="FAILED" or \
+            r.get("reason")!=PREFIT_HEAD_ERROR or r.get("files")!={}:
+        raise ValueError("REPAIR_AUTHORITY_INVALID")
+    return ["single18"]
 
 
 def read(path):
@@ -96,8 +110,8 @@ def need_single(plus):
     return next(r for r in rows if r["horizon"]==18)["relative_error"]>=0 or short>plus["parent_short_mean"]
 
 
-def next_cell(results, reuse_control):
-    return next((c for c in CELLS if c not in results),None)
+def next_cell(results, reuse_control, ordered=None):
+    return next((c for c in (CELLS if ordered is None else ordered) if c not in results),None)
 
 
 def source_proof(spec):
@@ -291,9 +305,17 @@ def preflight(spec):
     config=read(Path(spec["gpu_data"])/"plus18/CONFIG.json")
     old=M.build_dmo(config["original_model"]);new=M.build_dmo(config["model"])
     proof=model_proof(config,old,new)
-    for cell in CELLS:
+    for cell in active_cells(spec):
         folder=Path(spec["gpu_data"])/cell;c=read(folder/"CONFIG.json")
         bundle=M.build_dmo(c["model"])
+        if cell=="single18":
+            align_single_head(bundle,new)
+            probe=[np.ones((1,13,19),"float32"),np.arange(-24,1,2,dtype="float32")[None,:],np.zeros((1,13),"float32")]
+            if M.predict_matrix(bundle.forecast_model,probe).shape!=(1,1):
+                raise ValueError("SINGLE_HEAD_FORWARD_SHAPE")
+            if not np.array_equal(M.predict_matrix(bundle.forecast_model,probe)[:,0],
+                                  M.predict_matrix(new.forecast_model,probe)[:,6]):
+                raise ValueError("SINGLE_HEAD_INITIAL_FORWARD_MISMATCH")
         a=load_arrays(folder,"fit")
         if not np.array_equal(a["slot_instants"][:,-1],a["row_id"]):
             raise ValueError("PREFLIGHT_WINDOW_EXCLUDES_ORIGIN")
@@ -306,6 +328,12 @@ def preflight(spec):
         proof[cell]=dict(parameters=int(bundle.forecast_model.count_params()),supported=mask.sum(axis=0).tolist())
     proof.update(state="PASS",fit_executed=False,test_read=False)
     put(Path(spec["gpu_root"])/"PREFLIGHT.json",proof);return proof
+
+
+def align_single_head(bundle, initial):
+    bundle.head_models["h18"].set_weights(initial.head_models["h18"].get_weights())
+    for a,b in zip(bundle.head_models["h18"].get_weights(),initial.head_models["h18"].get_weights(),strict=True):
+        if not np.array_equal(a,b):raise ValueError("SINGLE_HEAD_INITIAL_WEIGHT_MISMATCH")
 
 
 def fit_cell(spec, cell, folder):
@@ -342,7 +370,7 @@ def fit_cell(spec, cell, folder):
         proof=model_proof(config,original,bundle)
         if cell=="single18":
             initial=M.build_dmo(model_config(config["original_model"],"plus18"))
-            bundle.heads["h18"].set_weights(initial.heads["h18"].get_weights())
+            align_single_head(bundle,initial)
             proof["single18_initial_head"]="COPIED_FROM_UNTRAINED_PLUS18_SEED"
             del initial
         del original
@@ -386,8 +414,8 @@ def run(spec):
     root=Path(spec["gpu_root"]);root.mkdir(parents=True,exist_ok=True)
     with (root/"gpu.lock").open("a+") as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        done={c:r for c in CELLS if (r:=terminal(root,c,spec))}
-        cell=next_cell(done,False)
+        done={c:r for c in active_cells(spec) if (r:=terminal(root,c,spec))}
+        cell=next_cell(done,False,active_cells(spec))
         if cell is None:return
         if command(["nvidia-smi","--query-compute-apps=pid","--format=csv,noheader,nounits"]).strip():
             put(root/"PROGRESS.json",dict(state="WAIT_GPU",next_cell=cell,at=time.time()));return
@@ -400,7 +428,9 @@ def run(spec):
         if prepared["sha256"]!=spec["prepared_sha256"]:raise ValueError("PREPARED_CHANGED")
         authenticate(Path(spec["gpu_data"]),prepared["files"])
         folder=root/cell
-        if cell=="single18" and not need_single(done["plus18"]):
+        if spec.get("study_mode") and not (root/"PREFLIGHT.json").exists():
+            preflight(spec)
+        if cell=="single18" and not spec.get("study_mode") and not need_single(done["plus18"]):
             result=dict(state="SKIPPED",reason="18h beats naive without short-mean deterioration",files={})
         elif (folder/"STARTED.json").exists():
             result=dict(state="FAILED_INTERRUPTED",reason="no automatic fit repetition",files={})
@@ -410,12 +440,13 @@ def run(spec):
                 result=fit_cell(spec,cell,folder)
             except Exception as exc:
                 result=dict(state="FAILED",reason=type(exc).__name__+":"+str(exc)[:1500],files={})
-        result.update(cell=dict(id=cell),batch_id=NAME,prepared_sha256=spec["prepared_sha256"])
+        result.update(cell=dict(id=cell),batch_id=campaign_name(spec),prepared_sha256=spec["prepared_sha256"])
         result["sha256"]=sha256_json(result);put(folder/"RESULT.json",result)
         put(root/"PROGRESS.json",dict(state=result["state"],cell=cell,at=time.time()))
 
 
 def report(spec, cell, result):
+    name=campaign_name(spec)
     rows=[]
     for split,values in result.get("metrics",{}).items():
         for r in values:
@@ -429,7 +460,7 @@ def report(spec, cell, result):
               evidence_sha256=result["sha256"],seed="6102026")
     config=Path(spec["artifacts"])/cell/"CONFIG.json"
     if config.exists():tags["config_json"]=json.dumps(read(config),sort_keys=True)
-    return dict(experiment_key="i6dmo:"+NAME+":"+cell,experiment_set_key="i6dmo:"+NAME,actor="predictor",
+    return dict(experiment_key="i6dmo:"+name+":"+cell,experiment_set_key="i6dmo:"+name,actor="predictor",
         lake="LOCAL_RETAINED",lineage="UNVERIFIED",config_sha256=spec["prepared_sha256"],
         code_commit=spec["code_commit"],project="predictor",phase="I6DMO_MG2M_EXTENSION",metrics=rows,tags=tags)
 
@@ -438,15 +469,16 @@ def tick(spec):
     from tools.i6dmo.outbox import Outbox,HttpWarehouse
     from tools.i6dmo.mirror import _sync_local,_sync_remote
     root=Path(spec["root"]);artifacts=Path(spec["artifacts"]);artifacts.mkdir(parents=True,exist_ok=True)
+    name=campaign_name(spec);ordered=active_cells(spec)
     with (root/"tick.lock").open("a+") as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         if (root/"CLOSE.json").exists():return read(root/"CLOSE.json")
         command(["rsync","-a","--checksum","--exclude=*.lock",spec["ssh_alias"]+":"+spec["gpu_root"]+"/",
                  str(artifacts)+"/"])
-        results={c:r for c in CELLS if (r:=terminal(artifacts,c,spec))}
+        results={c:r for c in ordered if (r:=terminal(artifacts,c,spec))}
         state=dict(state="RUNNING",complete=sum(r["state"]=="COMPLETE" for r in results.values()),
-            terminal=len(results),total=len(CELLS),cells={c:r["state"] for c,r in results.items()},test_read=False,at=time.time())
-        active=next_cell(results,False)
+            terminal=len(results),total=len(ordered),cells={c:r["state"] for c,r in results.items()},test_read=False,at=time.time())
+        active=next_cell(results,False,ordered)
         if active and (artifacts/active/"PROGRESS.json").exists():
             state["progress"]=read(artifacts/active/"PROGRESS.json")
             p=state["progress"];epoch=p.get("epoch",0)
@@ -473,16 +505,17 @@ def tick(spec):
         remote_bad=_sync_remote(artifacts,spec["ssh_alias"],spec["remote_mirror"],files,subprocess.run)
         state["mirrors"]=dict(state="VERIFIED" if not local_bad and not remote_bad else "MISMATCH",files=len(files),
                               local_bad=local_bad[:5],remote_bad=remote_bad[:5],manifest_sha256=sha256_json(files))
-        if len(results)==len(CELLS) and pub["expected"]==len(CELLS) and not pub["pending"] and not pub["mismatch"] \
+        if len(results)==len(ordered) and pub["expected"]==len(ordered) and not pub["pending"] and not pub["mismatch"] \
                 and state["mirrors"]["state"]=="VERIFIED":
             state["state"]="CLOSED" if all(r["state"] in ("COMPLETE","SKIPPED") for r in results.values()) else "CLOSED_WITH_FAILURE"
             put(root/"CLOSE.json",state)
-            command(["ssh",spec["ssh_alias"],"systemctl","--user","disable","--now",NAME+"-gpu.timer"])
-            command(["systemctl","--user","disable","--now",NAME+"-tick.timer"])
+            command(["ssh",spec["ssh_alias"],"systemctl","--user","disable","--now",name+"-gpu.timer"])
+            command(["systemctl","--user","disable","--now",name+"-tick.timer"])
         put(root/"STATUS.json",state);return state
 
 
 def launch(spec):
+    name=campaign_name(spec);active_cells(spec)
     if command(["git","status","--porcelain"]).strip():raise ValueError("SOURCE_NOT_COMMITTED")
     prepared=prepare(spec);root=Path(spec["root"]);root.mkdir(parents=True,exist_ok=True)
     deploy=read(spec["source_deployment"]);role=deploy["roles"][spec["gpu_role"]]
@@ -508,33 +541,34 @@ def launch(spec):
     put(destination,spec);command(["rsync","-a",str(destination),spec["ssh_alias"]+":"+str(destination)])
     environment={**role.get("environment",{}),"CUDA_VISIBLE_DEVICES":spec["gpu_uuid"],"PYTHONPATH":runtime,
                  "PYTHONDONTWRITEBYTECODE":"1","OPENBLAS_NUM_THREADS":"1","OMP_NUM_THREADS":"1"}
-    remote(["env",*[k+"="+v for k,v in environment.items()],deploy["launcher"]["crispdm_run"],"-m","4G",
-            "-t","180s","-n",NAME+"-preflight","--",role["python"],"-B","-m","tools.i6dmo.mg2m_study",
-            "preflight","--spec",str(destination)])
+    if not spec.get("study_mode"):
+        remote(["env",*[k+"="+v for k,v in environment.items()],deploy["launcher"]["crispdm_run"],"-m","4G",
+                "-t","180s","-n",name+"-preflight","--",role["python"],"-B","-m","tools.i6dmo.mg2m_study",
+                "preflight","--spec",str(destination)])
     for target,action in (("tick","tick"),("gpu","run")):
         wd=str(REPO) if target=="tick" else runtime
         python=deploy["roles"]["coordinator"]["python"] if target=="tick" else role["python"]
         args=[deploy["launcher"]["crispdm_run"],"-m","768M" if target=="tick" else "4G",
-              "-t","600s" if target=="tick" else "1800s","-n",NAME+"-"+target,"--",python,
+              "-t","600s" if target=="tick" else "1800s","-n",name+"-"+target,"--",python,
               "-B","-m","tools.i6dmo.mg2m_study",action,"--spec",str(destination)]
         env="EnvironmentFile="+spec["warehouse"]["environment_file"]+"\n" if target=="tick" else "".join(
             "Environment="+json.dumps(k+"="+v)+"\n" for k,v in role.get("environment",{}).items())
         env+="Environment=CUDA_VISIBLE_DEVICES="+("" if target=="tick" else spec["gpu_uuid"])+"\n"
-        body="[Unit]\nDescription=Parent-pinned MG2m finite study\nX-I6DMO-Batch="+NAME+"\n[Service]\nType=oneshot\nWorkingDirectory="+wd+"\n"+env
+        body="[Unit]\nDescription=Parent-pinned MG2m finite study\nX-I6DMO-Batch="+name+"\n[Service]\nType=oneshot\nWorkingDirectory="+wd+"\n"+env
         body+="Environment=PYTHONPATH="+wd+"\nEnvironment=PYTHONDONTWRITEBYTECODE=1\nEnvironment=OPENBLAS_NUM_THREADS=1\nEnvironment=OMP_NUM_THREADS=1\n"
         body+="ExecStart="+shlex.join(args)+"\nMemoryMax="+("1G" if target=="tick" else "5G")+"\nMemorySwapMax=0\nTimeoutStartSec=1900\nNice=10\n"
         timer="[Unit]\nDescription=Automatic MG2m sequence\n[Timer]\nOnBootSec=10s\nOnUnitInactiveSec=15s\nAccuracySec=1s\nPersistent=true\n[Install]\nWantedBy=timers.target\n"
         code="from pathlib import Path; d=Path.home()/'.config/systemd/user'; d.mkdir(parents=True,exist_ok=True); "
         for suffix,text in (("service",body),("timer",timer)):
-            code+="p=d/"+repr(NAME+"-"+target+"."+suffix)+"; p.write_text("+repr(text)+"); "
+            code+="p=d/"+repr(name+"-"+target+"."+suffix)+"; p.write_text("+repr(text)+"); "
         if target=="gpu":
             remote(["python3","-c",code]);remote(["systemctl","--user","daemon-reload"])
-            remote(["systemctl","--user","enable","--now",NAME+"-gpu.timer"])
+            remote(["systemctl","--user","enable","--now",name+"-gpu.timer"])
         else:
             command(["python3","-c",code]);command(["systemctl","--user","daemon-reload"])
-            command(["systemctl","--user","enable","--now",NAME+"-tick.timer"])
+            command(["systemctl","--user","enable","--now",name+"-tick.timer"])
     put(root/"LAUNCH.json",dict(state="ARMED",code_commit=spec["code_commit"],prepared_sha256=prepared["sha256"],test_read=False))
-    return dict(state="ARMED",batch_id=NAME,code_commit=spec["code_commit"])
+    return dict(state="ARMED",batch_id=name,code_commit=spec["code_commit"])
 
 
 def main():

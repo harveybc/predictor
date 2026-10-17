@@ -108,6 +108,26 @@ def test_only_generated_input_names_are_ignored_in_structural_proof():
     assert m.canonical_layer_config(a)==m.canonical_layer_config(b)
     b["layers"][1]["config"]["units"]=9
     assert m.canonical_layer_config(a)!=m.canonical_layer_config(b)
+
+
+def test_single_head_alignment_uses_actual_bundle_api():
+    from types import SimpleNamespace
+    m=module()
+    class Head:
+        def __init__(self):self.w=[np.array([1.])]
+        def get_weights(self):return self.w
+        def set_weights(self,w):self.w=[x.copy() for x in w]
+    original=Head();original.w=[np.array([7.])]
+    target=Head()
+    m.align_single_head(SimpleNamespace(head_models={"h18":target}),SimpleNamespace(head_models={"h18":original}))
+    assert target.w[0][0]==7.
+
+
+def test_repair_mode_has_only_failed_prefit_cell_and_distinct_campaign():
+    m=module();spec={"study_mode":"single18_repair","repair_authority":{"state":"FAILED","reason":m.PREFIT_HEAD_ERROR,"files":{}}}
+    assert m.active_cells(spec)==["single18"] and m.campaign_name(spec)!=m.NAME
+    spec["repair_authority"]["state"]="COMPLETE"
+    with pytest.raises(ValueError,match="REPAIR_AUTHORITY"):m.active_cells(spec)
     a={"layers":[{"class_name":"Concatenate","name":"concatenate","config":{"name":"concatenate","axis":-1}}],"output_layers":["concatenate",0,0]}
     b=copy.deepcopy(a);b["layers"][0]["name"]="concatenate_1";b["layers"][0]["config"]["name"]="concatenate_1";b["output_layers"][0]="concatenate_1"
     assert m.canonical_layer_config(a)==m.canonical_layer_config(b)
