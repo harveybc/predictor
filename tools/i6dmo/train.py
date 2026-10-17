@@ -1025,6 +1025,49 @@ class MeanMonitorStopper:
                 "restore": "lowest_monitored_first_tie"}
 
 
+class AnyHorizonMonitorStopper(MeanMonitorStopper):
+    """Reset on a significant record in any head; keep one best-mean checkpoint."""
+
+    RULE = "i6dmo.any_horizon_patience.v1"
+
+    def __init__(self, patience, min_delta, max_epochs):
+        super().__init__(patience, min_delta, max_epochs)
+        self.head_references = None
+
+    def update(self, fit_loss, inner_loss, weights, *, per_head):
+        if not per_head or any(v is None or not math.isfinite(v) for v in per_head):
+            raise TrainDisposition("INVALID_PATIENCE_HEAD_MONITOR", "all fixed heads need finite support")
+        if self.head_references is not None and len(per_head) != len(self.head_references):
+            raise TrainDisposition("PATIENCE_HEAD_COUNT_CHANGED")
+        refs = self.head_references or [math.inf] * len(per_head)
+        improved = [i for i, value in enumerate(per_head) if value < refs[i] - self.min_delta]
+        stale = 0 if improved else self.stale + 1
+        super().update(fit_loss, inner_loss, weights)
+        self.head_references = [float(value) if i in improved else refs[i]
+                                for i, value in enumerate(per_head)]
+        self.stale = stale
+        self.stop_reason = "patience" if stale >= self.patience else \
+            "max_epochs" if len(self.history) >= self.max_epochs else None
+        self.history[-1].update(stale=stale, reset_heads=improved,
+                                per_horizon_monitored=list(per_head),
+                                per_horizon_references=list(self.head_references))
+        return self.stop_reason is not None
+
+    def identity(self):
+        return {**super().identity(), "patience_reset": "ANY_HORIZON",
+                "patience_monitor": "any h: 0.5*(fit_loss_h+inner_loss_h) < reference_h-min_delta",
+                "checkpoint_monitor": "equal-head mean, unchanged",
+                "head_indices": "zero-based output order in model config"}
+
+
+def make_stopper(training):
+    policy = training.get("patience_reset", "MEAN")
+    if policy not in ("MEAN", "ANY_HORIZON"):
+        raise TrainDisposition("UNKNOWN_PATIENCE_POLICY", str(policy))
+    cls = AnyHorizonMonitorStopper if policy == "ANY_HORIZON" else MeanMonitorStopper
+    return cls(training["patience"], training["min_delta"], training["max_epochs"])
+
+
 def _monitor_model(bundle, workdir):
     """A FRESH canonical-loader-path instance holding the training model's current weights.
 
@@ -1067,7 +1110,7 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_
         optimizer.apply_gradients(zip(grads, variables))
         return loss
 
-    stopper = MeanMonitorStopper(training["patience"], training["min_delta"], training["max_epochs"])
+    stopper = make_stopper(training)
     batch, updates, rows = training["batch_size"], 0, []
     best_witness, loader_overhead = None, []
     monitor_dir = tempfile.TemporaryDirectory(prefix="i6dmo_monitor_")
@@ -1092,7 +1135,14 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_
         fm, im, _, epoch_witness = evaluate_monitored(
             monitor_model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), batch, ids=ids)
         was_best = stopper.best_monitored
-        stop = stopper.update(fm["loss"], im["loss"], model.get_weights())
+        if isinstance(stopper, AnyHorizonMonitorStopper):
+            if len(fm["per_head"]) != len(im["per_head"]) or any(
+                    a is None or b is None for a, b in zip(fm["per_head"], im["per_head"])):
+                raise TrainDisposition("INVALID_PATIENCE_HEAD_SUPPORT")
+            head_monitors = [0.5*(a+b) for a, b in zip(fm["per_head"], im["per_head"])]
+            stop = stopper.update(fm["loss"], im["loss"], model.get_weights(), per_head=head_monitors)
+        else:
+            stop = stopper.update(fm["loss"], im["loss"], model.get_weights())
         if stopper.best_monitored < was_best:
             from tools.i6dmo.model import weight_tensor_digests
             # Weights-at-witness: the exact tensors of the instance the witness evaluated.
@@ -1102,8 +1152,11 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_
                    fit=fm, inner=im, elapsed_s=time.monotonic() - started)
         rows.append(row)
         if progress is not None:
-            progress({k: row[k] for k in ("epoch", "fit_loss", "inner_loss", "monitored", "stale",
-                                          "best_epoch", "updates", "elapsed_s")})
+            event = {k: row[k] for k in ("epoch", "fit_loss", "inner_loss", "monitored", "stale",
+                                        "best_epoch", "updates", "elapsed_s")}
+            if isinstance(stopper, AnyHorizonMonitorStopper):
+                event.update({k:row[k] for k in ("per_horizon_monitored", "reset_heads", "per_horizon_references")})
+            progress(event)
         if stop:
             break
     last = weights_hash(model)
@@ -1132,6 +1185,11 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_
               "prediction_dtype": "float32 inputs, float64 per-batch outputs",
               "accumulation": "global per-head float64 math.fsum sums/counts, "
                               "equal-weight mean over supported heads"}
+    if isinstance(stopper, AnyHorizonMonitorStopper):
+        record["decision_impact"] = {
+            "checkpoint_mean_diagnostic": record["decision_impact"],
+            "any_horizon_patience_sensitivity": "NOT_ASSESSED_BY_SCALAR_UNCERTAINTY_DIAGNOSTIC",
+            "note": "per-head references/resets are retained; no cross-context decision invariance claim"}
     best_row = rows[stopper.best_epoch - 1]
     fm_best, im_best, monitored_best = monitor_self_check(
         _monitor_model(bundle, monitor_dir.name), (x_fit, y_fit, m_fit), (x_in, y_in, m_in),

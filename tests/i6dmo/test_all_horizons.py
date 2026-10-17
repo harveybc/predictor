@@ -77,5 +77,6 @@ def test_extended_config_changes_only_horizons_and_initial_short_weights():
 
 def test_legacy_builder_and_trainer_structural_identity():
     proof = A.legacy_code_proof()
-    assert proof['trainer_file_unchanged']
+    assert not proof['trainer_file_unchanged']
+    assert proof['other_trainer_functions_unchanged']
     assert proof['builder_unchanged']

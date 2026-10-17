@@ -21,7 +21,7 @@ BASE = '24f5a6ccc262c60c70425fc1af8ddd11dd476331'
 SHORT = [2, 3, 4, 5, 6, 12]
 LONG = [18, 24, 36, 48, 60, 72]
 HORIZONS = SHORT + LONG
-NAME = 'i6dmo-short-all-horizons-20261016'
+NAME = 'i6dmo-any-head-patience-20261016'
 
 
 def read(path):
@@ -56,10 +56,16 @@ def legacy_code_proof():
                     item.ifs[0] = item.ifs[0].values[0]
     if ast.dump(old, include_attributes=False) != ast.dump(new, include_attributes=False):
         raise ValueError('ORIGINAL_MODEL_CHANGED_BEYOND_HORIZON_ADMISSION')
-    expected = hashlib.sha256(command(['git', 'show', BASE+':tools/i6dmo/train.py']).encode()).hexdigest()
-    if file_sha256(REPO/'tools/i6dmo/train.py') != expected:
-        raise ValueError('ORIGINAL_TRAINER_CHANGED')
-    return dict(trainer_file_unchanged=True, builder_unchanged=True,
+    before = ast.parse(command(['git', 'show', BASE+':tools/i6dmo/train.py']))
+    after = ast.parse((REPO/'tools/i6dmo/train.py').read_text())
+    exclude = {'fit_dmo','AnyHorizonMonitorStopper','make_stopper'}
+    for tree in (before, after):
+        tree.body = [n for n in tree.body if not isinstance(n,(ast.FunctionDef,ast.ClassDef)) or n.name not in exclude]
+    if ast.dump(before,include_attributes=False) != ast.dump(after,include_attributes=False):
+        raise ValueError('TRAINER_CHANGED_OUTSIDE_PATIENCE_SCOPE')
+    return dict(trainer_file_unchanged=False, builder_unchanged=True,
+                other_trainer_functions_unchanged=True,
+                trainer_delta='optional any-horizon patience dispatch and decision traces; default behavior retained',
                 admission_only='one additional horizon tuple; normalizer matches that tuple explicitly',
                 base=BASE)
 
@@ -168,6 +174,7 @@ def prepare(spec):
     training = read(source/'TRAINING.json')['settings']
     if training != effective['training']:
         raise ValueError('SOURCE_TRAINING_CHANGED')
+    training = dict(training, patience_reset='ANY_HORIZON')
     files = {}
     support = {}
     for split, a in arrays.items():
@@ -187,6 +194,20 @@ def prepare(spec):
                   original_model=base_model, support=support, legacy_code=legacy_code_proof(),
                   test_read=False, evaluation='DEVELOPMENT_TUNING',
                   historical_runtime_seal='DECLARED_2_18_OBSERVED_2_21_RETAINED_NOT_RESEALED')
+    control = read(spec['control_config'])
+    for key in ('model','seed','scales','support','source_receipt_sha256'):
+        if config[key] != control[key]:
+            raise ValueError('MEAN_STOP_CONTROL_CHANGED:'+key)
+    settings = dict(config['training'])
+    settings.pop('patience_reset')
+    if settings != control['training']:
+        raise ValueError('CONTROL_TRAINING_CHANGED_BEYOND_PATIENCE_RESET')
+    for split in T.SPLITS:
+        if file_sha256(root/(split+'.npz')) != file_sha256(Path(spec['control_data'])/(split+'.npz')):
+            raise ValueError('CONTROL_DATA_BYTES_DIFFER:'+split)
+    config['control_comparison'] = dict(only_training_change='patience_reset=ANY_HORIZON',
+                                       input_files='BYTE_IDENTICAL', model='IDENTICAL',
+                                       control_config_sha256=file_sha256(spec['control_config']))
     put(root/'CONFIG.json', config)
     files['CONFIG.json'] = file_sha256(root/'CONFIG.json')
     doc = dict(files=files, support=support, source_receipt=config['source_receipt_sha256'],
@@ -334,9 +355,10 @@ def report(spec, result):
     return dict(experiment_key='i6dmo:'+NAME, experiment_set_key='i6dmo:'+NAME,
                 actor='predictor', lake='LOCAL_RETAINED', lineage='UNVERIFIED',
                 config_sha256=spec['prepared_sha256'], code_commit=spec['code_commit'],
-                project='predictor', phase='I6DMO_SHORT_EXACT_ALL_HORIZONS', metrics=rows,
+                project='predictor', phase='I6DMO_ANY_HEAD_PATIENCE', metrics=rows,
                 tags=dict(evaluation='DEVELOPMENT_TUNING', test_read='false',
                           evidence_sha256=result['sha256'], recipe='ORIGINAL_SHORT_PLUS_LONG_HEADS',
+                          patience_reset='ANY_HORIZON', checkpoint_selection='LOWEST_MEAN_UNCHANGED',
                           seed='6102026', disposition=result['state']))
 
 
