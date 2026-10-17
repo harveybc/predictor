@@ -635,6 +635,18 @@ Los cohortes distintos y los resultados parciales se etiquetan por separado.
 Esta correccion documental y el sidecar CPU no cambian la identidad ni detienen
 la continuacion I6-DMO vigente; TEST permanece cerrado.
 
+Siguiente contraste aprobado y desplegado 2026-10-17 UTC:
+[MG2m +18 h y ventanas](../i6n/mg2m_extension/PLAN.md), runtime 3f126cf8,
+campana i6dmo-mg2m-extension-20261017. La GPU secundaria 4090 ejecuta +18 h,
+18 h sola si corresponde y ventanas 7/13/25 observaciones a paso MG2. La 5090
+continua la campana previa; no se usa la GPU auxiliar del mismo host.
+La nueva cabeza conserva datos, mascaras, escalas e inicializacion de las seis
+anteriores; la compuerta real GPU paso antes del primer ajuste. Para comparar
+ventanas, se congelo soporte comun y se programa un control de 13 sobre ese
+soporte, pues hay huecos reales que impiden reutilizar el control completo.
+Los timers avanzan, publican al OLAP, verifican dos copias y cierran sin agentes
+monitoreando. El registro de mejores resultados observa ambos frentes.
+
 El estado observado y la cola se mantienen únicamente en
 `CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. Las fases 1, 2 y 3
 están cerradas (2026-10-07: `PHASE_2_COMPLETE.json` y

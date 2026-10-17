@@ -1,6 +1,18 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-16",
+ "mg2m_extension": {
+  "state": "RUNNING_SECONDARY_4090",
+  "runtime_code_commit": "3f126cf82fca842ffa30a56ba6d8d049283011e8",
+  "campaign_id": "i6dmo-mg2m-extension-20261017",
+  "subplan": "../mg2m_extension/PLAN.md",
+  "launch_evidence": "../mg2m_extension/RETURN.md",
+  "cells": ["plus18", "conditional_single18", "window7", "matched_window13", "window25"],
+  "legacy_trainer_unchanged": true,
+  "initial_shared_weights_and_short_forward": "EXACT",
+  "test_read": false,
+  "previous_campaign_changed": false
+ },
  "best_registry": {
   "state": "AUTOMATIC_CPU_SIDECAR_READY",
   "reference": "I6-DMO-SHORT-MG2-MATCHED-R0",
