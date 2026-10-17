@@ -30,3 +30,33 @@ oscillation does not reset; nonfinite/unsupported vector rejected; ceiling
 applies despite ongoing improvements; best-average checkpoint remains coherent;
 default legacy behavior unchanged; real-history replay agrees through the old
 run's first 25 epochs; actual data hashes remain unchanged.
+
+## Launch Evidence
+
+Runtime `b33a5933`: 48 focused tests passed in 140.66 s, including a real
+two-epoch synthetic CPU fit through the vector stopper, monitor self-check
+and the legacy trainer regressions. PRE had ten failures because the new
+stopper/factory did not exist. This is not a full-repository suite claim.
+
+Campaign `i6dmo-any-head-patience-20261016` is armed with autonomous GPU and
+publication timers. Start check observed epoch 3 / 195 updates on the secondary
+4090, explicit per-horizon references and reset indices, stale=0. Preparation
+verified the model and all three data files byte-identical to the completed
+12-head control. Population seal:
+`5a39fc444d7382fc40c3d83a854fafa466758dfc620c0543384d704ddd986832`.
+
+The effective new field `training.patience_reset=ANY_HORIZON` selects the new
+rule. Original source-descriptive strings, including `training.patience_rule`,
+are retained for source comparison and do not override that explicit selector;
+the resulting early_stop identity is `i6dmo.any_horizon_patience.v1` and records
+the effective vector rule. The mean monitor still selects the coherent best
+checkpoint and drives the gradient objective. Neither is silently changed.
+
+Independent arithmetic replay of retained histories (not extra training):
+the short-only run stopped at 13 with mean patience, but any-head stale would
+be 4 there. The twelve-head mean-stop control stopped at 25; its h3 monitor
+improved at epoch 25, so any-head stale would be zero. These are evidence
+that the new rule permits more training, not evidence of improved prediction.
+
+Historical short-only fit: 13 epochs, best 3, max 200, patience 10, stop reason
+`patience`. No DEAP/DOIN search or genetic generations generated that fit.

@@ -1,0 +1,24 @@
+{
+ "schema": "i6dmo.any_head_method.v1",
+ "updated_on": "2026-10-16",
+ "current_stage": "S14_RELEASE_OPERATION",
+ "state": "RUNNING_ONE_PAIRED_CONTRAST_ON_SECONDARY_GPU",
+ "runtime_commit": "b33a5933",
+ "plan": "ANY_HEAD_PLAN.md",
+ "tests": {"focused_passed": 48, "seconds": 140.66},
+ "patience": 10,
+ "min_delta_absolute": 1e-8,
+ "max_epochs": 200,
+ "patience_reset": "ANY_HORIZON",
+ "checkpoint_selection": "LOWEST_MEAN_UNCHANGED",
+ "next_allowed_actions": [
+  "Let owned timers finish the single fit, publication/readback and two mirrors",
+  "Read status on request without agent polling",
+  "Preserve previous completed fits and the preferred GPU continuation"
+ ],
+ "blocked_actions": [
+  "Open TEST",
+  "Change gradient loss or per-horizon checkpoint weights implicitly",
+  "Repeat an interrupted scientific fit automatically"
+ ]
+}
