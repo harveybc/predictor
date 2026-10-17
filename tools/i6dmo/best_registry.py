@@ -261,11 +261,20 @@ def cadence_profiles(spec, profiles):
     from tools.i6dmo import continuation as C
     generated=[]
     for source in spec['sources']:
+        if source.get('group_by_arm') and not source.get('annual_arm'):
+            path=source.get('weekly_annual')
+            if not path or not Path(path).is_file():continue
+            plan=read(path)
+            names=sorted({c['arm'] for c in plan['cells']})
+            generated.extend(cadence_profiles(dict(sources=[dict(source,annual_arm=a,
+                annual_label='ANNUAL_'+a) for a in names]),profiles))
+            continue
         if source.get('weekly_annual'):
             if not Path(source['weekly_annual']).is_file():
                 continue
             plan=read(source['weekly_annual']); root=Path(source['root'])
-            expected=[c['id'] for c in plan['cells']]
+            expected=[c['id'] for c in plan['cells'] if not source.get('annual_arm') or c.get('arm')==source['annual_arm']]
+            if not expected:raise ValueError('WEEKLY_ANNUAL_EMPTY_ARM')
             results={p.parent.name:read(p) for p in (root/'results').glob('*/RESULT.json')}
             if any(i not in results or results[i]['state'] not in ('COMPLETE','SKIPPED_NO_EVAL_ROWS') for i in expected):
                 continue

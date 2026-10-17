@@ -85,6 +85,28 @@ def test_weekly_successor_without_deployed_plan_is_not_an_error(tmp_path):
     assert module().cadence_profiles({'sources':[source]},[])==[]
 
 
+def test_weekly_multiarm_does_not_mix_recipes_or_promote_partial_arm(tmp_path):
+    m=module();path=tmp_path/'plan.json'
+    cells=[dict(id=arm+period,arm=arm) for arm in ('window7','window13') for period in ('a','b')]
+    m.put(path,dict(cells=cells))
+    source=dict(label='sweep',root=str(tmp_path),asset='EURUSD',code_commit='c',weekly_annual=str(path),group_by_arm=True)
+    profiles=[]
+    for c in cells:
+        folder=tmp_path/'results'/c['id'];folder.mkdir(parents=True)
+        if c['id']!='window13b':m.put(folder/'RESULT.json',dict(cell=c,state='COMPLETE'))
+        a=arrays()
+        if c['id'].endswith('b'):a['origin']+=3
+        profiles.append(dict(id=c['id'],label='sweep:'+c['id'],source_label='sweep',scope='PERIOD',
+            scores={4:a},model=dict(horizons_hours=[4],slots=7 if c['arm']=='window7' else 13),
+            parameters=9,seed=7,training={},data={}))
+    result=m.cadence_profiles({'sources':[source]},profiles)
+    assert len(result)==1 and result[0]['model']['slots']==7
+    assert result[0]['metrics'][0]['n']==6 and result[0]['label'].endswith('ANNUAL_window7')
+    m.put(tmp_path/'results/window13b/RESULT.json',dict(cell=cells[-1],state='COMPLETE'))
+    result=m.cadence_profiles({'sources':[source]},profiles)
+    assert sorted(r['model']['slots'] for r in result)==[7,13]
+
+
 def test_complete_recipe_not_a_best_head_mosaic():
     m=module();a=arrays()
     one=dict(id='only-h4',scope='ANNUAL',scores={4:a})

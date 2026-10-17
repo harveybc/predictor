@@ -7,6 +7,30 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Directiva vigente adicional 2026-10-17: conservar la campana semanal de doce
+salidas en la GPU primaria. En la secundaria libre ejecutar automaticamente
+el control DS2 de 13 observaciones y ventanas 7/25/49 con el MISMO protocolo
+semanal y los siete horizontes [2,3,4,5,6,12,18]. Congelar soporte comun por
+salida; despues, sobre las dos mejores ventanas ANUALES, contrastar nucleos
+[4] y [4,2], reutilizando [2]. No ANY_HEAD, nuevas semillas, TEST ni agentes
+monitoreando. Ver [weekly_window_core/PLAN.md](../i6n/weekly_window_core/PLAN.md).
+Esta aprobacion sustituye la prohibicion anterior de nuevos barridos, no
+modifica ni detiene la identidad que ya corre en la GPU primaria.
+
+Regla explicita del propietario: el destino operativo es exclusivamente
+MT5 DEMO o Alpaca PAPER, NUNCA dinero real. Cada mejora completa compatible
+dispara simulacion con las mejores predicciones retenidas de la otra familia,
+capital inicial 10000 y costes configurados. Guardar profit NETO, Sharpe,
+drawdown, numero de operaciones, costes y hashes de ambas recetas junto con
+MAE/naive por horizonte en OLAP. Profit neto positivo habilita despliegue
+automatico demo mediante prediction_provider/LTS, SIN exigir TEST y SIN
+otra aprobacion humana. Verificar modo de cuenta y endpoint automaticamente;
+rechazar dinero real y conservar mascaras, limites y rollback. No exigir
+una etapa discrecional shadow adicional. El alcance sigue siendo desarrollo,
+no prueba independiente de rentabilidad. TEST conserva su compuerta cientifica
+para investigacion, pero NO bloquea demo. No afirmar que este enlace ya esta
+desplegado hasta verificar el adaptador y su recibo operativo.
+
 Ampliacion aprobada 2026-10-17: conservar [2,3,4,5,6,12,18] y agregar
 [24,36,48,60,72] al MISMO modelo semanal. Sin cambiar ventanas, inputs,
 arquitectura compartida, inicializacion de los siete cabezales, escalas,
@@ -575,8 +599,11 @@ RL compara `SAC raw` frente a `SAC modular` y `DQN raw` frente a
 compartan red. Reward, costes, episodios, early stopping y mejor checkpoint son
 identidades separadas.
 
-LTS consume sólo artefactos instalados y verificados. Las promociones son offline
-→ shadow → MT5 demo/Alpaca paper. No hay autorización de capital real.
+LTS consume sólo artefactos instalados y verificados. La regla vigente es
+simulacion con profit neto positivo y costes configurados -> MT5 demo/Alpaca
+paper automaticamente; no TEST ni otra aprobacion para demo. Comprobar cuenta
+y endpoint paper/demo antes de servir; rechazar dinero real. Shadow queda
+como comprobacion tecnica opcional, no como una autorizacion discrecional.
 
 ## 12. Extensión final: calendario causal como entrada
 
