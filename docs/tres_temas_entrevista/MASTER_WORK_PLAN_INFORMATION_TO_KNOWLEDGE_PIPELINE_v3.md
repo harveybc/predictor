@@ -73,6 +73,16 @@ ventanas reales, sin futuro. Publicacion/lectura exacta y dos copias cerradas;
 timers propios apagados. No repetir ni usar estas salidas en estrategia.
 La continuacion de 407 celdas de la 5090 no cambia por este resultado.
 
+Orden posterior del propietario: contraste separado de paciencia por CUALQUIER
+horizonte en la misma 4090. Mantener paciencia 10, mejora absoluta 1e-8 y maximo
+200 epocas; reiniciar si algun M_h=(FIT_h+INNER_h)/2 mejora su propia referencia.
+No usar el promedio entre horizontes para reiniciar. Conservar perdida de
+gradientes y checkpoint de promedio minimo para aislar esta unica variable.
+Datos, arquitectura y semilla identicos al control de doce cabezales, sin
+repetir dicho control ni alterar sus resultados. Plan ANY_HEAD_PLAN.md en
+codex/i6dmo-any-head-patience-20261016, codigo b33a5933. La regla nueva es opt-in,
+no modifica retroactivamente la identidad en curso de la 5090 ni abre TEST.
+
 Resultado retenido anterior: i6dmo-resolution-705d19ec84ae CLOSED, 19/19,
 19 reportes con lectura exacta y dos espejos de 159 archivos. DS2 mejor que
 DS4 en media de corto (+0.258987%/+2.723207%) y largo
