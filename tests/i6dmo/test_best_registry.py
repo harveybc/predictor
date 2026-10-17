@@ -68,8 +68,21 @@ def test_weekly_extension_registers_all_seven_heads_only_after_complete_year(tmp
     p=m.cadence_profiles({'sources':[source]},profiles)[0]
     assert p['scope']=='ANNUAL' and sorted(p['scores'])==hs
     assert all(x['n']==6 for x in p['metrics']) and p['training']['cadence']=='weekly'
+    del profiles[1]['scores'][18]
+    profiles[1]['data']['counts']={'VALIDATION':[3]*6+[0]}
+    p=m.cadence_profiles({'sources':[source]},profiles)[0]
+    assert next(x['n'] for x in p['metrics'] if x['horizon']==18)==3
+    assert next(x['n'] for x in p['metrics'] if x['horizon']==2)==6
+    profiles[1]['data']['counts']['VALIDATION'][-1]=1
+    with pytest.raises(ValueError,match='UNDECLARED_MISSING_HEAD'):
+        m.cadence_profiles({'sources':[source]},profiles)
     m.put(tmp_path/'results/b/RESULT.json',dict(cell={'id':'b'},state='FAILED'))
     assert m.cadence_profiles({'sources':[source]},profiles)==[]
+
+
+def test_weekly_successor_without_deployed_plan_is_not_an_error(tmp_path):
+    source=dict(weekly_annual=str(tmp_path/'not-created-yet.json'))
+    assert module().cadence_profiles({'sources':[source]},[])==[]
 
 
 def test_complete_recipe_not_a_best_head_mosaic():

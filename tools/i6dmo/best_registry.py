@@ -262,6 +262,8 @@ def cadence_profiles(spec, profiles):
     generated=[]
     for source in spec['sources']:
         if source.get('weekly_annual'):
+            if not Path(source['weekly_annual']).is_file():
+                continue
             plan=read(source['weekly_annual']); root=Path(source['root'])
             expected=[c['id'] for c in plan['cells']]
             results={p.parent.name:read(p) for p in (root/'results').glob('*/RESULT.json')}
@@ -273,11 +275,19 @@ def cadence_profiles(spec, profiles):
             if len(members)!=len(measured) or not members:
                 raise ValueError('WEEKLY_ANNUAL_MEMBERS_MISSING')
             horizons=members[0]['model']['horizons_hours']
-            if any(p['model']!=members[0]['model'] or sorted(p['scores'])!=sorted(horizons) for p in members):
+            if any(p['model']!=members[0]['model'] or set(p['scores'])-set(horizons) for p in members):
                 raise ValueError('WEEKLY_ANNUAL_RECIPE_MISMATCH')
-            scores={h:{k:np.concatenate([p['scores'][h][k] for p in members])
-                       for k in members[0]['scores'][h]} for h in horizons}
-            payload=dict(label=source['label']+':ANNUAL_short_weekly_plus18',source_label=source['label'],
+            for p in members:
+                counts=p['data'].get('counts',{}).get('VALIDATION',[])
+                missing=set(horizons)-set(p['scores'])
+                if missing and (len(counts)!=len(horizons) or any(counts[horizons.index(h)]!=0 for h in missing)):
+                    raise ValueError('WEEKLY_ANNUAL_UNDECLARED_MISSING_HEAD')
+            scores={}
+            for h in horizons:
+                pieces=[p['scores'][h] for p in members if h in p['scores']]
+                if not pieces:raise ValueError('WEEKLY_ANNUAL_HEAD_UNSUPPORTED')
+                scores[h]={k:np.concatenate([a[k] for a in pieces]) for k in pieces[0]}
+            payload=dict(label=source['label']+':'+source.get('annual_label','ANNUAL_short_weekly_plus18'),source_label=source['label'],
                 scope='ANNUAL',asset=source['asset'],code_commit=source['code_commit'],
                 model=members[0]['model'],parameters=members[0]['parameters'],seed=members[0]['seed'],
                 training=dict(cadence='weekly',member_profiles=[p['id'] for p in members],individual_rule=members[0]['training']),

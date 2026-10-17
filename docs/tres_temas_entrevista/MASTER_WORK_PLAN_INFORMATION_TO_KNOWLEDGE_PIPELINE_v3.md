@@ -7,6 +7,18 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Ampliacion aprobada 2026-10-17: conservar [2,3,4,5,6,12,18] y agregar
+[24,36,48,60,72] al MISMO modelo semanal. Sin cambiar ventanas, inputs,
+arquitectura compartida, inicializacion de los siete cabezales, escalas,
+folds, semilla, procedimiento de optimizacion ni regla original de paciencia. La
+nueva contribucion de cinco perdidas es el unico cambio matematico inevitable.
+Ver [weekly_all/PLAN.md](../i6n/weekly_all/PLAN.md), runtime 64459730.
+El relevo CPU instalado espera el cierre publicado y con dos copias de la
+campana de siete salidas y luego prepara, verifica y arranca el nuevo lote
+de 53 periodos en la 5090. No toca el experimento activo ni espera al chat.
+Metricas, readback, dos espejos y registro anual se cierran automaticamente.
+No repetir ajustes ya completos, no ANY_HEAD, no TEST, no nuevos barridos.
+
 Directiva actual 2026-10-17: repetir exactamente la receta corta SEMANAL
 de la continuacion que obtuvo seis errores anuales negativos, agregando solo
 18h al arreglo [2,3,4,5,6,12]. La autoridad de este contraste es
