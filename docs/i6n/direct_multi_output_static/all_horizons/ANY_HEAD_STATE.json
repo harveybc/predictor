@@ -2,7 +2,12 @@
  "schema": "i6dmo.any_head_method.v1",
  "updated_on": "2026-10-16",
  "current_stage": "S14_RELEASE_OPERATION",
- "state": "RUNNING_ONE_PAIRED_CONTRAST_ON_SECONDARY_GPU",
+ "state": "CLOSED_NEGATIVE_PAIRED_CONTRAST",
+ "result": "ANY_HEAD_RETURN.md",
+ "epochs_completed": 82,
+ "best_epoch": 49,
+ "stop_reason": "patience",
+ "result_sha256": "5f3dbac62b19f62a5db4e4fd83ef2fb48d2be7bcc6aefba89f34d0f9ac1df181",
  "runtime_commit": "b33a5933",
  "plan": "ANY_HEAD_PLAN.md",
  "tests": {"focused_passed": 48, "seconds": 140.66},
@@ -12,7 +17,7 @@
  "patience_reset": "ANY_HORIZON",
  "checkpoint_selection": "LOWEST_MEAN_UNCHANGED",
  "next_allowed_actions": [
-  "Let owned timers finish the single fit, publication/readback and two mirrors",
+  "Retain the completed fit, exact publication/readback and two verified mirrors; owned timers closed automatically",
   "Read status on request without agent polling",
   "Preserve previous completed fits and the preferred GPU continuation"
  ],
