@@ -1,0 +1,25 @@
+{
+ "schema": "i6dmo.short_replay_method.v1",
+ "updated_on": "2026-10-16",
+ "current_stage": "S14_RELEASE_OPERATION",
+ "state": "ORIGINAL_SHORT_REPLAY_LAUNCHED_ON_SECONDARY",
+ "runtime_commit": "ee40787e",
+ "historical_base": "24f5a6cc",
+ "plan": "PLAN.md",
+ "focused_tests_passed": 17,
+ "patience": 10,
+ "min_delta": 1e-8,
+ "max_epochs": 200,
+ "patience_reset": "ORIGINAL_MEAN_FIT_INNER",
+ "trainer_and_model_files": "BYTE_IDENTICAL_TO_HISTORICAL_BASE",
+ "next_allowed_actions": [
+  "Let owned timers complete one fit, publish/read back, mirror and close",
+  "Compare six horizon-specific paired errors with the retained historical control",
+  "Read status on demand without an agent polling loop"
+ ],
+ "blocked_actions": [
+  "Run the unlaunched short-only any-head prototype",
+  "Read TEST or change feature selection",
+  "Claim successful numerical reproduction before measuring the result"
+ ]
+}

@@ -32,3 +32,26 @@ change; exact file-level historical trainer/model proof; six-output model
 shape and original initial-forward identity; guarded masks; only original
 trainer entrypoint called. The pre-clarification prototype completed 27 CPU
 checks but no scientific fit. It is not deployed by this order.
+
+## Launch Evidence
+
+Runtime `ee40787e`, campaign `i6dmo-short-replay-20261016`. Seventeen focused
+CPU checks passed in 1.27 s, including rejection mutations, exact historical
+source-file equality and the structural original-entrypoint guard. No full
+suite claim. The original model and trainer files are unmodified from BASE.
+
+Preparation authenticated the original receipt and every original code-file
+pin, original bundle and source inputs; short arrays/scales/settings project
+exactly from the completed twelve-head MEAN control. The scientific entrypoint
+reads the copied original bundle and design rather than the projection.
+Population seal:
+`0be6a672629da6afdf0f49966e36e1252c91aeb3118e2d58937729362dcd0826`.
+GPU and publication timers are armed; start check observed the secondary GPU
+process with its 4-GiB governed RAM admission. No speculative result follows
+from launch. Warehouse readback, two physical mirrors and timer closure are
+automatic. Original historical results and the 5090 continuation stay intact.
+
+```bash
+python -B -m tools.i6dmo.all_horizons launch --spec <private-launch-config>
+python -B -m tools.i6dmo.all_horizons status --spec <private-run-spec>
+```
