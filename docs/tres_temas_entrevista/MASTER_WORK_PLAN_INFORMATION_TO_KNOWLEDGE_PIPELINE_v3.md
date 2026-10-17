@@ -7,6 +7,24 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Contraste aprobado 2026-10-17: la campana semanal de doce salidas termino
+53/53 periodos, 52 ajustes por paciencia, sin fallos; los seis largos vencen
+su naive en VALIDATION2024. Repetir UNICAMENTE eliminando [2,3,4,5,6,12]
+del arreglo de salidas y conservando [18,24,36,48,60,72]. Mismos cuatro anos
+moviles, semanas, 19 inputs RAW, DS2/13, ramas Conv1D4, nucleo Conv1D2,
+cabezales LSTM4->Dense8->Dense1, semilla6102026, AdamW, batch y parada
+promedio TRAIN/VALIDATION originales. Preservar todos los pesos INICIALES
+retenidos mediante submodelo del padre recien inicializado, nunca mediante
+pesos entrenados; quitar cabezas no debe desplazar su inicializacion.
+No cambiar cohortes ni intersectar mascaras: proyectar exactamente las seis
+columnas largas y sus escalas/naives del padre. Ver
+[weekly_long_only/PLAN.md](../i6n/weekly_long_only/PLAN.md), runtime93b0ccf2.
+Ejecutar en la primaria libre sin tocar el barrido de la secundaria. Cola,
+OLAP/readback, dos espejos, registro anual y cierre automaticos. La perdida
+y checkpoint necesariamente dejan de incluir las seis salidas quitadas;
+competencia de tareas y checkpoint compartido siguen siendo hipotesis, no
+causas demostradas. No TEST, ANY_HEAD, nuevos hiperparametros ni DOIN.
+
 Directiva vigente adicional 2026-10-17: conservar la campana semanal de doce
 salidas en la GPU primaria. En la secundaria libre ejecutar automaticamente
 el control DS2 de 13 observaciones y ventanas 7/25/49 con el MISMO protocolo
