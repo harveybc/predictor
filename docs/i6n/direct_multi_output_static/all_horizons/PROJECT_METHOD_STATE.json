@@ -5,9 +5,11 @@
  "definition_and_test_design": "PLAN.md AH01-AH06 defined before governing implementation",
  "verification": "46 focused CPU tests passed; real source/data identity and model equality checked before fit",
  "runtime_commit": "1601e943",
- "state": "RUNNING_ONE_FIT_ON_SECONDARY_GPU",
+ "state": "CLOSED_NEGATIVE_TWELVE_HEAD_FIT",
+ "result": "RETURN.md",
+ "result_sha256": "b70b5ee3f6023b571f6fd515cb30de611ae528f1c956631453a00722b7ee29c9",
  "next_allowed_actions": [
-  "Allow the owned timers to finish one fit, publish/read back and mirror automatically",
+  "Retain the completed fit, exact warehouse readback and two verified mirrors; both owned timers are disabled",
   "Read status on request; do not periodically poll with an agent",
   "Retain and report failures without modifying the recipe or repeating the fit"
  ],
