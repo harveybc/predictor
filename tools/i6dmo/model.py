@@ -69,6 +69,12 @@ from predictor_plugins.modular_temporal.common import _file_hash, _major_minor, 
 from predictor_plugins.modular_temporal.registry import _resolve
 
 keras = tf.keras
+
+
+def output_list(value):
+    return value if isinstance(value, (list, tuple)) else [value]
+
+
 MODEL_SCHEMA = "i6dmo.model.v1"
 
 #: Deterministic kernels for training AND inference so DMO10 save/load prediction identity is
@@ -758,6 +764,7 @@ def predict_matrix(model, x, batch_size=4096):
     for start in range(0, len(x), batch_size):
         batch = [part[start:start + batch_size] for part in arrays]
         out = model(batch if len(batch) > 1 else batch[0], training=False)
+        out = output_list(out)
         parts.append(np.concatenate([np.asarray(o, dtype=np.float64) for o in out], axis=1))
     width = len(model.outputs)
     return np.concatenate(parts, axis=0) if parts else np.zeros((0, width))

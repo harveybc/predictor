@@ -92,12 +92,26 @@ def test_legacy_trainer_and_layer_builders_are_unchanged():
     import subprocess
     root=Path(__file__).parents[2]
     old=subprocess.check_output(["git","show","796ec8f4:tools/i6dmo/train.py"],cwd=root)
-    assert (root/"tools/i6dmo/train.py").read_bytes()==old
+    current=(root/"tools/i6dmo/train.py").read_text().replace("        out = _model_determinism.output_list(out)\n","")
+    current=current.replace("tf.concat(_model_determinism.output_list(model(x, training=True)), axis=1)",
+                            "tf.concat(model(x, training=True), axis=1)")
+    assert current.encode()==old
     path="tools/i6dmo/model.py";old=subprocess.check_output(["git","show","796ec8f4:"+path],cwd=root,text=True)
     def definitions(s):
         return {n.name:ast.dump(n,include_attributes=False) for n in ast.parse(s).body
-                if isinstance(n,(ast.FunctionDef,ast.ClassDef)) and n.name!="_normalize_market_config"}
-    assert definitions(old)==definitions((root/path).read_text())
+                if isinstance(n,(ast.FunctionDef,ast.ClassDef)) and n.name not in ("_normalize_market_config","output_list")}
+    current=(root/path).read_text().replace("        out = output_list(out)\n","")
+    assert definitions(old)==definitions(current)
+
+
+def test_scalar_output_normalization_preserves_multiple_output_identity():
+    import ast
+    s=(Path(__file__).parents[2]/"tools/i6dmo/model.py").read_text()
+    node=next(n for n in ast.parse(s).body if isinstance(n,ast.FunctionDef) and n.name=="output_list")
+    scope={};exec(compile(ast.Module(body=[node],type_ignores=[]),"<output_list>","exec"),scope)
+    scalar=np.ones((3,1));multi=[scalar,scalar*2]
+    assert scope["output_list"](multi) is multi
+    assert scope["output_list"](scalar)[0] is scalar
 
 
 def test_only_generated_input_names_are_ignored_in_structural_proof():

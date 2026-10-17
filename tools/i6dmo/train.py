@@ -830,6 +830,7 @@ def monitor_forward(model, x32, batch_size):
     for start in range(0, _rows(x32), batch_size):
         chunk = [tf.constant(part[start:start + batch_size]) for part in _parts(x32)]
         out = model(chunk if len(chunk) > 1 else chunk[0], training=False)
+        out = _model_determinism.output_list(out)
         parts.append(np.concatenate([np.asarray(o, dtype=np.float64) for o in out], axis=1))
     width = len(model.outputs)
     return np.concatenate(parts, axis=0) if parts else np.zeros((0, width))
@@ -1385,7 +1386,7 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_
     @tf.function(reduce_retracing=True)
     def step(x, y, m):
         with tf.GradientTape() as tape:
-            pred = tf.concat(model(x, training=True), axis=1)
+            pred = tf.concat(_model_determinism.output_list(model(x, training=True)), axis=1)
             loss, _, _ = masked_normalized_loss(y, pred, m)
         grads = tape.gradient(loss, variables)
         optimizer.apply_gradients(zip(grads, variables))

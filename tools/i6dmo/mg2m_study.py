@@ -120,17 +120,28 @@ def source_proof(spec):
         raise ValueError("WRONG_MG2M_REFERENCE")
     authenticate(source,receipt["artifacts"])
     for rel,expected in receipt["identity"]["code_files_sha256"].items():
-        if rel!="tools/i6dmo/model.py" and file_sha256(REPO/rel)!=expected:
+        if rel!="tools/i6dmo/model.py" and file_sha256(REPO/rel)!=expected and not \
+                (rel=="tools/i6dmo/train.py" and spec.get("study_mode")=="single18_repair"):
             raise ValueError("PARENT_SOURCE_CHANGED:"+rel)
+    scalar_compatibility_proof()
     old=command(["git","show",BASE+":tools/i6dmo/model.py"])
-    new=(REPO/"tools/i6dmo/model.py").read_text()
+    new=(REPO/"tools/i6dmo/model.py").read_text().replace("        out = output_list(out)\n","")
     def definitions(source):
         tree=ast.parse(source)
         return {n.name:ast.dump(n,include_attributes=False) for n in tree.body
-                if isinstance(n,(ast.FunctionDef,ast.ClassDef)) and n.name!="_normalize_market_config"}
+                if isinstance(n,(ast.FunctionDef,ast.ClassDef)) and n.name not in ("_normalize_market_config","output_list")}
     if definitions(old)!=definitions(new):
         raise ValueError("PARENT_LAYER_OR_BUILDER_CHANGED")
     return receipt
+
+
+def scalar_compatibility_proof():
+    original=command(["git","show",BASE+":tools/i6dmo/train.py"])
+    current=(REPO/"tools/i6dmo/train.py").read_text()
+    current=current.replace("        out = _model_determinism.output_list(out)\n","")
+    current=current.replace("tf.concat(_model_determinism.output_list(model(x, training=True)), axis=1)",
+                            "tf.concat(model(x, training=True), axis=1)")
+    if current!=original:raise ValueError("TRAINER_CHANGED_BEYOND_OUTPUT_CONTAINER_COMPATIBILITY")
 
 
 def subset(a, mask):
@@ -429,7 +440,11 @@ def run(spec):
         authenticate(Path(spec["gpu_data"]),prepared["files"])
         folder=root/cell
         if spec.get("study_mode") and not (root/"PREFLIGHT.json").exists():
-            preflight(spec)
+            try:preflight(spec)
+            except Exception as exc:
+                result=dict(state="FAILED_PREFLIGHT",reason=type(exc).__name__+":"+str(exc),files={},
+                            batch_id=campaign_name(spec),cell=dict(id=cell),prepared_sha256=spec["prepared_sha256"])
+                result["sha256"]=sha256_json(result);put(folder/"RESULT.json",result);return
         if cell=="single18" and not spec.get("study_mode") and not need_single(done["plus18"]):
             result=dict(state="SKIPPED",reason="18h beats naive without short-mean deterioration",files={})
         elif (folder/"STARTED.json").exists():
