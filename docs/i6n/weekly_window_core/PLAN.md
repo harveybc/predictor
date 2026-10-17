@@ -20,8 +20,9 @@ four calendar years; evaluation is the complete retained 2024 calendar.
    [2] arms without retraining. Other predeclared core arms are typed skips.
 
 There are twelve predeclared arms (four windows, eight conditional core
-arms). Eight can train: 416 actual weekly fits and eight empty-period skips;
-four unselected arms become 212 explicit conditional skips. No seed replicas.
+arms). Eight can train: at most 416 actual weekly fits; actual empty-period
+counts derive from authenticated common support, never a promised constant.
+Four unselected arms become 212 explicit conditional skips. No seed replicas.
 The 13-slot control is necessary on the SAME device as the treatments, not
 an attempted bitwise scientific reproduction across GPU classes.
 
@@ -52,6 +53,13 @@ observations vs closure, shared-support projection, seven distinct naive
 scales, complete-year ranking/tie, conditional skips, corruption and interruption.
 Fit-free actual-data/GPU checks precede launch. Historical input source and
 point-in-time qualifications remain exactly as declared by the parent.
+
+Real-data preparation found the final partial calendar week has no common
+observed inputs for the 49-observation arm. It remains an explicit common
+empty-period skip, in addition to the parent's original first empty period.
+Expected actual work is therefore 408 fits (8 recipes x 51 nonempty periods),
+16 common empty-period skips and 212 conditional skips. All 53 periods remain
+in each arm's annual ledger. Report lost origins, never synthesize holiday bars.
 
 ## Trading And Demo Rule
 

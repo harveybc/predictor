@@ -114,7 +114,7 @@ def prepare(spec):
                 if not valid13.all() or any(not np.array_equal(old[k],same[k],equal_nan=True)
                         for k in ('x','offsets_hours','closure_crossed')):raise ValueError('ORIGINAL_13_WINDOW_CHANGED')
                 common=np.logical_and.reduce([v for _,v in windows.values()])
-                if not common.any():raise ValueError('COMMON_SUPPORT_EMPTY')
+                if split=='FIT' and not common.any():raise ValueError('COMMON_FIT_SUPPORT_EMPTY')
                 supports[split]=dict(original=len(common),retained=int(common.sum()),excluded=int((~common).sum()),
                     support_sha256=D.R._digest(old['row_ids'][common]))
                 for n,(a,_) in windows.items():generated[n,split]=subset(a,common)
@@ -125,12 +125,15 @@ def prepare(spec):
                 if not mask.any():raise ValueError('FIT_HEAD_EMPTY')
                 ns.append(math.fsum(np.abs(fit['target_price'][mask,j]-fit['origin_price'][mask]).tolist())/int(mask.sum()))
             scales.update(naive_mae=ns);scales.pop('scales_sha256',None);scales['scales_sha256']=W.B.digest(scales)
+        disposition=terminal['state']
+        if generated and not generated[13,'VALIDATION']['mask'].any():disposition='SKIPPED_NO_EVAL_ROWS'
         for arm in arms():
             cid=arm['id']+'__'+pc['id'];folder=out/cid;folder.mkdir(exist_ok=True)
             cell=dict(pc,id=cid,arm=arm['id'])
-            record=dict(original,cell=cell,parent_state=terminal['state'],arm=arm,
+            record=dict(original,cell=cell,parent_state=disposition,arm=arm,
                 parent_result_sha256=terminal['sha256'],model_delta=dict(slots=arm['slots'],core=arm['core']))
-            if terminal['state']=='COMPLETE':
+            if disposition=='SKIPPED_NO_EVAL_ROWS':record['skip_reason']='no common observed validation inputs across declared windows' if generated else 'same empty parent period'
+            if disposition=='COMPLETE':
                 model=dict(original['model'],slots=arm['slots'],core=arm['core'])
                 if model['horizons_hours']!=HEADS:raise ValueError('WRONG_PARENT_HEADS')
                 record.update(parent_model=original['model'],model=model,scales=scales,
@@ -154,8 +157,10 @@ def prepare(spec):
         exclusions.append(dict(period=pc['id'],splits=supports))
         W.B.put(out/'PREPARE_PROGRESS.json',dict(periods=len(exclusions),total=len(prior['cells']),at=time.time()))
     W.B.put(out/'SUPPORT.json',exclusions);files['SUPPORT.json']=W.file_sha256(out/'SUPPORT.json')
+    nonempty=sum(W.read(out/c['id']/'PERIOD.json')['parent_state']=='COMPLETE' for c in records['window13'])
     p=dict(schema='i6dmo.weekly_window_core.prepared.v1',cells=[c for a in arms() for c in records[a['id']]],
         arms=arms(),files=files,parent_spec_sha256=W.file_sha256(spec['parent_spec']),parent_prepared_sha256=prior['sha256'],
+        nonempty_periods=nonempty,planned_actual_fits=8*nonempty,
         original_training=W.B.TRAINING,seed=W.B.SEED,test_read=False,qualification=W.QUALIFICATION)
     p['sha256']=W.B.digest(p);W.B.put(out/'PREPARED.json',p);return p
 
@@ -203,7 +208,7 @@ def preflight(spec):
         a=D._read(Path(spec['gpu_data'])/record['cell']['id']/'FIT.npz');x,_,_=T.transform(a,record['scales'])
         proofs[arm['id']]=initialization_proof(record,[x[:2],a['offsets_hours'][:2].astype('float32'),a['closure_crossed'][:2].astype('float32')])
         tf.keras.backend.clear_session()
-    result=dict(state='PASS',arms=proofs,logical_cells=len(p['cells']),planned_fits=416,fits_run=0,test_read=False)
+    result=dict(state='PASS',arms=proofs,logical_cells=len(p['cells']),planned_fits=p['planned_actual_fits'],fits_run=0,test_read=False)
     W.B.put(Path(spec['gpu_root'])/'PREFLIGHT.json',result);return result
 
 
@@ -280,9 +285,10 @@ def annual_report(spec,result):
 def tick(spec):
     result=_tick(spec)
     if result and result.get('state') not in ('CLOSED','CLOSED_WITH_FAILURE'):
-        completed=result['complete'];remaining=max(0,416-completed-len(result.get('failed',[])))
+        planned=W.read(Path(spec['data_root'])/'PREPARED.json')['planned_actual_fits']
+        completed=result['complete'];remaining=max(0,planned-completed-len(result.get('failed',[])))
         eta=result['eta'];denom=max(1,result['total']-result['terminal'])
-        eta.update(seconds=eta['seconds']*remaining/denom,planned_actual_fits=416,remaining_actual_fits=remaining)
+        eta.update(seconds=eta['seconds']*remaining/denom,planned_actual_fits=planned,remaining_actual_fits=remaining)
         W.B.put(Path(spec['root'])/'STATUS.json',result)
     return result
 

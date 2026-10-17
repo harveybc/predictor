@@ -70,6 +70,7 @@ def test_shared_worker_science_unchanged():
         'only_model_delta=record.get("model_delta",dict(horizons_hours=HEADS))')
     source=source.replace('(spec["gpu_data"], "short", 2, 13)',
         '(spec["gpu_data"], "short", record["model"]["spacing_open_market_hours"], record["model"]["slots"])')
+    source=source.replace('reason="same empty parent period"','reason=record.get("skip_reason","same empty parent period")')
     old=ast.parse(source)
     new=ast.parse((W.REPO/'tools/i6dmo/weekly18.py').read_text())
     for name in ('run','annual','terminal','verify','mirror','prepared_document','pool_metrics'):
