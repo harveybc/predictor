@@ -56,6 +56,16 @@ coordinador acotada para control/OLAP y segunda maquina para copia verificada.
 Guardar estados, heartbeat, costes, metricas, parametros y decisiones en
 cada nivel. Cerrar un sublote no detiene las siguientes etapas admisibles.
 
+Adicion expresa del propietario 2026-10-16: ejecutar en la 4090 libre un solo
+contraste paralelo del modelo corto historico MG2, agregando exclusivamente
+los seis cabezales largos al mismo modelo. No detener ni modificar las 407
+celdas de la 5090. Preservar entradas, escalas, cohortes y mascaras cortas del
+MG2 original; aplicar la misma regla de negocio por horizonte a las salidas
+nuevas, no una interseccion global que elimine cortos validos. Esta replica
+con ampliacion conserva excepcionalmente la parada FIT/INNER y codificacion
+temporal historicas; no es el protocolo nuevo ni una reinterpretacion de sus
+resultados. Ver [contraste de doce salidas](../i6n/direct_multi_output_static/continuation/ALL_HORIZONS_SIDECAR.md).
+
 Resultado retenido anterior: i6dmo-resolution-705d19ec84ae CLOSED, 19/19,
 19 reportes con lectura exacta y dos espejos de 159 archivos. DS2 mejor que
 DS4 en media de corto (+0.258987%/+2.723207%) y largo
