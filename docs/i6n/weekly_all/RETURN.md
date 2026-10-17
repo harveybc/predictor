@@ -1,6 +1,6 @@
 # Automatic Twelve-Horizon Successor
 
-Runtime 64459730, branch codex/i6dmo-weekly-all-20261017, published. The owned
+Runtime 469eef41, branch codex/i6dmo-weekly-all-20261017, published. The owned
 CPU successor timer is enabled and its generated status was WAIT_PREDECESSOR.
 It waits for the seven-head parent's successful OLAP-readback and verified
 mirror closure, then prepares all 53 periods and runs the mandatory fit-free
@@ -9,8 +9,10 @@ No twelve-head scientific fit or full-year result is claimed yet.
 
 Keep [2,3,4,5,6,12,18], append [24,36,48,60,72]. The original trainer and
 builders are byte-identical; the reused worker and annual-metric functions
-are AST-identical. Configurable module/report title constants are only an
-operational change in the NEW worktree; the running parent is untouched.
+are AST-identical. Configurable module/report title constants and a longer
+operational wall ceiling are only changes in the NEW worktree; the running
+parent is untouched. The ceiling is 3600 seconds instead of 1800 to allow
+the unchanged max200 epochs with the extra heads, not extra epochs or fits.
 The optional real-data test verified the entire first completed parent's
 seven-column projection, input scales, seven naives and exact new t+h labels.
 The completed parent's runs will be authenticated again for every period.

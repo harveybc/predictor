@@ -12,7 +12,7 @@ Ampliacion aprobada 2026-10-17: conservar [2,3,4,5,6,12,18] y agregar
 arquitectura compartida, inicializacion de los siete cabezales, escalas,
 folds, semilla, procedimiento de optimizacion ni regla original de paciencia. La
 nueva contribucion de cinco perdidas es el unico cambio matematico inevitable.
-Ver [weekly_all/PLAN.md](../i6n/weekly_all/PLAN.md), runtime 64459730.
+Ver [weekly_all/PLAN.md](../i6n/weekly_all/PLAN.md), runtime 469eef41.
 El relevo CPU instalado espera el cierre publicado y con dos copias de la
 campana de siete salidas y luego prepara, verifica y arranca el nuevo lote
 de 53 periodos en la 5090. No toca el experimento activo ni espera al chat.
