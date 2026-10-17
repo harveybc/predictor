@@ -246,8 +246,10 @@ def canonical_layer_config(config):
     aliases={}
     for layer in config.get("layers",[]):
         name=layer.get("name","")
-        if layer.get("class_name")=="InputLayer" and re.fullmatch(r"input_layer(?:_[0-9]+)?",name):
-            aliases[name]="GENERATED_INPUT_"+str(len(aliases))
+        kind=layer.get("class_name")
+        if (kind=="InputLayer" and re.fullmatch(r"input_layer(?:_[0-9]+)?",name)) or \
+                (kind=="Concatenate" and re.fullmatch(r"concatenate(?:_[0-9]+)?",name)):
+            aliases[name]="GENERATED_NODE_"+str(len(aliases))
     def visit(value):
         if isinstance(value,dict):return {k:visit(v) for k,v in value.items()}
         if isinstance(value,list):return [visit(v) for v in value]
@@ -274,7 +276,7 @@ def model_proof(config, original, target):
         b=target.forecast_model(inputs,training=False)
         if not all(np.array_equal(x,y) for x,y in zip(a,b[:6],strict=True)):
             raise ValueError("PARENT_SHORT_INITIAL_FORWARD_CHANGED")
-    return dict(parent_initial_weights="EXACT",structural_name_normalization="generated_InputLayer_UID_only",
+    return dict(parent_initial_weights="EXACT",structural_name_normalization="generated_InputLayer_and_Concatenate_UIDs_only",
                 shared_short_layers="EXACT" if config["cell"]=="plus18"
                 else "WINDOW_OR_SINGLE_HEAD_CONTRAST",parameters=int(target.forecast_model.count_params()))
 

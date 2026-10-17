@@ -108,3 +108,8 @@ def test_only_generated_input_names_are_ignored_in_structural_proof():
     assert m.canonical_layer_config(a)==m.canonical_layer_config(b)
     b["layers"][1]["config"]["units"]=9
     assert m.canonical_layer_config(a)!=m.canonical_layer_config(b)
+    a={"layers":[{"class_name":"Concatenate","name":"concatenate","config":{"name":"concatenate","axis":-1}}],"output_layers":["concatenate",0,0]}
+    b=copy.deepcopy(a);b["layers"][0]["name"]="concatenate_1";b["layers"][0]["config"]["name"]="concatenate_1";b["output_layers"][0]="concatenate_1"
+    assert m.canonical_layer_config(a)==m.canonical_layer_config(b)
+    b["layers"][0]["config"]["axis"]=1
+    assert m.canonical_layer_config(a)!=m.canonical_layer_config(b)
