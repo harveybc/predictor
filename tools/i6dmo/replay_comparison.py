@@ -3,7 +3,7 @@ import argparse
 import json
 from pathlib import Path
 
-from tools.i6n_swarm.common import atomic_json
+from tools.i6n_swarm.common import atomic_json, sha256_json
 
 
 def compare_training(reference, candidate):
@@ -28,11 +28,37 @@ def compare_receipts(reference, candidate):
     return {k: reference['identity'][k] == candidate['identity'][k] for k in fields}
 
 
+def publish(result, spec, root):
+    from tools.i6dmo.outbox import Outbox, HttpWarehouse
+    checks = dict(result['checks'], **result['identity_checks'])
+    checks['exact_training_reproduction'] = result['exact_training_reproduction']
+    metrics = [dict(metric='Reproduction_'+k, value=int(v), unit='bool', horizon=None,
+                    split='train') for k, v in checks.items()]
+    report = dict(experiment_key='i6dmo:'+spec['batch_name']+':trajectory',
+                  experiment_set_key='i6dmo:'+spec['batch_name'], actor='predictor',
+                  lake='LOCAL_RETAINED', lineage='UNVERIFIED', config_sha256=spec['prepared_sha256'],
+                  code_commit=spec['code_commit'], project='predictor', phase='I6DMO_REPRODUCTION',
+                  metrics=metrics, tags=dict(evaluation='DEVELOPMENT_TUNING', test_read='false',
+                                            evidence_sha256=sha256_json(result)))
+    box = Outbox(root/'outbox.sqlite3')
+    try:
+        box.enqueue(report, source_unit='reference-device-trajectory')
+        pub = box.pump(HttpWarehouse(spec['warehouse']['url'], spec['warehouse']['token_env']))
+        atomic_json(root/'PUBLICATION.json', pub, mode=0o600)
+        atomic_json(root/'READBACK.json', [dict(report_sha256=r['report_sha256'], state=r['state'],
+                                               readback_sha256=r['readback_sha256']) for r in box.items()], mode=0o600)
+        if pub['pending'] or pub['mismatch'] or pub['delivered'] != 1:
+            raise RuntimeError('REPRODUCTION_PUBLICATION_INCOMPLETE')
+    finally:
+        box.close()
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--reference', required=True)
     p.add_argument('--candidate', required=True)
     p.add_argument('--out', required=True)
+    p.add_argument('--publish-spec')
     args = p.parse_args()
     def load(root, name):
         return json.loads((Path(root)/name).read_text())
@@ -41,6 +67,8 @@ def main():
                                                load(args.candidate, 'RECEIPT.json'))
     result['test_read'] = False
     atomic_json(Path(args.out), result, mode=0o600)
+    if args.publish_spec:
+        publish(result, json.loads(Path(args.publish_spec).read_text()), Path(args.out).parent)
     print(json.dumps(result, sort_keys=True))
 
 
