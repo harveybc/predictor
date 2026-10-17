@@ -6,6 +6,7 @@ import fcntl
 import json
 import math
 import os
+import re
 from pathlib import Path
 import shlex
 import shutil
@@ -240,6 +241,20 @@ def load_arrays(folder, split):
         return {k:z[k] for k in z.files}
 
 
+def canonical_layer_config(config):
+    config=json.loads(json.dumps(config))
+    aliases={}
+    for layer in config.get("layers",[]):
+        name=layer.get("name","")
+        if layer.get("class_name")=="InputLayer" and re.fullmatch(r"input_layer(?:_[0-9]+)?",name):
+            aliases[name]="GENERATED_INPUT_"+str(len(aliases))
+    def visit(value):
+        if isinstance(value,dict):return {k:visit(v) for k,v in value.items()}
+        if isinstance(value,list):return [visit(v) for v in value]
+        return aliases.get(value,value) if isinstance(value,str) else value
+    return visit(config)
+
+
 def model_proof(config, original, target):
     from predictor_plugins.modular_temporal import weights_hash
     if weights_hash(original.forecast_model)!=config["parent_initial_weights_sha256"]:
@@ -249,7 +264,7 @@ def model_proof(config, original, target):
             raise ValueError("PLUS18_CAPACITY_CHANGED")
         for layer in original.forecast_model.layers:
             other=target.forecast_model.get_layer(layer.name)
-            if layer.get_config()!=other.get_config():
+            if canonical_layer_config(layer.get_config())!=canonical_layer_config(other.get_config()):
                 raise ValueError("PARENT_LAYER_CONFIG_CHANGED:"+layer.name)
             for a,b in zip(layer.get_weights(),other.get_weights(),strict=True):
                 if not np.array_equal(a,b):raise ValueError("PARENT_INITIAL_WEIGHT_CHANGED:"+layer.name)
@@ -259,7 +274,8 @@ def model_proof(config, original, target):
         b=target.forecast_model(inputs,training=False)
         if not all(np.array_equal(x,y) for x,y in zip(a,b[:6],strict=True)):
             raise ValueError("PARENT_SHORT_INITIAL_FORWARD_CHANGED")
-    return dict(parent_initial_weights="EXACT",shared_short_layers="EXACT" if config["cell"]=="plus18"
+    return dict(parent_initial_weights="EXACT",structural_name_normalization="generated_InputLayer_UID_only",
+                shared_short_layers="EXACT" if config["cell"]=="plus18"
                 else "WINDOW_OR_SINGLE_HEAD_CONTRAST",parameters=int(target.forecast_model.count_params()))
 
 

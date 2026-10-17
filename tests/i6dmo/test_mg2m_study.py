@@ -98,3 +98,13 @@ def test_legacy_trainer_and_layer_builders_are_unchanged():
         return {n.name:ast.dump(n,include_attributes=False) for n in ast.parse(s).body
                 if isinstance(n,(ast.FunctionDef,ast.ClassDef)) and n.name!="_normalize_market_config"}
     assert definitions(old)==definitions((root/path).read_text())
+
+
+def test_only_generated_input_names_are_ignored_in_structural_proof():
+    m=module();a={"layers":[{"class_name":"InputLayer","name":"input_layer","config":{"name":"input_layer","shape":[13,1]}},
+                           {"class_name":"Dense","config":{"units":8}}],
+                 "input_layers":["input_layer",0,0]}
+    b=copy.deepcopy(a);b["layers"][0]["name"]="input_layer_45";b["layers"][0]["config"]["name"]="input_layer_45";b["input_layers"][0]="input_layer_45"
+    assert m.canonical_layer_config(a)==m.canonical_layer_config(b)
+    b["layers"][1]["config"]["units"]=9
+    assert m.canonical_layer_config(a)!=m.canonical_layer_config(b)
