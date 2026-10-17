@@ -74,11 +74,13 @@ def source_identity(parent):
         raise ValueError('MODEL_CHANGED_BEYOND_CATALOGUE')
     old=W.run_cmd(['git','-C',W.REPO,'show',BASE+':tools/i6dmo/weekly18.py'])
     old=old.replace('CATALOGUE = '+repr(OLD_CATALOGUE).replace("'",'"'), 'CATALOGUE = '+repr(NEW_CATALOGUE).replace("'",'"')+
-        '\nMODULE = "tools.i6dmo.weekly18"\nPHASE = "I6DMO_WEEKLY_PLUS18"\nTITLE = "# Weekly Short Plus 18 Hours"')
+        '\nMODULE = "tools.i6dmo.weekly18"\nPHASE = "I6DMO_WEEKLY_PLUS18"\nTITLE = "# Weekly Short Plus 18 Hours"\nGPU_WALL = 1800')
     old=old.replace('phase="I6DMO_WEEKLY_PLUS18"','phase=PHASE')
     old=old.replace("report['phase']='I6DMO_WEEKLY_PLUS18'","report['phase']=PHASE")
     old=old.replace("lines=['# Weekly Short Plus 18 Hours',","lines=[TITLE,")
     old=old.replace("'-m','tools.i6dmo.weekly18'","'-m',MODULE")
+    old=old.replace("else '1800s'","else str(GPU_WALL)+'s'")
+    old=old.replace("\\nTimeoutStartSec=1900\\nNice=10\\n'","\\nTimeoutStartSec='+str(max(1900,GPU_WALL+100))+'\\nNice=10\\n'")
     if old!=(W.REPO/'tools/i6dmo/weekly18.py').read_text():
         raise ValueError('SHARED_ADAPTER_CHANGED_BEYOND_MODULE_AND_PRESENTATION')
 
@@ -191,6 +193,7 @@ def preflight(spec):
 def configure():
     W.NAME=NAME;W.BASE=BASE;W.SHORT=PARENT_HEADS;W.HEADS=HEADS
     W.MODULE='tools.i6dmo.weekly_all';W.PHASE='I6DMO_WEEKLY_ALL';W.TITLE='# Weekly Twelve-Horizon Contrast'
+    W.GPU_WALL=3600
     W.prepare=prepare;W.source_identity=source_identity;W.initialization_proof=initialization_proof
     W.extend_model=extend_model;W.preflight=preflight
 
