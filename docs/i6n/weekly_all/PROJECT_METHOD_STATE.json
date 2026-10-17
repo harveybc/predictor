@@ -1,0 +1,13 @@
+{
+  "initiative": "weekly_exact_all_twelve_horizons",
+  "current_stage": "S11_SYSTEM_VERIFICATION",
+  "parent_runtime": "bd21fc2fc22a6e8607df14d68412223dc97a64d5",
+  "plan": "docs/i6n/weekly_all/PLAN.md",
+  "next_allowed_actions": ["install automatic successor", "GPU preflight after parent closes", "automatic exact twelve-head weekly campaign"],
+  "blocked_actions": ["interrupt parent", "TEST", "ANY_HEAD patience", "architecture or window search"],
+  "history": [
+    {"stage": "S0_THROUGH_S8", "status": "DESIGNED", "evidence": "PLAN.md"},
+    {"stage": "S9_S10", "status": "PASS", "focused_tests": 107, "later_successor_refusal_test": "PASS", "real_data_fit_free": "PASS", "source_identity": "PASS"},
+    {"stage": "S11_GPU_GATE", "status": "PENDING_AUTOMATED", "reason": "parent still uses the original GPU; no concurrent preflight"}
+  ]
+}

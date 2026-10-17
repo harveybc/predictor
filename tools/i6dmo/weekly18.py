@@ -23,7 +23,10 @@ BASE = "e0626cd9b2ac491a4508487883d04f40692d798c"
 NAME = "i6dmo-weekly-plus18-20261017"
 SHORT = [2, 3, 4, 5, 6, 12]
 HEADS = SHORT + [18]
-CATALOGUE = "HORIZONS = (*R.HORIZONS, (4,), (2, 3, 4, 5, 6, 12, 18))"
+CATALOGUE = "HORIZONS = (*R.HORIZONS, (4,), (2, 3, 4, 5, 6, 12, 18), (2, 3, 4, 5, 6, 12, 18, 24, 36, 48, 60, 72))"
+MODULE = "tools.i6dmo.weekly18"
+PHASE = "I6DMO_WEEKLY_PLUS18"
+TITLE = "# Weekly Short Plus 18 Hours"
 FROZEN = ("tools/i6dmo/train.py", "tools/i6dmo/model.py", "tools/i6dmo/continuation.py",
           "tools/i6dmo/continuation_data.py", "tools/i6dmo/market_grid.py",
           "tools/i6n_contracts/eligibility.py")
@@ -366,7 +369,7 @@ def annual_report(spec, result):
     metrics.append(dict(metric="Annual_Complete",value=int(result['state']=="COMPLETE"),unit="bool",horizon=None,split="validation"))
     return dict(experiment_key="i6dmo:"+NAME+":annual",experiment_set_key="i6dmo:"+NAME,
         actor="predictor",lake="LOCAL_RETAINED",lineage="UNVERIFIED",config_sha256=B.digest(result),
-        code_commit=spec['code_commit'],project="predictor",phase="I6DMO_WEEKLY_PLUS18",
+        code_commit=spec['code_commit'],project="predictor",phase=PHASE,
         tags=dict(evaluation=QUALIFICATION,test_read="false",seed=str(B.SEED)),metrics=metrics)
 
 
@@ -411,7 +414,7 @@ def tick(spec):
         try:
             for c in spec['cells']:
                 if c['id'] in results:
-                    report=B.report(spec,results[c['id']]);report['phase']='I6DMO_WEEKLY_PLUS18'
+                    report=B.report(spec,results[c['id']]);report['phase']=PHASE
                     report['tags'].update(evaluation=QUALIFICATION)
                     box.enqueue(report,source_unit=c['id'])
             yearly=annual(spec,artifacts,results)
@@ -423,7 +426,7 @@ def tick(spec):
             if not remaining and not pub['pending'] and not pub['mismatch']:
                 B.put(artifacts/'PUBLICATION.json',pub)
                 B.put(artifacts/'READBACK.json',[dict(report_sha256=x['report_sha256'],state=x['state'],readback_sha256=x['readback_sha256']) for x in box.items()])
-                lines=['# Weekly Short Plus 18 Hours','','DEVELOPMENT 2024, weekly checkpoint tuning; TEST closed.','',
+                lines=[TITLE,'','DEVELOPMENT 2024, weekly checkpoint tuning; TEST closed.','',
                     '| Horizon | MAE | Naive for horizon | Relative error | N |','|---|---:|---:|---:|---:|']
                 for r in yearly.get('metrics',[]):
                     lines.append(f"| {r['horizon']} h | {r['mae']:.12f} | {r['naive_mae']:.12f} | {100*r['relative_error']:+.6f}% | {r['n']} |")
@@ -468,13 +471,13 @@ def launch(spec):
     env={**role.get('environment',{}),'PYTHONPATH':runtime,'CUDA_VISIBLE_DEVICES':spec['gpu_uuid'],
          'OPENBLAS_NUM_THREADS':'1','OMP_NUM_THREADS':'1'}
     proof=remote(['env',*[k+'='+v for k,v in env.items()],deploy['launcher']['crispdm_run'],'-m','4G','-t','180s','-n',NAME+'-preflight',
-        '--',role['python'],'-B','-m','tools.i6dmo.weekly18','preflight','--spec',str(path)])
+        '--',role['python'],'-B','-m',MODULE,'preflight','--spec',str(path)])
     B.put(root/'LAUNCH_PREFLIGHT.json',dict(stdout=proof))
     for target,action in (('tick','tick'),('gpu','run')):
         wd=str(REPO) if target=='tick' else runtime
         python=deploy['roles']['coordinator']['python'] if target=='tick' else role['python']
         args=[deploy['launcher']['crispdm_run'],'-m','768M' if target=='tick' else '4352M','-t',
-            '600s' if target=='tick' else '1800s','-n',NAME+'-'+target,'--',python,'-B','-m','tools.i6dmo.weekly18',action,'--spec',str(path)]
+            '600s' if target=='tick' else '1800s','-n',NAME+'-'+target,'--',python,'-B','-m',MODULE,action,'--spec',str(path)]
         envtext='EnvironmentFile='+spec['warehouse']['environment_file']+'\n' if target=='tick' else ''.join(
             'Environment='+json.dumps(k+'='+v)+'\n' for k,v in role.get('environment',{}).items())
         body='[Unit]\nDescription=Exact weekly short plus18\nX-I6DMO-Batch='+NAME+'\n[Service]\nType=oneshot\nWorkingDirectory='+wd+'\n'+envtext
