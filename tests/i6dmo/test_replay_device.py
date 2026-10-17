@@ -49,3 +49,14 @@ def test_launch_selects_requested_role_not_always_secondary():
     source = inspect.getsource(A.launch)
     assert "spec.get('gpu_role','secondary')" in source
     assert "spec['gpu_uuid']" in source
+
+
+@pytest.mark.parametrize('spec', [{}, {'gpu_role': 'secondary', 'expected_gpu_name': 'NVIDIA GeForce RTX 4090'},
+                                 {'gpu_role': 'preferred'},
+                                 {'expected_gpu_name': 'NVIDIA GeForce RTX 5090'}])
+def test_new_launch_cannot_omit_original_device_guard(spec, monkeypatch):
+    def forbidden(argv):
+        raise AssertionError('No tool or launch may run before reference-device validation')
+    monkeypatch.setattr(A, 'command', forbidden)
+    with pytest.raises(ValueError, match='REFERENCE_DEVICE_LAUNCH_REQUIRED'):
+        A.launch(spec, 'unused')

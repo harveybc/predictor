@@ -21,7 +21,10 @@ The new launcher refuses a GPU name or visible UUID mismatch. It uses a distinct
 campaign identity and existing governed publication/readback/mirror machinery.
 The main queue pauses only between fits, never by killing a running fit. Its
 timer resumes automatically after the diagnostic worker exits; an independent
-five-minute recovery timer protects against an interrupted launch.
+recovery timer protects against an interrupted launch. The initial five-minute
+guard was extended to 35 minutes when the existing monthly fit exceeded the
+initial boundary wait. No running fit was killed; the guard was canceled after
+the reproduction closed and the main timer was confirmed active.
 
 ## Acceptance And Traceability
 

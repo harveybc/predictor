@@ -2,7 +2,13 @@
  "schema": "i6dmo.short_replay_method.v1",
  "updated_on": "2026-10-16",
  "current_stage": "S14_RELEASE_OPERATION",
- "state": "REFERENCE_DEVICE_REPRODUCTION_DESIGNED_AND_TESTED",
+ "state": "CLOSED_EXACT_REFERENCE_DEVICE_REPRODUCTION",
+ "followup_result": "REFERENCE_DEVICE_RETURN.md",
+ "followup_runtime": "a2c7fe6d",
+ "reference_device_epochs": 13,
+ "reference_device_best_epoch": 3,
+ "exact_training_reproduction": true,
+ "prediction_arrays_exact_all_splits": true,
  "followup_plan": "REFERENCE_DEVICE_PLAN.md",
  "result": "RETURN.md",
  "epochs_completed": 15,
@@ -13,7 +19,7 @@
  "runtime_commit": "ee40787e",
  "historical_base": "24f5a6cc",
  "plan": "PLAN.md",
- "focused_tests_passed": 17,
+ "focused_tests_passed": 36,
  "patience": 10,
  "min_delta": 1e-8,
  "max_epochs": 200,
@@ -21,11 +27,12 @@
  "trainer_and_model_files": "BYTE_IDENTICAL_TO_HISTORICAL_BASE",
  "next_allowed_actions": [
   "Retain completed replay and inference-only control with verified warehouse readbacks and two physical copies",
-  "Run one bounded reproduction on the original preferred GPU with unchanged original trainer, model, bundle and seed",
-  "Compare every epoch digest and monitor; retain any failure rather than tune to validation",
+  "Retain both cross-device result and exact reference-device reproduction with readbacks and mirrors",
+  "Continue the unchanged automatic main queue; no further reproduction fits",
   "Read status on demand without an agent polling loop"
  ],
  "blocked_actions": [
+  "Repeat the historical short training beyond the three retained executions",
   "Run the unlaunched short-only any-head prototype",
   "Read TEST or change feature selection",
   "Claim successful numerical reproduction before measuring the result"

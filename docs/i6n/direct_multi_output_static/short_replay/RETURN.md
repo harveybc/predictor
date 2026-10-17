@@ -1,5 +1,9 @@
 # Original Short Replay: Closed
 
+Follow-up: [reference-device reproduction](REFERENCE_DEVICE_RETURN.md) closed
+with exact historical trajectory, weights and scores. The secondary-device
+replay below remains retained as measured, not overwritten.
+
 One R0 fit, runtime ee40787e, actual TF2.21.0/Keras3.13.2, secondary 4090.
 The original model.py, train.py and all eight historical trainer code pins,
 effective config, source bundle, scalers and initial weight hash match the

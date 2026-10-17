@@ -431,6 +431,8 @@ def tick(spec):
 def launch(spec, path):
     """Freeze, replicate and arm one GPU fit and its durable publication follower."""
     name = campaign_name(spec)
+    if spec.get('expected_gpu_name') != 'NVIDIA GeForce RTX 5090' or spec.get('gpu_role') != 'preferred':
+        raise ValueError('REFERENCE_DEVICE_LAUNCH_REQUIRED')
     if command(['git','status','--porcelain']).strip():
         raise ValueError('SOURCE_NOT_COMMITTED')
     prepared = prepare(spec)
