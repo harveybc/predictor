@@ -39,6 +39,9 @@ GPU fit-free old/new initialization and all real periods before release.
 
 The successor must leave a typed status if a prerequisite or resource fails.
 It may retry operational preparation/delivery, not a started scientific fit.
+The twelve-head worker's operational wall ceiling is 3600 seconds instead of
+1800, so the extra heads do not prematurely truncate the unchanged max200
+epoch protocol. The parent worker and every scientific parameter stay intact.
 Status: `python -m tools.i6dmo.weekly_all status --spec <private-spec-json>`.
 
 ## Interpretation

@@ -27,6 +27,7 @@ CATALOGUE = "HORIZONS = (*R.HORIZONS, (4,), (2, 3, 4, 5, 6, 12, 18), (2, 3, 4, 5
 MODULE = "tools.i6dmo.weekly18"
 PHASE = "I6DMO_WEEKLY_PLUS18"
 TITLE = "# Weekly Short Plus 18 Hours"
+GPU_WALL = 1800
 FROZEN = ("tools/i6dmo/train.py", "tools/i6dmo/model.py", "tools/i6dmo/continuation.py",
           "tools/i6dmo/continuation_data.py", "tools/i6dmo/market_grid.py",
           "tools/i6n_contracts/eligibility.py")
@@ -477,13 +478,13 @@ def launch(spec):
         wd=str(REPO) if target=='tick' else runtime
         python=deploy['roles']['coordinator']['python'] if target=='tick' else role['python']
         args=[deploy['launcher']['crispdm_run'],'-m','768M' if target=='tick' else '4352M','-t',
-            '600s' if target=='tick' else '1800s','-n',NAME+'-'+target,'--',python,'-B','-m',MODULE,action,'--spec',str(path)]
+            '600s' if target=='tick' else str(GPU_WALL)+'s','-n',NAME+'-'+target,'--',python,'-B','-m',MODULE,action,'--spec',str(path)]
         envtext='EnvironmentFile='+spec['warehouse']['environment_file']+'\n' if target=='tick' else ''.join(
             'Environment='+json.dumps(k+'='+v)+'\n' for k,v in role.get('environment',{}).items())
         body='[Unit]\nDescription=Exact weekly short plus18\nX-I6DMO-Batch='+NAME+'\n[Service]\nType=oneshot\nWorkingDirectory='+wd+'\n'+envtext
         body+='Environment=PYTHONPATH='+wd+'\nEnvironment=CUDA_VISIBLE_DEVICES='+('' if target=='tick' else spec['gpu_uuid'])+'\n'
         body+='Environment=OPENBLAS_NUM_THREADS=1\nEnvironment=OMP_NUM_THREADS=1\nEnvironment=PYTHONDONTWRITEBYTECODE=1\n'
-        body+='ExecStart='+shlex.join(args)+'\nMemoryMax='+('1G' if target=='tick' else '6G')+'\nMemorySwapMax=0\nTimeoutStartSec=1900\nNice=10\n'
+        body+='ExecStart='+shlex.join(args)+'\nMemoryMax='+('1G' if target=='tick' else '6G')+'\nMemorySwapMax=0\nTimeoutStartSec='+str(max(1900,GPU_WALL+100))+'\nNice=10\n'
         timer='[Unit]\nDescription=Unattended weekly plus18\n[Timer]\nOnBootSec=10s\nOnUnitInactiveSec=15s\nAccuracySec=1s\nPersistent=true\n[Install]\nWantedBy=timers.target\n'
         code="from pathlib import Path; d=Path.home()/'.config/systemd/user'; d.mkdir(parents=True,exist_ok=True); "
         for suffix,text in (('service',body),('timer',timer)):
