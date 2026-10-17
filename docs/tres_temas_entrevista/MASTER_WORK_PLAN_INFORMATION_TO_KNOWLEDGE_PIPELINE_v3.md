@@ -647,6 +647,21 @@ soporte, pues hay huecos reales que impiden reutilizar el control completo.
 Los timers avanzan, publican al OLAP, verifican dos copias y cierran sin agentes
 monitoreando. El registro de mejores resultados observa ambos frentes.
 
+Cierre observado 2026-10-17 UTC: ambos grafos terminaron. I6-DMO previo dejo
+407/407 terminales (340 completas, 66 omisiones condicionadas, un fallo retenido),
+408 reportes verificados y 2464 archivos por espejo. La receta corta semanal
+obtuvo errores relativos al naive para 2/3/4/5/6/12 h de
+-0.162155/-0.594410/-0.783267/-0.977141/-1.580031/-2.098136 por ciento;
+son resultados de desarrollo 2024 con seleccion de epocas sobre esas semanas,
+no TEST ni evidencia independiente de rentabilidad. La familia larga sigue sin
+ser elegible. El estudio MG2m cerro cinco ajustes efectivos y un fallo previo al
+ajuste corregido por separado, con todas sus publicaciones y espejos verificados.
+El registro conserva los checkpoints diagnosticos de epoca2 por separado de los
+seleccionados; no promueve retrospectivamente el 18 h diagnostico de -0.238899%.
+Un operador externo al runtime cientifico reparo el formato de metricas sin
+soporte y fragmento la comprobacion de hashes por SSH, sin modificar modelos,
+datos, decisiones, metricas ni sellos cientificos.
+
 El estado observado y la cola se mantienen únicamente en
 `CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. Las fases 1, 2 y 3
 están cerradas (2026-10-07: `PHASE_2_COMPLETE.json` y

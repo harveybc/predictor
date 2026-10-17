@@ -14,7 +14,8 @@
     "BR05": ["common_board", "test_common_support_excludes_nonshared_rows_and_keeps_native_score", "test_conflicting_truth_fails_closed", "test_cohort_changes_when_comparison_population_changes"],
     "BR06": ["record_events", "test_improvement_event_is_idempotent_and_records_full_identity", "test_new_cohort_is_not_called_an_improvement"],
     "BR07": ["install_timer", "sync_registry", "verify_provenance", "test_timer_is_bounded_cpu_only_and_inherits_credentials_without_reading_them", "test_registry_copy_excludes_live_database_secrets_and_locks", "test_publication_retry_never_fits_and_does_not_duplicate", "test_olap_provenance_readback_checks_full_tags_and_caches_only_verified"],
-    "BR08": ["pin_reference", "test_reference_is_pinned_by_identity_not_ambiguous_experiment_name", "MG2M_REFERENCE.json"]
+    "BR08": ["pin_reference", "test_reference_is_pinned_by_identity_not_ambiguous_experiment_name", "MG2M_REFERENCE.json"],
+    "BR09": ["checkpoint_profile", "diagnostic_report", "test_fixed_epoch_checkpoint_is_retained_but_never_selected_champion"]
   },
   "verification": {
     "initial_pre": "12 failures before module implementation",

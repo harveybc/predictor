@@ -23,6 +23,9 @@ BR07: automatic bounded CPU timer, status at any time, governed OLAP event
 publication/readback, local storage and second-host copy, without agent polling.
 BR08: pin the recovered MG2m reference explicitly; do not change its identity
 or retrain it merely to rebuild an index. Keep later early-stop variants separate.
+BR09: preserve predeclared fixed-epoch diagnostic checkpoints, their actual
+weights/predictions and parent history, in a separately published class. Never
+promote them as monitor-selected champions or silently discard an observed best.
 
 ## Design And Verification
 

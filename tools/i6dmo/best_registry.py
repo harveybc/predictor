@@ -207,10 +207,53 @@ def collect(spec):
                 p=load_profile(path,source)
                 if p is not None:
                     found[p['id']]=p
+                    if source['layout']=='batch':
+                        checkpoint=checkpoint_profile(p,path)
+                        if checkpoint is not None:
+                            found[checkpoint['id']]=checkpoint
             except (ValueError,KeyError,OSError,TypeError) as exc:
                 errors.append(dict(source=source['label'],artifact_ref=str(path.relative_to(root)),
                                    code=type(exc).__name__+':'+str(exc)[:150]))
     return list(found.values()),errors
+
+
+def checkpoint_profile(parent, result_path):
+    """Retain a predeclared epoch2 snapshot without promoting it as selected."""
+    root=Path(result_path).parent
+    prediction=root/'EPOCH2.VALIDATION.npz';weights=root/'epoch2.weights.h5'
+    if not prediction.exists() or not weights.exists():
+        return None
+    history=read(root/'TRAINING.json')
+    rows=[r for r in history['history'] if r['epoch']==2]
+    if len(rows)!=1:
+        raise ValueError('DIAGNOSTIC_CHECKPOINT_HISTORY_MISMATCH')
+    checkpoint=dict(epoch=2,selected_best_epoch=history['best_epoch'],parent_profile=parent['id'],
+        weights_file_sha256=file_sha256(weights),prediction_file_sha256=file_sha256(prediction),
+        artifact_ref='epoch2.weights.h5',selection='FIXED_EPOCH_DIAGNOSTIC_NOT_PROMOTED',
+        monitored=rows[0]['monitored'])
+    p={k:v for k,v in parent.items() if k not in ('id','scores')}
+    p.update(scope='DIAGNOSTIC_ANNUAL',label=parent['label']+':epoch2_diagnostic',checkpoint=checkpoint,
+             weights_sha256=rows[0]['weights_sha256'])
+    scores=load_predictions(prediction,parent['model']['horizons_hours'])
+    p['metrics']=[score(scores[h],h) for h in sorted(scores)]
+    p['id']=sha256_json(dict(parent=parent['id'],checkpoint=checkpoint))
+    return dict(p,scores=scores)
+
+
+def diagnostic_report(profile):
+    profile={k:v for k,v in profile.items() if k!='scores'}
+    metrics=[]
+    for row in profile['metrics']:
+        for key,name,unit in (('mae','MAE','USD_per_EUR'),('naive_mae','Naive_MAE','USD_per_EUR'),
+                             ('relative_error','Diagnostic_Relative_Error_Vs_Naive','ratio'),('n','N','count')):
+            metrics.append(dict(metric=name,value=row[key],unit=unit,horizon=row['horizon'],split='validation'))
+    return dict(experiment_key='i6dmo:checkpoint:'+profile['id'],experiment_set_key='i6dmo:checkpoint-registry',
+        actor='predictor',lake='LOCAL_RETAINED',lineage='UNVERIFIED',config_sha256=profile['id'],
+        code_commit=profile['code_commit'],project='predictor',phase='I6DMO_DIAGNOSTIC_CHECKPOINT',
+        metrics=metrics,tags=dict(profile_identity_sha256=profile['id'],
+            profile_content_sha256=sha256_json(profile),metric_scope='DIAGNOSTIC_NATIVE_SUPPORT',
+            checkpoint_not_promoted='true',test_read='false',
+            profile_json=json.dumps(profile,sort_keys=True,allow_nan=False)))
 
 
 def cadence_profiles(spec, profiles):
@@ -333,7 +376,7 @@ def verify_provenance(root, box, client):
 def sync_registry(root, spec):
     from tools.i6dmo.mirror import _sync_local, _sync_remote
     root=Path(root)
-    paths=[root/name for name in ('BEST.json','LEADERBOARD.json','LEADERBOARD.md','REFERENCE.json','PROVENANCE_READBACK.json')
+    paths=[root/name for name in ('BEST.json','LEADERBOARD.json','LEADERBOARD.md','REFERENCE.json','PROVENANCE_READBACK.json','DIAGNOSTICS.json')
            if (root/name).exists()]
     for directory in ('profiles','events'):
         paths.extend(sorted((root/directory).glob('*.json')))
@@ -380,6 +423,14 @@ def render(profiles, board):
         lines.append(f"| {p['label']} | {100*value:+.6f}% | {sum(r['relative_error']<0 for r in rows)}/6 | {p['id']} |")
     lines+=['','Full model, data, monitor, seed, epochs and checkpoint hashes: profiles/<identity>.json.',
             'Partial-period results are retained but cannot become annual champions.']
+    diagnostic=[p for p in profiles if p['scope']=='DIAGNOSTIC_ANNUAL']
+    if diagnostic:
+        lines+=['','## Fixed-Epoch Diagnostics (Not Selected)','',
+                'Own native populations; retained observations, not promoted champions or TEST results.','',
+                '| Profile | Horizon | Relative error | N | Checkpoint profile |','|---|---:|---:|---:|---|']
+        for p in diagnostic:
+            for r in p['metrics']:
+                lines.append(f"| {p['label']} | {r['horizon']}h | {100*r['relative_error']:+.6f}% | {r['n']} | {p['id']} |")
     return '\n'.join(lines)+'\n'
 
 
@@ -397,6 +448,8 @@ def tick(spec):
         board=common_board(profiles)
         for p in profiles:
             put(root/'profiles'/(p['id']+'.json'),{k:v for k,v in p.items() if k!='scores'})
+        diagnostics=[{k:v for k,v in p.items() if k!='scores'} for p in profiles if p['scope']=='DIAGNOSTIC_ANNUAL']
+        put(root/'DIAGNOSTICS.json',diagnostics)
         changes=record_events(root,entries(board))
         put(root/'LEADERBOARD.json',board)
         tmp=root/'LEADERBOARD.md.tmp';tmp.write_text(render(profiles,board));tmp.replace(root/'LEADERBOARD.md')
@@ -408,6 +461,8 @@ def tick(spec):
                 for path in sorted((root/'events').glob('*.json')):
                     event=read(path);p=read(root/'profiles'/(event['current']['winner']+'.json'))
                     box.enqueue(event_report(event,p),source_unit='best-registry:'+event['id'])
+                for p in diagnostics:
+                    box.enqueue(diagnostic_report(p),source_unit='diagnostic-checkpoint:'+p['id'])
                 client=HttpWarehouse(spec['warehouse']['url'],spec['warehouse']['token_env'])
                 publication=box.pump(client)
                 publication['provenance']=verify_provenance(root,box,client)
@@ -416,6 +471,7 @@ def tick(spec):
         mirrors=sync_registry(root,spec) if spec.get('mirrors') else None
         state=dict(state=readiness(errors,publication,mirrors),profiles=len(profiles),
                    changed=len(changes),events=len(list((root/'events').glob('*.json'))),errors=errors,
+                   diagnostic_checkpoints=len(diagnostics),
                    publication=publication,mirrors=mirrors,at=time.time(),elapsed_s=time.monotonic()-started,
                    fit_executed=False,test_read=False)
         put(root/'STATUS.json',state)

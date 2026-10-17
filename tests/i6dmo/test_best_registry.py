@@ -197,3 +197,20 @@ def test_olap_provenance_readback_checks_full_tags_and_caches_only_verified(tmp_
     m.verify_provenance(tmp_path,Box(),client);assert client.calls==2
     assert m.readiness([],{'pending':0,'mismatch':0,'provenance':{'mismatch':1,'pending':0}},
                        {'state':'VERIFIED'})=='PUBLICATION_MISMATCH'
+
+
+def test_fixed_epoch_checkpoint_is_retained_but_never_selected_champion(tmp_path):
+    m=module();a=arrays()
+    np.savez(tmp_path/'EPOCH2.VALIDATION.npz',row_id=a['origin'],origin_price=a['current'],
+             target_price=a['target'][:,None],prediction=a['prediction'][:,None],mask=np.ones((3,1),bool))
+    (tmp_path/'epoch2.weights.h5').write_bytes(b'retained checkpoint')
+    m.put(tmp_path/'TRAINING.json',{'best_epoch':29,'history':[{'epoch':2,'weights_sha256':'snapshot2','monitored':.95}]})
+    parent=dict(id='parent',label='plus18',scope='ANNUAL',model={'horizons_hours':[18]},
+                code_commit='c',training={},metrics=[],scores={18:a})
+    p=m.checkpoint_profile(parent,tmp_path/'RESULT.json')
+    assert p['scope']=='DIAGNOSTIC_ANNUAL' and p['weights_sha256']=='snapshot2'
+    assert p['checkpoint']['selected_best_epoch']==29 and p['checkpoint']['epoch']==2
+    assert m.common_board([p])['horizons']=={}
+    report=m.diagnostic_report(p)
+    assert all(r['metric']!='Best_Relative_Error_Vs_Naive' for r in report['metrics'])
+    assert m.read_json_tag(report,'profile_json')['checkpoint']['epoch']==2

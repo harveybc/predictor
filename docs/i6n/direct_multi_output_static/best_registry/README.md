@@ -1,5 +1,13 @@
 # Best Forecast Registry Operation
 
+Fixed epoch2 checkpoints from completed studies are now retained in
+DIAGNOSTICS.json and the diagnostic section of LEADERBOARD.md, with actual
+checkpoint-file/prediction/weight identities and their parent training history.
+They publish under I6DMO_DIAGNOSTIC_CHECKPOINT with exact readback, never as
+selected champions. Their metrics are recomputed from saved arrays. This
+preserves useful development observations without changing checkpoint selection,
+reading TEST or retrospectively promoting a favorable epoch.
+
 This is a CPU-only sidecar for the retained I6-DMO outputs, not a trainer or
 new optimizer. Keep the scientific runtime and configs unchanged. Requirements
 and test mapping are in [PLAN.md](PLAN.md); recovered reference in [RETURN.md](RETURN.md).
