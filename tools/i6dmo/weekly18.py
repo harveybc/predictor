@@ -306,7 +306,7 @@ def run(spec):
         record = read(Path(spec["gpu_data"]) / cell["id"] / "PERIOD.json")
         folder = root / "results" / cell["id"]; folder.mkdir(parents=True, exist_ok=True)
         if record["parent_state"] == "SKIPPED_NO_EVAL_ROWS":
-            result = dict(batch_id=NAME, cell=cell, state="SKIPPED_NO_EVAL_ROWS", reason="same empty parent period", files={})
+            result = dict(batch_id=NAME, cell=cell, state="SKIPPED_NO_EVAL_ROWS", reason=record.get("skip_reason","same empty parent period"), files={})
         else:
             processes = run_cmd(["nvidia-smi", "--query-compute-apps=pid", "--format=csv,noheader,nounits"])
             if processes.strip():
