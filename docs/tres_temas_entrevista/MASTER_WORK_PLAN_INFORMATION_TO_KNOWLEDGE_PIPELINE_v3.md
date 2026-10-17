@@ -83,6 +83,18 @@ repetir dicho control ni alterar sus resultados. Plan ANY_HEAD_PLAN.md en
 codex/i6dmo-any-head-patience-20261016, codigo b33a5933. La regla nueva es opt-in,
 no modifica retroactivamente la identidad en curso de la 5090 ni abre TEST.
 
+Aclaracion posterior del propietario: reproducir el corto prometedor ORIGINAL,
+no otra variante de paciencia. El prototipo corto con ANY_HORIZON no se
+desplego ni entreno. La nueva reproduccion usa directamente train.train_unit
+de 24f5a6cc, con model.py y train.py enteros identicos por hash al original,
+bundle/diseno originales y seis cabezales 2/3/4/5/6/12h. Conserva por tanto
+la parada ORIGINAL por promedio FIT/INNER, paciencia 10, delta 1e-8 y maximo
+200; se ejecuta una vez en la 4090 libre (diferencia de hardware declarada
+respecto al original de la 5090). Fuente ee40787e en
+codex/i6dmo-short-replay-20261016, plan short_replay/PLAN.md. La continuacion
+principal permanece independiente. El resultado se compara con el historico
+sin prometer identidad numerica entre clases GPU, y TEST permanece cerrado.
+
 Resultado retenido anterior: i6dmo-resolution-705d19ec84ae CLOSED, 19/19,
 19 reportes con lectura exacta y dos espejos de 159 archivos. DS2 mejor que
 DS4 en media de corto (+0.258987%/+2.723207%) y largo
