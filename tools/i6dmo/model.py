@@ -144,6 +144,14 @@ FAMILIES = {
 #: config declares the slot count and the market_time block instead of offsets_hours, and the model
 #: takes per-example time inputs. Elapsed spans vary across closures and DST by construction.
 MARKET_FAMILIES = {
+    "short_plus18": {"slots": 13, "horizons_hours": [2, 3, 4, 5, 6, 12, 18], "rule": "MG2_MARKET_EXACT",
+                     "spacing_open_market_hours": 2, "span_open_market_hours": 24},
+    "single18": {"slots": 13, "horizons_hours": [18], "rule": "MG2_MARKET_EXACT",
+                 "spacing_open_market_hours": 2, "span_open_market_hours": 24},
+    "short_window7": {"slots": 7, "horizons_hours": [2, 3, 4, 5, 6, 12], "rule": "MG2_MARKET_EXACT",
+                      "spacing_open_market_hours": 2, "span_open_market_hours": 12},
+    "short_window25": {"slots": 25, "horizons_hours": [2, 3, 4, 5, 6, 12], "rule": "MG2_MARKET_EXACT",
+                       "spacing_open_market_hours": 2, "span_open_market_hours": 48},
     "short_mg2": {"slots": 13, "horizons_hours": [2, 3, 4, 5, 6, 12], "rule": "MG2_MARKET_EXACT",
                   "spacing_open_market_hours": 2, "span_open_market_hours": 24},
     "long_mg12": {"slots": 13, "horizons_hours": [18, 24, 36, 48, 60, 72], "rule": "MG12_MARKET_EXACT",
@@ -239,7 +247,8 @@ def _normalize_market_config(config):
             raise ValueError(f"FIXED_VALUE: model {key} is fixed to {_FIXED[key]!r}")
     mt = c["market_time"]
     match = next((spec for spec in MARKET_FAMILIES.values()
-                  if spec["rule"] == mt.get("rule")), None)
+                  if spec["rule"] == mt.get("rule") and spec["slots"] == c["slots"]
+                  and spec["horizons_hours"] == c["horizons_hours"]), None)
     if match is None:
         raise ValueError(f"FIXED_VALUE: unknown market-time rule {mt.get('rule')!r}")
     if (c["slots"], c["horizons_hours"]) != (match["slots"], match["horizons_hours"]) or \
