@@ -1,0 +1,29 @@
+{
+  "schema": "i6dmo.best_registry_method.v1",
+  "updated_on": "2026-10-16",
+  "current_stage": "S_RELEASE_OPERATION",
+  "definition": "PLAN.md",
+  "implementation": "tools/i6dmo/best_registry.py",
+  "tests": "tests/i6dmo/test_best_registry.py",
+  "sequence": ["discovery", "requirements", "use_cases", "acceptance_test_design", "architecture", "system_test_design", "component_design", "integration_test_design", "unit_test_design", "unit_implementation", "integration", "real_read_only_acceptance", "bounded_timer_operation"],
+  "traceability": {
+    "BR01": ["training_summary", "load_profile", "event_report", "test_report_carries_full_winning_recipe_and_original_scores"],
+    "BR02": ["common_board", "test_complete_recipe_not_a_best_head_mosaic"],
+    "BR03": ["cadence_profiles", "test_partial_period_never_becomes_annual_champion", "test_cadence_overlap_rejected"],
+    "BR04": ["authenticated", "load_predictions", "score", "test_digest_tamper_and_traversal_rejected", "test_own_naive_and_original_scale"],
+    "BR05": ["common_board", "test_common_support_excludes_nonshared_rows_and_keeps_native_score", "test_conflicting_truth_fails_closed", "test_cohort_changes_when_comparison_population_changes"],
+    "BR06": ["record_events", "test_improvement_event_is_idempotent_and_records_full_identity", "test_new_cohort_is_not_called_an_improvement"],
+    "BR07": ["install_timer", "sync_registry", "verify_provenance", "test_timer_is_bounded_cpu_only_and_inherits_credentials_without_reading_them", "test_registry_copy_excludes_live_database_secrets_and_locks", "test_publication_retry_never_fits_and_does_not_duplicate", "test_olap_provenance_readback_checks_full_tags_and_caches_only_verified"],
+    "BR08": ["pin_reference", "test_reference_is_pinned_by_identity_not_ambiguous_experiment_name", "MG2M_REFERENCE.json"]
+  },
+  "verification": {
+    "initial_pre": "12 failures before module implementation",
+    "expansion_pre": "4 failed, 13 passed before publication/readiness/mirror implementation",
+    "post": "26 passed across registry and retained-metadata inventory tests; two existing protobuf deprecation warnings",
+    "real": "MG2m score recomputed from authenticated predictions; more than 350 profiles; initial 14 events delivered, metric and full-provenance readback exact; both mirrors verified; idempotent second tick",
+    "deployment_correction": "Initial timer activation refused quoted EnvironmentFile/WorkingDirectory directive paths. Installer corrected, regression added, actual systemd syntax verification and activation passed. No fit was attempted by this sidecar.",
+    "not_run": "No new scientific fit, no TEST, no DOIN changes, no claim of independent code review"
+  },
+  "next_allowed_actions": ["Let the bounded timer recover new completed results, record strict within-cohort improvements and retry publication/mirrors", "Read status and leaderboard on request", "Retain the pinned MG2m unchanged and the running main campaign under its existing identity"],
+  "blocked_actions": ["Treat a head-winner mosaic as one trained model", "Compare partial periods as annual results", "Silently change the reference or scientific protocol", "Call a changed cohort an improvement", "Repeat training merely to build this registry", "Read TEST"]
+}

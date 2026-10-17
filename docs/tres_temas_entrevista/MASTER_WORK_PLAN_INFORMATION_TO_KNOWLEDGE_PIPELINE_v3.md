@@ -621,6 +621,20 @@ después de recomputación independiente y recibo por contenido.
 
 ## 16. Estado actual
 
+Actualizacion de autoridad 2026-10-16: el propietario identifico explicitamente
+el control corto **MG2m**, i6dmo-6004b711281c, codigo 796ec8f4, como referencia
+de los resultados prometedores. No sustituirlo por el MG2 anterior ni por una
+semana favorable de otra arquitectura. Su modelo, pesos y configuracion estan
+retenidos; la recuperacion de su tabla no requiere otro fit. Ver
+[registro de mejores resultados](../i6n/direct_multi_output_static/best_registry/RETURN.md).
+El registro automatico conserva por horizonte y por receta completa las
+identidades de datos/modelo/codigo, semilla, regla de parada, checkpoints,
+MAE y naive para ese horizonte y exactamente sus mismas filas. Toda mejora
+queda en un evento inmutable y en el OLAP, con copias fisicas verificadas.
+Los cohortes distintos y los resultados parciales se etiquetan por separado.
+Esta correccion documental y el sidecar CPU no cambian la identidad ni detienen
+la continuacion I6-DMO vigente; TEST permanece cerrado.
+
 El estado observado y la cola se mantienen únicamente en
 `CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. Las fases 1, 2 y 3
 están cerradas (2026-10-07: `PHASE_2_COMPLETE.json` y

@@ -1,0 +1,279 @@
+{
+  "fit_executed": false,
+  "historical_static_annual_six_win_reference_identified": false,
+  "historical_static_annual_six_win_reference_retrained": false,
+  "metadata_files_including_mirrors": 789,
+  "owner_subsequent_reference": {
+    "evidence": "../best_registry/MG2M_REFERENCE.json",
+    "experiment": "I6-DMO-SHORT-MG2-MATCHED-R0",
+    "identified": true,
+    "original_annual_naive_winning_heads": [
+      4,
+      6,
+      12
+    ],
+    "profile_id": "145c3a4b51cde718383b52bcf2a863ee5df091e728bc0e48131c9e732ceaf53b",
+    "supersedes_unidentified_reference_question": true
+  },
+  "scans": [
+    {
+      "distinct_vectors": 115,
+      "errors": [],
+      "inventory_sha256": "90aee0aa33a191289325ff72bacf2d8d0fd2caee25d185eac5e46a40b5a25a03",
+      "metadata_files": 441,
+      "role": "coordinator"
+    },
+    {
+      "distinct_vectors": 94,
+      "errors": [
+        {
+          "reason": "ROOT_ABSENT",
+          "source": "root2"
+        }
+      ],
+      "inventory_sha256": "179e7af7c274dbb7ff0c87643cdbcc5bb9c5e33e09c8703de1a067f070e21209",
+      "metadata_files": 344,
+      "role": "preferred"
+    },
+    {
+      "distinct_vectors": 3,
+      "errors": [
+        {
+          "reason": "ROOT_ABSENT",
+          "source": "root1"
+        }
+      ],
+      "inventory_sha256": "20f03cbb9234d03e082e8897c3fef7fd0683a0eb62507d1c782f9da62bc1f19f",
+      "metadata_files": 4,
+      "role": "secondary"
+    }
+  ],
+  "schema": "i6dmo.six_win_locator.v1",
+  "scope": "RETAINED_I6DMO_METADATA_STANDARD_RESULT_RECEIPT_REPORT_FILENAMES",
+  "six_win_validation_cases": [
+    {
+      "cell_id": "cad_short_monthly_MONTHLY-2024-01",
+      "core": [
+        2
+      ],
+      "experiment": "i6dmo-continuation-41c3a7698150",
+      "head": "lstm",
+      "metrics": [
+        {
+          "horizon": 2,
+          "mae": 0.0008658666237579062,
+          "n": 270,
+          "naive": 0.000869407407407408,
+          "relative_error": -0.004072640305723353
+        },
+        {
+          "horizon": 3,
+          "mae": 0.0010759212459055137,
+          "n": 265,
+          "naive": 0.0010786415094339676,
+          "relative_error": -0.002521934771341629
+        },
+        {
+          "horizon": 4,
+          "mae": 0.001275839878537983,
+          "n": 264,
+          "naive": 0.0012813257575757613,
+          "relative_error": -0.004281408537480305
+        },
+        {
+          "horizon": 5,
+          "mae": 0.0014706601897872497,
+          "n": 258,
+          "naive": 0.0014775968992248119,
+          "relative_error": -0.0046945885181549915
+        },
+        {
+          "horizon": 6,
+          "mae": 0.0016506981178952946,
+          "n": 257,
+          "naive": 0.0016630739299610957,
+          "relative_error": -0.007441528511057009
+        },
+        {
+          "horizon": 12,
+          "mae": 0.0023312639712407416,
+          "n": 239,
+          "naive": 0.00233334728033473,
+          "relative_error": -0.00089284141779777
+        }
+      ],
+      "metrics_recomputed_from_prediction_arrays": true,
+      "model_schema": "i6dmo.continuation_model.v1",
+      "original_static_MG2": false,
+      "parameters": 1740,
+      "period": {
+        "cadence": "MONTHLY",
+        "id": "MONTHLY-2024-01",
+        "period_sha256": "36a3710af0ec6d68f51acff2111a42eb986eb96367325abe9878d93dce6d6594",
+        "train_end": "2023-12-31T22:00:00+00:00",
+        "train_start": "2019-12-31T22:00:00+00:00",
+        "validation_end": "2024-02-02T22:00:00+00:00",
+        "validation_start": "2024-01-01T10:00:00+00:00",
+        "week_ids": [
+          "2023-12-31",
+          "2024-01-07",
+          "2024-01-14",
+          "2024-01-21",
+          "2024-01-28"
+        ]
+      },
+      "restored_weights_sha256": "ea1b8a6c1e97f62f21c8905dab0ac3558551fc687ccaf2074374937b462187e5",
+      "result_file_sha256": "8f1cc176cd2b7bbb946031372d91ad0b002bd6d914ba06ab8f65cc0557507644",
+      "seed": 6102026,
+      "slots": 13,
+      "spacing_open_market_hours": 2
+    },
+    {
+      "cell_id": "cad_short_weekly_WEEKLY-2024-01-21",
+      "core": [
+        2
+      ],
+      "experiment": "i6dmo-continuation-41c3a7698150",
+      "head": "lstm",
+      "metrics": [
+        {
+          "horizon": 2,
+          "mae": 0.0009490653810820081,
+          "n": 59,
+          "naive": 0.0009661016949152495,
+          "relative_error": -0.01763407923089909
+        },
+        {
+          "horizon": 3,
+          "mae": 0.0011667238226110326,
+          "n": 58,
+          "naive": 0.001217931034482767,
+          "relative_error": -0.04204442650850183
+        },
+        {
+          "horizon": 4,
+          "mae": 0.0014364087141347632,
+          "n": 57,
+          "naive": 0.0014763157894736871,
+          "relative_error": -0.027031530532604407
+        },
+        {
+          "horizon": 5,
+          "mae": 0.0016524206770061214,
+          "n": 56,
+          "naive": 0.0017300000000000093,
+          "relative_error": -0.04484353930282511
+        },
+        {
+          "horizon": 6,
+          "mae": 0.001925586613271004,
+          "n": 55,
+          "naive": 0.0020198181818181804,
+          "relative_error": -0.04665349059406518
+        },
+        {
+          "horizon": 12,
+          "mae": 0.002584104836425977,
+          "n": 49,
+          "naive": 0.002864081632653041,
+          "relative_error": -0.09775447495458346
+        }
+      ],
+      "metrics_recomputed_from_prediction_arrays": true,
+      "model_schema": "i6dmo.continuation_model.v1",
+      "original_static_MG2": false,
+      "parameters": 1740,
+      "period": {
+        "cadence": "WEEKLY",
+        "id": "WEEKLY-2024-01-21",
+        "period_sha256": "e6e24dd4ad7cf16292bbe48840c8463b369ecec29d7110d93727700e56b2eeb1",
+        "train_end": "2024-01-21T22:00:00+00:00",
+        "train_start": "2020-01-21T22:00:00+00:00",
+        "validation_end": "2024-01-26T22:00:00+00:00",
+        "validation_start": "2024-01-22T10:00:00+00:00",
+        "week_ids": [
+          "2024-01-21"
+        ]
+      },
+      "restored_weights_sha256": "4415bb78024e60c7252d9e5061201e6586c9e7054ff751fb8a18c8f4bd8c4da9",
+      "result_file_sha256": "88da35b421f0253890ee2fb524459982b6f1523d091d6f9400fafbb4b4c7e059",
+      "seed": 6102026,
+      "slots": 13,
+      "spacing_open_market_hours": 2
+    },
+    {
+      "cell_id": "cad_short_weekly_WEEKLY-2024-03-17",
+      "core": [
+        2
+      ],
+      "experiment": "i6dmo-continuation-41c3a7698150",
+      "head": "lstm",
+      "metrics": [
+        {
+          "horizon": 2,
+          "mae": 0.0008515910639363754,
+          "n": 94,
+          "naive": 0.0008564893617021309,
+          "relative_error": -0.005719040988461313
+        },
+        {
+          "horizon": 3,
+          "mae": 0.0011340908346270835,
+          "n": 93,
+          "naive": 0.0011402150537634422,
+          "relative_error": -0.005371108823852896
+        },
+        {
+          "horizon": 4,
+          "mae": 0.0014216706591933742,
+          "n": 92,
+          "naive": 0.00142804347826087,
+          "relative_error": -0.004462622577330008
+        },
+        {
+          "horizon": 5,
+          "mae": 0.001678132111519226,
+          "n": 91,
+          "naive": 0.001680989010989009,
+          "relative_error": -0.0016995348875613236
+        },
+        {
+          "horizon": 6,
+          "mae": 0.001948109503392459,
+          "n": 90,
+          "naive": 0.001958555555555547,
+          "relative_error": -0.0053335490706186055
+        },
+        {
+          "horizon": 12,
+          "mae": 0.0031098631766160985,
+          "n": 84,
+          "naive": 0.0031691666666666726,
+          "relative_error": -0.018712644770099582
+        }
+      ],
+      "metrics_recomputed_from_prediction_arrays": true,
+      "model_schema": "i6dmo.continuation_model.v1",
+      "original_static_MG2": false,
+      "parameters": 1740,
+      "period": {
+        "cadence": "WEEKLY",
+        "id": "WEEKLY-2024-03-17",
+        "period_sha256": "6895723f9855dd3360cdc99aca538c74d0b4d2fbb2f232ff3680a9c81f2185e4",
+        "train_end": "2024-03-17T21:00:00+00:00",
+        "train_start": "2020-03-17T21:00:00+00:00",
+        "validation_end": "2024-03-22T21:00:00+00:00",
+        "validation_start": "2024-03-18T09:00:00+00:00",
+        "week_ids": [
+          "2024-03-17"
+        ]
+      },
+      "restored_weights_sha256": "f2af101a4dd2bb904bee8d844713753f6b30cba6218b4d080f1a28271d45033f",
+      "result_file_sha256": "9ddec7dab3fe55d72158216f5e9475b9d3e2e136eb31157effeb8791e35365ac",
+      "seed": 6102026,
+      "slots": 13,
+      "spacing_open_market_hours": 2
+    }
+  ],
+  "test_read": false
+}

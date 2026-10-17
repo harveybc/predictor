@@ -1,0 +1,443 @@
+{
+  "artifact_ref": "terminals/e7ef59059239650fdb4129d8ce33819887bb79bd95af6b20675938b2069fe775/out/train/RECEIPT.json",
+  "asset": "EURUSD",
+  "code_commit": "796ec8f48b0b1621fb9fa9e60e12c1c37079e51e",
+  "data": {
+    "bundle_manifest_sha256": "9adca18e0d7adf71fee6801c0edcf815fdf248e243aea1fac0d579c59767d2dc",
+    "capacity_sha256": "5b622fd0fe575cb662c13b50e1bdf645841451001f00c2bb690f35f3b570c325",
+    "code_files_sha256": {
+      "predictor_plugins/modular_temporal/assembly.py": "6b1601a2ec8cd59c5eb3954539716760479841382b9c44f5ff147a4b891d936c",
+      "predictor_plugins/modular_temporal/common.py": "c08aba769378faf61a7c304a720d2c35bd0099bf2010f10435401d63424b368b",
+      "predictor_plugins/modular_temporal/components.py": "0d834e626722b76f949704b2d3f3c13fa5292d2631f8f764fa432911cf712272",
+      "predictor_plugins/modular_temporal/layers.py": "2ce7d4f394baf77fd0316bd2024e9179a84704ae7b2ee8a9e4c84c9a31be36a8",
+      "predictor_plugins/modular_temporal/registry.py": "e51b2d88132e2666a22fce3fab348e11e439b2893f2f0d8d5bab59649dd312e4",
+      "tools/i6dmo/design.py": "e8836bc54ce6a28368e104a0d5f4a8c36b9de98d614df7cf20a66f5df5da2d8d",
+      "tools/i6dmo/model.py": "f9f8e251ade4c929505f5c184ed03530e7d2e5d3e0eea96cf0b0f8ab9454cd8d",
+      "tools/i6dmo/train.py": "8b22f94a512ac585be5bb9e9350bf00a280b0c426cd9812d06abbd369f63144e"
+    },
+    "common_population_sha256": "ba01f87a14e1ceb39d1a5770d4d00f3803cd29748c64edf7254c1e6c57b249d1",
+    "design_contract": {
+      "business": {
+        "calendar": "versioned_instrument_contract",
+        "entry_cutoff": "inherit_versioned_thursday_cutoff",
+        "entry_delay_after_open_hours": 12,
+        "force_flat_before_close_hours": 12,
+        "keep_row_if_any_head_valid": true,
+        "per_output_masks": true,
+        "preserve_observed_past_input_history": true
+      },
+      "evaluation_mode": "BUSINESS_STATIC_BASELINE",
+      "feature_policy": {
+        "development_selection_used_2024": true,
+        "exclude": [
+          "fred.stress.stlfsi4.level"
+        ],
+        "reject_stlfsi4_aliases": true,
+        "source": "active_19_feature_point_in_time_manifest",
+        "unresolved_provenance_blocks_confirmatory_test": true
+      },
+      "retraining_frequency": "NONE",
+      "sealed_identities": {
+        "availability_contract_sha256": "9668898c28cafeef2bc48e7d3a42e82a2655d699ff8f0d8d59e921bf120b1bc9",
+        "base_short_design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
+        "calendar": {
+          "calendar_id": "FX_NY_17_ASSUMED_NOT_BROKER",
+          "status": "ASSUMED_NOT_BROKER",
+          "version": "i6n-v1"
+        },
+        "data_design_sha256": "83670fa538614e1809077cdf8d4c497b6455ca926a4ba91610d3f1cf7a6a729f",
+        "data_identity_sha256": "fd71458862a7cc378417582bfc2884d14dacc8f76d55adab5b38ef9d4238d0c2",
+        "feature_manifest_sha256": "2ff34fa21d5841da1befdd4d898db911128d959a5e460d04cc45b54955416470",
+        "partner_data_identity_sha256": "9e4f9fce2eff378455d13dd507e144cbb270cba9529e65e728155b9357c7e473",
+        "runtime": {
+          "keras": "3.13.2",
+          "tensorflow": "2.21.0"
+        },
+        "seed": 6102026,
+        "time_encoder": {
+          "context_channels": [
+            "adjacent_elapsed_hours_over_24",
+            "closure_crossed"
+          ],
+          "context_rule": "appended AFTER the encoded values and BEFORE the core; slot 0 has adjacent delta 0 and closure flag 0",
+          "dtype": "float32",
+          "fitted": false,
+          "formula": "code[s, c] = sin(offset_hours[s] * 10000^(-2*(c//2)/C)) for even c, cos(...) for odd c, added to the C fused value channels; evaluated on ACTUAL signed offsets, never ordinal slot indices",
+          "guards": "typed ORDINAL_OR_INVALID_OFFSETS when the last offset is not exactly 0, any offset is > 0, the first closure flag is not 0, or an adjacent elapsed delta is below the design's spacing_open_market_hours (ordinal slot indices, future offsets and compressed ladders are refused, not merely numerically different)",
+          "inputs": [
+            "fused_values(batch, slots, 4*n_features)",
+            "offsets_hours(batch, slots) signed UTC hours from t, last exactly 0",
+            "closure_crossed(batch, slots) 0/1, first slot 0"
+          ],
+          "layer": "i6dmo.DynamicPhysicalTimeEncoder",
+          "min_adjacent_hours": "design.market_time.spacing_open_market_hours",
+          "output_shape": "(batch, slots, C + 2)  # 19 branches -> 76 + 2 = 78",
+          "per_example_inputs_required": true,
+          "position": "immediately_after_branch_fusion",
+          "slot_order_is_not_wall_clock": true,
+          "unit_conversion_hours": 24,
+          "version": "1.0.0"
+        }
+      },
+      "splits": {
+        "end_exclusive": true,
+        "inner_tail_weeks": 8,
+        "purge_by_label_availability": true,
+        "test": {
+          "end": "2026-01-01T00:00:00Z",
+          "open": false,
+          "start": "2025-01-01T00:00:00Z"
+        },
+        "train": {
+          "end": "2024-01-01T00:00:00Z",
+          "start": "2020-01-01T00:00:00Z"
+        },
+        "validation": {
+          "end": "2025-01-01T00:00:00Z",
+          "start": "2024-01-01T00:00:00Z"
+        }
+      }
+    },
+    "design_sha256": "d71d2b3c555dc3fad855b30b97e68d04193bfb5e3df33179f8ef10eea5d04711",
+    "effective_config_file_sha256": "1d2ab851a5f20c9338e665e09debb1b49dadd27ab960b4baac55f6539150932f",
+    "effective_config_sha256": "ad949872cd5c430598369049dc82dd6063707080f55ee8f906323ab7f47218c7",
+    "feature_manifest_sha256": "2ff34fa21d5841da1befdd4d898db911128d959a5e460d04cc45b54955416470",
+    "matched_arm": "mg2m",
+    "model_archive_sha256": "7b0ec2a97ce615e5709fd713d1136becbf8581afad5a62b0b1ed2cce6e7d0028",
+    "scales_sha256": "2ec911376b35371b9296cb9dfc89599e6c276c6dbc11845a51f5c13759140c39",
+    "weights_sha256": "ab4100ece593cfc9581cb6eb355be6b88094e5f0b5e3387c477449b1bbe7bc89"
+  },
+  "device_class": "rtx4090",
+  "id": "145c3a4b51cde718383b52bcf2a863ee5df091e728bc0e48131c9e732ceaf53b",
+  "label": "matched-control:I6-DMO-SHORT-MG2-MATCHED-R0:mg2m.fit",
+  "metrics": [
+    {
+      "cohort": "af0afb274f78aaf2ea8356dd8127ebd44d86d1455bb530e76e832d95241394c5",
+      "horizon": 2,
+      "mae": 0.0007466968855357565,
+      "n": 4724,
+      "naive_mae": 0.0007466638441998291,
+      "relative_error": 4.425195646488519e-05
+    },
+    {
+      "cohort": "2022f9be633476a65afcb64c08ad530315d7f5fe46eaa4491cb60a270803ab11",
+      "horizon": 3,
+      "mae": 0.000928973456543385,
+      "n": 4671,
+      "naive_mae": 0.0009288910297580814,
+      "relative_error": 8.873676530720195e-05
+    },
+    {
+      "cohort": "50a6230b25ca68a196e2057ecea5588beacbb7e0c4001972fd911cac6c57c9ae",
+      "horizon": 4,
+      "mae": 0.0010791007590294725,
+      "n": 4618,
+      "naive_mae": 0.0010792789086184486,
+      "relative_error": -0.0001650635322839784
+    },
+    {
+      "cohort": "dfc987abef58222ddd8b50f8e819b60d021e7a9c82597e0524a11f978d956e69",
+      "horizon": 5,
+      "mae": 0.0012250241346200878,
+      "n": 4565,
+      "naive_mae": 0.001224979189485214,
+      "relative_error": 3.669052932451571e-05
+    },
+    {
+      "cohort": "c8bf154e7f16c711fe300e134557090ac58129a52d02ee02a1d5a6a9cee79278",
+      "horizon": 6,
+      "mae": 0.0013619340235535115,
+      "n": 4512,
+      "naive_mae": 0.001362063386524822,
+      "relative_error": -9.497573504305533e-05
+    },
+    {
+      "cohort": "8252359f092ca70c8656dc40827c3209c35335d7c1308ac40da79526dc79519f",
+      "horizon": 12,
+      "mae": 0.001994087261925607,
+      "n": 4196,
+      "naive_mae": 0.0019948331744518593,
+      "relative_error": -0.00037392225866573814
+    }
+  ],
+  "model": {
+    "branch": {
+      "activation": "relu",
+      "filters": 4,
+      "kernel_size": 3,
+      "padding": "causal",
+      "strides": 1
+    },
+    "core": {
+      "activation": "relu",
+      "filters": [
+        8,
+        4
+      ],
+      "kernel_sizes": [
+        3,
+        3
+      ],
+      "padding": "causal",
+      "strides": [
+        1,
+        1
+      ]
+    },
+    "features": [
+      "fred.inflation_expectations.t5yie.level",
+      "fred.rates.dgs3mo.diff_5d",
+      "fred.rates.dgs5.level",
+      "fred.rates.dgs7.logret_5d",
+      "fred.rates.dprime.logret_5d",
+      "fx.gbpusd.logret_1h",
+      "px.close_loc",
+      "px.log_co",
+      "px.rv5",
+      "rg.atr_ratio",
+      "yh.eem.logret_5d",
+      "yh.iyr.logret_1d",
+      "yh.kc_f.logret_1d",
+      "yh.n225.logret_1d",
+      "yh.si_f.logret_1d",
+      "yh.slv.logret_1d",
+      "yh.vnq.logret_1d",
+      "yh.xlc.logret_1d",
+      "yh.xlre.logret_1d"
+    ],
+    "heads": {
+      "hidden_activation": "relu",
+      "hidden_units": 8,
+      "output_activation": "linear"
+    },
+    "horizons_hours": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      12
+    ],
+    "market_time": {
+      "elapsed_span_fixed": false,
+      "include_origin": true,
+      "observations": 13,
+      "require_exact_market_slots": true,
+      "rule": "MG2_MARKET_EXACT",
+      "spacing_open_market_hours": 2,
+      "span_open_market_hours": 24
+    },
+    "positional_encoding": "dynamic_physical_time_after_fusion",
+    "regime": "R0",
+    "schema": "i6dmo.model.v1",
+    "seed": 6102026,
+    "slots": 13
+  },
+  "model_components": {
+    "branch": {
+      "contract": "(batch, 13, 1) -> (batch, 13, filters); causal Conv1D stride 1, no time reduction",
+      "count": 19,
+      "implementation": "tools.i6dmo.model:dmo_branch",
+      "input_shape": [
+        13,
+        1
+      ],
+      "name": "dmo_branch",
+      "params": {
+        "activation": "relu",
+        "filters": 4,
+        "kernel_size": 3,
+        "strides": 1
+      },
+      "role": "branch",
+      "version": "1.0.0"
+    },
+    "core": {
+      "contract": "(batch, 13, C) -> (batch, 13, filters[-1]); causal Conv1D stack, stride 1",
+      "implementation": "tools.i6dmo.model:dmo_core",
+      "name": "dmo_core",
+      "output_shape": [
+        13,
+        4
+      ],
+      "params": {
+        "activation": "relu",
+        "filters": [
+          8,
+          4
+        ],
+        "kernel_sizes": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ]
+      },
+      "role": "core",
+      "version": "1.0.0"
+    },
+    "fusion": {
+      "group": "modular.fusion",
+      "implementation": "predictor_plugins.modular_temporal:sequence_concat",
+      "name": "sequence_concat",
+      "version": "1.0.0"
+    },
+    "heads": {
+      "contract": "(batch, 13, 4) -> (batch, 1); Flatten -> Dense(hidden) -> Dense(1); one horizon, own weights",
+      "horizons_hours": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        12
+      ],
+      "implementation": "tools.i6dmo.model:dmo_head",
+      "name": "dmo_head",
+      "names": [
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "h12"
+      ],
+      "params": {
+        "hidden_activation": "relu",
+        "hidden_units": 8,
+        "output_activation": "linear"
+      },
+      "role": "head",
+      "version": "1.0.0"
+    },
+    "model_config_sha256": "8c29a338a7312edbba15269666cf20fce4e5f31ee0a251c664727ca6875b5136",
+    "parameters": {
+      "branches": 304,
+      "core": 1980,
+      "heads": {
+        "h12": 433,
+        "h2": 433,
+        "h3": 433,
+        "h4": 433,
+        "h5": 433,
+        "h6": 433
+      },
+      "total": 4882
+    },
+    "positional_encoding": {
+      "layer": "tools.i6dmo.model:DynamicPhysicalTimeEncoder",
+      "offsets": "per_example_actual_utc_hours"
+    },
+    "schema": 1,
+    "time_encoder": {
+      "context_channels": [
+        "adjacent_elapsed_hours_over_24",
+        "closure_crossed"
+      ],
+      "dtype": {
+        "class_name": "DTypePolicy",
+        "config": {
+          "name": "float32"
+        },
+        "module": "keras",
+        "registered_name": null
+      },
+      "layer": "i6dmo.DynamicPhysicalTimeEncoder",
+      "min_adjacent_hours": 2.0,
+      "name": "dynamic_physical_time_encoder",
+      "position": "immediately_after_branch_fusion",
+      "trainable": true,
+      "unit_conversion_hours": 24.0,
+      "version": "1.0.0"
+    }
+  },
+  "parameters": 4882,
+  "qualifications": [],
+  "recovery": {
+    "metrics_recomputed_from_saved_predictions": true,
+    "new_fit_executed": false,
+    "original_campaign": "i6dmo-6004b711281c",
+    "original_device_class": "rtx4090",
+    "owner_reference_confirmed": true,
+    "repeat_is_bitwise_training_reproduction": false,
+    "stored_fresh_R0_repeat_profile": "ca34287dc113d5ba8ae06eb159ca753c98f993d7d350b0c824417ea89d108f38",
+    "wrong_prior_reference": "UNMATCHED_MG2_24f5a6cc"
+  },
+  "result_file_sha256": "da1a6efd27fb75d916dc81b8e4542fcb6c9e58b2040325100de0e51100c5a42f",
+  "scope": "ANNUAL",
+  "seed": 6102026,
+  "source_label": "matched-control",
+  "tensorflow": "2.21.0",
+  "test_read": false,
+  "training": {
+    "best_epoch": 2,
+    "best_monitored": 0.9417465112160222,
+    "early_stop": {
+      "max_epochs": 200,
+      "min_delta": 1e-08,
+      "monitor": "0.5*(fit_loss+inner_loss)",
+      "patience": 10,
+      "restore": "lowest_monitored_first_tie",
+      "rule": "i6dmo.mean_monitor_stop.v1"
+    },
+    "epochs": 12,
+    "initial_weights_sha256": "cf808dcb2c455ff8a33d7f9c7fbaf6f6f86c218821f8cca5fc96f0983f91c7b1",
+    "monitor_identity": {
+      "batch_size": 256,
+      "determinism_flags": {
+        "TF_CUDNN_DETERMINISTIC": "1",
+        "TF_CUDNN_USE_AUTOTUNE": "0",
+        "TF_DETERMINISTIC_OPS": "1",
+        "grappler_auto_mixed_precision": false,
+        "grappler_layout_optimizer": false,
+        "grappler_remapping": false,
+        "jit_autoclustering": false,
+        "op_determinism": true,
+        "tensor_float_32": false,
+        "tf_imported_before_flags": false
+      },
+      "graph": "inference",
+      "monitor_forward": {
+        "id": "i6dmo.monitor_forward.v1",
+        "source_sha256": "f772f7538e43b03ff88a9760b7b0cbda1cfee9427ae7805b6b96912d02842dba"
+      },
+      "partition": "sequential_row_id_fixed",
+      "procedure": "i6dmo.monitor_eval.v2"
+    },
+    "restored_weights_sha256": "ab4100ece593cfc9581cb6eb355be6b88094e5f0b5e3387c477449b1bbe7bc89",
+    "settings": {
+      "batch_order": "seeded_permutation_per_epoch",
+      "batch_size": 256,
+      "input_scaling": "fit_only_zscore_per_feature",
+      "learning_rate": 0.001,
+      "loss": "equal_head_masked_mae_over_fit_only_naive",
+      "max_epochs": 200,
+      "min_delta": 1e-08,
+      "monitor": "0.5*(fit_loss+inner_loss) at the same end-of-epoch weights, computed ONLY through the shared inference evaluation path",
+      "monitor_comparison_floor": {
+        "atol": 1e-09,
+        "justification": "a reproduced, build/context-specific numerical discrepancy between in-session and fresh-instance GPU executions of this pinned TensorFlow build (cause not demonstrated; eight mechanisms excluded: autotune/init order, TF32, weights, input bytes, forward identity, grappler remapping/layout/AMP; observed max 1.82e-5), bounded by the versioned NUMERICALLY_EQUIVALENT protocol i6dmo.monitor_numeric_equivalence.v2",
+        "prospective": true,
+        "rtol": 5e-05,
+        "scope": "cross-process GPU comparison of the monitored value and per-batch per-head float64 partial sums ONLY; CPU end-to-end, self-check, reload, predictions, input bytes, weight digests, forward identity and flags stay bitwise",
+        "version": "v2"
+      },
+      "optimizer": "AdamW",
+      "outer_validation_for_checkpoint_selection": false,
+      "patience": 10,
+      "patience_rule": "stale += 1 unless monitored < reference - min_delta",
+      "restore": "lowest monitored epoch, first tie wins",
+      "rows_without_valid_head": "excluded from fit/inner training, counted",
+      "training_coordinate": "delta_from_origin_over_fit_naive_mae",
+      "weight_decay": 0.0001
+    },
+    "split_roles": {
+      "fit": "FIT",
+      "inner": "INNER"
+    },
+    "stop_reason": "patience"
+  },
+  "weights_sha256": "ab4100ece593cfc9581cb6eb355be6b88094e5f0b5e3387c477449b1bbe7bc89"
+}

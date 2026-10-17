@@ -1,10 +1,19 @@
 # I6-DMO results
 
-Reference identity and comparator clarification:
-[short score reconciliation](SHORT_REFERENCE_RECONCILIATION.md). Original MG2
-has 2/6 annual DEVELOPMENT naive wins; matched MG2m has 3/6. The 6/6 matched
-downsampling wins are over the hourly learned control, not over naive. Exact
-original-device reproduction retained all original scores without a new model.
+**Owner-identified reference: matched MG2m**, campaign i6dmo-6004b711281c,
+code 796ec8f4. The previously reproduced unmatched MG2 was the wrong reference
+for this request. No original MG2m checkpoint or result was lost.
+
+[Recovered reference, configuration and comparison](best_registry/RETURN.md)
+and [machine-readable complete reference](best_registry/MG2M_REFERENCE.json).
+The CPU-only best-result registry now records each annual per-horizon best
+and each complete six-head recipe, with cohort identity, full training/model/
+data provenance, immutable improvement events, OLAP readback and two mirrors.
+It updates automatically without changing or retraining the reference.
+
+[Short score reconciliation](SHORT_REFERENCE_RECONCILIATION.md) and
+[partial-period census](short_replay/SIX_WIN_LOCATOR.md) remain historical
+context, not replacements for the owner's now-identified MG2m reference.
 
 | Stage | Result | Evidence |
 |---|---|---|

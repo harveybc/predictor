@@ -1,6 +1,19 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-16",
+ "best_registry": {
+  "state": "AUTOMATIC_CPU_SIDECAR_READY",
+  "reference": "I6-DMO-SHORT-MG2-MATCHED-R0",
+  "reference_profile_id": "145c3a4b51cde718383b52bcf2a863ee5df091e728bc0e48131c9e732ceaf53b",
+  "reference_code_commit": "796ec8f48b0b1621fb9fa9e60e12c1c37079e51e",
+  "artifacts": "best_registry/RETURN.md",
+  "method_state": "best_registry/PROJECT_METHOD_STATE.json",
+  "interval_seconds": 120,
+  "new_fits": 0,
+  "test_read": false,
+  "scientific_campaign_changed": false,
+  "correction": "The earlier unmatched MG2 replay was not the owner-identified MG2m. Original matched artifacts were retained and recovered; do not silently switch references."
+ },
  "current_stage": "S8_CONTINUATION_EXECUTING",
  "execution_status": "FULL_407_CELL_GRAPH_RUNNING_ON_5090_WITH_AUTOMATIC_CONDITIONAL_CADENCE",
  "design_artifacts": [
