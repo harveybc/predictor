@@ -10,11 +10,21 @@
   "cleanup_complete": false,
   "git_history_purge_complete": false,
   "verified_cleanup": {
-    "affected_repository_copies_removed": 45461,
-    "tested_controls": 32,
+    "affected_repository_copies_removed": 50839,
+    "tested_controls": 63,
     "warehouse_affected_report_profile_selection_causal_pair_readback_remaining": 0,
     "affected_training_units_active_on_workers": 0,
     "invalid_result_backup_created": false
+  },
+  "automation": {
+    "scope": "EURUSD_GBPUSD_NATIVE_2020_2025_NOT_WHOLE_INVENTORY_ACCEPTANCE",
+    "source_acquisition_service": "canonical-native-fx-recovery-20261018.service",
+    "missing_date_successor_timer": "canonical-native-fx-gaps-20261018.timer",
+    "quality_publication_timer": "canonical-native-fx-publication-20261018.timer",
+    "native_quote_view": "BID",
+    "side_bar_discrepancies": "RETAINED_AND_FLAGGED_NOT_EXECUTABLE_SPREAD",
+    "admission_after_download": false,
+    "new_model_training": false
   },
   "remaining_work": [
     "trace remaining affected copies and historical Git objects",
