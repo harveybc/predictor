@@ -1,5 +1,11 @@
 # Weekly TEST Replication
 
+SUPERSEDED PROCEDURE: read [PROCEDIMIENTO_CANONICO.md](PROCEDIMIENTO_CANONICO.md).
+The first implementation below scored a week AFTER selecting its checkpoint
+with that same week. It is retained only as history, NOT execution authority.
+The current order is saved VALIDATION weights -> predict and seal week n ->
+score observed week n -> warm-start update -> predict week n+1.
+
 Owner authorization: evaluate both retained winning families on 2025, preserving
 the weekly four-calendar-year recipe. This supersedes the earlier execution hold
 in the pair-retention plan; source limitations remain disclosed, not certified.

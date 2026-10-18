@@ -296,3 +296,14 @@ repository. Do not claim the code is lint- or type-clean.
 - **Secrets in a public repo.** Never write account identifiers, broker
   credentials, private IP addresses or machine host names into files here. Use
   placeholders such as `<your-host>`.
+
+## Binding Weekly TEST Procedure
+
+Before any weekly TEST change or execution, read
+`docs/i6n/weekly_test/PROCEDIMIENTO_CANONICO.md`. The owner-authorized sequence is
+saved VALIDATION checkpoint -> predict and seal week n -> score observed week n
+-> warm-start four-year refit with that observed week as the original patience
+monitor -> predict week n+1. Never select a checkpoint with a week and then
+claim its predictions on that same week are unseen. Use `prequential_test`, not
+the superseded `weekly_test` campaign launcher. Do not reinitialize the saved
+weights, change the architecture or replace the original stopping formula.

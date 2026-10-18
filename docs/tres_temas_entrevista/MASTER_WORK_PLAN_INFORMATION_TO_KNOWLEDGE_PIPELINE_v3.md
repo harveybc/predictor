@@ -807,6 +807,13 @@ ni altera el manifiesto financiero final de I5.
 
 ### Owner Order: Weekly TEST Replication, 2026-10-17
 
+CORRECTION, SAME DAY: the binding sequence is
+[TEST: primero predecir, despues reajustar](../../i6n/weekly_test/PROCEDIMIENTO_CANONICO.md).
+Load the final VALIDATION checkpoint, seal predictions for TEST week n, score
+after observation, then warm-start the four-year refit with that observed week
+as its stopping monitor. Its new checkpoint serves week n+1, never week n.
+The earlier fresh-seed/same-week checkpoint-tuning order below is superseded.
+
 The immediate I6 action is [the weekly TEST replication](../../i6n/weekly_test/PLAN.md)
 of both retained winning families. Evaluate 2025, with exactly the same fresh
 weekly four-calendar-year fits, model initialization, business masks, seed and

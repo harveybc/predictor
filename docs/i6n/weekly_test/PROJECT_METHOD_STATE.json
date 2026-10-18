@@ -1,14 +1,17 @@
 {
   "initiative": "owner_authorized_weekly_test_replication",
-  "current_stage": "S14_RELEASE_OPERATION",
-  "plan": "PLAN.md",
-  "traceability": "PLAN.md#acceptance-and-traceability",
+  "current_stage": "S11_S12_PREQUENTIAL_RELEASE_CHECK",
+  "plan": "PROCEDIMIENTO_CANONICO.md",
+  "traceability": "PROCEDIMIENTO_CANONICO.md#pruebas-obligatorias",
   "history": [
     {"stage":"S0_THROUGH_S8","status":"DESIGNED","evidence":"WT01-WT07; explicit owner order; inspected original short/window13 and long-only data, initializations and trainer"},
     {"stage":"S9_S10","status":"PASSED_FOCUSED","evidence":"24 focused tests passed; market/data/weekly regression:55 pass,2 historical source-pin refusals (new identity, not relaxed); source extension6225 bars, retained35398 unchanged"},
     {"stage":"S11_S12","status":"GPU_START_CONFIRMED","evidence":"Exact array/scale replay on six original weekly cases;106 prepared units,102 supported fits; unchanged trainer/model bytes; fresh initial tensor hash passed before first fit; deployment e0af8f23"},
-    {"stage":"S14","status":"ACTIVE","evidence":"First short TEST week running on preferred GPU, epoch2 observed; both timers active; two no-label units published/readback verified,0 pending/mismatch; bounded admission4563402752 bytes, observed2875772928, memory pressure0"}
+    {"stage":"S14","status":"SUPERSEDED_STOPPED","evidence":"Earlier same-week checkpoint-tuning timers disabled and own GPU service stopped; historical results retained, not adopted"},
+    {"stage":"S0_S8_CORRECTION","status":"DESIGNED","evidence":"PROCEDIMIENTO_CANONICO.md and PS01-PS10, predict/seal before label reader and warm-start update"},
+    {"stage":"S9_S10_CORRECTION","status":"PASSED_FOCUSED","evidence":"Order, target perturbation, immutable prediction resume, donor scalers, future-donor rejection, four-year maturity, runtime context and frozen trainer/model tests"},
+    {"stage":"S11_S12_CORRECTION","status":"READY_FOR_GPU_CHECK","evidence":"106 prepared chronological units; final usable VALIDATION donors from week2024-12-22 authenticated; no old TEST-trained weights adopted"}
   ],
-  "next_allowed_actions": ["replay data recipe against retained 2024 arrays", "run bounded CPU contract tests", "launch identical weekly TEST recipe after checks", "record TEST checkpoint tuning honestly", "automated OLAP readback and physical mirrors"],
-  "blocked_actions": ["change winning architecture or training settings", "claim independent OOS while selecting checkpoints with TEST", "open real-money positions", "modify existing campaign artifacts", "run both preferred-host GPUs concurrently"]
+  "next_allowed_actions": ["implement PS01-PS10 predict then update sequence", "load last VALIDATION weights and its scalers", "run bounded contract and GPU start checks", "launch autonomous prequential campaign", "automated OLAP readback and physical mirrors"],
+  "blocked_actions": ["train before sealing current-week predictions", "replace saved predictions with updated-model outputs", "fresh random initialization instead of checkpoint weights", "change winning architecture or stopping formula", "open real-money positions", "run both preferred-host GPUs concurrently"]
 }
