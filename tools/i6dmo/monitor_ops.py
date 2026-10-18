@@ -66,14 +66,17 @@ def deploy(config):
             run(['rsync','-a',str(archive),host+':'+runtime+'/code.tar'])
             run(['ssh',host,shlex.join(['tar','-xf',runtime+'/code.tar','-C',runtime])])
             run(['rsync','-a','--checksum',spec['packet']+'/',host+':'+role['packet']+'/'])
-            worker=dict(packet=role['packet'],output=role['output'],code=code,code_commit=commit)
+            worker=dict(packet=role['packet'],output=role['output'],code=code,code_commit=commit,
+                        **role.get('worker_options',{}))
             private = tmp/(family+'.json'); W.B.put(private,worker)
             remote_spec = role['output']+'/RUN.private.json'
             run(['rsync','-a',str(private),host+':'+remote_spec])
-            command=[role['launcher'],'-m','4352M','-t','3600s','-n',C.NAME+'-'+family,'--',
-                     role['python'],'-B','-m','tools.i6dmo.monitor_campaign','worker','--spec',remote_spec,'--family',family]
+            wall=config.get('worker_wall_seconds',3600)
+            module=config.get('module','tools.i6dmo.monitor_campaign')
+            command=[role['launcher'],'-m','4352M','-t',str(wall)+'s','-n',C.NAME+'-'+family,'--',
+                     role['python'],'-B','-m',module,'worker','--spec',remote_spec,'--family',family]
             unit=C.NAME+'-'+family
-            (tmp/(unit+'.service')).write_text(service(command,runtime,env,memory='6G'))
+            (tmp/(unit+'.service')).write_text(service(command,runtime,env,memory='6G',timeout=wall+100))
             (tmp/(unit+'.timer')).write_text(timer())
             run(['ssh',host,'mkdir','-p','.config/systemd/user'])
             run(['rsync','-a',str(tmp/(unit+'.service')),str(tmp/(unit+'.timer')),host+':.config/systemd/user/'])
@@ -82,7 +85,8 @@ def deploy(config):
             run(['ssh',host,'systemctl','--user','enable','--now',unit+'.timer'])
         unit=C.NAME+'-collect'
         command=[config['coordinator_launcher'],'-m','1024M','-t','600s','-n',unit,'--',
-            config['coordinator_python'],'-B','-m','tools.i6dmo.monitor_campaign','collect','--spec',str(root/'RUN.private.json')]
+            config['coordinator_python'],'-B','-m',config.get('module','tools.i6dmo.monitor_campaign'),
+            'collect','--spec',str(root/'RUN.private.json')]
         folder=Path.home()/'.config/systemd/user';folder.mkdir(parents=True,exist_ok=True)
         env=dict(PYTHONPATH=str(W.REPO),CUDA_VISIBLE_DEVICES='',OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1')
         (folder/(unit+'.service')).write_text(service(command,str(W.REPO),env,memory='1536M',

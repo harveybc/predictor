@@ -850,3 +850,13 @@ initial checkpoint and freeze forecasts before observed-week updates. Epoch
 monitoring performs inference only. Record full provenance and metrics in OLAP.
 TRAIN_REPLAY remains a separate required measurement and is never replaced by
 FIT loss. One-year/six-month/three-month gradient histories follow later.
+
+Owner stopping-budget investigation: follow
+[the training audit](../../i6n/weekly_test/TRAINING_AUDIT_20261018.md) and
+[six matched stopping probes](../../i6n/weekly_test/STOPPING_DIAGNOSTIC_20261018.md).
+Probe 2000 epochs/patience50 after each parent family closes, on its own GPU;
+preserve the 200/10 baseline. Verify the complete retained epoch prefix and
+next-week forecast before interpreting any benefit. Record the missing
+March-July 2023 training coverage and sparse weekly h72 calibration support.
+Do not claim an arithmetic stopping bug or sufficient convergence merely from
+the number of epochs; do not silently modify the source data.
