@@ -122,6 +122,16 @@ def annual(spec,artifacts,results):
     return dict(families=output,test_read=True,qualification=D.QUALIFICATION)
 
 
+def enrich_status(state,spec,artifacts,results):
+    """Status seam; the prequential campaign patches a typed recovery view in (prequential_test.context)."""
+    return state
+
+
+def closure_coverage(spec,results):
+    from tools.i6dmo import prequential_closure as PC
+    return PC.coverage(spec,results,dict(short=D.SHORT,long=D.LONG))
+
+
 def report(spec,result):
     report=W.B.report(spec,result)
     report['phase']=PHASE;report['tags'].update(evaluation=D.QUALIFICATION,test_read='true',family=result['cell']['family'])
@@ -153,12 +163,16 @@ def tick(spec):
             eta=dict(kind='MEASURED_FIT_MEAN' if elapsed else 'NOT_MEASURED',
                 seconds=remaining*(math.fsum(elapsed)/len(elapsed)+30) if elapsed else None,
                 note='Includes 30s timer/start overhead per cell; excludes resource waits/publication'))
+        state=enrich_status(state,spec,artifacts,results)
+        cov=closure_coverage(spec,results);W.B.put(artifacts/'COVERAGE.json',cov)
+        state['coverage']={f:{k:v[k] for k in ('declared_weeks','scored_weeks','no_pair_weeks','failed_weeks','pending_weeks')}
+            for f,v in cov['families'].items()}
         W.B.put(root/'STATUS.json',state)
         box=Outbox(root/'outbox.sqlite3')
         try:
             for r in results.values():box.enqueue(report(spec,r),source_unit=r['cell']['id'])
             if not remaining:
-                pooled=annual(spec,artifacts,results);W.B.put(artifacts/'ANNUAL_TEST.json',pooled)
+                pooled=dict(annual(spec,artifacts,results),coverage=cov);W.B.put(artifacts/'ANNUAL_TEST.json',pooled)
                 metrics=[dict(metric=f+'_'+key,value=m[key],horizon=m['horizon'],split='test',
                     unit='ratio' if key=='relative_error' else 'count' if key=='n' else 'USD_per_EUR')
                     for f,v in pooled['families'].items() for m in v.get('metrics',[])
@@ -181,7 +195,8 @@ def tick(spec):
                 for family,v in pooled['families'].items():
                     for m in v.get('metrics',[]):
                         lines.append(f"| {family} | {m['horizon']} h | {m['mae']:.12f} | {m['naive_mae']:.12f} | {100*m['relative_error']:+.6f}% | {m['n']} |")
-                (artifacts/'RESULTS.md').write_text('\n'.join(lines)+'\n')
+                from tools.i6dmo import prequential_closure as PC
+                (artifacts/'RESULTS.md').write_text('\n'.join(lines)+'\n\n'+PC.markdown(cov))
                 files={str(p.relative_to(artifacts)):W.file_sha256(p) for p in artifacts.rglob('*') if p.is_file()
                     and p.name not in ('RUN.private.json','STARTED.json','PROGRESS.json','PREFLIGHT.json')
                     and 'backup' not in p.parts and not p.name.startswith('.')}

@@ -15,6 +15,7 @@ import numpy as np
 
 from tools.i6dmo import weekly18 as W, weekly_test as P, continuation as C
 from tools.i6dmo import continuation_data as CD
+from tools.i6dmo import prequential_recovery as R
 
 NAME='i6dmo-prequential-test-20261017'
 MODULE='tools.i6dmo.prequential_test'
@@ -107,8 +108,10 @@ class GpuBackend:
     def load(self,donor):
         from tools.i6dmo import continuation_models as M,model as Base
         from predictor_plugins.modular_temporal import weights_hash
-        if M.tf.__version__!='2.21.0' or importlib.metadata.version('keras')!='3.13.2' or not M.tf.config.list_physical_devices('GPU'):
-            raise ValueError('RETAINED_GPU_RUNTIME_REQUIRED')
+        if M.tf.__version__!='2.21.0' or importlib.metadata.version('keras')!='3.13.2':
+            raise ValueError('RUNTIME_VERSION_MISMATCH')      # PERMANENT: never retried
+        if not M.tf.config.list_physical_devices('GPU'):
+            raise R.TransientProcessError('GPU_NOT_VISIBLE')  # TRANSIENT_PROCESS: bounded retries
         base=Path(self.spec['gpu_data']) if donor['root']=='data' else self.root
         W.authenticate(base,donor['files'])
         if Path(donor['archive']).is_absolute() or '..' in Path(donor['archive']).parts:raise ValueError('DONOR_PATH')
@@ -221,50 +224,85 @@ def prepare(spec):
     p['sha256']=W.B.digest(p);W.B.put(root/'PREPARED.json',p);return p
 
 
-def run(spec):
+def resources(spec):
+    """Pre-launch gate facts (foreign GPU processes, MemAvailable); a driver-tool failure is a wait."""
+    try:apps=W.run_cmd(['nvidia-smi','--query-compute-apps=pid','--format=csv,noheader,nounits'])
+    except Exception as exc:return dict(foreign_gpu_processes=None,memory_available=None,cause='NVIDIA_SMI_UNAVAILABLE:'+type(exc).__name__)
+    available_bytes=int(next(v.split()[1] for v in Path('/proc/meminfo').read_text().splitlines()
+        if v.startswith('MemAvailable:')))*1024
+    return dict(foreign_gpu_processes=len(apps.split()),memory_available=available_bytes,cause=None)
+
+
+def run(spec,*,clock=time.time,backend_factory=GpuBackend,gate=resources):
+    """One cell per invocation. Transients: bounded retries from the ledger (RECOVERY_DESIGN.md)."""
     P.verify(spec);root=Path(spec['gpu_root']);root.mkdir(parents=True,exist_ok=True)
     with (root/'gpu.lock').open('a+') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         results={c['id']:r for c in spec['cells'] if (r:=W.terminal(root,c,spec))}
         pending=[c for c in spec['cells'] if c['id'] not in results]
         if not pending:W.B.progress(root,state='GPU_DONE');return
-        cell=next((c for c in pending if not c['predecessor'] or
-            (c['predecessor'] in results and results[c['predecessor']]['state'] in ('COMPLETE','SKIPPED_NO_EVAL_ROWS'))),None)
-        if cell is None:W.B.progress(root,state='BLOCKED_DEPENDENCY');return
+        now=clock();cell,view=R.choose(spec['cells'],results,root,now)
+        if cell is None:
+            states=[v['state'] for v in view.values()]
+            if 'RETRY_PENDING' in states:
+                soonest_id=min((k for k,v in view.items() if v['state']=='RETRY_PENDING'),key=lambda k:view[k]['next_attempt_at'])
+                soonest=view[soonest_id]
+                W.B.progress(root,state='RETRY_PENDING',cell=soonest_id,
+                    attempt=soonest['attempt'],cause_code=soonest['cause_code'],next_attempt_at=soonest['next_attempt_at'])
+            else:W.B.progress(root,state='BLOCKED_DEPENDENCY',cells=view)
+            return
         doc=P.prepared(spec,spec['gpu_data']);cid=cell['id']
         W.authenticate(spec['gpu_data'],{k:v for k,v in doc['files'].items() if k.startswith(cid+'/')})
         record=W.read(Path(spec['gpu_data'])/cid/'PERIOD.json')
         donor=results[cell['predecessor']]['next_checkpoint'] if cell['predecessor'] else doc['initial'][cell['family']]
-        folder=root/'results'/cid;folder.mkdir(parents=True,exist_ok=True)
+        folder=root/'results'/cid;folder.mkdir(parents=True,exist_ok=True);attempt=None
         if record['parent_state']=='SKIPPED_NO_EVAL_ROWS':
             result=dict(state='SKIPPED_NO_EVAL_ROWS',next_checkpoint=donor,files={},test_read=True)
         else:
-            apps=W.run_cmd(['nvidia-smi','--query-compute-apps=pid','--format=csv,noheader,nounits'])
-            available_bytes=int(next(v.split()[1] for v in Path('/proc/meminfo').read_text().splitlines()
-                if v.startswith('MemAvailable:')))*1024
-            if apps.strip() or available_bytes<7*1024**3:
-                W.B.progress(root,state='WAIT_RESOURCES',cell=cid,memory_available=available_bytes);return
+            facts=gate(spec)
+            if facts['cause'] or facts['foreign_gpu_processes'] or facts['memory_available']<7*1024**3:
+                W.B.progress(root,state='WAIT_RESOURCES',cell=cid,**facts);return   # RESOURCE_BLOCKED: no attempt consumed
+            attempt=R.begin_attempt(folder,now)
             try:
-                W.B.progress(root,state='RUNNING',stage='PREDICT_BEFORE_UPDATE',cell=cid)
+                W.B.progress(root,state='RUNNING',stage='PREDICT_BEFORE_UPDATE',cell=cid,attempt=attempt)
                 reader=lambda name:CD._read(Path(spec['gpu_data'])/cid/(name+'.npz'))
-                result=execute_week(record,donor,folder,reader,GpuBackend(spec,root),
+                result=execute_week(record,donor,folder,reader,backend_factory(spec,root),
                     input_sha256=doc['files'][cid+'/PREDICT.npz'])
                 result.update(state='COMPLETE',actual_spacing=2,seed=W.B.SEED,
                     population=dict(record['population'],manifest_sha256=spec['population_digest'],
                         inference_donor=donor['id'],inference_scaler_sha256=donor['scales']['scales_sha256'],
                         qualification=QUALIFICATION))
                 result['files']={str(p.relative_to(folder)):W.file_sha256(p) for p in folder.rglob('*')
-                    if p.is_file() and p.name!='RESULT.json'}
+                    if p.is_file() and p.name!='RESULT.json' and p.name!=R.LEDGER and 'attempts' not in p.parts}
+                R.finish_attempt(folder,attempt,clock(),'COMPLETE')
             except Exception as exc:
-                result=dict(state='FAILED',files={},reason=type(exc).__name__+':'+str(exc)[:800],test_read=True)
+                failure=R.record_failure(folder,attempt,exc,clock())
+                if failure['retry']:   # transient: no RESULT.json; the next admitted process retries after the cooldown
+                    W.B.progress(root,state='RETRY_PENDING',cell=cid,attempt=attempt,cause_code=failure['cause_code'],
+                        next_attempt_at=failure['attempts'][-1]['next_attempt_at']);return
+                result=dict(state='FAILED',files={},reason=failure['reason'],cause_class=failure['cause_class'],
+                    cause_code=failure['cause_code'],attempts=failure['attempts'],
+                    required_action=failure['required_action'],test_read=True)
         result.update(batch_id=NAME,cell=cell);result['sha256']=W.B.digest(result)
-        W.B.put(folder/'RESULT.json',result);W.B.progress(root,state=result['state'],cell=cid)
+        W.B.put(folder/'RESULT.json',result);W.B.progress(root,state=result['state'],cell=cid,attempt=attempt)
+
+
+def enrich_status(state,spec,artifacts,results,now=None):
+    """Tick seam: typed cell states; a block is never RUNNING; no finite ETA under a block/cooldown."""
+    view=R.status(spec,artifacts,results,now)
+    state['recovery']=view
+    if view['state']=='BLOCKED':state['state']='BLOCKED'
+    elif state['state']=='RUNNING' and view['state'] in ('RETRY_PENDING','WAIT_RESOURCES'):state['state']=view['state']
+    if not view['eta_estimable']:
+        state['eta']=dict(kind='NOT_ESTIMABLE',seconds=None,note=view['eta_note'])
+    return state
 
 
 def context():
     stack=ExitStack()
     for name,value in (('NAME',NAME),('MODULE',MODULE),('PHASE',PHASE)):
         stack.enter_context(patch.object(P,name,value))
+    stack.enter_context(patch.object(P,'enrich_status',enrich_status))
     stack.enter_context(patch.object(P.D,'QUALIFICATION',QUALIFICATION))
     return stack
 

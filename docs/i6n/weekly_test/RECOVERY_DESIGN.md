@@ -106,3 +106,19 @@ when every remaining cell is runnable.
 | Historical FAILED is never deleted; successor stays blocked | `test_historical_failed_terminal_is_never_deleted_or_retried` |
 | Status states and no finite ETA under a block | `test_status_distinguishes_states_and_never_promises_an_eta_under_a_block` |
 | Scientific files byte-identical to the base | `test_scientific_files_are_byte_identical_to_the_base` |
+
+## Implementation notes (candidate)
+
+- `tools/i6dmo/prequential_recovery.py`: `classify`, the ledger (`begin_attempt`, `record_failure`,
+  `finish_attempt`), `choose`/`classify_pending` (scheduling during cooldowns) and `status`.
+- `tools/i6dmo/prequential_test.py`: `GpuBackend.load` splits `RUNTIME_VERSION_MISMATCH`
+  (`ValueError`, PERMANENT) from `GPU_NOT_VISIBLE` (`TransientProcessError`); `run` takes an
+  injected `clock`, `backend_factory` and resource `gate`, consults the ledger and writes
+  `RESULT.json` only for completion, PERMANENT/UNKNOWN causes or an exhausted transient budget;
+  `enrich_status` is patched into the tick seam by `context()`.
+- `tools/i6dmo/weekly_test.py`: `enrich_status` seam (no-op by default) and closure coverage.
+- `PROGRESS.json` `RUNNING` is a last-written marker, not a liveness proof: a process that died
+  mid-attempt leaves `RUNNING` until the next admitted process writes a new state. The tick's
+  own liveness checks are unchanged by this candidate.
+- A prior `FAILED` `RESULT.json` (written by the deployed code before this candidate) stays
+  terminal; this candidate never removes it and its successor stays `BLOCKED_DEPENDENCY`.
