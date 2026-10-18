@@ -1,6 +1,9 @@
 """Acquire independent observed bid/ask quotes; never splice into a live lake."""
 import argparse
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 import gzip
+import hashlib
 import io
 import json
 import os
@@ -44,10 +47,18 @@ def parse(raw):
     return df
 
 
-def acquire(root, pairs, year, weeks):
+def acquire(root, pairs, year, weeks, periodicity='m1'):
+    if periodicity not in ('m1','H1'):
+        raise ValueError('UNSUPPORTED_NATIVE_PERIODICITY')
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
-    status = dict(schema='i6dmo.fxcm_recovery.v1', state='ACQUIRING',
+    scope=dict(pairs=list(pairs),year=year,weeks=list(weeks),periodicity=periodicity)
+    scope_path=root/'ACQUISITION_IDENTITY.json'
+    if scope_path.exists():
+        if json.loads(scope_path.read_text())!=scope:raise ValueError('RECOVERY_SCOPE_CHANGED')
+    elif (root/'STATUS.json').exists():raise ValueError('LEGACY_RECOVERY_SCOPE_NOT_SEALED')
+    else:put(scope_path,scope)
+    status = dict(schema='i6dmo.fxcm_recovery.v2', state='ACQUIRING',periodicity=periodicity,
                   qualification='INDEPENDENT_SOURCE_CANDIDATES_NOT_ADMITTED',
                   source_spec=SPEC, total=len(pairs)*len(weeks), complete=0,
                   results=[], failures=[], gaps_filled=0)
@@ -60,12 +71,19 @@ def acquire(root, pairs, year, weeks):
                 put(root/'STATUS.json', status)
                 folder = root/pair
                 folder.mkdir(exist_ok=True)
-                path = folder/f'{year}-{week:02d}.csv.gz'
-                url = f'{BASE}/m1/{pair.upper()}/{year}/{week}.csv.gz'
+                suffix='' if periodicity=='m1' else '.H1'
+                path = folder/f'{year}-{week:02d}{suffix}.csv.gz'
+                url = f'{BASE}/{periodicity}/{pair.upper()}/{year}/{week}.csv.gz'
                 try:
                     if not path.exists():
                         r = session.get(url, timeout=(15,45))
                         if r.status_code == 429:
+                            value=r.headers.get('Retry-After','3600')
+                            try:delay=float(value)
+                            except ValueError:
+                                try:delay=(parsedate_to_datetime(value)-datetime.now(timezone.utc)).total_seconds()
+                                except (ValueError,TypeError):delay=3600
+                            status['retry_not_before_epoch']=time.time()+max(60,delay)
                             raise ValueError('PROVIDER_RATE_LIMIT_STOP')
                         r.raise_for_status()
                         parse(r.content)
@@ -76,6 +94,9 @@ def acquire(root, pairs, year, weeks):
                             os.fsync(f.fileno())
                         os.replace(tmp, path)
                     frame = parse(path.read_bytes())
+                    if periodicity=='H1' and ((frame.index.minute!=0).any()
+                            or (frame.index.second!=0).any() or (frame.index.microsecond!=0).any()):
+                        raise ValueError('HOURLY_TIMESTAMP_ALIGNMENT')
                     # FXCM file weeks use Sunday boundaries, not ISO week IDs.
                     if frame.index.min().year < year-1 or frame.index.max().year > year+1:
                         raise ValueError('WRONG_SOURCE_YEAR')
@@ -84,19 +105,20 @@ def acquire(root, pairs, year, weeks):
                                                   minutes=len(frame),sha256=sha(path)))
                     status['complete'] += 1
                 except Exception as exc:
-                    status['failures'].append(dict(job=key,error_type=type(exc).__name__))
+                    status['failures'].append(dict(job=key,error_type=type(exc).__name__,reason=str(exc)))
                     if str(exc) == 'PROVIDER_RATE_LIMIT_STOP':
                         status.update(state='RATE_LIMITED',current=key)
                         put(root/'STATUS.json', status)
                         return status
                 put(root/'STATUS.json', status)
-                time.sleep(.15)
+                time.sleep(1 if periodicity=='H1' else .15)
             if frames:
                 all_rows = pd.concat(frames).sort_index()
                 if all_rows.index.has_duplicates:
                     raise ValueError('CROSS_FILE_DUPLICATE_QUOTES')
-                for period, hours in [('1min',False),('5min',False),('1h',True)]:
-                    if period == '1min':
+                periods=['1h'] if periodicity=='H1' else ['1min','5min','1h']
+                for period in periods:
+                    if periodicity=='H1' or period == '1min':
                         df = all_rows.copy()
                     else:
                         agg = {side+k:v for side in ('Bid','Ask')
@@ -106,11 +128,23 @@ def acquire(root, pairs, year, weeks):
                     df = df.reset_index()
                     df['available_at'] = df.timestamp + pd.Timedelta(period)
                     target = folder/f'{year}-{period}.parquet'
-                    tmp = target.with_suffix('.partial')
-                    df.to_parquet(tmp,index=False)
-                    os.replace(tmp,target)
+                    if target.exists():
+                        previous=pd.read_parquet(target).set_index('timestamp')
+                        observed=df.set_index('timestamp')
+                        if not previous.index.isin(observed.index).all():raise ValueError('RECOVERED_FRAME_CHANGED')
+                        try:pd.testing.assert_frame_equal(previous,observed.loc[previous.index])
+                        except AssertionError as exc:raise ValueError('RECOVERED_FRAME_CHANGED') from exc
+                        if len(previous)<len(observed):
+                            tmp = target.with_suffix('.partial');df.to_parquet(tmp,index=False);os.replace(tmp,target)
+                    else:
+                        tmp = target.with_suffix('.partial')
+                        df.to_parquet(tmp,index=False)
+                        os.replace(tmp,target)
                 h = pd.read_parquet(folder/f'{year}-1h.parquet')
-                report = dict(pair=pair,year=year,minutes=len(all_rows),hours=len(h),
+                report = dict(pair=pair,year=year,minutes=len(all_rows) if periodicity=='m1' else None,hours=len(h),
+                              native_rows=len(all_rows),periodicity=periodicity,
+                              native_hourly_ohlc=periodicity=='H1',
+                              acquisition_scope_sha256=hashlib.sha256(json.dumps(scope,sort_keys=True).encode()).hexdigest(),
                               monthly_hours={str(k):int(v) for k,v in h.groupby(h.timestamp.dt.strftime('%Y-%m')).size().items()},
                               files={p.name:sha(p) for p in folder.glob('*.parquet')},
                               source=SPEC,clock='UTC bar START; available_at = bar end',
@@ -127,13 +161,14 @@ def main():
     p.add_argument('--output',required=True)
     p.add_argument('--pairs',nargs='+',choices=['eurusd','gbpusd'],default=['eurusd','gbpusd'])
     p.add_argument('--year',type=int,default=2023)
+    p.add_argument('--periodicity',choices=['m1','H1'],default='m1')
     p.add_argument('--weeks',nargs='+',type=int,default=list(range(1,53)))
     p.add_argument('--status',action='store_true')
     a=p.parse_args()
     if a.status:
         print((Path(a.output)/'STATUS.json').read_text())
         return
-    r=acquire(a.output,a.pairs,a.year,a.weeks)
+    r=acquire(a.output,a.pairs,a.year,a.weeks,a.periodicity)
     raise SystemExit(0 if r['state']=='ACQUIRED' else 2)
 
 
