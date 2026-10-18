@@ -11,10 +11,12 @@
   "git_history_purge_complete": false,
   "verified_cleanup": {
     "affected_repository_copies_removed": 50839,
-    "tested_controls": 63,
+    "tested_controls": 80,
     "warehouse_affected_report_profile_selection_causal_pair_readback_remaining": 0,
     "affected_training_units_active_on_workers": 0,
-    "invalid_result_backup_created": false
+    "invalid_result_backup_created": false,
+    "retired_campaign_graph_indexes_removed": 17,
+    "active_dispatch_documents_replaced_with_current_repair_and_RL_direction": 5
   },
   "automation": {
     "scope": "EURUSD_GBPUSD_NATIVE_2020_2025_NOT_WHOLE_INVENTORY_ACCEPTANCE",
@@ -26,11 +28,30 @@
     "admission_after_download": false,
     "new_model_training": false
   },
+  "priority_order": ["RECOVER_AND_ADMIT_DATA", "PREPROCESS_AND_REBUILD_SELECTION", "RL_BUSINESS_ENVIRONMENT_AND_BASELINES", "SAC_RAW_MODULAR", "RL_COMPARISONS_AND_PAPER", "DEFERRED_FORECASTING", "DEFERRED_NEAT"],
+  "current_checkpoint": {
+    "source_week_files_available": 612,
+    "source_week_files_requested": 636,
+    "alternative_dates_available": 84,
+    "alternative_dates_requested": 110,
+    "source_clock_diagnostic": "EXECUTED_NOT_ADMITTED_108_COMPARISONS",
+    "quality_reports_delivered_and_readback": 4,
+    "quality_metric_rows_in_physical_copy": 1122,
+    "warehouse_pending": 0,
+    "warehouse_mismatches": 0,
+    "physical_copy_and_second_machine_hash_match": true,
+    "source_calendar_verified": false,
+    "alternative_clock_and_quote_side_verified": false,
+    "scope": "NATIVE_EURUSD_GBPUSD_NOT_WHOLE_INVENTORY"
+  },
+  "rl_subplan": "../../tres_temas_entrevista/program_v3/RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md",
+  "satoshi_handoff": "PREPARED_NOT_CLAIMED_DELIVERED",
   "remaining_work": [
     "trace remaining affected copies and historical Git objects",
     "resolve candidate quote clocks and verify real replacements",
     "complete required-variable inventory and actual data admission",
-    "replace defective sources, configure admitted lake root and recompute selection"
+    "replace defective sources, configure admitted lake root and recompute selection",
+    "verify existing RL environment business/accounting/causality before RL fits"
   ],
   "next_allowed_actions": [
     "inventory all required native variables and dependencies",
@@ -38,7 +59,8 @@
     "verify native coverage, values, clocks and outliers",
     "finish affected-output cleanup on hosts, analytical stores and active documents",
     "admit verified canonical files and configure the lake",
-    "recompute preprocessing and selection metrics"
+    "recompute preprocessing and selection metrics",
+    "bounded primary-source research and synthetic CPU test design for RL"
   ],
   "blocked_actions": [
     "interpolate or fill missing price candles",
@@ -46,6 +68,8 @@
     "clean targets",
     "reuse affected metrics, weights, configs or rankings",
     "train before actual data and prepared-window admission",
-    "delete independent datasets without affected lineage"
+    "delete independent datasets without affected lineage",
+    "resume deferred forecasting or NEAT campaigns",
+    "call old qualitative adaptation insight a verified performance result"
   ]
 }

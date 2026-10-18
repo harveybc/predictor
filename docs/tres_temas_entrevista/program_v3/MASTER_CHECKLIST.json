@@ -1,254 +1,28 @@
 {
   "schema": "master_checklist.v1",
-  "updated_on": "2026-10-15",
-  "states": [
-    "NOT_STARTED",
-    "DESIGNED",
-    "IN_PROGRESS",
-    "EVIDENCE_PARTIAL",
-    "VERIFIED"
-  ],
+  "updated_on": "2026-10-18",
+  "scope": "CURRENT_AFFECTED_FINANCIAL_POPULATION_NOT_INDEPENDENT_BENCHMARKS",
+  "states": ["NOT_STARTED", "DESIGNED", "IN_PROGRESS", "WAIT_ACCEPTANCE", "DEFERRED"],
   "items": [
-    {
-      "id": "I0",
-      "name": "business_contract",
-      "state": "DESIGNED",
-      "gate": "EURUSD targets, costs, risk and availability bound"
-    },
-    {
-      "id": "I0-W",
-      "name": "business_cadence_and_static_baseline",
-      "state": "DESIGNED",
-      "depends_on": [
-        "I0"
-      ],
-      "gate": "Business masks/calendar always; NONE first, later QUARTERLY/MONTHLY/WEEKLY with four-year windows and full external years"
-    },
-    {
-      "id": "I1",
-      "name": "inventory",
-      "state": "VERIFIED",
-      "depends_on": [
-        "I0"
-      ],
-      "gate": "EURUSD 366 and ETH 83 identities frozen with event/availability semantics"
-    },
-    {
-      "id": "I2",
-      "name": "phase1_profiles_and_causal_inputs",
-      "state": "VERIFIED",
-      "depends_on": [
-        "I1"
-      ],
-      "gate": "profile and causal catalogs loaded and read back from OLAP"
-    },
-    {
-      "id": "I3",
-      "name": "phase1_causal_supported_candidates",
-      "state": "VERIFIED",
-      "depends_on": [
-        "I2"
-      ],
-      "gate": "causal-supported candidates retained without calling them final selection"
-    },
-    {
-      "id": "I4-C",
-      "name": "phase2_feature_dependencies",
-      "state": "VERIFIED",
-      "depends_on": [
-        "I2"
-      ],
-      "gate": "complete pairwise dependency, alias and redundancy dispositions in OLAP",
-      "evidence": "PHASE_2_COMPLETE.json for EURUSD and ETH; feature_pair_metrics 7,213,860 + 245,016, feature_pair_stability 1,202,310 + 61,254, feature_pair_gate 66,795 + 3,403, alias groups 1 + 5, redundancy clusters 277 + 38 on the live cube, reconcile complete, digests equal to the closures; physical snapshots on coordinator and worker_b with SHA-256 manifest; GitHub binary upload cancelled by owner"
-    },
-    {
-      "id": "I4-R",
-      "name": "phase3_filter_rankings",
-      "state": "VERIFIED",
-      "depends_on": [
-        "I4-C"
-      ],
-      "gate": "clustering, mRMR and JMI complete rankings and K paths with controls",
-      "evidence": "PHASE_3_FILTER_COMPLETE.json for EURUSD and ETH; 9 methods (SPEARMAN_CLUSTER, MRMR, JMI, MRMR_CAUSAL, JMI_CAUSAL + controls ALL_ADMISSIBLE, UNIVARIATE_MI, CAUSAL_SUPPORTED, RANDOM_K) x 14 + 6 targets x K={4,8,12,16,24,32}; feature_filter_rankings 45,990 + 4,212 and feature_filter_subsets 686 + 294 live and reconciled; no predictive winner, test never read"
-    },
-    {
-      "id": "I5",
-      "name": "phase4_extractibility_and_wrapper_selection",
-      "state": "EVIDENCE_PARTIAL",
-      "depends_on": [
-        "I4-C",
-        "I4-R",
-        "I0-W"
-      ],
-      "gate": "raw/random/trained extraction plus weekly wrapper validation and final manifest",
-      "evidence": "The scoped TRAIN extractibility successor closed; the 2024 weekly wrapper completed 6240/6240 tasks across RAW, RANDOM_ENCODER and TRAINED_ENCODER with zero technical task failures. Warehouse readback reconciled, 20 target-specific RAW winners were chosen and the procedure was frozen without opening TEST. Winner unions are 20 EURUSD and 9 ETH features, but all 20 mean weekly skill scores are negative against the paired naive, so no trading-ready feature set is claimed. The older 6495-task parent closure is superseded for this scoped wave and must not be counted as the current queue."
-    },
-    {
-      "id": "I5-P",
-      "name": "selected_input_denoising_ablation",
-      "state": "EVIDENCE_PARTIAL",
-      "depends_on": [
-        "I5"
-      ],
-      "gate": "paired RAW, causal reconstruction and latent inputs on selected features; target and naive unchanged; verified temporal support and RAW fallback",
-      "evidence": "Four selected-feature origin-covering donors and a real TRAIN probe are retained. Three paired TRAIN-2023 weeks found reconstruction worse than RAW on the same target, rows and naive; RAW remains the mainline input. The latent arm and full acceptance gate are not complete."
-    },
-    {
-      "id": "I6-A",
-      "name": "architecture_controls",
-      "state": "EVIDENCE_PARTIAL",
-      "depends_on": [
-        "I5-P"
-      ],
-      "gate": "matched ARCH result",
-      "evidence": "The selected-input EURUSD Y_s_1h business adaptation completed 208/208 cells over 52 weekly 2024 validation weeks, one seed, with same-row naive and paired populations; closure d25425393ae537288b09cdeb21382cc7ea253292cc161bff0866be039ccc0b0b. ARCH-B mean MAE 0.000500321 versus ARCH-A 0.000511972 and naive 0.000492891, so no arm passes the trading eligibility gate. The first ARCH-C implementation omitted the origin; its receipts are archived and only that arm was rerun with a new architecture identity. Warehouse readback: 208 reports and 1664 metrics, lineage UNVERIFIED for retained local parquets. A separate Y_l_24h successor is RUNNING on two measured GPUs, with its own target support and no aggregate yet. General E0 mechanism H2/H3, literature-model and other target/horizon controls remain open; no TEST was read."
-    },
-    {
-      "id": "I6-D",
-      "name": "per_feature_dense_architecture_controls",
-      "state": "EVIDENCE_PARTIAL",
-      "depends_on": [
-        "I5",
-        "I6-A"
-      ],
-      "gate": "faithful historical per-feature Dense ANN replay or typed NOT_REPRODUCIBLE, plus matched causal-window Dense versus Conv1D branch result on final features and weekly rows",
-      "evidence": "A whole-model control completed 104/104 cells over EURUSD Y_s_1h, the selected 20-feature union, 52 weekly 2024 validation weeks, 6196 same-row observations and seed 0. With a fit-only robust target coordinate, temporal Conv MAE was 0.000493193 versus non-temporal Dense 0.000502364 and paired naive 0.000492598; neither arm is trading-eligible. Closure 46c84b3f256b993ba0b206ac0f90efe3d006c3589f3f422a7bae1ee6a4bacd67; TEST unread. This orders the two whole-model controls but does not complete the branch-only swap or the historical ANN authentication required by the gate."
-    },
-    {
-      "id": "I6-B",
-      "name": "branch_pretraining",
-      "state": "NOT_STARTED",
-      "depends_on": [
-        "I6-A"
-      ],
-      "gate": "authenticated branch donors"
-    },
-    {
-      "id": "I7",
-      "name": "branch_regimes",
-      "state": "NOT_STARTED",
-      "depends_on": [
-        "I6-B",
-        "I6-D"
-      ],
-      "gate": "R0/R1/R2 result and selected prefix"
-    },
-    {
-      "id": "I6-E",
-      "name": "multihorizon_downsampling_then_hourly",
-      "state": "EVIDENCE_PARTIAL",
-      "depends_on": [
-        "I5"
-      ],
-      "gate": "28 downsampled then 10 hourly unique arms, original-price MAE against naive para el horizonte de X horas on authenticated rows, autonomous stage completion and live OLAP readback",
-      "work_plan": "../../i6n/direct_multi_output_static/PLAN.md",
-      "evidence": "Runtime 48c55ac0 deployed with 38 contract/model tests plus 2 monitor tests. Real 5090/4090 weekly fits, 1-GiB CPU ARIMA, persistent coordinator/outbox/status timer, exact OLAP readback and automatic D->H queue. Live counters in multihorizon_2024_v2, no annual conclusion yet, TEST closed.",
-      "execution_status": "PAUSED_BY_OWNER_FOR_I6_DMO"
-    },
-    {
-      "id": "I6-DMO",
-      "name": "static_direct_multi_output_business_pair",
-      "state": "EVIDENCE_PARTIAL",
-      "latest_raw_control": "i6dmo-0f9e6c8d5d74 CLOSED / PAIR_NOT_ELIGIBLE: matched MG12m/MG1l complete; zero long heads beat their naive, retained short eligible 4/6/12 h. 112 reports read back, 61 files per mirror. No strategy or TEST; R2 deferred.",
-      "latest_raw_result": "../../i6n/direct_multi_output_static/matched_long/RETURN.md",
-      "depends_on": [
-        "I0",
-        "I5"
-      ],
-      "gate": "New MG2/MG12 static pair with per-example actual offsets and closure flags; six heads per family; strategy only after naive gates; TEST remains closed",
-      "work_plan": "../../i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md",
-      "evidence": "Exact DS2 short closed. MG2/MG12 static successor CLOSED / PAIR_NOT_ELIGIBLE at 2026-10-15 08:30 UTC under runtime a169fcba: MG2 h6/h12 beat their naive by 0.049615%/0.093170%, no long head beats naive, strategy abstained. 110 reports / 3952 metric rows read back, 58 files verified per mirror. Short fit authenticated and reused without retraining; 33 focused recovery checks pass. TEST closed; CPU-only ordinary-worker eligibility/strategy/auto-close integration repairs remain."
-    },
-    {
-      "id": "I7-H",
-      "name": "hcore",
-      "state": "NOT_STARTED",
-      "depends_on": [
-        "I7"
-      ],
-      "gate": "core donor and separate transfer result"
-    },
-    {
-      "id": "I8",
-      "name": "doin_optimization",
-      "state": "EVIDENCE_PARTIAL",
-      "depends_on": [
-        "I7"
-      ],
-      "gate": "verified incumbent",
-      "execution_status": "PAUSED_BY_OWNER",
-      "evidence": "Retained H4 tuning and repaired POO-v2 consensus; four live services stopped/disabled for new fixed-model baseline. No H72 successor launch."
-    },
-    {
-      "id": "I9-N",
-      "name": "dense_vs_neat",
-      "state": "NOT_STARTED",
-      "depends_on": [
-        "I7-H"
-      ],
-      "gate": "matched head result"
-    },
-    {
-      "id": "I9-R",
-      "name": "rl_raw_vs_modular",
-      "state": "NOT_STARTED",
-      "depends_on": [
-        "I7-H"
-      ],
-      "gate": "SAC and DQN factorial"
-    },
-    {
-      "id": "I10",
-      "name": "paper_operation",
-      "state": "IN_PROGRESS",
-      "depends_on": [],
-      "gate": "only naive-eligible verified artifacts promoted"
-    },
-    {
-      "id": "I11",
-      "name": "causal_calendar_model_input",
-      "state": "NOT_STARTED",
-      "depends_on": [
-        "I9-N",
-        "I9-R",
-        "I10"
-      ],
-      "gate": "separate incremental-value experiment after primary program"
-    },
-    {
-      "id": "I12",
-      "name": "m5phet_feature_selector_chat_integration",
-      "state": "NOT_STARTED",
-      "depends_on": [
-        "I5",
-        "I6-B",
-        "I7-H",
-        "I8",
-        "I9-N",
-        "I9-R",
-        "I10",
-        "I11"
-      ],
-      "gate": "post-program typed chat plan, governed lake and warehouse adapters, CLI parity, restart and evidence readback; no current campaign dependency"
-    }
+    {"id": "I0", "name": "business_contract", "state": "DESIGNED", "gate": "Actual calendar/instrument/cost/account rules, forced flat/reopen, causal execution"},
+    {"id": "I0-W", "name": "prospective_cadence", "state": "DESIGNED", "gate": "WEEKLY default; score before update; other cadences separate experiments"},
+    {"id": "I1", "name": "required_inventory_and_recovery", "state": "IN_PROGRESS", "gate": "All required variables/dependencies, actual monthly support, clocks and values"},
+    {"id": "I2", "name": "native_and_prepared_admission", "state": "WAIT_ACCEPTANCE", "gate": "Admitted-only lake and complete effective prepared support"},
+    {"id": "I3", "name": "individual_metrics_and_causal_evidence", "state": "WAIT_ACCEPTANCE", "gate": "Recomputed affected population, explicit support/assumptions"},
+    {"id": "I4-C", "name": "pairwise_metrics", "state": "WAIT_ACCEPTANCE", "gate": "Recomputed dependence/redundancy with actual pair support"},
+    {"id": "I4-R", "name": "preliminary_subsets", "state": "WAIT_ACCEPTANCE", "gate": "Filters/controls and temporal stability before GPU extraction"},
+    {"id": "I5", "name": "final_selection", "state": "WAIT_ACCEPTANCE", "gate": "Validated subsets, existing OLAP readback and two verified physical copies"},
+    {"id": "I9-R0", "name": "RL_environment_contract", "state": "DESIGNED", "gate": "RL00-RL10 actual business/accounting/causality tests"},
+    {"id": "I9-R1", "name": "RL_business_baselines", "state": "NOT_STARTED", "gate": "Same support/cost/exposure, no-trade and business-constrained passive controls"},
+    {"id": "I9-R2", "name": "SAC_raw_modular", "state": "NOT_STARTED", "gate": "Compact control plus modular representation; prospective net evaluation"},
+    {"id": "I9-R3", "name": "RL_comparisons_and_cadence", "state": "NOT_STARTED", "gate": "Compatible action spaces and finite controlled experiments"},
+    {"id": "I10", "name": "DEMO_PAPER", "state": "NOT_STARTED", "gate": "Existing net-positive simulation/risk procedure, demo endpoint verified; no real capital"},
+    {"id": "I6-DMO", "name": "supervised_forecasting", "state": "DEFERRED", "gate": "After priority RL; correct prospective protocol, own naive per horizon"},
+    {"id": "I9-N", "name": "NEAT", "state": "DEFERRED", "gate": "Final optional program after RL"},
+    {"id": "I11-I12", "name": "optional_calendar_and_M5PHET", "state": "DEFERRED", "gate": "Do not delay data, selection or RL"}
   ],
-  "forbidden_shortcuts": [
-    "mechanical inventory treated as feature selection",
-    "H-CORE before R0/R1/R2 architecture selection",
-    "NEAT as hyperparameter optimizer",
-    "NEAT before frozen representation",
-    "future target in operational encoder",
-    "test used for selection",
-    "static annual checkpoint labeled as BUSINESS weekly evaluation",
-    "warm-update weights labeled as strict four-year memory",
-    "strategy evaluation when forecast does not beat same-row naive",
-    "flattened Dense output size or reshape claimed to preserve chronological positions",
-    "economic calendar or causal dossier used as model input before I11",
-    "denoising the predictive target or naive during I5-P",
-    "retired H4/H72 successor revives while I6-DMO is active",
-    "static business baseline labelled as weekly adaptation",
-    "six independent full models substituted for shared six-head model"
-  ],
-  "active_dispatch": "I6-DMO",
-  "runtime_qualification_mg2_mg12": {"label": "RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21", "record": "docs/i6n/direct_multi_output_static/RUNTIME_QUALIFICATION_MG2_MG12.json", "record_sha256": "ea96d5a08ff2cd9544ff41d6447f29e60b0cbbf5e4fa160247f9610cc2486060", "statement": "closed MG2/MG12 results: declared TF 2.18.0/Keras 3.9.0, receipts record TF 2.21.0; numbers unchanged; not a runtime-matched donor/control"}
+  "active_dispatch": "EXISTING_BOUNDED_DATA_RECOVERY_AND_QUALITY_PUBLICATION_ONLY",
+  "scientific_training_authorized": false,
+  "historical_percentages_reused": false,
+  "forbidden_shortcuts": ["admit from HTTP200 or finite-row fraction", "fill price gaps", "reuse withdrawn experiments", "require forecast-naive victory for RL", "declare an RL campaign running from a written plan"]
 }

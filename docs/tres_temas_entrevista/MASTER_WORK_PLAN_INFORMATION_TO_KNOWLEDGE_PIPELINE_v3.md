@@ -6,6 +6,14 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+Cambio de prioridad 2026-10-18: terminar datos y seleccion; despues RL como
+primer consumidor, reutilizando componentes validos. Los experimentos de
+predictores corto/largo, su estrategia y NEAT pasan al final. No se exige vencer
+el naive de precios para ensayar una politica RL. El detalle vinculante es
+[RL primero tras reparar datos](program_v3/RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md).
+Preparacion de contratos y pruebas CPU sinteticas puede avanzar en paralelo;
+ningun fit financiero se adelanta a la admision real.
+
 Directiva 2026-10-18: inventariar, recuperar y curar los datos antes de cualquier
 nuevo entrenamiento o seleccion. Eliminar los resultados, pesos, configuraciones,
 rankings, registros, metricas y copias derivados de los inputs afectados; no
@@ -38,7 +46,8 @@ Construir y comprobar un sistema de aprendizaje para trading algorítmico que:
 - preserve la dimensión temporal desde cada entrada hasta el cabezal;
 - mantenga una ANN densa ramificada por característica como control explícito
   no temporal, aunque contradiga nuestra hipótesis arquitectónica;
-- permita preentrenar extractores por rama y, después, el núcleo fusionado;
+- permita reutilizar extractores por rama y el nucleo sin exigir agotar sus
+  barridos ni la prediccion supervisada antes del primer ensayo RL;
 - compare pronóstico supervisado, estrategia heurística y políticas RL;
 - optimice configuraciones con DEAP/DOIN sin confundir búsqueda con el modelo;
 - opere primero en shadow, MT5 demo y Alpaca paper bajo el control de riesgo
@@ -107,6 +116,9 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I5. Comparación conjunta de conjuntos y manifiesto final.
 - [ ] I5-P. Ablación RAW/reconstrucción/latente sobre los rasgos seleccionados;
   el target y el naive permanecen intactos.
+- [ ] I9-R/0-4. PRIORIDAD tras I5: contrato de entorno y contabilidad ->
+  baselines de negocio -> SAC compacto/modular -> DQN y contrastes justificados
+  -> cadencia y DEMO/PAPER. Ver subplan RL; no esperar I6-DMO ni NEAT.
 - [ ] I6-A. Agrupación, campos receptivos y controles ARCH emparejados.
 - [ ] I6-D. ANN histórica por característica y contraste Dense de ramas,
   después de I5; resultado emparejado, sin atribuir tiempo a neuronas latentes.
@@ -127,13 +139,14 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   codigo, no cadenas ni candidatos de datos retirados. Nueva identidad y
   configuraciones colaborativas verificadas solo tras datos y seleccion.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
-- [ ] I9-R. SAC raw/modular y DQN raw/modular.
 - [ ] I10. LTS semanal, shadow, MT5 demo y Alpaca paper.
 - [ ] I11. Extensión final opcional: calendario económico causal como entrada.
 - [ ] I12. Posprograma: configurar `feature-selector` desde el chat de M5PHET.
 
 Prioridad actual serial: inventario y recuperacion -> admision -> preparacion
-verificada -> seleccion recalculada. No hay permiso para adelantar fits,
+verificada -> seleccion recalculada -> RL. Predictores y NEAT quedan diferidos
+al final por directiva del usuario, aunque mantengan sus identificadores I6/I9.
+No hay permiso para adelantar fits,
 extractores o trading con inputs pendientes. El paralelismo se usa dentro de
 la recuperacion y verificaciones independientes, con memoria y disco admitidos.
 
@@ -141,7 +154,7 @@ la recuperacion y verificaciones independientes, con memoria y disco admitidos.
 
 ### Decision de negocio sobre los predictores
 
-I6-E debe producir una decision explicita sobre continuar la estrategia de
+I6-E queda DEFERRED_AFTER_RL. Cuando se retome debe producir una decision explicita sobre continuar la estrategia de
 pronosticos cortos/largos. Informar habilidad por horizonte y por funcion:
 cierre temprano frente a apertura/TP/SL. La compuerta es mejora estricta del
 MAE anual sobre el naive en las mismas filas, no mejora obligatoria cada semana.
@@ -172,7 +185,8 @@ conveniencia ni se mezcla en su denominador.
 
 La selección no empieza entrenando cientos de ramas. La secuencia vigente es:
 
-1. Fase 1, completa: perfil individual y escalera causal sobre EURUSD y ETH;
+1. Fase 1, por recalcular para la poblacion afectada: perfil individual y
+   escalera causal sobre datos admitidos; ETH independiente no se invalida sin trazabilidad;
 2. Fase 2: matrices feature-feature, alias, redundancia, complementariedad y
    estabilidad temporal;
 3. Fase 3: clustering por correlación, mRMR, JMI y controles, con rankings y
@@ -188,16 +202,17 @@ La selección no empieza entrenando cientos de ramas. La secuencia vigente es:
    de costo acotado; expansion a rasgos diferidos solo si el contraste semanal
    justifica su valor incremental;
 6. validación wrapper bajo walk-forward semanal y manifiesto final;
-7. ablación I5-P de preprocesamiento sobre rasgos ya seleccionados;
-8. grupos/ramas, fusión y downstream.
+7. primer consumidor prioritario: entorno RL validado, baselines y politicas;
+8. ablacion I5-P y grupos/ramas/fusion reutilizables cuando aporten al contraste
+   RL; barridos completos y forecasting quedan para despues.
 
 Despues de los hitos principales, estudiar el error de reconstruccion de
 extractores como posible detector de anomalias y de transiciones de regimen.
 No usar esa idea para retrasar la preseleccion, la validacion semanal ni la
 representacion modular.
 
-Los 34 pares EURUSD y tres pares ETH favorecidos por la regla causal de fase 1
-son **candidatos con respaldo causal**, no la selección final. Las fases 2 y 3
+No se reutilizan conteos de candidatos EURUSD de las metricas retiradas como
+seleccion vigente. Las fases 2 y 3
 se rigen por su [subplan específico](program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md).
 
 La escalera causal tiene alta prioridad, pero no es una prueba binaria universal.
@@ -308,7 +323,10 @@ restaurado, save/load y conteo de actualizaciones son obligatorios.
 
 ## 8. Orden arquitectónico y regímenes
 
-La secuencia canónica después del manifiesto final es:
+La secuencia arquitectonica siguiente es un subprograma, no una dependencia
+que bloquee RL. Puede reutilizarse el nucleo/extractor implementado, si sus
+pesos y datos son elegibles; no se restaura ningun donante retirado.
+El subprograma despues del manifiesto final es:
 
 1. definir grupos, campos receptivos y controles ARCH con información emparejada;
 2. preentrenar extractores por rama;
@@ -351,7 +369,7 @@ arquitectura/régimen; tampoco se confunde “prefijo fijado durante H-CORE” c
 - **DOIN** distribuye y registra evaluaciones de candidatos.
 - **NEAT no optimiza esos parámetros.** Es un cabezal evolutivo tardío.
 
-NEAT sólo se ejecuta después de existir una representación final
+NEAT queda al final, despues del programa RL prioritario y de existir una representación final
 congelada/materializada. Recibe esa representación, nunca las series crudas, y se
 compara con un cabezal Dense simple bajo las mismas filas, targets y presupuesto.
 Su contrato debe fijar interfaz latente, gramática, fitness, early stopping,
@@ -385,7 +403,13 @@ demostrada a partir de ese ganador.
 
 ## 11. Trading heurístico, RL y operación
 
-La estrategia heurística usa familias de predicciones cortas y largas según su
+RL es ahora el siguiente consumidor despues de datos y seleccion. Su
+[subplan](program_v3/RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md) fija negocio,
+baselines, metricas, pruebas, aprendizaje online y orden de ejecucion. La
+seleccion no debe descartar utilidad para politica/riesgo por el solo fracaso
+de un probe de MAE. No se afirma que SAC garantice ganancias.
+
+La estrategia heuristica queda diferida. Usa familias de predicciones cortas y largas según su
 plugin existente. Los barridos válidos mantienen una familia en persistencia
 pareada mientras varían la otra, y después hacen el factorial. Sólo entran
 pronósticos que superen su naive por horizonte.
@@ -474,7 +498,8 @@ después de recomputación independiente y recibo por contenido.
 ## 16. Estado actual
 
 DATA_INTEGRITY_HOLD. Recuperacion real de cotizaciones y limpieza en curso.
-No hay receta predictiva promovida ni modelo entrenandose. Rehacer las
+No hay receta predictiva promovida ni modelo entrenandose. RL_FIRST_AFTER_DATA_REPAIR
+es la prioridad siguiente; predictores y NEAT diferidos. Rehacer las
 metricas y la seleccion sobre el inventario admitido; no reutilizar cierres
 ni porcentajes de los resultados eliminados. La existencia de nuevas descargas
 o de este plan no equivale a haber completado la curacion del lake.
