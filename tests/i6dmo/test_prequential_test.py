@@ -21,6 +21,7 @@ class Backend:
         return a['origin_price'][:,None]+.1
     def update(self,donor,fit,observed,record,folder):
         assert (folder.parent/'PREDICTION.json').is_file()
+        assert (folder.parent/'SCORE.json').is_file()
         self.events.append('update')
         assert donor['id']=='validation-donor'
         return dict(next_checkpoint=dict(id='updated',root='worker',files={}),

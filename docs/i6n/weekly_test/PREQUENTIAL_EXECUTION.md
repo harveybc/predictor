@@ -42,3 +42,14 @@ PREQUENTIAL_TEST_PREDICT_THEN_UPDATE. This describes online adaptation using
 already-observed outcomes, not selection of a current week's checkpoint with
 that same week's outcomes. Current-vintage FRED and assumed calendar limitations
 remain declared; no new source certification is claimed.
+
+## Verified Start
+
+At deployment fa47d2b2, the first supported short TEST week completed the full
+sequence: prediction seal precedes SCORE, which precedes update STARTED. The
+update initial tensor digest equals the saved VALIDATION donor exactly; its
+11 epochs stopped by patience with best epoch1 and saved a verified reloadable
+next-week checkpoint. The sealed forecast digest stayed unchanged. Three
+terminal reports (including two explicit no-label weeks) were read back with
+zero pending/mismatched deliveries. Long prediction was then sealed and its
+next-week update started. This verifies operation, not annual profitability.

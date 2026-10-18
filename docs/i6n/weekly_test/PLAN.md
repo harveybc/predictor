@@ -1,61 +1,33 @@
-# Weekly TEST Replication
+# Weekly TEST: Predict Then Update
 
-SUPERSEDED PROCEDURE: read [PROCEDIMIENTO_CANONICO.md](PROCEDIMIENTO_CANONICO.md).
-The first implementation below scored a week AFTER selecting its checkpoint
-with that same week. It is retained only as history, NOT execution authority.
-The current order is saved VALIDATION weights -> predict and seal week n ->
-score observed week n -> warm-start update -> predict week n+1.
+The binding owner specification is
+[PROCEDIMIENTO_CANONICO.md](PROCEDIMIENTO_CANONICO.md). Read it before execution.
 
-Owner authorization: evaluate both retained winning families on 2025, preserving
-the weekly four-calendar-year recipe. This supersedes the earlier execution hold
-in the pair-retention plan; source limitations remain disclosed, not certified.
+1. Load each family's last usable VALIDATION checkpoint and its scalers.
+2. Infer TEST week n and seal its predictions before reading its outcomes.
+3. After observing week n, score its predictions against its own naive per head.
+4. Warm-start the four-year refit ending at week n's start. The original mean
+   TRAIN/observed-week stopping rule selects a checkpoint for week n+1 ONLY.
+5. Repeat chronologically with unchanged architecture, downsampling, windows,
+   masks, seed and optimizer/stopping parameters. Do not randomly reinitialize.
 
-## Frozen Requirements
+The short model retains seven heads (2,3,4,5,6,12,18 h), and the long model
+retains six (18,24,36,48,60,72 h). Nineteen selected features remain unchanged;
+STLFSI4 remains excluded. Every horizon uses its own paired original-price naive
+and error (MAE_h-naive_h)/naive_h, negative being better. Keep per-family
+conservative support, scale fitting on TRAIN only, the original 13-slot/2-hour
+open-market grid including t, and the +12/-12-hour business boundaries.
 
-- Short: the actual seven-head winner (2, 3, 4, 5, 6, 12, 18 hours).
-- Long: the six-head winner (18, 24, 36, 48, 60, 72 hours), with fresh seeded
-  twelve-head parent initialization and projection, not a newly seeded six-head graph.
-- Nineteen features, unchanged ordering and formulas; STLFSI4 remains excluded.
-- Thirteen observations every two expected open-market hours, including t;
-  closed hours do not count as slots, observed gaps are not filled.
-- Keep each family's original conservative support and TRAIN-only scale recipe.
-- Each weekly cutoff uses exactly four preceding calendar years, mature labels,
-  fresh seed 6102026, and the original business mask (12 hours after opening,
-  forced flat 12 hours before closing, exact t+h, separate masks per head).
-- AdamW, batch 256, learning rate .001, weight decay .0001, 200 epochs,
-  patience 10, min_delta 1e-8; the original mean TRAIN/evaluation-week stopping
-  rule remains unchanged. No ANY_HEAD rule and no new INNER split.
-- Original-price MAE and its own naive for each horizon, on identical rows;
-  relative error = (MAE_h - naive_h) / naive_h. Pool error sums/counts annually.
-- Retain every weekly .keras archive, weights, scales, effective configuration,
-  predictions, training history and digests. Publish metrics via durable outbox
-  with readback; archive on disk and a second machine. No large binary in git.
-- One heavy process on the preferred GPU; do not use the second GPU sharing RAM.
-  A finite timer advances weeks and families without an agent watching logs.
+Use `tools.i6dmo.prequential_test`; operational commands are in
+[PREQUENTIAL_EXECUTION.md](PREQUENTIAL_EXECUTION.md). The autonomous finite
+timers retain weights/.keras/scalers/configuration/predictions, publish through
+the durable outbox with readback, verify physical mirrors and close themselves.
+One heavy process uses the preferred GPU; no concurrent use of the other GPU
+sharing its RAM. The independent secondary-machine campaign is unaffected.
 
-## Interpretation
-
-Only the evaluated year changes. The original stopping rule consults that
-week's evaluation targets; therefore TEST participates in checkpoint selection.
-Label results TEST_2025_CHECKPOINT_TUNING_NOT_INDEPENDENT_OOS, never independent
-confirmatory test performance. Earlier TEST weeks can enter later four-year
-TRAIN windows after their labels mature, as explicitly requested.
-
-Inherited limitations: current-vintage FRED, declared publication clocks and an
-assumed rather than broker-certified calendar. Extending the source-clock rule
-to 2025 is not an independent quote-clock certification.
-
-## Acceptance And Traceability
-
-| ID | Requirement | Evidence |
-| --- | --- | --- |
-| WT01 | Same feature recipe, intact retained prefix | source generation prefix comparison |
-| WT02 | Four-year weekly intervals, mature targets | prepared period contracts and tests |
-| WT03 | Exact origin, masks and horizon-specific naive | preparation invariants and tests |
-| WT04 | Unchanged model, seed and stopping | configuration and initial tensor comparison |
-| WT05 | Honest TEST identity | result/report split tests |
-| WT06 | Autonomous progression, durable artifacts | timer units, generated status and close |
-| WT07 | Paired annual metrics | replay from retained prediction arrays |
-
-Implementation order: source reconstruction, CPU contract tests, data-only
-preparation, unchanged GPU trainer, first real fit check, unattended progression.
+Acceptance is PS01-PS10 in the canonical procedure. Source reconstruction and
+exact prior array/scale replay remain valid input evidence. The former
+same-week checkpoint-tuning campaign is superseded and stopped; its measurements
+stay in [EXECUTION.md](EXECUTION.md) as historical, not clean TEST evidence.
+Inherited current-vintage/publication-clock and assumed-calendar limitations
+remain disclosed. No independent source-clock certification is claimed for 2025.

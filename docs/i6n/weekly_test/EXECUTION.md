@@ -1,5 +1,9 @@
 # Weekly TEST Execution
 
+HISTORICAL, SUPERSEDED: the same-week campaign below was stopped. Do not execute
+its launcher. Current procedure: [PROCEDIMIENTO_CANONICO.md](PROCEDIMIENTO_CANONICO.md);
+current automation: [PREQUENTIAL_EXECUTION.md](PREQUENTIAL_EXECUTION.md).
+
 The source extension retained all 35,398 prior observations unchanged and added
 6,225 bars from 2025. Prices replay exactly; selected feature replay agrees at
 float32 input precision, with float64 transcendental-rounding differences up to

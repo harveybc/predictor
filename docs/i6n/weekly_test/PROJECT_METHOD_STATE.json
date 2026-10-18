@@ -1,6 +1,6 @@
 {
   "initiative": "owner_authorized_weekly_test_replication",
-  "current_stage": "S11_S12_PREQUENTIAL_RELEASE_CHECK",
+  "current_stage": "S14_PREQUENTIAL_OPERATION",
   "plan": "PROCEDIMIENTO_CANONICO.md",
   "traceability": "PROCEDIMIENTO_CANONICO.md#pruebas-obligatorias",
   "history": [
@@ -10,7 +10,8 @@
     {"stage":"S14","status":"SUPERSEDED_STOPPED","evidence":"Earlier same-week checkpoint-tuning timers disabled and own GPU service stopped; historical results retained, not adopted"},
     {"stage":"S0_S8_CORRECTION","status":"DESIGNED","evidence":"PROCEDIMIENTO_CANONICO.md and PS01-PS10, predict/seal before label reader and warm-start update"},
     {"stage":"S9_S10_CORRECTION","status":"PASSED_FOCUSED","evidence":"Order, target perturbation, immutable prediction resume, donor scalers, future-donor rejection, four-year maturity, runtime context and frozen trainer/model tests"},
-    {"stage":"S11_S12_CORRECTION","status":"READY_FOR_GPU_CHECK","evidence":"106 prepared chronological units; final usable VALIDATION donors from week2024-12-22 authenticated; no old TEST-trained weights adopted"}
+    {"stage":"S11_S12_CORRECTION","status":"PASSED_GPU_START","evidence":"106 prepared chronological units; final usable VALIDATION donors from week2024-12-22 authenticated; first short prediction sealed before score/update; init weights equal VALIDATION exactly; first update11 epochs,best1,patience; archive reload exact;3 reports readback,0 pending/mismatch; deploymentfa47d2b2"},
+    {"stage":"S14_CORRECTION","status":"ACTIVE","evidence":"Short first predict/score/update complete; long first prediction sealed and next-week update running on preferred GPU; autonomous timers active; prior same-week campaign disabled; original trainer and model files unchanged"}
   ],
   "next_allowed_actions": ["implement PS01-PS10 predict then update sequence", "load last VALIDATION weights and its scalers", "run bounded contract and GPU start checks", "launch autonomous prequential campaign", "automated OLAP readback and physical mirrors"],
   "blocked_actions": ["train before sealing current-week predictions", "replace saved predictions with updated-model outputs", "fresh random initialization instead of checkpoint weights", "change winning architecture or stopping formula", "open real-money positions", "run both preferred-host GPUs concurrently"]
