@@ -51,6 +51,16 @@ def test_predict_seal_score_then_update(tmp_path):
     assert result['next_checkpoint']['id']=='updated'
 
 
+def test_validation_diagnostic_keeps_order_and_does_not_claim_test(tmp_path):
+    e,r,d,reader=fixture(tmp_path)
+    result=S.execute_week(r,d,tmp_path,reader,Backend(e),input_sha256='input',
+                          evaluation_split='VALIDATION',qualification='VALIDATION_DIAGNOSTIC')
+    assert e==['read:PREDICT','predict','read:OBSERVED','read:FIT','update']
+    assert not result['test_read'] and result['qualification']=='VALIDATION_DIAGNOSTIC'
+    assert 'VALIDATION' in result['metrics'] and 'TEST' not in result['metrics']
+    assert (tmp_path/'VALIDATION.npz').exists() and not (tmp_path/'TEST.npz').exists()
+
+
 def test_future_targets_do_not_change_predictions(tmp_path):
     forecasts=[]
     for i,shift in enumerate((0.,100.)):

@@ -38,8 +38,9 @@ def available(donor,origins):
         raise ValueError('DONOR_NOT_YET_AVAILABLE')
 
 
-def execute_week(record,donor,folder,reader,backend,*,input_sha256):
+def execute_week(record,donor,folder,reader,backend,*,input_sha256,evaluation_split='TEST',qualification=None):
     """The label reader is invoked only AFTER durable forecast creation/verification."""
+    if evaluation_split not in ('TEST','VALIDATION'):raise ValueError('EVALUATION_SPLIT_UNKNOWN')
     folder=Path(folder);folder.mkdir(parents=True,exist_ok=True)
     a=reader('PREDICT');available(donor,a['origin_ts'])
     seal=folder/'PREDICTION.json';forecast=folder/'PREDICTED.npz'
@@ -68,18 +69,18 @@ def execute_week(record,donor,folder,reader,backend,*,input_sha256):
     scores=C.measured_metrics(observed,price,record['cell']['horizons'])
     W.B.put(folder/'SCORE.json',dict(metrics=scores,forecast_sha256=proof['prediction_sha256'],
         stage='OBSERVED_WEEK_SCORED_BEFORE_UPDATE',created_at=time.time()))
-    np.savez_compressed(folder/'TEST.npz',prediction=price,origin_ts=a['origin_ts'],
+    np.savez_compressed(folder/(evaluation_split+'.npz'),prediction=price,origin_ts=a['origin_ts'],
         origin_price=a['origin_price'],target_price=observed['target_price'],mask=observed['mask'])
     fit=reader('FIT')
     if record.get('naive_cache'):
-        for split,values in (('FIT',fit),('TEST',observed)):
+        for split,values in (('FIT',fit),(evaluation_split,observed)):
             cache=C.measured_metrics(values,np.where(values['mask'],values['target_price'],0),record['cell']['horizons'])
             if cache!=record['naive_cache'][split]:raise ValueError('NAIVE_CACHE_CHANGED')
     updated=backend.update(donor,fit,observed,record,folder/'update')
     if W.file_sha256(forecast)!=proof['prediction_sha256']:raise ValueError('UPDATE_CHANGED_PREDICTION')
-    return dict(updated,metrics=dict(updated.get('metrics',{}),TEST=scores),
+    return dict(updated,metrics=dict(updated.get('metrics',{}),**{evaluation_split:scores}),
         inference_donor=donor['id'],prediction_sha256=proof['prediction_sha256'],
-        qualification=QUALIFICATION,test_read=True)
+        qualification=qualification or QUALIFICATION,test_read=evaluation_split=='TEST')
 
 
 def checkpoint_files(root,folder,model,scales,tensor_hash,available_by):
@@ -102,7 +103,8 @@ def validate_update_span(period,fit,observed,heads):
 
 
 class GpuBackend:
-    def __init__(self,spec,root):self.spec=spec;self.root=Path(root)
+    def __init__(self,spec,root,*,evaluation_split='TEST',qualification=None):
+        self.spec=spec;self.root=Path(root);self.evaluation_split=evaluation_split;self.qualification=qualification or QUALIFICATION
 
     def load(self,donor):
         from tools.i6dmo import continuation_models as M,model as Base
@@ -150,10 +152,10 @@ class GpuBackend:
             ids=(fit['row_ids'],observed['row_ids']),record_device='gpu',progress=progress)
         if training['initial_weights_sha256']!=donor['weights_sha256']:raise ValueError('WARM_START_WEIGHTS_CHANGED')
         training['split_roles']=dict(fit='FOUR_YEARS_BEFORE_OBSERVED_WEEK',inner='ALREADY_OBSERVED_WEEK',
-            use='NEXT_WEEK_ONLY',test_read=True)
+            use='NEXT_WEEK_ONLY',test_read=self.evaluation_split=='TEST')
         W.B.put(folder/'TRAINING.json',training);W.B.put(folder/'SCALES.json',scales)
         W.B.put(folder/'CONFIG.json',dict(model=record['model'],training=TRAINING,seed=W.B.SEED,
-            period=period,donor_id=donor['id'],monitor='0.5*(TRAIN+ALREADY_OBSERVED_WEEK)',qualification=QUALIFICATION))
+            period=period,donor_id=donor['id'],monitor='0.5*(TRAIN+ALREADY_OBSERVED_WEEK)',qualification=self.qualification))
         bundle.forecast_model.save_weights(folder/'model.weights.h5')
         bundle.forecast_model.save(folder/'forecast_model.keras')
         fresh=M.keras.models.load_model(folder/'forecast_model.keras',compile=False,safe_mode=True)
