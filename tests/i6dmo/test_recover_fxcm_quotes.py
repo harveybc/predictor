@@ -117,3 +117,16 @@ def test_provider_rate_limit_stops_before_next_pair_and_retains_cooldown(tmp_pat
     result=acquire(tmp_path,['eurusd','gbpusd'],2023,[10],periodicity='H1')
     assert result['state']=='RATE_LIMITED' and len(calls)==1
     assert result['retry_not_before_epoch']==4600
+
+
+def test_bid_candle_view_retains_side_discrepancy_without_claiming_executable_spread(tmp_path,monkeypatch):
+    import json
+    fake_session(monkeypatch,ROW.replace('1.066','1.064'))
+    result=acquire(tmp_path,['eurusd'],2023,[10],periodicity='H1',quote_view='BID')
+    assert result['state']=='ACQUIRED'
+    a=pd.read_parquet(tmp_path/'eurusd/2023-1h.parquet')
+    assert a.BidClose.iloc[0]==1.065 and a.AskClose.iloc[0]==1.064
+    report=json.loads((tmp_path/'eurusd/MANIFEST.json').read_text())
+    assert report['crossed_side_bar_endpoints']==1
+    assert report['executable_spread_eligible'] is False
+    assert report['quote_view']=='BID'

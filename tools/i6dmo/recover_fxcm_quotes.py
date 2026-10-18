@@ -20,7 +20,8 @@ BASE = 'https://candledata.fxcorporate.com'
 SPEC = 'https://github.com/fxcm/MarketData/blob/master/CandleData/README.md'
 
 
-def parse(raw):
+def parse(raw,quote_view='PAIRED'):
+    if quote_view not in ('PAIRED','BID'):raise ValueError('QUOTE_VIEW_REQUIRED')
     if len(raw) > 8*1024**2:
         raise ValueError('DOWNLOAD_TOO_LARGE')
     with gzip.GzipFile(fileobj=io.BytesIO(raw)) as f:
@@ -42,23 +43,23 @@ def parse(raw):
         if ((df[side+'High'] < df[[side+'Open',side+'Low',side+'Close']].max(axis=1)).any()
                 or (df[side+'Low'] > df[[side+'Open',side+'High',side+'Close']].min(axis=1)).any()):
             raise ValueError('INVALID_OHLC')
-    if (df.AskClose < df.BidClose).any() or (df.AskOpen < df.BidOpen).any():
+    if quote_view=='PAIRED' and ((df.AskClose < df.BidClose).any() or (df.AskOpen < df.BidOpen).any()):
         raise ValueError('CROSSED_QUOTE')
     return df
 
 
-def acquire(root, pairs, year, weeks, periodicity='m1'):
+def acquire(root, pairs, year, weeks, periodicity='m1',quote_view='PAIRED'):
     if periodicity not in ('m1','H1'):
         raise ValueError('UNSUPPORTED_NATIVE_PERIODICITY')
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
-    scope=dict(pairs=list(pairs),year=year,weeks=list(weeks),periodicity=periodicity)
+    scope=dict(pairs=list(pairs),year=year,weeks=list(weeks),periodicity=periodicity,quote_view=quote_view)
     scope_path=root/'ACQUISITION_IDENTITY.json'
     if scope_path.exists():
         if json.loads(scope_path.read_text())!=scope:raise ValueError('RECOVERY_SCOPE_CHANGED')
     elif (root/'STATUS.json').exists():raise ValueError('LEGACY_RECOVERY_SCOPE_NOT_SEALED')
     else:put(scope_path,scope)
-    status = dict(schema='i6dmo.fxcm_recovery.v2', state='ACQUIRING',periodicity=periodicity,
+    status = dict(schema='i6dmo.fxcm_recovery.v2', state='ACQUIRING',periodicity=periodicity,quote_view=quote_view,
                   qualification='INDEPENDENT_SOURCE_CANDIDATES_NOT_ADMITTED',
                   source_spec=SPEC, total=len(pairs)*len(weeks), complete=0,
                   results=[], failures=[], gaps_filled=0)
@@ -86,14 +87,14 @@ def acquire(root, pairs, year, weeks, periodicity='m1'):
                             status['retry_not_before_epoch']=time.time()+max(60,delay)
                             raise ValueError('PROVIDER_RATE_LIMIT_STOP')
                         r.raise_for_status()
-                        parse(r.content)
+                        parse(r.content,quote_view)
                         tmp = path.with_suffix('.partial')
                         with tmp.open('wb') as f:
                             f.write(r.content)
                             f.flush()
                             os.fsync(f.fileno())
                         os.replace(tmp, path)
-                    frame = parse(path.read_bytes())
+                    frame = parse(path.read_bytes(),quote_view)
                     if periodicity=='H1' and ((frame.index.minute!=0).any()
                             or (frame.index.second!=0).any() or (frame.index.microsecond!=0).any()):
                         raise ValueError('HOURLY_TIMESTAMP_ALIGNMENT')
@@ -144,6 +145,8 @@ def acquire(root, pairs, year, weeks, periodicity='m1'):
                 report = dict(pair=pair,year=year,minutes=len(all_rows) if periodicity=='m1' else None,hours=len(h),
                               native_rows=len(all_rows),periodicity=periodicity,
                               native_hourly_ohlc=periodicity=='H1',
+                              quote_view=quote_view,executable_spread_eligible=False,
+                              crossed_side_bar_endpoints=int(((all_rows.AskClose<all_rows.BidClose)|(all_rows.AskOpen<all_rows.BidOpen)).sum()),
                               acquisition_scope_sha256=hashlib.sha256(json.dumps(scope,sort_keys=True).encode()).hexdigest(),
                               monthly_hours={str(k):int(v) for k,v in h.groupby(h.timestamp.dt.strftime('%Y-%m')).size().items()},
                               files={p.name:sha(p) for p in folder.glob('*.parquet')},
@@ -162,13 +165,14 @@ def main():
     p.add_argument('--pairs',nargs='+',choices=['eurusd','gbpusd'],default=['eurusd','gbpusd'])
     p.add_argument('--year',type=int,default=2023)
     p.add_argument('--periodicity',choices=['m1','H1'],default='m1')
+    p.add_argument('--quote-view',choices=['PAIRED','BID'],default='PAIRED')
     p.add_argument('--weeks',nargs='+',type=int,default=list(range(1,53)))
     p.add_argument('--status',action='store_true')
     a=p.parse_args()
     if a.status:
         print((Path(a.output)/'STATUS.json').read_text())
         return
-    r=acquire(a.output,a.pairs,a.year,a.weeks,a.periodicity)
+    r=acquire(a.output,a.pairs,a.year,a.weeks,a.periodicity,a.quote_view)
     raise SystemExit(0 if r['state']=='ACQUIRED' else 2)
 
 
