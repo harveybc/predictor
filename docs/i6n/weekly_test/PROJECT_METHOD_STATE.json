@@ -7,6 +7,21 @@
   "data_admission_complete": false,
   "feature_selection_complete": false,
   "invalid_experiment_retention": false,
+  "cleanup_complete": false,
+  "git_history_purge_complete": false,
+  "verified_cleanup": {
+    "affected_repository_copies_removed": 45461,
+    "tested_controls": 32,
+    "warehouse_affected_report_profile_selection_causal_pair_readback_remaining": 0,
+    "affected_training_units_active_on_workers": 0,
+    "invalid_result_backup_created": false
+  },
+  "remaining_work": [
+    "trace remaining affected copies and historical Git objects",
+    "resolve candidate quote clocks and verify real replacements",
+    "complete required-variable inventory and actual data admission",
+    "replace defective sources, configure admitted lake root and recompute selection"
+  ],
   "next_allowed_actions": [
     "inventory all required native variables and dependencies",
     "recover missing real observations",
