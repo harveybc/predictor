@@ -83,3 +83,16 @@ metrics are saved under their own names and cannot substitute for it. Therefore
 no TRAIN_REPLAY-versus-VALIDATION gap is claimed. Smaller gradient histories
 (one year, six months, three months) remain later contrasts. TEST is not read.
 No experiment here promotes a model to trading automatically.
+
+## Publication-only correction
+
+The coordinator publisher v2 assigns OBSERVED calibration metrics to the
+validation dimension; only FIT belongs to train. The metric names already
+distinguished OBSERVED from FIT, but the first publisher placed both under
+train. Scientific worker code remains pinned to `dc818635`; no fits, forecasts
+or metrics changed. Version-2 reports use a new immutable key and explicitly
+reference the superseded version-1 key. Select `publication_schema=2` for this
+campaign's analytical reports. Old receipts remain available as history.
+The focused monitor/publication file passed 8 tests after this correction.
+First readback after correction: 5/5 receipts (including superseded receipts),
+zero pending/discrepant; 3 scientific weekly units complete across both roles.

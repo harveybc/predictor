@@ -242,17 +242,18 @@ def publish(doc, root, report, results, outbox, url, token_env):
                     for name in ('mae','naive_mae','relative_error','n'):
                         if row[name] is not None:
                             metrics.append(dict(metric=split+'_'+name, value=row[name], horizon=row['horizon'],
-                                split='validation' if split=='VALIDATION' else 'train',
+                                split='train' if split=='FIT' else 'validation',
                                 unit='ratio' if name=='relative_error' else 'count' if name=='n' else 'USD_per_EUR'))
             for name in ('epochs','best_epoch','training_seconds','parameters','cgroup_peak_bytes'):
                 if r.get(name) is not None:
                     metrics.append(dict(metric=name, value=r[name], split='train', unit='bytes' if name=='cgroup_peak_bytes' else 'seconds' if name=='training_seconds' else 'count'))
-            body = dict(experiment_key=NAME+':'+key, experiment_set_key=NAME, actor='predictor', lake='LOCAL_RETAINED',
+            body = dict(experiment_key=NAME+':publication-v2:'+key, experiment_set_key=NAME, actor='predictor', lake='LOCAL_RETAINED',
                 lineage='UNVERIFIED', project='predictor', phase='MONITOR_CONTRAST_VALIDATION',
                 config_sha256=report['identity'], code_commit=doc['code_commit'],
                 tags=dict(arm=r['arm'],family=r['family'],qualification=QUALIFICATION,test_read='false',
-                    train_reporting='FIT_ONLY_TRAIN_REPLAY_PENDING',result_sha256=r['sha256']), metrics=metrics)
-            box.enqueue(body, source_unit=key)
+                    train_reporting='FIT_ONLY_TRAIN_REPLAY_PENDING',result_sha256=r['sha256'],
+                    publication_schema='2',supersedes_report_key=NAME+':'+key), metrics=metrics)
+            box.enqueue(body, source_unit='publication-v2:'+key)
         publication = box.pump(HttpWarehouse(url, token_env))
         W.B.put(Path(root)/'PUBLICATION.json', publication)
         return {k:publication[k] for k in ('expected','delivered','pending','mismatch')}

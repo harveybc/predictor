@@ -77,3 +77,25 @@ def test_fit_metric_is_not_reported_as_train_replay(tmp_path):
     report, _ = C.summarize(doc, tmp_path, 'identity', 'short')
     assert report['arms']['relative1']['TRAIN_REPLAY'] is None
     assert report['arms']['relative1']['train_replay_status'] == 'PENDING_NOT_FIT'
+
+
+def test_publication_keeps_calibration_in_validation_not_train(tmp_path, monkeypatch):
+    from tools.i6dmo import monitor_campaign as C, outbox
+    emitted=[]
+    class Box:
+        def __init__(self,*a):pass
+        def enqueue(self,body,**kwargs):emitted.append(body)
+        def pump(self,*a):return dict(expected=1,delivered=1,pending=0,mismatch=0)
+        def close(self):pass
+    monkeypatch.setattr(outbox,'Outbox',Box)
+    monkeypatch.setattr(outbox,'HttpWarehouse',lambda *a:None)
+    row=dict(horizon=2,mae=1.,naive_mae=2.,relative_error=-.5,n=3)
+    result=dict(state='COMPLETE',arm='legacy4',family='short',sha256='result',
+                metrics={k:[row] for k in ('FIT','OBSERVED','VALIDATION')})
+    C.publish(dict(code_commit='code'),tmp_path,dict(identity='identity'),{'cell':result},
+              tmp_path/'box','url','token')
+    report=emitted[0]
+    assert report['tags']['publication_schema']=='2'
+    assert ':publication-v2:' in report['experiment_key']
+    for metric in report['metrics']:
+        assert metric['split']==('train' if metric['metric'].startswith('FIT_') else 'validation')
