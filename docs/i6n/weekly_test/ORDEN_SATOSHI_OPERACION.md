@@ -2,7 +2,8 @@
 
 ## Alcance Y Aislamiento
 
-Base exacta: 5c04fa42, que contiene 811a7544 y la auditoria. Crear una rama y
+Base exacta: 9beb31b6, que contiene la auditoria integrada y esta revision, sin
+cambios en el codigo cientifico desplegado. Crear una rama y
 worktree NUEVOS, propios, por ejemplo `retsu/prequential-ops-candidate-20261017`.
 No editar el worktree del coordinador ni del worker activos. Leer primero
 PROCEDIMIENTO_CANONICO.md y MUSASHI_REVIEW_5c04fa42.md.
