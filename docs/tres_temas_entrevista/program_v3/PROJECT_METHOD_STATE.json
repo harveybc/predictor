@@ -6,6 +6,8 @@
   "priority_order": ["DATA_RECOVERY", "DATA_ADMISSION", "PREPROCESSING_ACCEPTANCE", "FEATURE_SELECTION_REBUILD", "RL_BUSINESS_ENVIRONMENT", "RL_BASELINES", "SAC_RAW_MODULAR", "RL_COMPARISONS_AND_PAPER", "DEFERRED_FORECASTING", "DEFERRED_NEAT"],
   "handoff_status": "RETURNS_INTEGRATED_REVIEW_CORRECTIONS_APPLIED_ENVIRONMENT_FINDINGS_OPEN",
   "return_review": "SATOSHI_RETURN_REVIEW_2026_10_18.md",
+  "active_repair_plan": "RL_EXECUTION_REPAIR_PLAN_2026_10_18.md",
+  "rl_repair_evidence": {"next_open_transition": "SYNTHETIC_ACCEPTANCE_PASSED", "gym_code": "c5c89ce", "agent_code": "c7d6bff7", "gym_focused_passed": 247, "agent_focused_passed": 65, "verification_runner_passed": 7, "financial_fits": 0, "broker_financing_verified": false, "full_environment_acceptance": false},
   "first_RL_experiment": {"refit_cadence": "NONE", "max_entries_per_business_day": 1, "candidate_input_observations": 13, "candidate_input_stride_open_bars": 2, "arms": ["SAC_FLAT", "SAC_PER_FEATURE_CONV1D"], "engineering_repo": "agent-multi", "engineering_plan": "docs/work_plan/43_STATIC_RL_CURATED_COMPARISON.md", "financial_fit_started": false},
   "scientific_training_authorized": false,
   "data_admission_complete": false,

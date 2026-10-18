@@ -21,6 +21,11 @@ Maximo una apertura por dia de negocio; salidas y cierre forzoso no se bloquean.
 Reajuste y otros algoritmos se contrastan despues. Implementacion en
 agent-multi y gym-fx, sin modificar DOIN ni retomar predictores.
 
+Plan operativo activo y trazabilidad de reparaciones:
+[RL: ejecucion y entrega de datos](program_v3/RL_EXECUTION_REPAIR_PLAN_2026_10_18.md).
+La aceptacion sintetica del simulador no sustituye la admision del lake ni la
+seleccion recalculada. No se transfieren automaticamente resultados anteriores.
+
 Directiva 2026-10-18: inventariar, recuperar y curar los datos antes de cualquier
 nuevo entrenamiento o seleccion. Eliminar los resultados, pesos, configuraciones,
 rankings, registros, metricas y copias derivados de los inputs afectados; no

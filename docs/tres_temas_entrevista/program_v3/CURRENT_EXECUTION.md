@@ -14,9 +14,15 @@ trabajo. No hay entrenamiento financiero autorizado en esta reparacion.
 - Detalle y status vivo: procedimiento17 de financial-data y su CLI
   `_scripts/native_recovery_status.py`; las cifras de este texto son un corte,
   no sustituyen el estado generado.
-- Orden de Satoshi preparada, no enviada desde esta sesion:
-  SATOSHI_DATA_AND_RL_ORDER_2026_10_18.md. Dos tareas acotadas, sin fits, GPU,
-  despliegues, borrados ni monitoreo periodico.
+- Retornos anteriores de Satoshi integrados y revisados en
+  SATOSHI_RETURN_REVIEW_2026_10_18.md. El propietario informa trabajo adicional
+  de Satoshi en datos; no se presume completado ni se sobrescribe.
+- Musashi ejecuta RL_EXECUTION_REPAIR_PLAN_2026_10_18.md: corregir primero la
+  transicion real accion/fill/recompensa, luego costos y reglas del negocio.
+- Corte de ingenieria: transicion next_open_v2, comisiones y capital de cierre,
+  financiacion analitica explicita y seleccion sin NaN->0 corregidos; 247 pruebas
+  de gym-fx, 65 de agent-multi y 7 del verificador pasan. No son fits financieros.
+  Pendientes: admision/seleccion, costos reales y aceptacion completa del entorno.
 
 ## Siguiente
 
