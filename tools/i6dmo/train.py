@@ -1366,7 +1366,7 @@ def _monitor_model(bundle, workdir):
     return fresh.forecast_model
 
 
-def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_device="cpu"):
+def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_device="cpu", monitor_adapter=None):
     """One fit with AdamW; returns the audit dict. Restores the selected weights."""
     import tempfile
     import tensorflow as tf
@@ -1414,7 +1414,8 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_
         overhead_start = time.monotonic()
         monitor_model = _monitor_model(bundle, monitor_dir.name)
         loader_overhead.append(time.monotonic() - overhead_start)
-        fm, im, _, epoch_witness = evaluate_monitored(
+        evaluator = evaluate_monitored if monitor_adapter is None else monitor_adapter.evaluate
+        fm, im, _, epoch_witness = evaluator(
             monitor_model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), batch, ids=ids)
         was_best = stopper.best_monitored
         stop = stopper.update(fm["loss"], im["loss"], model.get_weights())
@@ -1458,9 +1459,18 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None, record_
               "accumulation": "global per-head float64 math.fsum sums/counts, "
                               "equal-weight mean over supported heads"}
     best_row = rows[stopper.best_epoch - 1]
-    fm_best, im_best, monitored_best = monitor_self_check(
-        _monitor_model(bundle, monitor_dir.name), (x_fit, y_fit, m_fit), (x_in, y_in, m_in),
-        record, best_row["monitored"], ids=ids)
+    if monitor_adapter is None:
+        fm_best, im_best, monitored_best = monitor_self_check(
+            _monitor_model(bundle, monitor_dir.name), (x_fit, y_fit, m_fit), (x_in, y_in, m_in),
+            record, best_row["monitored"], ids=ids)
+    else:
+        fm_best, im_best, monitored_best, _ = monitor_adapter.evaluate(
+            _monitor_model(bundle, monitor_dir.name), (x_fit, y_fit, m_fit),
+            (x_in, y_in, m_in), batch, ids=ids)
+        if monitored_best != best_row["monitored"]:
+            raise TrainDisposition("MONITOR_ADAPTER_REPLAY_MISMATCH", "restored monitor is not exact")
+        record["procedure"] = "i6dmo.monitor_contrast.v1"
+        record["adapter"] = monitor_adapter.identity()
     monitor_dir.cleanup()
     record.update(self_check="PASS", best_epoch=stopper.best_epoch, monitored=monitored_best,
                   fit={"sums": fm_best["sums"], "counts": fm_best["counts"]},

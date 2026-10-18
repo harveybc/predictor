@@ -1,6 +1,6 @@
 {
   "initiative": "owner_authorized_weekly_test_replication",
-  "current_stage": "S14_PREQUENTIAL_OPERATION",
+  "current_stage": "S10_MONITOR_CONTRAST_VERIFICATION",
   "plan": "PROCEDIMIENTO_CANONICO.md",
   "traceability": "PROCEDIMIENTO_CANONICO.md#pruebas-obligatorias",
   "history": [
@@ -15,6 +15,8 @@
     {"stage":"S14_VALIDATION_REPLAY","status":"REPLAY_COMPLETE_WARM_PILOT_RUNNING","evidence":"VALIDATION_REPLAY_20261018.md; VALIDATION_REPLAY_RETURN_20261018.md;102 checkpoints per replay construction; long original-builder predictions/metrics exact; short maximum price delta7.622376063665115e-10; no TEST access; separate four-fit warm-start pilot; autonomous collector/outbox"},
     {"stage":"S14_TRAIN_REPORTING_CLARIFICATION","status":"CONTRACT_DOCUMENTED_TRAIN_REPLAY_PENDING","evidence":"GENERALIZATION_REPORTING.md; owner defines reported TRAIN as post-fit reload plus complete weekly adaptive TRAIN replay, not internal FIT; initial trajectory checkpoint policy must be frozen before execution; no new training campaign launched by this clarification"}
   ],
-  "next_allowed_actions": ["implement PS01-PS10 predict then update sequence", "load last VALIDATION weights and its scalers", "run bounded contract and GPU start checks", "launch autonomous prequential campaign", "automated OLAP readback and physical mirrors"],
-  "blocked_actions": ["train before sealing current-week predictions", "replace saved predictions with updated-model outputs", "fresh random initialization instead of checkpoint weights", "change winning architecture or stopping formula", "open real-money positions", "run both preferred-host GPUs concurrently"]
+  "active_design": "MONITOR_CONTRAST_20261018.md",
+  "monitor_contrast_evidence": {"S0_S8":"DESIGNED_MC01_MC09", "S9":"15 tests passed including real trainer synthetic CPU checks", "S10":"IN_PROGRESS_GPU_CHECKS_PENDING", "historical_source_pin_test":"expected refusal: new experiment extends trainer/model, historical deployed runtimes unchanged"},
+  "next_allowed_actions": ["verify monitor adapters and optional BN on both GPUs", "launch frozen weekly VALIDATION contrasts", "automated OLAP readback and physical mirrors", "implement subsequent full TRAIN_REPLAY diagnostic"],
+  "blocked_actions": ["train before sealing current-week predictions", "replace saved predictions with updated-model outputs", "undeclared initial checkpoint change", "change model outside declared BN contrast", "substitute FIT for TRAIN_REPLAY", "open real-money positions", "run both preferred-host GPUs concurrently"]
 }

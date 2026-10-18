@@ -126,6 +126,9 @@ class GpuBackend:
         output=T.monitor_forward(bundle.forecast_model,inputs,TRAINING['batch_size'])
         return T.to_price(output,a,donor['scales'])
 
+    def monitor_adapter(self,fit,observed,prepared,record):
+        return None
+
     def update(self,donor,fit,observed,record,folder):
         from tools.i6dmo import train as T,continuation_models as M
         from predictor_plugins.modular_temporal import weights_hash
@@ -148,14 +151,17 @@ class GpuBackend:
         def progress(p):
             q=dict(p);q['train_loss']=q.pop('fit_loss');q['observed_week_loss']=q.pop('inner_loss')
             W.B.progress(self.root,state='RUNNING',stage='UPDATE_FOR_NEXT_WEEK',cell=record['cell']['id'],**q)
+        adapter=self.monitor_adapter(fit,observed,prepared,record)
         training=T.fit_dmo(bundle,prepared['FIT'],prepared['OBSERVED'],TRAINING,W.B.SEED,
-            ids=(fit['row_ids'],observed['row_ids']),record_device='gpu',progress=progress)
+            ids=(fit['row_ids'],observed['row_ids']),record_device='gpu',progress=progress,
+            **({'monitor_adapter':adapter} if adapter is not None else {}))
         if training['initial_weights_sha256']!=donor['weights_sha256']:raise ValueError('WARM_START_WEIGHTS_CHANGED')
         training['split_roles']=dict(fit='FOUR_YEARS_BEFORE_OBSERVED_WEEK',inner='ALREADY_OBSERVED_WEEK',
             use='NEXT_WEEK_ONLY',test_read=self.evaluation_split=='TEST')
         W.B.put(folder/'TRAINING.json',training);W.B.put(folder/'SCALES.json',scales)
         W.B.put(folder/'CONFIG.json',dict(model=record['model'],training=TRAINING,seed=W.B.SEED,
-            period=period,donor_id=donor['id'],monitor='0.5*(TRAIN+ALREADY_OBSERVED_WEEK)',qualification=self.qualification))
+            period=period,donor_id=donor['id'],monitor=adapter.identity() if adapter is not None else
+            '0.5*(TRAIN+ALREADY_OBSERVED_WEEK)',qualification=self.qualification))
         bundle.forecast_model.save_weights(folder/'model.weights.h5')
         bundle.forecast_model.save(folder/'forecast_model.keras')
         fresh=M.keras.models.load_model(folder/'forecast_model.keras',compile=False,safe_mode=True)

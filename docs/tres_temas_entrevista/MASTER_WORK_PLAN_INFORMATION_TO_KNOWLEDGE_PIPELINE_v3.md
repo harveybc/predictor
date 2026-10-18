@@ -836,3 +836,17 @@ saved weights, introduce another holdout or use the superseded same-week
 checkpoint-tuning launcher. Preserve historical measurements without adopting
 their TEST-trained weights. FRED/calendar limitations remain disclosed, and no
 new TEST-driven hyperparameter search is authorized.
+
+### Owner Order: Monitor And Generalization, 2026-10-18
+
+Follow [the monitor contrast](../../i6n/weekly_test/MONITOR_CONTRAST_20261018.md)
+before additional window/core optimization. The remaining sweep is paused at
+a completed-fit boundary; historical development results remain available.
+Stage A compares the legacy monitor with own-naive monitors using four years
+or one year of FIT inference, while all gradients still use four years.
+Stage B compares each with one optional core-output BatchNormalization layer.
+Use separate chronological weekly VALIDATION trajectories with the same
+initial checkpoint and freeze forecasts before observed-week updates. Epoch
+monitoring performs inference only. Record full provenance and metrics in OLAP.
+TRAIN_REPLAY remains a separate required measurement and is never replaced by
+FIT loss. One-year/six-month/three-month gradient histories follow later.

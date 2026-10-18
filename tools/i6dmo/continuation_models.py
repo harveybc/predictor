@@ -100,7 +100,7 @@ def _private_head(c, shape, horizon):
     return keras.Model(inputs, outputs, name=name)
 
 
-def _conv_outputs(c, observations, offsets, closure):
+def _conv_outputs(c, observations, offsets, closure, *, batch_norm=False):
     slots, grid = c["slots"], tuple(range(c["slots"]))
     sequences = []
     for i, _ in enumerate(c["features"]):
@@ -130,6 +130,11 @@ def _conv_outputs(c, observations, offsets, closure):
     finally:
         core.set_weights(seeded_weights)
     latent = core(encoded)
+    if batch_norm:
+        latent = keras.layers.BatchNormalization(
+            axis=-1, momentum=.99, epsilon=.001,
+            gamma_initializer=keras.initializers.Constant(np.sqrt(1.001)),
+            name="core_batch_normalization")(latent)
     return [_private_head(c, tuple(latent.shape[1:]), h)(latent) for h in c["horizons_hours"]]
 
 

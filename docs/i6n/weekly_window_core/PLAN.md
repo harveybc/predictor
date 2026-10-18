@@ -85,3 +85,10 @@ broker endpoint automatically; refuse any real-money account. Keep weekend
 rules, one concurrent position per asset, configured limits and rollback.
 Development evidence may authorize demo, not an independent performance claim.
 TEST remains closed for research and future independent evaluation.
+# Priority change, 2026-10-18
+
+Paused at a completed-fit boundary by owner authorization: 316/408 actual fits,
+541/541 publications read back, zero discrepancies. Remaining work is retained
+and resumable, not declared scientifically invalid. Monitor/generalization
+contrasts in `../weekly_test/MONITOR_CONTRAST_20261018.md` take priority.
+
