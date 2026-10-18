@@ -51,7 +51,7 @@ Financing uses Backtrader's existing annual-notional daily debit only when that
 analytical model and rate are explicitly configured; this is NOT verified broker
 FX rollover. Missing/nonfinite return or risk cannot select a checkpoint.
 
-Verification: gym-fx focused suite 247 passed; agent-multi focused suite 65
+Verification: gym-fx focused suite 256 passed; agent-multi focused suite 65
 passed; acceptance-runner unit tests 7 passed. The bounded CPU runner is
 `agent-multi/tools/verify_rl_static_engineering.py`, with durable status, per-stage
 logs and JUnit counts. It does not start financial jobs or grant admission.
@@ -68,6 +68,27 @@ when published, recover real missing observations, admit replacements, rebuild
 preprocessing/selection, then bind the compact static comparison to those bytes.
 No need for another owner approval to continue these already scoped tasks.
 
-Implementation pins: gym-fx `codex/rl-static-inputs-20261018` @c5c89ce;
-agent-multi `codex/rl-static-temporal-20261018` @c7d6bff7. No deployment or merge
+Implementation pins: gym-fx `codex/rl-static-inputs-20261018` @5c97750;
+agent-multi `codex/rl-static-temporal-20261018` @3cf82c12. No deployment or merge
 into an active scientific executor is implied by these engineering branches.
+
+## Subsequent verified repairs
+
+The next-open direct settlement flattened cash/position but had left the native
+Backtrader Trade open. Four repeated-close regressions reproduced the missing
+second trade before repair. Native lifecycle and analyzer notification now close
+once, without a second broker order; net PnL zero also stays zero. Nine new tests
+cover both directions, leverage, repeated closes and a nonzero-slippage/fee/
+financing hand ledger. Full focused CPU runner: 256 gym + 65 agent passes.
+
+Forexite's primary MetaStock documentation explicitly specifies CET in winter,
+CEST in summer. The provider-clock contract and normalization code are in
+financial-data @f7d051754. Separate candidate output: 86 files, 206,858 rows;
+no interpolation, price modification or admission. Quote side and minute-label
+semantics still need resolution. The file cohort includes diagnostic dates and
+must not be confused with the 84/110 requested-date recovery denominator.
+One new clock-only warehouse report (6 metrics) was read back successfully;
+no pending/mismatched delivery. A 1,585,152-byte DuckDB snapshot has matching
+copies on two machines, SHA-256
+`739f3bfd5ef8a71378c99b2c2c23be3c56ea37c8d9412808547eb39263e2ef1a`.
+These quality measurements do not grant data or feature-selection admission.

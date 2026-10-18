@@ -6,11 +6,15 @@ trabajo. No hay entrenamiento financiero autorizado en esta reparacion.
 
 ## Ahora
 
-- Datos: recuperacion nativa2020-2025 y candidatos alternativos; faltan relojes,
-  quote side, calendario real y admision de todo el inventario requerido.
+- Datos: recuperacion nativa2020-2025 y candidatos alternativos. Forexite declara
+  CET/CEST en su pagina oficial: reloj verificado, 86 archivos/206858 filas
+  normalizados sin interpolacion. Faltan quote side, etiqueta temporal de minuto,
+  calendario real y admision de todo el inventario requerido.
 - Nueva calidad:4 informes,1122 metricas y lectura de vuelta; sin discrepancias
   ni pendientes en la lectura de cierre de esta sesion. Copias fisicas y espejo
   verificados. Esto no completa seleccion ni certifica los datos.
+- Evidencia nueva de reloj: 1 informe adicional, 6 metricas, lectura de vuelta
+  sin pendientes/discrepancias y copias fisicas verificadas en dos maquinas.
 - Detalle y status vivo: procedimiento17 de financial-data y su CLI
   `_scripts/native_recovery_status.py`; las cifras de este texto son un corte,
   no sustituyen el estado generado.
@@ -20,8 +24,10 @@ trabajo. No hay entrenamiento financiero autorizado en esta reparacion.
 - Musashi ejecuta RL_EXECUTION_REPAIR_PLAN_2026_10_18.md: corregir primero la
   transicion real accion/fill/recompensa, luego costos y reglas del negocio.
 - Corte de ingenieria: transicion next_open_v2, comisiones y capital de cierre,
-  financiacion analitica explicita y seleccion sin NaN->0 corregidos; 247 pruebas
+  financiacion analitica explicita y seleccion sin NaN->0 corregidos; 256 pruebas
   de gym-fx, 65 de agent-multi y 7 del verificador pasan. No son fits financieros.
+  Corregido tambien el ciclo nativo Trade tras un cierre directo: ya no pierde
+  el registro de la siguiente operacion. Nueve regresiones nuevas pasan.
   Pendientes: admision/seleccion, costos reales y aceptacion completa del entorno.
 
 ## Siguiente
