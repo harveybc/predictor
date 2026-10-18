@@ -528,9 +528,6 @@ def test_ps10_later_closure_stops_only_this_campaigns_own_timers_simulated_bound
     assert all(m["n"] == 4 for m in annual["families"]["short"]["metrics"])
 
 
-@pytest.mark.xfail(strict=True, reason="DEFECT (tools/i6dmo/weekly_test.py:183, OPS part B): a head with zero "
-                                       "annual pairs pools to mae None and the closure tick crashes rendering "
-                                       "RESULTS.md ('{m[mae]:.12f}' on None); CLOSE is never written")
 def test_ps10_closure_with_a_head_lacking_annual_pairs_must_still_close_simulated_boundary(tmp_path):
     """Simulated boundary: same fakes as above; the only COMPLETE week leaves the last head unsupported."""
     from tests.i6dmo.ops_fakes import FakeWarehouse
@@ -538,22 +535,29 @@ def test_ps10_closure_with_a_head_lacking_annual_pairs_must_still_close_simulate
     spec = _campaign(tmp_path, unsupported_last_head=True)
     with Boundaries(spec, FakeWarehouse(), "VERIFIED") as b:
         state = P.tick(spec)
-    assert state["state"] == "CLOSED"
+    assert state["state"] == "CLOSED" and (Path(spec["root"]) / "CLOSE.json").exists() and len(b.systemctl_calls) == 2
     annual = W.read(Path(spec["artifacts"]) / "ANNUAL_TEST.json")
-    assert annual["families"]["short"]["metrics"][-1]["n"] == 0 and annual["families"]["short"]["metrics"][-1]["mae"] is None
+    last = annual["families"]["short"]["metrics"][-1]
+    assert last["n"] == 0 and last["mae"] is None and last["naive_mae"] is None    # metrics untouched: no fake zero
+    assert annual["coverage"]["families"]["short"]["per_horizon"][str(last["horizon"])]["pairs_scored"] == 0
 
 
-def test_ps10_observation_head_without_annual_pairs_crashes_the_closure_tick_simulated_boundary(tmp_path):
-    """Records today's behaviour of the defect above (the strict xfail states the required one)."""
+def test_ps10_observation_head_without_annual_pairs_renders_sin_soporte_simulated_boundary(tmp_path):
+    """Was the observation of the crash (TypeError on '{m[mae]:.12f}' of None, closure lost after publication);
+    now records the fixed behaviour: the row renders n 0 / sin soporte and the head is listed without support."""
     from tests.i6dmo.ops_fakes import FakeWarehouse
-    from tools.i6dmo import weekly_test as P
+    from tools.i6dmo import weekly_test as P, weekly_test_data as D
     spec = _campaign(tmp_path, unsupported_last_head=True)
     with Boundaries(spec, FakeWarehouse(), "VERIFIED") as b:
-        with pytest.raises(TypeError, match="NoneType"):
-            P.tick(spec)
-        assert not (Path(spec["root"]) / "CLOSE.json").exists() and b.systemctl_calls == []
-        assert W.read(Path(spec["artifacts"]) / "ANNUAL_TEST.json")["families"]["short"]["metrics"][-1]["mae"] is None
-        assert W.read(Path(spec["artifacts"]) / "PUBLICATION.json")["pending"] == 0   # publication done, closure lost
+        P.tick(spec)
+        assert W.read(Path(spec["artifacts"]) / "PUBLICATION.json")["pending"] == 0
+    text = (Path(spec["artifacts"]) / "RESULTS.md").read_text()
+    head = D.SHORT[-1]
+    assert f"| short | {head} h | n 0 / sin soporte | n 0 / sin soporte | n 0 / sin soporte | 0 |" in text
+    assert f"| short | {head} h | 0.000000000000" not in text
+    cov = W.read(Path(spec["artifacts"]) / "COVERAGE.json")["families"]["short"]["per_horizon"][str(head)]
+    assert cov["weeks_with_pairs"] == 0 and cov["weeks_without_support"] == 2 and cov["pairs_scored"] == 0
+    assert cov["weeks_without_support_ids"] == ["short__WEEK1", "short__WEEK2"]
 
 
 # --------------------------------------------------------------------------- PS01 initial donors + no-pairs week

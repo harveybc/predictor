@@ -89,6 +89,17 @@ def coverage(spec, results, heads_by_family):
                 invariant_holds=True, test_read=True)
 
 
+NO_SUPPORT = 'n 0 / sin soporte'
+
+
+def metric_row(family, m):
+    """One RESULTS.md row; a head with zero annual pairs renders as n 0 / sin soporte, never a fake MAE."""
+    if not m['n'] or m['mae'] is None:
+        return f"| {family} | {m['horizon']} h | {NO_SUPPORT} | {NO_SUPPORT} | {NO_SUPPORT} | 0 |"
+    return (f"| {family} | {m['horizon']} h | {m['mae']:.12f} | {m['naive_mae']:.12f} | "
+            f"{100 * m['relative_error']:+.6f}% | {m['n']} |")
+
+
 def markdown(cov):
     lines = ['## Coverage', '',
              '| Family | Declared | Scored | SIN_PARES (no pair) | Failed | Pending | Scored / declared |',

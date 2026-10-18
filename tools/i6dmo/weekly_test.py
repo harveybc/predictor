@@ -192,10 +192,9 @@ def tick(spec):
                 lines=['# Weekly TEST 2025','',D.QUALIFICATION,'',
                     '| Family | Horizon | MAE | Naive for horizon | Relative error | N |',
                     '|---|---:|---:|---:|---:|---:|']
-                for family,v in pooled['families'].items():
-                    for m in v.get('metrics',[]):
-                        lines.append(f"| {family} | {m['horizon']} h | {m['mae']:.12f} | {m['naive_mae']:.12f} | {100*m['relative_error']:+.6f}% | {m['n']} |")
                 from tools.i6dmo import prequential_closure as PC
+                for family,v in pooled['families'].items():
+                    for m in v.get('metrics',[]):lines.append(PC.metric_row(family,m))
                 (artifacts/'RESULTS.md').write_text('\n'.join(lines)+'\n\n'+PC.markdown(cov))
                 files={str(p.relative_to(artifacts)):W.file_sha256(p) for p in artifacts.rglob('*') if p.is_file()
                     and p.name not in ('RUN.private.json','STARTED.json','PROGRESS.json','PREFLIGHT.json')
