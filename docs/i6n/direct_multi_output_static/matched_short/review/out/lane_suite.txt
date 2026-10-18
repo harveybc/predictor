@@ -1,4 +1,0 @@
-commit 4a77bea8
-command: CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 4G -t 1400s -n i6dmo-review -- python -m pytest -q -p no:cacheprovider tests/i6dmo/test_matched_population.py tests/i6dmo/test_matched_fit_path.py tests/i6dmo/test_ops_matched_runner.py tests/i6dmo/test_ops_matched_real_chain.py tests/i6dmo/test_ops_automation_repair.py
-92 passed, 2 warnings in 326.82s (0:05:26)
-exit 0

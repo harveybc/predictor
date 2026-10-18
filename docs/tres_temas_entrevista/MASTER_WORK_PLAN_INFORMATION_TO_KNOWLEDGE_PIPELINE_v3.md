@@ -1,274 +1,32 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-18. Este documento contiene sólo el plan vigente. Los
-retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
-superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
-gobiernan la ejecución.
+Actualizado: 2026-10-18. Este documento contiene solo el plan vigente.
+Los resultados afectados por datos defectuosos se eliminan, no se conservan
+como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
-Directiva prioritaria 2026-10-18: primero reducir overfitting y demostrar
-generalizacion bajo el negocio; despues mejorar performance. Todo reporte
-predictivo debe mostrar TRAIN y VALIDATION por horizonte, con sus propios
-MAE/naives, conteos, rol temporal y brecha. TRAIN significa la evaluacion
-posterior al entrenamiento: cargar los pesos guardados y recorrer TRAIN
-completo con reajustes semanales, no sustituirlo por la perdida FIT estatica.
-Conservar FIT como diagnostico interno y distinguirlo de TRAIN_REPLAY.
-VALIDATION tambien conserva su trayectoria semanal; TEST se muestra separado.
-Fijar la inicializacion de cada trayectoria antes de ejecutarla. No exigir
-pesos iguales despues de observar semanas distintas, ni mezclar metricas
-anteriores y posteriores a un reajuste como si fueran del mismo modelo.
-Este contrato de reporte sustituye las interpretaciones anteriores de TRAIN;
-no altera las identidades ni cifras de las campanas ya ejecutadas. Ver
-[GENERALIZATION_REPORTING.md](../i6n/weekly_test/GENERALIZATION_REPORTING.md).
-La campana completa TRAIN_REPLAY sigue pendiente: no presentar metricas FIT
-retenidas o el piloto de dos semanas como si ya cumplieran esa evaluacion.
+Directiva 2026-10-18: inventariar, recuperar y curar los datos antes de cualquier
+nuevo entrenamiento o seleccion. Eliminar los resultados, pesos, configuraciones,
+rankings, registros, metricas y copias derivados de los inputs afectados; no
+archivarlos ni reutilizarlos como referencias. Conservar codigo generico y
+trabajos independientes, no antiguas afirmaciones de performance.
 
-Directiva 2026-10-17: conservar dos recetas completas separadas de corto y
-largo como referencias para mejorar. Promover una receta SOLO si CADA salida
-real del modelo supera estrictamente SU naive, tanto en soporte nativo como
-comun. Un promedio negativo no admite una salida igual o peor que naive.
-Conservar ademas el historial por horizonte sin presentarlo como un solo modelo.
-Los modelos semanales ya retienen pesos Keras HDF5, configuracion, escalas,
-semilla y monitor; generar archivos completos `.keras` adicionales SIN refit,
-verificar tensores al recargar y conservar todos los checkpoints semanales.
-Exportar dos CSV con origen UTC, columnas nombradas por horizonte y mascara
-explicita de disponibilidad obtenida del calendario, no del target futuro.
-La ruta de estrategia debe consumirlos mediante politica de negocio fijada,
-nunca mediante el cargador posicional legado: una posicion por activo,
-apertura con largos y gestion con ambos en orden temporal SL/TP. Cierre
-obligatorio antes de mercado-cierre menos12h incluso sin predicciones, nuevas
-aperturas desde mercado-apertura mas12h y antes del cutoff vigente. No es
-12h despues del cierre. Ver [pair_release/PLAN.md](../i6n/pair_release/PLAN.md).
-TEST fue solicitado para las recetas congeladas; su disponibilidad point-in-time
-y el procedimiento prospectivo de reajuste sin seleccion de checkpoint con
-TEST siguen siendo requisitos tecnicos. No usar los checkpoints semanales
-seleccionados en 2024 como si fueran ajustes prospectivos de semanas de2025.
-No detener ni cambiar el barrido de ventanas/nucleo vigente. Las nuevas
-promociones y exportaciones deben ser idempotentes y consultables sin agentes
-monitoreando logs. Ninguna de estas tareas ejecuta dinero real.
+TRAIN2020-2023, VALIDATION2024 y TEST2025: cobertura efectiva mes a mes, no solo
+extremos de fecha. Recuperar cotizaciones observadas con fuentes pagadas y
+gratuitas; contrastar valores y relojes. Nada de interpolacion, relleno de precios,
+ticks sinteticos de mercado cerrado ni limpieza del target. Outliers: verificar
+y distinguir corrupcion de extremos reales, no borrarlos automaticamente.
 
-Contraste aprobado 2026-10-17: la campana semanal de doce salidas termino
-53/53 periodos, 52 ajustes por paciencia, sin fallos; los seis largos vencen
-su naive en VALIDATION2024. Repetir UNICAMENTE eliminando [2,3,4,5,6,12]
-del arreglo de salidas y conservando [18,24,36,48,60,72]. Mismos cuatro anos
-moviles, semanas, 19 inputs RAW, DS2/13, ramas Conv1D4, nucleo Conv1D2,
-cabezales LSTM4->Dense8->Dense1, semilla6102026, AdamW, batch y parada
-promedio TRAIN/VALIDATION originales. Preservar todos los pesos INICIALES
-retenidos mediante submodelo del padre recien inicializado, nunca mediante
-pesos entrenados; quitar cabezas no debe desplazar su inicializacion.
-No cambiar cohortes ni intersectar mascaras: proyectar exactamente las seis
-columnas largas y sus escalas/naives del padre. Ver
-[weekly_long_only/PLAN.md](../i6n/weekly_long_only/PLAN.md), runtime93b0ccf2.
-Ejecutar en la primaria libre sin tocar el barrido de la secundaria. Cola,
-OLAP/readback, dos espejos, registro anual y cierre automaticos. La perdida
-y checkpoint necesariamente dejan de incluir las seis salidas quitadas;
-competencia de tareas y checkpoint compartido siguen siendo hipotesis, no
-causas demostradas. No TEST, ANY_HEAD, nuevos hiperparametros ni DOIN.
+El lake canonico debe contener solamente recursos admitidos. Despues se
+recalculan preprocesamiento y todas las fases de seleccion con nueva identidad;
+los datos descartados/sustituidos se eliminan tras la recuperacion aplicable.
+No declarar admision completa, seleccion terminada o campanas activas sin
+verificacion real. No se lanzan mas fits durante esta reparacion.
 
-Directiva vigente adicional 2026-10-17: conservar la campana semanal de doce
-salidas en la GPU primaria. En la secundaria libre ejecutar automaticamente
-el control DS2 de 13 observaciones y ventanas 7/25/49 con el MISMO protocolo
-semanal y los siete horizontes [2,3,4,5,6,12,18]. Congelar soporte comun por
-salida; despues, sobre las dos mejores ventanas ANUALES, contrastar nucleos
-[4] y [4,2], reutilizando [2]. No ANY_HEAD, nuevas semillas, TEST ni agentes
-monitoreando. Ver [weekly_window_core/PLAN.md](../i6n/weekly_window_core/PLAN.md).
-Esta aprobacion sustituye la prohibicion anterior de nuevos barridos, no
-modifica ni detiene la identidad que ya corre en la GPU primaria.
-
-Regla explicita del propietario: el destino operativo es exclusivamente
-MT5 DEMO o Alpaca PAPER, NUNCA dinero real. Cada mejora completa compatible
-dispara simulacion con las mejores predicciones retenidas de la otra familia,
-capital inicial 10000 y costes configurados. Guardar profit NETO, Sharpe,
-drawdown, numero de operaciones, costes y hashes de ambas recetas junto con
-MAE/naive por horizonte en OLAP. Profit neto positivo habilita despliegue
-automatico demo mediante prediction_provider/LTS, SIN exigir TEST y SIN
-otra aprobacion humana. Verificar modo de cuenta y endpoint automaticamente;
-rechazar dinero real y conservar mascaras, limites y rollback. No exigir
-una etapa discrecional shadow adicional. El alcance sigue siendo desarrollo,
-no prueba independiente de rentabilidad. TEST conserva su compuerta cientifica
-para investigacion, pero NO bloquea demo. No afirmar que este enlace ya esta
-desplegado hasta verificar el adaptador y su recibo operativo.
-
-Ampliacion aprobada 2026-10-17: conservar [2,3,4,5,6,12,18] y agregar
-[24,36,48,60,72] al MISMO modelo semanal. Sin cambiar ventanas, inputs,
-arquitectura compartida, inicializacion de los siete cabezales, escalas,
-folds, semilla, procedimiento de optimizacion ni regla original de paciencia. La
-nueva contribucion de cinco perdidas es el unico cambio matematico inevitable.
-Ver [weekly_all/PLAN.md](../i6n/weekly_all/PLAN.md), runtime 469eef41.
-El relevo CPU instalado espera el cierre publicado y con dos copias de la
-campana de siete salidas y luego prepara, verifica y arranca el nuevo lote
-de 53 periodos en la 5090. No toca el experimento activo ni espera al chat.
-Metricas, readback, dos espejos y registro anual se cierran automaticamente.
-No repetir ajustes ya completos, no ANY_HEAD, no TEST, no nuevos barridos.
-
-Directiva actual 2026-10-17: repetir exactamente la receta corta SEMANAL
-de la continuacion que obtuvo seis errores anuales negativos, agregando solo
-18h al arreglo [2,3,4,5,6,12]. La autoridad de este contraste es
-[weekly_plus18/PLAN.md](../i6n/weekly_plus18/PLAN.md). Conservar 53 periodos,
-cuatro anos moviles, 19 features, DS2/13 observaciones, nucleo Conv1D2,
-cabezales LSTM4->Dense8->Dense1, seed 6102026, AdamW .001/.0001 y batch 256.
-Parada original promedio TRAIN/VALIDATION, paciencia 10, min_delta 1e-8,
-maximo 200; no la regla ANY_HEAD. No reabrir seleccion ni lanzar barridos.
-Runtime bd21fc2f; inicializacion de 82 tensores y forward de los seis
-cabezales originales verificados exactos en la 5090 antes de arrancar.
-Solo cambia la nueva cabeza y su contribucion inevitable a perdida/monitor.
-La cola tiene publicacion/readback, copia local y segunda maquina, registro
-anual de campeones y cierre automaticos. TEST sigue cerrado. El resultado
-mantiene el alcance retrospectivo de desarrollo 2024 del padre.
-
-Directiva del propietario 2026-10-16: ejecutar toda la continuacion predictiva
-mediante una cola finita sin aprobaciones entre etapas ni agentes vigilando.
-Musashi ejecuta; no se asignan tareas nuevas a Satoshi. La autoridad ejecutable
-actual es [continuation/PLAN.md](../i6n/direct_multi_output_static/continuation/PLAN.md)
-y su lista completa de celdas, sellada antes de los ajustes.
-
-Continuacion anterior cerrada: i6dmo-continuation-41c3a7698150, codigo
-e0626cd9, poblacion 8dd12ec5, 407/407 terminales: 340 completos (335 ajustes
-y cinco adopciones), 66 omisiones condicionales y un fallo retenido. Sus
-408 reportes tienen lectura de vuelta y ambas copias verifican 2464 archivos;
-sus timers estan apagados. No repetir estos ajustes. Prueba
-anual real: 4/12/53 periodos de trimestre/mes/semana cubren exactamente las
-mismas parejas por horizonte que el estatico, sin duplicaciones ni huecos.
-El estado generado de cada campana prevalece sobre su snapshot historico.
-
-1. Corregir el protocolo: TRAIN completo 2020-2023 para gradientes; VALIDATION
-   2024 para monitorizar M=(L_TRAIN+L_VALIDATION)/2 con los mismos pesos;
-   sin particion adicional de ocho semanas. TEST 2025 permanece cerrado.
-2. Eliminar la suma sinusoidal de la base y mantener intervalos reales y
-   banderas de cierre como contexto explicito. Comparar cabezales privados
-   Conv1D y LSTM con el Dense historico como control declarado.
-3. DMO corto 2/3/4/5/6/12 h y largo 18/24/36/48/60/72 h: DS2/DS4 con 13
-   ticks y tres cabezales; luego h72 individual con 6/9/13/18/24 ticks y
-   controles lineal/DLinear/Conv1D. No Transformers ni donantes implicitos.
-4. Barrido conjunto representativo h4/h72: ambas resoluciones, cinco ventanas,
-   nucleos [2], [4], [4,2], [8,4] y tres tipos de cabezal conjuntamente,
-   menor complejidad primero. Transferir las recetas a las dos familias de
-   seis salidas. Son 269 celdas
-   estaticas logicas; adoptar identidades exactamente iguales, no repetirlas.
-5. Reajuste trimestral con cuatro anos moviles y todos los periodos de 2024;
-   mensual si el trimestral mejora el error anual, semanal si mejora el
-   mensual. Las reglas, omisiones justificadas y conteos derivan del calendario
-   retenido, no de supuestas 48/52 semanas. Se agrega todo el ano por sumas
-   y conteos de cada horizonte, nunca una semana como sustituto del ano.
-6. Elegibilidad por horizonte, eventual estrategia de desarrollo con pareja
-   elegible, OLAP/lectura de vuelta, dos copias verificadas y cierre automatico.
-   TEST requiere su compuerta cientifica; nunca una aprobacion de chat por celda.
-
-El uso de 2024 para parada y seleccion implica DESARROLLO RETROSPECTIVO,
-incluidos los contrastes de cadencia: no certificar rendimiento prospectivo ni
-un backtest fuera de muestra con esos mismos datos. El modelo de negocio y
-sus mascaras no cambian: 12 h despues de apertura/antes de cierre, t incluido,
-targets exactos t+h, sin precios sinteticos de fines de semana, naive propio
-de cada horizonte sobre exactamente las mismas filas y escala que el modelo.
-
-Un ajuste pesado a la vez en la 5090; no concurrencia con la 5070 Ti. CPU
-coordinador acotada para control/OLAP y segunda maquina para copia verificada.
-Guardar estados, heartbeat, costes, metricas, parametros y decisiones en
-cada nivel. Cerrar un sublote no detiene las siguientes etapas admisibles.
-
-Adicion expresa del propietario 2026-10-16: ejecutar en la 4090 libre un solo
-contraste paralelo del modelo corto historico MG2, agregando exclusivamente
-los seis cabezales largos al mismo modelo. No detener ni modificar las 407
-celdas de la 5090. Preservar entradas, escalas, cohortes y mascaras cortas del
-MG2 original; aplicar la misma regla de negocio por horizonte a las salidas
-nuevas, no una interseccion global que elimine cortos validos. Esta replica
-con ampliacion conserva excepcionalmente la parada FIT/INNER y codificacion
-temporal historicas; no es el protocolo nuevo ni una reinterpretacion de sus
-resultados. Ver [contraste de doce salidas](../i6n/direct_multi_output_static/continuation/ALL_HORIZONS_SIDECAR.md).
-
-Contraste adicional cerrado: 25 epocas, mejor 15, 128.3243 s; 12 cabezas sin
-vencer su naive (6h +3.874222%, 12h +6.176801%, 18h +10.478196%). Auditoria
-independiente reprodujo la unica regla de negocio por salida y todas las
-ventanas reales, sin futuro. Publicacion/lectura exacta y dos copias cerradas;
-timers propios apagados. No repetir ni usar estas salidas en estrategia.
-La continuacion de 407 celdas de la 5090 no cambia por este resultado.
-
-Orden posterior del propietario: contraste separado de paciencia por CUALQUIER
-horizonte en la misma 4090. Mantener paciencia 10, mejora absoluta 1e-8 y maximo
-200 epocas; reiniciar si algun M_h=(FIT_h+INNER_h)/2 mejora su propia referencia.
-No usar el promedio entre horizontes para reiniciar. Conservar perdida de
-gradientes y checkpoint de promedio minimo para aislar esta unica variable.
-Datos, arquitectura y semilla identicos al control de doce cabezales, sin
-repetir dicho control ni alterar sus resultados. Plan ANY_HEAD_PLAN.md en
-codex/i6dmo-any-head-patience-20261016, codigo b33a5933. La regla nueva es opt-in,
-no modifica retroactivamente la identidad en curso de la 5090 ni abre TEST.
-
-Aclaracion posterior del propietario: reproducir el corto prometedor ORIGINAL,
-no otra variante de paciencia. El prototipo corto con ANY_HORIZON no se
-desplego ni entreno. La nueva reproduccion usa directamente train.train_unit
-de 24f5a6cc, con model.py y train.py enteros identicos por hash al original,
-bundle/diseno originales y seis cabezales 2/3/4/5/6/12h. Conserva por tanto
-la parada ORIGINAL por promedio FIT/INNER, paciencia 10, delta 1e-8 y maximo
-200; se ejecuta una vez en la 4090 libre (diferencia de hardware declarada
-respecto al original de la 5090). Fuente ee40787e en
-codex/i6dmo-short-replay-20261016, plan short_replay/PLAN.md. La continuacion
-principal permanece independiente. El resultado se compara con el historico
-sin prometer identidad numerica entre clases GPU, y TEST permanece cerrado.
-
-Cierre de esa reproduccion: 15 epocas, mejor 5; h6 +0.152144% y h12
-+0.158741%, sin reproducir sus mejoras historicas. Cargar los pesos historicos
-en la GPU secundaria, sin entrenar, si reproduce los seis MAE con diferencia
-maxima 4.62e-14. Pesos iniciales, codigo, datos, configuracion y escalas iguales;
-la trayectoria empieza a diferir despues de las actualizaciones. No se afirma
-que exista un defecto en los archivos originales, que no han cambiado.
-
-Orden de diagnostico completada: una sola comprobacion adicional en la misma
-5090 original y su entorno, sin cambios de arquitectura, semilla, seleccion
-ni parada. Es el tercer ajuste contando el historico y el replay secundario,
-no una busqueda de repeticiones favorables. El lanzador comprueba nombre y UUID
-visible de GPU y rechaza una sustitucion. Se comparan los hashes de pesos y
-monitores de cada epoca, checkpoint final y metricas por horizonte, sin tunear
-con 2024. Referencia: short_replay/REFERENCE_DEVICE_PLAN.md, rama
-codex/i6dmo-short-replay-20261016. Se intercala entre fits sin matar el activo;
-el timer principal se reanuda automaticamente al salir el worker, con un timer
-independiente de recuperacion. TEST sigue cerrado y la continuacion no cambia
-de identidad ni reutiliza este ajuste como otro candidato.
-
-Cierre confirmado: i6dmo-short-reference-device-20261016, runtime a2c7fe6d,
-13 epocas, mejor 3, 54.2571 s. Los hashes de pesos y monitores de las 13 epocas
-son exactamente los historicos; tambien todas las matrices de predicciones,
-targets, mascaras y filas de FIT/INNER/VALIDATION. Se recuperan h6 -0.049615%
-y h12 -0.093170% sin alterar parametros cientificos. El defecto de reproduccion
-era no preservar el dispositivo/perfil original; no se ha demostrado un defecto
-en el constructor o entrenador, cuyos archivos siguen identicos. Se rechaza un
-nuevo lanzamiento sin el rol y dispositivo de referencia. 73 metricas del fit
-y 13 comprobaciones de trayectoria publicadas con lectura exacta; dos copias
-fisicas verificadas. Cola principal reanudada automaticamente. No repetir este
-ajuste: ya hay tres ejecuciones retenidas. Ver REFERENCE_DEVICE_RETURN.md en
-la rama de reproduccion. TEST sigue cerrado.
-
-Referencia de resultados obligatoria: no usar "el corto bueno" sin identificar
-experimento, configuracion/poblacion, particion y comparador. MG2 original gana
-su naive en 2/6 horizontes de DEVELOPMENT 2024; MG2m emparejado en 3/6. MG2m
-gana 6/6 frente al modelo horario MG1, que no es el naive. El MG2 original si
-tiene 6/6 negativos en FIT, pero no en DEVELOPMENT. El recalculo desde precios
-y mascaras confirma la reproduccion exacta y conserva estas distinciones en
-SHORT_REFERENCE_RECONCILIATION.md y SHORT_REFERENCE_SCORE_AUDIT.json.
-No lanzar nuevos fits para convertir una afirmacion no respaldada de 6/6
-en la supuesta referencia historica. La identidad del replay ya cerrado no se
-cambia para hacerlo corresponder a otro experimento.
-
-Resultado retenido anterior: i6dmo-resolution-705d19ec84ae CLOSED, 19/19,
-19 reportes con lectura exacta y dos espejos de 159 archivos. DS2 mejor que
-DS4 en media de corto (+0.258987%/+2.723207%) y largo
-(+12.768975%/+14.551851%). Mejor h72: DLinear adaptado con 6 ticks,
-+5.071120% respecto a su naive; ninguna cabeza supera su naive en ese lote.
-Su parada FIT/INNER y suma sinusoidal se conservan como identidad anterior,
-no se atribuyen al nuevo protocolo. No se borran ni se reetiquetan resultados.
-
-Los despachos anteriores fueron trasladados sin borrar su evidencia a
-[contexto anterior](../i6n/direct_multi_output_static/continuation/PRIOR_DISPATCH_CONTEXT.md).
-No abren trabajos, no bloquean el relevo nuevo y no reactivan DOIN, R2, NEAT,
-preentrenamiento de nucleo, RL ni seleccion de features como dependencias
-implicitas. Las limitaciones de fuentes se conservan para TEST, sin reabrir la
-seleccion ya cerrada.
-
-Orden restante de autoridad: contrato del negocio, seleccion de features,
-representacion modular y checklist M1-M8. La vista ejecutiva sigue siendo
-[MASTER_MILESTONE_PROGRESS.png](../audits/evidence/canonical_20261003/MASTER_MILESTONE_PROGRESS.png)
-desde [su estado](../audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json).
-Preservar porcentajes historicos y distinguirlos del avance exacto del lote.
+Procedimiento completo: financial-data/work_plan/17_CANONICAL_INVENTORY_AND_CURATION.md.
+Politica: financial-data/configs/curation_policy.v1.json.
+Controles: [estandar de calidad](../i6n/weekly_test/DATA_QUALITY_AND_SELECTION_STANDARD.md).
 
 ## 2. Objetivo
 
@@ -309,7 +67,8 @@ en la misma población.
    validation temporal. El test congelado sólo confirma el finalista sellado.
 5. **Semillas austeras.** Una semilla por defecto; hasta tres sólo cuando la
    variabilidad o la comparación publicada lo exijan. Nunca más de tres.
-6. **No repetir.** Reutilizar artefactos autenticados. Sólo se repite por pérdida,
+6. **No repetir.** Reutilizar solo artefactos de datos admitidos, nunca los
+   retirados por esta reparacion. Solo se repite por perdida,
    corrupción, comparación necesaria o cambio científico explícito.
 7. **Predicciones efímeras.** Se derivan todas las métricas declaradas y se
    verifica el catálogo antes de borrarlas. Se conservan config, semilla,
@@ -322,14 +81,14 @@ en la misma población.
     [`EXPERIMENT_STORAGE_ROOT`](../EXPERIMENT_STORAGE_POLICY.md) después de
     comprobar montaje escribible y espacio disponible. Bases vivas, SQLite,
     bloqueos, secretos, repositorios y worktrees siguen en ext4. No mover
-    históricos ni rutas de servicios activos en esta fase.
+    recursos ajenos ni rutas de servicios activos sin verificar dependencias.
 11. **El negocio gobierna la evaluacion financiera.** Calendario, disponibilidad,
    mascaras por salida, cierre forzoso y costes son obligatorios en todos los
    modos. La frecuencia de reajuste es explicita: NONE, QUARTERLY, MONTHLY o
-   WEEKLY, con identidad propia. I6-DMO empieza por BUSINESS_STATIC_BASELINE:
-   cuatro anos TRAIN, ano completo VALIDATION y ano completo TEST congelado;
-   no es una simulacion de adaptacion semanal. Reajustes posteriores usan
-   cuatro anos moviles y se comparan primero en VALIDATION. Todos los modos
+   WEEKLY, con identidad propia. WEEKLY es el modo de negocio por defecto;
+   controles estaticos solo en disenos posteriores explicitos. Se exigen
+   cuatro anos TRAIN, ano completo VALIDATION y ano completo TEST. Reajustes
+   usan cuatro anos moviles salvo contraste aprobado. Todos los modos
    reportan cada semana y el total anual; no se sustituyen por una semana.
    `LITERATURE_STATIC` sigue reservado a reproducciones fieles de papers.
 
@@ -339,10 +98,10 @@ Este checklist es la vista que debe consultar el orquestador antes de cada
 despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 
 - [ ] I0. Contrato de negocio: targets corto/largo, barrera, RL, costes y riesgo.
-- [ ] I0-W. Cadencia configurable: baseline estatico primero, despues trimestral/mensual/semanal con cuatro anos moviles; anos externos completos y modo literatura separado.
+- [ ] I0-W. Cadencia configurable: semanal por defecto, controles de cadencia con identidad propia; anos externos completos y modo literatura separado.
 - [ ] I1. Inventario: fuente, columna, unidad, frecuencia, licencia y disponibilidad.
 - [ ] I2. Perfil básico completo por celda de métrica, no una marca global.
-- [x] I3. Perfil individual y escalera causal por feature-target.
+- [ ] I3. Recalcular perfil individual y escalera causal por feature-target sobre datos admitidos.
 - [ ] I4-C. Dependencia y redundancia entre características; alias y clusters.
 - [ ] I4-R. Rankings por clustering, mRMR y JMI; trayectorias K reproducibles.
 - [ ] I5. Comparación conjunta de conjuntos y manifiesto final.
@@ -352,53 +111,31 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I6-D. ANN histórica por característica y contraste Dense de ramas,
   después de I5; resultado emparejado, sin atribuir tiempo a neuronas latentes.
 - [ ] I6-B. Preentrenamiento de extractores de ramas seleccionadas.
-- [ ] I7. E1: R0 frente a R1 frente a R2, mismo diseño y población.
-  El contraste semanal de 1 h cerro sus 156 celdas; ninguno supero al naive.
-  Esto no cierra la viabilidad de la estrategia. I7-M historico: un cabezal directo
-  con 11 salidas (1-6, 24, 48, 72, 96 y 120 h), ramas preentrenadas en R2,
-  cuatro anos moviles y 52 semanas de VALIDATION. 1 h es solo diagnostico.
-  [Contrato historico](program_v3/I7_MULTI_HORIZON_WORK_PLAN.md); no es el siguiente despacho.
-- [ ] I6-DMO. DS2 exacto corto cerrado, seis cabezas no elegibles. Prioridad
-  vigente: nuevo corto MG2 estatico, luego largo MG12
-  multisalida, pareja en VALIDATION y confirmacion predictiva/trading en TEST
-  solo tras congelar procedimiento y resolver procedencia. Seis cabezales por
-  familia, sin reajustes durante el ano; naive por horizonte y mascaras C1/C2.
-  [Plan](../i6n/direct_multi_output_static/PLAN.md) y
-  [orden Satoshi](../handoffs/MUSASHI_TO_SATOSHI_DIRECT_MULTI_OUTPUT_20261014.md).
-- [ ] I6-E. Viabilidad de doble pronostico: h=2,3,4,5,6,24,48,72,96,120 h.
-  Primero downsampling a 1/2/3/4 ticks cuando h/k sea una hora entera;
-  despues controles horarios de menor a mayor ventana; contexto 2h en ambos.
-  **Naive para el horizonte de X horas**, recalculado por h sobre las mismas
-  filas que su MAE, ambos en precio original. Sin suavizado ni target limpio.
-  [Subplan vigente](program_v3/I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md):
-  28 brazos downsampled y 10 horarios unicos, sin repetir tres alias; transicion
-  automatica entre etapas, status/ETA y outbox OLAP, no visitas del usuario.
-  Contraste compacto de 72 h cerrado: 156 celdas / 3,712 filas por brazo;
-  ningun brazo supera al naive. Precio original reconciliado y 2,184 metricas
-  verificadas en OLAP. Controles CPU: 312 disposiciones cerradas, 35 fallos
-  ARIMAX retenidos; 312 informes / 2,910 metricas con recibo de readback.
-  La grilla y las busquedas posteriores H4/H72 quedan fuera del despacho
-  vigente, pausadas por I6-DMO; conservar sus disposiciones y entregas OLAP.
-  No reutilizar ciegamente donantes ni confundir el barrido R2 de ventana fija
-  24 con el contraste de ventanas. TEST cerrado. Skill vigente:
-  `(MAE_h-naive_h)/naive_h`, negativo mejora; etiquetas y OLAP lo explicitan.
+- [ ] I6-DMO. Direct multi-output corto/largo: solo despues de I5 y sobre la
+  nueva poblacion admitida. Registrar TRAIN y VALIDATION por horizonte,
+  checkpoints, parametros y semillas. Corto: 2,3,4,5,6,12 h; largo:
+  18,24,36,48,60,72 h, sujetos a soporte de negocio por salida.
+  Ningun modelo anterior es donante.
+- [ ] I6-E. Viabilidad de doble pronostico con calendario y mascaras de negocio.
+  **Naive para el horizonte de X horas** sobre exactamente las mismas filas y
+  escala que su MAE. Error relativo `(MAE_h-naive_h)/naive_h`, negativo mejora.
+  Resolucion, ventana y arquitectura se prueban sin suavizar ni limpiar targets;
+  los experimentos anteriores no constituyen evidencia reutilizable.
+- [ ] I7. E1: R0 frente a R1 frente a R2, mismo diseno y poblacion admitida.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
-- [ ] I8. Optimizacion DEAP distribuida por DOIN: H4 retenido como desarrollo,
-  cuatro islas POO-v2 pausadas por cambio de plan; no reactivar H72. Protocolo
-  colaborativo y pruebas de trabajo se conservan; busqueda multisalida futura
-  solo bajo una nueva identidad despues del baseline I6-DMO.
+- [ ] I8. Optimizacion DEAP distribuida por DOIN: conservar su protocolo y
+  codigo, no cadenas ni candidatos de datos retirados. Nueva identidad y
+  configuraciones colaborativas verificadas solo tras datos y seleccion.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
 - [ ] I9-R. SAC raw/modular y DQN raw/modular.
 - [ ] I10. LTS semanal, shadow, MT5 demo y Alpaca paper.
 - [ ] I11. Extensión final opcional: calendario económico causal como entrada.
 - [ ] I12. Posprograma: configurar `feature-selector` desde el chat de M5PHET.
 
-Las casillas no implican ejecución serial. I6-DMO mantiene una secuencia
-cientifica corta->larga->pareja; su codigo, procedencia, adaptador de estrategia
-y automatizacion se implementan en paralelo. No duplicar un fit para ocupar
-GPU. I2 de un lote puede coexistir con I4
-de otro; referencias públicas, ingeniería, M5PHET y paper trading pueden avanzar
-si no consumen artefactos que todavía no existen.
+Prioridad actual serial: inventario y recuperacion -> admision -> preparacion
+verificada -> seleccion recalculada. No hay permiso para adelantar fits,
+extractores o trading con inputs pendientes. El paralelismo se usa dentro de
+la recuperacion y verificaciones independientes, con memoria y disco admitidos.
 
 ## 5. Datos y selección progresiva
 
@@ -722,10 +459,11 @@ físico o capital real.
 Data-gov gobierna disponibilidad; data-lake conserva datasets y artefactos por
 contenido; warehouse recibe **todas** las métricas, disposiciones, rankings,
 costes e identidades de cada fase. Ningún cierre científico depende sólo de un
-JSON local. Cada fase exige lectura de vuelta del OLAP, snapshot físico DuckDB
-local y copia pública versionada. El repositorio conserva manifiesto, esquema,
-SHA-256 y URL; el binario comprimido se publica como asset de release para no
-inflar el historial Git. DOIN puede usar cadena liviana:
+JSON local. Cada fase exige lectura de vuelta del OLAP y copia fisica verificada
+en almacenamiento propio, con un segundo espejo. Git conserva codigo, esquema,
+configuracion, hashes e instrucciones de regeneracion, no bases grandes ni
+releases de metricas como requisito de cierre. Los datos y resultados retirados
+no se conservan como snapshots. DOIN puede usar cadena liviana:
 persiste el cuerpo completo fuera de cadena y encadena manifiesto, locator y
 hashes. Lectura y ETL verifican hash, esquema, autoridad y continuidad.
 
@@ -735,61 +473,11 @@ después de recomputación independiente y recibo por contenido.
 
 ## 16. Estado actual
 
-Actualizacion de autoridad 2026-10-16: el propietario identifico explicitamente
-el control corto **MG2m**, i6dmo-6004b711281c, codigo 796ec8f4, como referencia
-de los resultados prometedores. No sustituirlo por el MG2 anterior ni por una
-semana favorable de otra arquitectura. Su modelo, pesos y configuracion estan
-retenidos; la recuperacion de su tabla no requiere otro fit. Ver
-[registro de mejores resultados](../i6n/direct_multi_output_static/best_registry/RETURN.md).
-El registro automatico conserva por horizonte y por receta completa las
-identidades de datos/modelo/codigo, semilla, regla de parada, checkpoints,
-MAE y naive para ese horizonte y exactamente sus mismas filas. Toda mejora
-queda en un evento inmutable y en el OLAP, con copias fisicas verificadas.
-Los cohortes distintos y los resultados parciales se etiquetan por separado.
-Esta correccion documental y el sidecar CPU no cambian la identidad ni detienen
-la continuacion I6-DMO vigente; TEST permanece cerrado.
-
-Siguiente contraste aprobado y desplegado 2026-10-17 UTC:
-[MG2m +18 h y ventanas](../i6n/mg2m_extension/PLAN.md), runtime 3f126cf8,
-campana i6dmo-mg2m-extension-20261017. La GPU secundaria 4090 ejecuta +18 h,
-18 h sola si corresponde y ventanas 7/13/25 observaciones a paso MG2. La 5090
-continua la campana previa; no se usa la GPU auxiliar del mismo host.
-La nueva cabeza conserva datos, mascaras, escalas e inicializacion de las seis
-anteriores; la compuerta real GPU paso antes del primer ajuste. Para comparar
-ventanas, se congelo soporte comun y se programa un control de 13 sobre ese
-soporte, pues hay huecos reales que impiden reutilizar el control completo.
-Los timers avanzan, publican al OLAP, verifican dos copias y cierran sin agentes
-monitoreando. El registro de mejores resultados observa ambos frentes.
-
-Cierre observado 2026-10-17 UTC: ambos grafos terminaron. I6-DMO previo dejo
-407/407 terminales (340 completas, 66 omisiones condicionadas, un fallo retenido),
-408 reportes verificados y 2464 archivos por espejo. La receta corta semanal
-obtuvo errores relativos al naive para 2/3/4/5/6/12 h de
--0.162155/-0.594410/-0.783267/-0.977141/-1.580031/-2.098136 por ciento;
-son resultados de desarrollo 2024 con seleccion de epocas sobre esas semanas,
-no TEST ni evidencia independiente de rentabilidad. La familia larga sigue sin
-ser elegible. El estudio MG2m cerro cinco ajustes efectivos y un fallo previo al
-ajuste corregido por separado, con todas sus publicaciones y espejos verificados.
-El registro conserva los checkpoints diagnosticos de epoca2 por separado de los
-seleccionados; no promueve retrospectivamente el 18 h diagnostico de -0.238899%.
-Un operador externo al runtime cientifico reparo el formato de metricas sin
-soporte y fragmento la comprobacion de hashes por SSH, sin modificar modelos,
-datos, decisiones, metricas ni sellos cientificos.
-
-El estado observado y la cola se mantienen únicamente en
-`CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. Las fases 1, 2 y 3
-están cerradas (2026-10-07: `PHASE_2_COMPLETE.json` y
-`PHASE_3_FILTER_COMPLETE.json` para EURUSD y ETH, cubo vivo reconciliado,
-snapshot `phase2-3-feature-selection-20261007`; sin ganador predictivo). El
-frente vigente es I6-E compacto y sus controles estadisticos, no reabrir la
-antigua cola de fase 4. El snapshot binario se conserva en dos maquinas, con
-manifiesto y SHA-256 en Git; la subida a GitHub fue cancelada. El calendario se usa
-ahora sólo como evidencia histórica del selector; su integración como entrada
-permanece en I11.
-
-NEAT queda fuera de la cola hasta que exista representación final congelada.
-Toda orden anterior que lo ejecute sobre entradas crudas o lo use como optimizador
-de hiperparámetros está superada.
+DATA_INTEGRITY_HOLD. Recuperacion real de cotizaciones y limpieza en curso.
+No hay receta predictiva promovida ni modelo entrenandose. Rehacer las
+metricas y la seleccion sobre el inventario admitido; no reutilizar cierres
+ni porcentajes de los resultados eliminados. La existencia de nuevas descargas
+o de este plan no equivale a haber completado la curacion del lake.
 
 ## 17. Posprograma: feature-selector desde M5PHET
 
@@ -822,41 +510,7 @@ propio y ajeno, reinicio, aislamiento de credenciales y paridad con la CLI de
 `feature-selector` sobre idénticos bytes y configuración. El chat no adelanta
 ni altera el manifiesto financiero final de I5.
 
-### Owner Order: Weekly TEST Replication, 2026-10-17
-
-The binding sequence is
-[TEST: primero predecir, despues reajustar](../../i6n/weekly_test/PROCEDIMIENTO_CANONICO.md).
-Load the final VALIDATION checkpoint, seal predictions for TEST week n, score
-after observation, then warm-start the four-year refit with that observed week
-as its stopping monitor. Its new checkpoint serves week n+1, never week n.
-The immediate I6 action is the autonomous `prequential_test` campaign for both
-retained winning families on 2025, with unchanged models, windows, downsampling,
-business masks, seed and original stopping parameters. Do not reinitialize their
-saved weights, introduce another holdout or use the superseded same-week
-checkpoint-tuning launcher. Preserve historical measurements without adopting
-their TEST-trained weights. FRED/calendar limitations remain disclosed, and no
-new TEST-driven hyperparameter search is authorized.
-
-### Owner Order: Monitor And Generalization, 2026-10-18
-
-Follow [the monitor contrast](../../i6n/weekly_test/MONITOR_CONTRAST_20261018.md)
-before additional window/core optimization. The remaining sweep is paused at
-a completed-fit boundary; historical development results remain available.
-Stage A compares the legacy monitor with own-naive monitors using four years
-or one year of FIT inference, while all gradients still use four years.
-Stage B compares each with one optional core-output BatchNormalization layer.
-Use separate chronological weekly VALIDATION trajectories with the same
-initial checkpoint and freeze forecasts before observed-week updates. Epoch
-monitoring performs inference only. Record full provenance and metrics in OLAP.
-TRAIN_REPLAY remains a separate required measurement and is never replaced by
-FIT loss. One-year/six-month/three-month gradient histories follow later.
-
-Owner stopping-budget investigation: follow
-[the training audit](../../i6n/weekly_test/TRAINING_AUDIT_20261018.md) and
-[six matched stopping probes](../../i6n/weekly_test/STOPPING_DIAGNOSTIC_20261018.md).
-Probe 2000 epochs/patience50 after each parent family closes, on its own GPU;
-preserve the 200/10 baseline. Verify the complete retained epoch prefix and
-next-week forecast before interpreting any benefit. Record the missing
-March-July 2023 training coverage and sparse weekly h72 calibration support.
-Do not claim an arithmetic stopping bug or sufficient convergence merely from
-the number of epochs; do not silently modify the source data.
+Las antiguas ordenes de lanzamiento, donantes y contrastes de modelos no
+siguen vigentes. El procedimiento de prediccion antes del reajuste se conserva
+como contrato de negocio para nuevos datos admitidos, no como autorizacion
+para restaurar un checkpoint retirado ni repetir su experimento.

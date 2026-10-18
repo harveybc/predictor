@@ -1,8 +1,0 @@
-{
- "metrics": 32,
- "readback": "VERIFIED",
- "report_sha256": "783a82d58fbeae9ef7cf5e9fe2602bb8fa445dd740c53e86793aefd81fbf9f14",
- "reports_delivered": 1,
- "schema": "i6dmo.training_audit_publication.v1",
- "source_sha256": "ffae62a952a045fcf9347219bb07f2f015be8eb6a1903444f4abdfd202abea80"
-}

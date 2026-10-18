@@ -1,23 +1,26 @@
 {
-  "initiative": "owner_authorized_weekly_test_replication",
-  "current_stage": "S14_MONITOR_CONTRAST_RUNNING",
-  "plan": "PROCEDIMIENTO_CANONICO.md",
-  "traceability": "PROCEDIMIENTO_CANONICO.md#pruebas-obligatorias",
-  "history": [
-    {"stage":"S0_THROUGH_S8","status":"DESIGNED","evidence":"WT01-WT07; explicit owner order; inspected original short/window13 and long-only data, initializations and trainer"},
-    {"stage":"S9_S10","status":"PASSED_FOCUSED","evidence":"24 focused tests passed; market/data/weekly regression:55 pass,2 historical source-pin refusals (new identity, not relaxed); source extension6225 bars, retained35398 unchanged"},
-    {"stage":"S11_S12","status":"GPU_START_CONFIRMED","evidence":"Exact array/scale replay on six original weekly cases;106 prepared units,102 supported fits; unchanged trainer/model bytes; fresh initial tensor hash passed before first fit; deployment e0af8f23"},
-    {"stage":"S14","status":"SUPERSEDED_STOPPED","evidence":"Earlier same-week checkpoint-tuning timers disabled and own GPU service stopped; historical results retained, not adopted"},
-    {"stage":"S0_S8_CORRECTION","status":"DESIGNED","evidence":"PROCEDIMIENTO_CANONICO.md and PS01-PS10, predict/seal before label reader and warm-start update"},
-    {"stage":"S9_S10_CORRECTION","status":"PASSED_FOCUSED","evidence":"Order, target perturbation, immutable prediction resume, donor scalers, future-donor rejection, four-year maturity, runtime context and frozen trainer/model tests"},
-    {"stage":"S11_S12_CORRECTION","status":"PASSED_GPU_START","evidence":"106 prepared chronological units; final usable VALIDATION donors from week2024-12-22 authenticated; first short prediction sealed before score/update; init weights equal VALIDATION exactly; first update11 epochs,best1,patience; archive reload exact;3 reports readback,0 pending/mismatch; deploymentfa47d2b2"},
-    {"stage":"S14_CORRECTION","status":"ACTIVE","evidence":"Short first predict/score/update complete; long first prediction sealed and next-week update running on preferred GPU; autonomous timers active; prior same-week campaign disabled; original trainer and model files unchanged"},
-    {"stage":"S14_VALIDATION_REPLAY","status":"REPLAY_COMPLETE_WARM_PILOT_RUNNING","evidence":"VALIDATION_REPLAY_20261018.md; VALIDATION_REPLAY_RETURN_20261018.md;102 checkpoints per replay construction; long original-builder predictions/metrics exact; short maximum price delta7.622376063665115e-10; no TEST access; separate four-fit warm-start pilot; autonomous collector/outbox"},
-    {"stage":"S14_TRAIN_REPORTING_CLARIFICATION","status":"CONTRACT_DOCUMENTED_TRAIN_REPLAY_PENDING","evidence":"GENERALIZATION_REPORTING.md; owner defines reported TRAIN as post-fit reload plus complete weekly adaptive TRAIN replay, not internal FIT; initial trajectory checkpoint policy must be frozen before execution; no new training campaign launched by this clarification"}
+  "initiative": "canonical_data_curation_and_selection_rebuild",
+  "current_stage": "DATA_RECOVERY_AND_AFFECTED_OUTPUT_REMOVAL",
+  "plan": "DATA_QUALITY_AND_SELECTION_STANDARD.md",
+  "canonical_procedure": "financial-data/work_plan/17_CANONICAL_INVENTORY_AND_CURATION.md",
+  "scientific_training_authorized": false,
+  "data_admission_complete": false,
+  "feature_selection_complete": false,
+  "invalid_experiment_retention": false,
+  "next_allowed_actions": [
+    "inventory all required native variables and dependencies",
+    "recover missing real observations",
+    "verify native coverage, values, clocks and outliers",
+    "finish affected-output cleanup on hosts, analytical stores and active documents",
+    "admit verified canonical files and configure the lake",
+    "recompute preprocessing and selection metrics"
   ],
-  "active_design": "MONITOR_CONTRAST_20261018.md",
-  "stopping_diagnostic": {"design":"STOPPING_DIAGNOSTIC_20261018.md","audit":"TRAINING_AUDIT_20261018.md","stage":"S14_WAIT_PARENT","PRE":"new test collection failed before module existed","POST":"12 focused tests passed including parent admission and exact epoch/weight prefix","deployed":"46aad9a3; six cases; both workers WAIT_PARENT; timers and OLAP collector enabled","source_coverage":"March-July 2023 have no retained FIT origins; do not claim four complete years","budget":"same donor/data/monitor; max_epochs2000 patience50; six cases; run after parent family closure"},
-  "monitor_contrast_evidence": {"S0_S8":"DESIGNED_MC01_MC09", "S9":"15 tests passed including real trainer synthetic CPU checks", "S10":"104 broader regressions passed; historical slots=25 rejection test stale; source-pin test excluded for new identity", "S11_S12":"3 GPU tests passed on each worker; both first weekly units completed; 2 reports read back, zero pending/discrepant", "S14":"600 units across two GPUs; timers, durable outbox and readback active; deployed dc818635; RETURN_MONITOR_CONTRAST_20261018.md", "historical_source_pin_test":"expected refusal: new experiment extends trainer/model, historical deployed runtimes unchanged"},
-  "next_allowed_actions": ["verify monitor adapters and optional BN on both GPUs", "launch frozen weekly VALIDATION contrasts", "automated OLAP readback and physical mirrors", "implement subsequent full TRAIN_REPLAY diagnostic"],
-  "blocked_actions": ["train before sealing current-week predictions", "replace saved predictions with updated-model outputs", "undeclared initial checkpoint change", "change model outside declared BN contrast", "substitute FIT for TRAIN_REPLAY", "open real-money positions", "run both preferred-host GPUs concurrently"]
+  "blocked_actions": [
+    "interpolate or fill missing price candles",
+    "invent weekend observations",
+    "clean targets",
+    "reuse affected metrics, weights, configs or rankings",
+    "train before actual data and prepared-window admission",
+    "delete independent datasets without affected lineage"
+  ]
 }
