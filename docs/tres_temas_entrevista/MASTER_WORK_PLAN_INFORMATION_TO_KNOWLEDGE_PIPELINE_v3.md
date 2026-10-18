@@ -1,11 +1,28 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-17. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-18. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
 
 ## 1. Autoridad vigente
+
+Directiva prioritaria 2026-10-18: primero reducir overfitting y demostrar
+generalizacion bajo el negocio; despues mejorar performance. Todo reporte
+predictivo debe mostrar TRAIN y VALIDATION por horizonte, con sus propios
+MAE/naives, conteos, rol temporal y brecha. TRAIN significa la evaluacion
+posterior al entrenamiento: cargar los pesos guardados y recorrer TRAIN
+completo con reajustes semanales, no sustituirlo por la perdida FIT estatica.
+Conservar FIT como diagnostico interno y distinguirlo de TRAIN_REPLAY.
+VALIDATION tambien conserva su trayectoria semanal; TEST se muestra separado.
+Fijar la inicializacion de cada trayectoria antes de ejecutarla. No exigir
+pesos iguales despues de observar semanas distintas, ni mezclar metricas
+anteriores y posteriores a un reajuste como si fueran del mismo modelo.
+Este contrato de reporte sustituye las interpretaciones anteriores de TRAIN;
+no altera las identidades ni cifras de las campanas ya ejecutadas. Ver
+[GENERALIZATION_REPORTING.md](../i6n/weekly_test/GENERALIZATION_REPORTING.md).
+La campana completa TRAIN_REPLAY sigue pendiente: no presentar metricas FIT
+retenidas o el piloto de dos semanas como si ya cumplieran esa evaluacion.
 
 Directiva 2026-10-17: conservar dos recetas completas separadas de corto y
 largo como referencias para mejorar. Promover una receta SOLO si CADA salida

@@ -1,5 +1,11 @@
 # Weekly Window And Core Contrast
 
+Reporting clarification 2026-10-18: retain all measured FIT and VALIDATION
+facts, but never rename FIT as the owner's TRAIN_REPLAY performance. Mandatory
+future TRAIN/VALIDATION comparisons follow
+[GENERALIZATION_REPORTING.md](../weekly_test/GENERALIZATION_REPORTING.md).
+This reporting clarification does not change the running experiment or its pins.
+
 Owner approval 2026-10-17. Independent single-heavy-process rtx4090 lane;
 leave the active rtx5090 twelve-head experiment untouched. Parent recipe:
 bd21fc2f weekly seven heads [2,3,4,5,6,12,18], nineteen RAW features,

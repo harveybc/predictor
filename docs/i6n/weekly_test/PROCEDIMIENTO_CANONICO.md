@@ -4,6 +4,12 @@ Orden explicita del propietario, 2026-10-17. Este documento sustituye el
 procedimiento equivocado que entrenaba mirando la misma semana que iba a
 evaluar. Leerlo antes de modificar, ejecutar o interpretar esta campana.
 
+Precision de reporte 2026-10-18: FIT de un reajuste no es el desempeno TRAIN
+que solicita el propietario. Este ultimo requiere cargar el checkpoint inicial
+guardado y evaluar TRAIN completo mediante su propia trayectoria semanal.
+Ver [GENERALIZATION_REPORTING.md](GENERALIZATION_REPORTING.md). Este contrato
+adicional no modifica las predicciones TEST ya selladas ni sus pesos.
+
 ## Secuencia Obligatoria
 
 1. Cargar los pesos guardados del ultimo checkpoint util de VALIDATION de cada
