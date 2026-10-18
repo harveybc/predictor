@@ -62,10 +62,17 @@ para cada ajuste, como hacia el runner; los pesos de la red SI se heredan.
 
 - Una semana sin pares validos no tiene MAE ficticio ni permite early stopping:
   se registra SIN_PARES y se conserva el checkpoint para la siguiente semana.
+  SIN_PARES es el nombre descriptivo; el codigo persistido es
+  SKIPPED_NO_EVAL_ROWS. Para una cabeza individual sin pares, el codigo es
+  NO_VALID_TARGET_IN_PERIOD. El cierre debe declarar las semanas omitidas.
 - El checkpoint inicial debe haber terminado su semana de VALIDATION antes de
   cualquier origen de TEST que puntue. Nunca tomar un checkpoint entrenado en TEST.
 - Una caida despues de sellar la prediccion no autoriza reemplazarla por la
   salida del modelo reajustado. Se retoma el reajuste desde su donante anterior.
+  Limite operativo del despliegue fa47d2b2: esto es automatico si la caida no
+  dejo RESULT terminal. Una excepcion que ya escribio FAILED bloquea al sucesor
+  y requiere recuperacion auditada. No afirmar autorrecuperacion universal;
+  los reintentos transitorios acotados son una mejora candidata separada.
 - La adaptacion con semanas de TEST ya observadas es una evaluacion prequential
   del negocio. Las etiquetas de semanas posteriores no pueden modificar sus
   predicciones anteriores. Los supuestos FRED y de calendario se conservan como
