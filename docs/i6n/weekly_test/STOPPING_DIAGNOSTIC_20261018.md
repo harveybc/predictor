@@ -41,3 +41,13 @@ alter features, or silently replace the sealed dataset during this probe.
 The known-week monitor has a median of 24 valid pairs for h72 and a minimum of
 6; the 50/50 arithmetic alone cannot establish that this monitor generalizes.
 TRAIN_REPLAY remains separately pending and is not replaced by FIT losses.
+
+## Execution receipt
+
+Deployed source `46aad9a38f2dab846096f465b8a5306eda1d81f1`; packet
+`f75822e98ddff1201a6103ec0a42a6fc38818a104df1defa818d6b7970f4f66f`.
+Twelve focused tests passed, including refusal to run before parent completion
+and detection of changed epoch weights. Both workers reported WAIT_PARENT on
+the start check (0/3 cases each). Worker and coordinator timers are enabled.
+No probe scientific fit has run at this receipt; the future result includes
+the exact-prefix verdict and next-week comparison. Source campaign unaffected.
