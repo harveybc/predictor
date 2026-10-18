@@ -38,7 +38,7 @@ PERMANENT_CODES = frozenset({
     'DONOR_WEIGHTS_CHANGED', 'WINNING_MODEL_CHANGED', 'UPDATE_DONOR_CHANGED',
     'WARM_START_WEIGHTS_CHANGED', 'SAVED_CHECKPOINT_RELOAD', 'CONTINUATION_NONFINITE_PREDICTION',
     'CONTINUATION_ZERO_NAIVE', 'PREPARED_CHANGED', 'CELLS_CHANGED', 'REPLICATION_RECIPE_CHANGED',
-    'TEST_QUALIFICATION_CHANGED', 'TERMINAL_IDENTITY'})
+    'TEST_QUALIFICATION_CHANGED', 'TERMINAL_IDENTITY', 'COMPLETED_UPDATE_RECEIPT_MISSING'})
 PERMANENT_TYPES = (AssertionError, KeyError, MemoryError)
 
 
@@ -48,6 +48,10 @@ class TransientProcessError(RuntimeError):
     def __init__(self, code, detail=''):
         self.code = code
         super().__init__(code + (':' + detail if detail else ''))
+
+
+class InterruptedAttempt(RuntimeError):
+    """An unfinished attempt from an exited process; its cause is UNKNOWN."""
 
 
 def _tf_transient_types():
@@ -132,6 +136,34 @@ def record_failure(folder, index, exc, now):
                 reason=('TRANSIENT_EXHAUSTED:' if outcome == 'EXHAUSTED' else '') + type(exc).__name__ + ':' + str(exc)[:600])
 
 
+def recover_failure(folder, now):
+    """Called under the worker lock: never reopen an interrupted or terminal attempt."""
+    doc = ledger(folder)
+    if not doc['attempts']:
+        return None
+    last = doc['attempts'][-1]
+    if last['outcome'] == 'RUNNING':
+        return record_failure(folder, last['index'],
+                              InterruptedAttempt('Previous process exited without a durable outcome'), now)
+    if last['outcome'] not in (PERMANENT, UNKNOWN, 'EXHAUSTED'):
+        return None
+    evidence = W.read(Path(folder) / 'attempts' / f"a{last['index']:02d}" / 'FAILURE.json')
+    return dict(retry=False, cause_class=last['cause_class'], cause_code=last['cause_code'],
+                attempts=doc['attempts'], required_action=REQUIRED_ACTION[last['cause_class']],
+                reason=('TRANSIENT_EXHAUSTED:' if last['outcome'] == 'EXHAUSTED' else '') +
+                       evidence['exception_type'] + ':' + evidence['message'][:600])
+
+
+def finalization_failure(folder, exc, now):
+    """A failed replay is evidence, not another fit attempt or a rewritten completed ledger."""
+    cause_class, code = classify(exc)
+    reason = type(exc).__name__ + ':' + str(exc)[:600]
+    W.B.put(Path(folder) / 'FINALIZATION_FAILURE.json',
+            dict(cause_class=cause_class, cause_code=code, reason=reason, at=now))
+    return dict(retry=False, cause_class=cause_class, cause_code=code,
+                attempts=ledger(folder)['attempts'], required_action=REQUIRED_ACTION[cause_class], reason=reason)
+
+
 # --------------------------------------------------------------------------- scheduling
 READY_PREDECESSOR = ('COMPLETE', 'SKIPPED_NO_EVAL_ROWS')
 
@@ -206,8 +238,8 @@ def status(spec, root, results, now=None):
         state = 'COMPUTE_COMPLETE'
     else:
         state = 'IN_PROGRESS'
-    estimable = not blocked and not retry
+    estimable = not blocked and not retry and 'WAIT_RESOURCES' not in states
     return dict(state=state, cells=cells, blocked=blocked, retry_pending=retry,
                 next_attempt_at=min((cells[c]['next_attempt_at'] for c in retry), default=None),
                 eta_estimable=estimable,
-                eta_note=None if estimable else 'NOT_ESTIMABLE: a cell is blocked or waiting for a retry')
+                eta_note=None if estimable else 'NOT_ESTIMABLE: a cell is blocked or waiting for resources/a retry')

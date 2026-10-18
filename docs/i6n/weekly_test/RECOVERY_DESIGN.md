@@ -109,6 +109,25 @@ when every remaining cell is runnable.
 
 ## Implementation notes (candidate)
 
+### Review corrections: interrupted writes and resource ETA
+
+Before release, add the following operational rules (no scientific change):
+
+- Under the exclusive worker lock, an unfinished RUNNING ledger entry with no
+  terminal means the preceding process was interrupted. Its cause is unverified:
+  record UNKNOWN / InterruptedAttempt, retain the entry and seal, and fail closed.
+  Never infer that a power loss, OOM kill or unknown signal was a safe transient.
+- If a permanent/unknown/exhausted ledger was saved before RESULT.json, reconstruct
+  that terminal from its retained failure evidence, without another attempt.
+- If a COMPLETE ledger was saved before RESULT.json, replay only the existing
+  seal and authenticated completed update using the same attempt index. No new
+  fit or ledger rewrite is allowed for this finalization.
+- WAIT_RESOURCES also makes the ETA NOT_ESTIMABLE. A fit-time estimate does not
+  bound a resource wait.
+
+Regression evidence: abrupt interruption, the three terminal-ledger cases,
+completed-ledger adoption, and resource-wait ETA. All are synthetic CPU tests.
+
 - `tools/i6dmo/prequential_recovery.py`: `classify`, the ledger (`begin_attempt`, `record_failure`,
   `finish_attempt`), `choose`/`classify_pending` (scheduling during cooldowns) and `status`.
 - `tools/i6dmo/prequential_test.py`: `GpuBackend.load` splits `RUNTIME_VERSION_MISMATCH`

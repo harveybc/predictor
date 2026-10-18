@@ -241,7 +241,19 @@ def run(spec,*,clock=time.time,backend_factory=GpuBackend,gate=resources):
         results={c['id']:r for c in spec['cells'] if (r:=W.terminal(root,c,spec))}
         pending=[c for c in spec['cells'] if c['id'] not in results]
         if not pending:W.B.progress(root,state='GPU_DONE');return
-        now=clock();cell,view=R.choose(spec['cells'],results,root,now)
+        now=clock()
+        for interrupted in pending:
+            interrupted_folder=root/'results'/interrupted['id']
+            failure=R.recover_failure(interrupted_folder,now)
+            if failure is not None:
+                result=dict(state='FAILED',files={},reason=failure['reason'],cause_class=failure['cause_class'],
+                    cause_code=failure['cause_code'],attempts=failure['attempts'],
+                    required_action=failure['required_action'],test_read=True,batch_id=NAME,cell=interrupted)
+                result['sha256']=W.B.digest(result)
+                W.B.put(interrupted_folder/'RESULT.json',result)
+                W.B.progress(root,state='FAILED',cell=interrupted['id'])
+                return
+        cell,view=R.choose(spec['cells'],results,root,now)
         if cell is None:
             states=[v['state'] for v in view.values()]
             if 'RETRY_PENDING' in states:
@@ -262,8 +274,12 @@ def run(spec,*,clock=time.time,backend_factory=GpuBackend,gate=resources):
             facts=gate(spec)
             if facts['cause'] or facts['foreign_gpu_processes'] or facts['memory_available']<7*1024**3:
                 W.B.progress(root,state='WAIT_RESOURCES',cell=cid,**facts);return   # RESOURCE_BLOCKED: no attempt consumed
-            attempt=R.begin_attempt(folder,now)
+            entries=R.ledger(folder)['attempts']
+            finalized=bool(entries and entries[-1]['outcome']=='COMPLETE')
+            attempt=entries[-1]['index'] if finalized else R.begin_attempt(folder,now)
             try:
+                if finalized and not (folder/'update'/'UPDATE.json').is_file():
+                    raise ValueError('COMPLETED_UPDATE_RECEIPT_MISSING')
                 W.B.progress(root,state='RUNNING',stage='PREDICT_BEFORE_UPDATE',cell=cid,attempt=attempt)
                 reader=lambda name:CD._read(Path(spec['gpu_data'])/cid/(name+'.npz'))
                 result=execute_week(record,donor,folder,reader,backend_factory(spec,root),
@@ -274,9 +290,9 @@ def run(spec,*,clock=time.time,backend_factory=GpuBackend,gate=resources):
                         qualification=QUALIFICATION))
                 result['files']={str(p.relative_to(folder)):W.file_sha256(p) for p in folder.rglob('*')
                     if p.is_file() and p.name!='RESULT.json' and p.name!=R.LEDGER and 'attempts' not in p.parts}
-                R.finish_attempt(folder,attempt,clock(),'COMPLETE')
+                if not finalized:R.finish_attempt(folder,attempt,clock(),'COMPLETE')
             except Exception as exc:
-                failure=R.record_failure(folder,attempt,exc,clock())
+                failure=R.finalization_failure(folder,exc,clock()) if finalized else R.record_failure(folder,attempt,exc,clock())
                 if failure['retry']:   # transient: no RESULT.json; the next admitted process retries after the cooldown
                     W.B.progress(root,state='RETRY_PENDING',cell=cid,attempt=attempt,cause_code=failure['cause_code'],
                         next_attempt_at=failure['attempts'][-1]['next_attempt_at']);return

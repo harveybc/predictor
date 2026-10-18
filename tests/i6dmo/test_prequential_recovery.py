@@ -314,6 +314,98 @@ def test_ledger_resumes_attempt_numbering_after_a_simulated_restart(world):
     assert _results(world)[cid]["state"] == "COMPLETE"
 
 
+def test_abrupt_interruption_is_unknown_and_cannot_silently_restart_a_fit(world):
+    clock = Clock()
+    cid = world["cells"][0]["id"]
+    folder = world["root"] / "results" / cid
+    R.begin_attempt(folder, clock.now)
+    backend = FakeBackend()
+    p = _run(world, backend, clock)
+    assert p["state"] == "FAILED" and p["cell"] == cid
+    r = _results(world)[cid]
+    assert r["cause_class"] == R.UNKNOWN and len(r["attempts"]) == 1
+    assert r["cause_code"] == "InterruptedAttempt"
+    assert backend.fits == backend.predicts == 0
+    raw = (folder / "RESULT.json").read_bytes()
+    _run(world, backend, clock)
+    assert (folder / "RESULT.json").read_bytes() == raw
+
+
+@pytest.mark.parametrize("exc", [ValueError("DONOR_WEIGHTS_CHANGED"), TypeError("unknown"),
+                                R.TransientProcessError("GPU_NOT_VISIBLE")])
+def test_crash_after_terminal_ledger_does_not_reopen_an_attempt(world, exc):
+    clock = Clock()
+    cid = world["cells"][0]["id"]
+    folder = world["root"] / "results" / cid
+    for index in range(3 if isinstance(exc, R.TransientProcessError) else 1):
+        attempt = R.begin_attempt(folder, clock.now)
+        failure = R.record_failure(folder, attempt, exc, clock.now)
+        clock.now += (30, 60, 60)[index]
+    assert not failure["retry"]
+    raw = (folder / R.LEDGER).read_bytes()
+    backend = FakeBackend()
+    assert _run(world, backend, clock)["state"] == "FAILED"
+    assert backend.fits == backend.predicts == 0
+    assert (folder / R.LEDGER).read_bytes() == raw
+
+
+def test_crash_after_completed_ledger_reuses_update_without_an_extra_attempt(world, monkeypatch):
+    clock = Clock()
+    backend = FakeBackend()
+    original = R.finish_attempt
+    def killed_after_finish(*args, **kwargs):
+        original(*args, **kwargs)
+        raise SystemExit("simulated process exit before RESULT")
+    with monkeypatch.context() as m:
+        m.setattr(R, "finish_attempt", killed_after_finish)
+        with pytest.raises(SystemExit):
+            _run(world, backend, clock)
+    cid = world["cells"][0]["id"]
+    folder = world["root"] / "results" / cid
+    sealed = W.file_sha256(folder / "PREDICTED.npz")
+    ledger_bytes = (folder / R.LEDGER).read_bytes()
+    assert _run(world, backend, clock)["state"] == "COMPLETE"
+    assert backend.fits == backend.predicts == 1
+    assert W.file_sha256(folder / "PREDICTED.npz") == sealed
+    assert (folder / R.LEDGER).read_bytes() == ledger_bytes
+
+
+def test_resource_wait_has_no_finite_eta(world):
+    clock = Clock()
+    busy = lambda spec: dict(foreign_gpu_processes=1, memory_available=16 * 1024 ** 3, cause=None)
+    _run(world, FakeBackend(), clock, gate=busy)
+    out = S.enrich_status(dict(state="RUNNING", eta=dict(seconds=99.0)),
+                          world["spec"], world["root"], {}, now=clock.now)
+    assert out["state"] == "WAIT_RESOURCES"
+    assert not out["recovery"]["eta_estimable"] and out["eta"]["seconds"] is None
+
+
+@pytest.mark.parametrize("fault", ["missing_receipt", "changed_donor"])
+def test_completed_attempt_finalization_never_refits_or_rewrites_ledger(world, monkeypatch, fault):
+    clock = Clock()
+    backend = FakeBackend()
+    original = R.finish_attempt
+    def killed_after_finish(*args, **kwargs):
+        original(*args, **kwargs)
+        raise SystemExit("before RESULT")
+    with monkeypatch.context() as m:
+        m.setattr(R, "finish_attempt", killed_after_finish)
+        with pytest.raises(SystemExit):
+            _run(world, backend, clock)
+    cid = world["cells"][0]["id"]
+    folder = world["root"] / "results" / cid
+    receipt = folder / "update" / "UPDATE.json"
+    if fault == "missing_receipt":
+        receipt.unlink()
+    else:
+        W.B.put(receipt, dict(W.read(receipt), donor_id="incorrect"))
+    raw = (folder / R.LEDGER).read_bytes()
+    assert _run(world, backend, clock)["state"] == "FAILED"
+    assert backend.fits == backend.predicts == 1
+    assert (folder / R.LEDGER).read_bytes() == raw
+    assert (folder / "FINALIZATION_FAILURE.json").is_file()
+
+
 def test_historical_failed_terminal_is_never_deleted_or_retried(world):
     clock = Clock()
     cid = "short__WEEKLY-2025-01-05"
