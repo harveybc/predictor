@@ -1,0 +1,1078 @@
+{
+ "all_complete_cells_consistent": true,
+ "audited_at_revision": "811a7544",
+ "batch_id": "i6dmo-prequential-test-20261017",
+ "cells": 106,
+ "deployed_code_commit": "fa47d2b2ea350fd3624bb22e3bd158abf73290bf",
+ "evaluation_split": "TEST",
+ "initial": {
+  "long": {
+   "archive_bytes_sha256": "1f0162babeb23599b7944a10e22cb1b5333ad594f79828c47e7a6f404aca18f6",
+   "available_by": "2024-12-27T22:00:00+00:00",
+   "files_authenticated": true,
+   "heads": [
+    18,
+    24,
+    36,
+    48,
+    60,
+    72
+   ],
+   "id": "e7ff10b72028ef8422b8d4cfea640cf2f0321e5074d611e7b8fff7b0055538fc",
+   "scales_sha256": "849d6d7392b97972e4b24e3f15b20ec40668395f5d05a85b393fc2097fb271d8",
+   "source_member": "4b3f811275bf8cea4993fb8c72f15efe16bc2289f061255eb96fc47f78e63933",
+   "weights_sha256": "4d9290d3887e848d2629fc3e148547597bd6165d5fca83919bbbca6f2107a159"
+  },
+  "short": {
+   "archive_bytes_sha256": "08758594d10b57a8ab890f8cbb42ff9eefa60492d1b7a9805f75a92a0ea33b85",
+   "available_by": "2024-12-27T22:00:00+00:00",
+   "files_authenticated": true,
+   "heads": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    12,
+    18
+   ],
+   "id": "3439e386750a93162a8d5a2a5ffd9397f7f14febf368e4e4333ca73e0336af37",
+   "scales_sha256": "3843b9ff07be2e986f09020bf78ba481637050388d10e925003081d3ca80b7cf",
+   "source_member": "913a485c66d18f0fc630d7e4d33510b9d31f8127058ac29f79db2331689270bb",
+   "weights_sha256": "08ef4d5f4d6ad71ca3b880ba5f7172fb74c2885c8f0b9c9d250eab58e01637d1"
+  }
+ },
+ "note": "read-only; no npz array was loaded; PREDICTED.npz only hashed",
+ "parent_prepared_sha256": "9de6f80925eb87760ce5f8266db07697896c789d682dcacbf3513ad0f4d75ba4",
+ "prepared_sha256": "9caf31d62b9c4f091cd3eb02ca138b065ed3897dc27c1ce4f801443d0622452d",
+ "prepared_sha_matches_spec": true,
+ "qualification": "PREQUENTIAL_TEST_PREDICT_THEN_UPDATE",
+ "results": {
+  "long__WEEKLY-2024-12-29": {
+   "next_checkpoint_id": "e7ff10b72028ef8422b8d4cfea640cf2f0321e5074d611e7b8fff7b0055538fc",
+   "reason": null,
+   "result_digest_ok": true,
+   "result_sha256": "5f0e7e3a07948c3f9496e95ada7a64aeb628164c3e95b01559bb7da5a3319450",
+   "state": "SKIPPED_NO_EVAL_ROWS"
+  },
+  "long__WEEKLY-2025-01-05": {
+   "best_epoch": 26,
+   "donor_produced_by": "long__WEEKLY-2024-12-29",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 36,
+   "files_authenticated": true,
+   "history_len": 36,
+   "inference_donor": "e7ff10b72028ef8422b8d4cfea640cf2f0321e5074d611e7b8fff7b0055538fc",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "849d6d7392b97972e4b24e3f15b20ec40668395f5d05a85b393fc2097fb271d8",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "4d9290d3887e848d2629fc3e148547597bd6165d5fca83919bbbca6f2107a159",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-01-10T22:00:00+00:00",
+   "next_checkpoint_id": "153568bf7a8dfb8c8836f07fa8355d55b38a10d48b283289b989ace2a1de36cb",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-01-05",
+    "period_sha256": "2464b2afdedf997a8c5e71de7dc3ba8c13a767e992018db8983158f8bcd9a9f6",
+    "train_end": "2025-01-05T22:00:00+00:00",
+    "train_start": "2021-01-05T22:00:00+00:00",
+    "validation_end": "2025-01-10T22:00:00+00:00",
+    "validation_start": "2025-01-06T10:00:00+00:00",
+    "week_ids": [
+     "2025-01-05"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "7ebc568ed573da2ae4e5395fb697a141b5cd6d4088de6ad898183cf45a9c2caf",
+   "restored_weights_sha256": "8f6d22682e9a322128681c129c67cd1d403b80bfa407218e3645fce432b27bf0",
+   "result_digest_ok": true,
+   "result_sha256": "c9139fd29f14736a9f3cd20e1966e0e5fe60bd1e0c520c8a0dc5507899a5ef55",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     18,
+     45
+    ],
+    [
+     24,
+     39
+    ],
+    [
+     36,
+     27
+    ],
+    [
+     48,
+     15
+    ],
+    [
+     60,
+     3
+    ],
+    [
+     72,
+     0
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792283025.5953453,
+    "score": 1792283025.5970538,
+    "update_started": 1792283025.630253
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "long__WEEKLY-2025-01-12": {
+   "best_epoch": 36,
+   "donor_produced_by": "long__WEEKLY-2025-01-05",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 46,
+   "files_authenticated": true,
+   "history_len": 46,
+   "inference_donor": "153568bf7a8dfb8c8836f07fa8355d55b38a10d48b283289b989ace2a1de36cb",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "76f5ab7443fd1a54313385d0d7bd76b1a360cbf597cbffb8fcab9736f52960be",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "8f6d22682e9a322128681c129c67cd1d403b80bfa407218e3645fce432b27bf0",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-01-17T22:00:00+00:00",
+   "next_checkpoint_id": "1ae04de6c2c13ec05a64d2e4837a49856ab4a03b55c847c6fbc0b36ba9882649",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-01-12",
+    "period_sha256": "33c619fb3a381c800e50c9f350762473123c7aede89e85ac4c5b7afd6f8204d1",
+    "train_end": "2025-01-12T22:00:00+00:00",
+    "train_start": "2021-01-12T22:00:00+00:00",
+    "validation_end": "2025-01-17T22:00:00+00:00",
+    "validation_start": "2025-01-13T10:00:00+00:00",
+    "week_ids": [
+     "2025-01-12"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "7bd7e8af9540d504d4042f28645879958ed98273db847b43929eda83434e102c",
+   "restored_weights_sha256": "347c7f8cca67ad369b08bfedbf7448ac50f325244001a6e74b77094cec1f8b8e",
+   "result_digest_ok": true,
+   "result_sha256": "00cd2cfec45938644c0af38be93ccf90703ee7d647d433bf3557729d4aa07f4c",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     18,
+     78
+    ],
+    [
+     24,
+     72
+    ],
+    [
+     36,
+     60
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     60,
+     36
+    ],
+    [
+     72,
+     24
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792283424.5657353,
+    "score": 1792283424.5674095,
+    "update_started": 1792283424.6010242
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "long__WEEKLY-2025-01-19": {
+   "best_epoch": 4,
+   "donor_produced_by": "long__WEEKLY-2025-01-12",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 14,
+   "files_authenticated": true,
+   "history_len": 14,
+   "inference_donor": "1ae04de6c2c13ec05a64d2e4837a49856ab4a03b55c847c6fbc0b36ba9882649",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "d7700b024918fb9493641f79afd8f71d8388d806569b19212e8ce7b09db976c8",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "347c7f8cca67ad369b08bfedbf7448ac50f325244001a6e74b77094cec1f8b8e",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-01-24T22:00:00+00:00",
+   "next_checkpoint_id": "19abb9a264b9a5a36e32226d2557e52b50568ab3df0865d281f1d8d6e9b95883",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-01-19",
+    "period_sha256": "e5098121ea512a78ff4d6dd45e05fb762089e1509cb08f2d483be8326c607895",
+    "train_end": "2025-01-19T22:00:00+00:00",
+    "train_start": "2021-01-19T22:00:00+00:00",
+    "validation_end": "2025-01-24T22:00:00+00:00",
+    "validation_start": "2025-01-20T10:00:00+00:00",
+    "week_ids": [
+     "2025-01-19"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "6078ef29eceba9c7802822631355af8b5c8fab67118f8a2fa27729d6ab74d004",
+   "restored_weights_sha256": "2285af1ab2e244dbab56b5bc998412484d0310be361e0289a13bf8a2a05b136f",
+   "result_digest_ok": true,
+   "result_sha256": "28df57ba0c5e8661c621697b4bfd65a8ce60f50f881d1fffb163815659b7b4ba",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     18,
+     78
+    ],
+    [
+     24,
+     72
+    ],
+    [
+     36,
+     60
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     60,
+     36
+    ],
+    [
+     72,
+     24
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792283959.6389887,
+    "score": 1792283959.6410418,
+    "update_started": 1792283959.6757276
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "long__WEEKLY-2025-01-26": {
+   "best_epoch": 8,
+   "donor_produced_by": "long__WEEKLY-2025-01-19",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 18,
+   "files_authenticated": true,
+   "history_len": 18,
+   "inference_donor": "19abb9a264b9a5a36e32226d2557e52b50568ab3df0865d281f1d8d6e9b95883",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "8cffa3fbd622aa1cc6c34909c188628555a6a91b2ba2d994409411d27481e92e",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "2285af1ab2e244dbab56b5bc998412484d0310be361e0289a13bf8a2a05b136f",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-01-31T22:00:00+00:00",
+   "next_checkpoint_id": "12cc2da79c896e3010c0c75678c8a2fa7bf55f2bb14db206d75ef3b88a5919c5",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-01-26",
+    "period_sha256": "1f1498dfdadfe24ff9a76dee04f3605119a3714cba06f89a571bd0eea4a7fb68",
+    "train_end": "2025-01-26T22:00:00+00:00",
+    "train_start": "2021-01-26T22:00:00+00:00",
+    "validation_end": "2025-01-31T22:00:00+00:00",
+    "validation_start": "2025-01-27T10:00:00+00:00",
+    "week_ids": [
+     "2025-01-26"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "df021d6dd6756c01703bdcf57670a5bbfd1860066c915fda64c9bcccdadc031d",
+   "restored_weights_sha256": "9da945e550206771b9a6f6e3d6a06047153c37d0962d5818335fb01a3060ad78",
+   "result_digest_ok": true,
+   "result_sha256": "3827f98f14857e0561a7c7320e1ee5974dc425529d4e8ad1f38426ca8520bee5",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     18,
+     78
+    ],
+    [
+     24,
+     72
+    ],
+    [
+     36,
+     60
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     60,
+     36
+    ],
+    [
+     72,
+     24
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792284164.644055,
+    "score": 1792284164.645991,
+    "update_started": 1792284164.679403
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "long__WEEKLY-2025-02-02": {
+   "best_epoch": 17,
+   "donor_produced_by": "long__WEEKLY-2025-01-26",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 27,
+   "files_authenticated": true,
+   "history_len": 27,
+   "inference_donor": "12cc2da79c896e3010c0c75678c8a2fa7bf55f2bb14db206d75ef3b88a5919c5",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "066996ec6728c82ab7e8c927cd939e0c059cdf21beaf51d987068fffabfc1120",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "9da945e550206771b9a6f6e3d6a06047153c37d0962d5818335fb01a3060ad78",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-02-07T22:00:00+00:00",
+   "next_checkpoint_id": "482d5a3c92935a8974ae02737d2b9a4ba38ecb23f47ed02390c170ead9e70bf1",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-02-02",
+    "period_sha256": "e91c81f5c10a868a2d19bbe3c1cea249f82b71f905d30e31c6ca42eb7830c91d",
+    "train_end": "2025-02-02T22:00:00+00:00",
+    "train_start": "2021-02-02T22:00:00+00:00",
+    "validation_end": "2025-02-07T22:00:00+00:00",
+    "validation_start": "2025-02-03T10:00:00+00:00",
+    "week_ids": [
+     "2025-02-02"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "9ad5f9829f8ea49fc6a90065377c03c373cbb90830a91d76b41095db26f43263",
+   "restored_weights_sha256": "6dc46c97b400349e8534359f58208f0f2bfa06d762cfe5db60fbf477ce076203",
+   "result_digest_ok": true,
+   "result_sha256": "8c3372d7a3b672c752e65430a317cf00ca8ef0db944ffcf9a9751fe898db3133",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     18,
+     78
+    ],
+    [
+     24,
+     72
+    ],
+    [
+     36,
+     60
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     60,
+     36
+    ],
+    [
+     72,
+     24
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792284499.3414905,
+    "score": 1792284499.3433628,
+    "update_started": 1792284499.3770123
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "short__WEEKLY-2024-12-29": {
+   "next_checkpoint_id": "3439e386750a93162a8d5a2a5ffd9397f7f14febf368e4e4333ca73e0336af37",
+   "reason": null,
+   "result_digest_ok": true,
+   "result_sha256": "d079d3c3d51e92ab17dcff481f3a5c8fc398e144f892246c448a1981b6ba760f",
+   "state": "SKIPPED_NO_EVAL_ROWS"
+  },
+  "short__WEEKLY-2025-01-05": {
+   "best_epoch": 1,
+   "donor_produced_by": "short__WEEKLY-2024-12-29",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 11,
+   "files_authenticated": true,
+   "history_len": 11,
+   "inference_donor": "3439e386750a93162a8d5a2a5ffd9397f7f14febf368e4e4333ca73e0336af37",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "3843b9ff07be2e986f09020bf78ba481637050388d10e925003081d3ca80b7cf",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "08ef4d5f4d6ad71ca3b880ba5f7172fb74c2885c8f0b9c9d250eab58e01637d1",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-01-10T22:00:00+00:00",
+   "next_checkpoint_id": "a7beea62ea7a494268b7389334592b2b77cec13416d27ad2a16e1031c235b3af",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-01-05",
+    "period_sha256": "2464b2afdedf997a8c5e71de7dc3ba8c13a767e992018db8983158f8bcd9a9f6",
+    "train_end": "2025-01-05T22:00:00+00:00",
+    "train_start": "2021-01-05T22:00:00+00:00",
+    "validation_end": "2025-01-10T22:00:00+00:00",
+    "validation_start": "2025-01-06T10:00:00+00:00",
+    "week_ids": [
+     "2025-01-05"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "c465edd5fdc58df3f498c2d90a33bc056b2e6681d2a8fc114f81f8521ab728f7",
+   "restored_weights_sha256": "55e0b131a8867a6a25b307cc188ccb2a0a214c27a7853045aa62ad6aeb64673e",
+   "result_digest_ok": true,
+   "result_sha256": "22bd9f9fa49b389e1658018812fc1f848c24b87b7745186b8580ec39f8bd56b0",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     2,
+     57
+    ],
+    [
+     3,
+     56
+    ],
+    [
+     4,
+     55
+    ],
+    [
+     5,
+     54
+    ],
+    [
+     6,
+     53
+    ],
+    [
+     12,
+     47
+    ],
+    [
+     18,
+     41
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792282928.1122963,
+    "score": 1792282928.1140702,
+    "update_started": 1792282928.1523454
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "short__WEEKLY-2025-01-12": {
+   "best_epoch": 17,
+   "donor_produced_by": "short__WEEKLY-2025-01-05",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 27,
+   "files_authenticated": true,
+   "history_len": 27,
+   "inference_donor": "a7beea62ea7a494268b7389334592b2b77cec13416d27ad2a16e1031c235b3af",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "b109128cb594dc3ab7570ff54a7fa7e33d1f2fd5a46cf6c91650e8a9300d1e4a",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "55e0b131a8867a6a25b307cc188ccb2a0a214c27a7853045aa62ad6aeb64673e",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-01-17T22:00:00+00:00",
+   "next_checkpoint_id": "0ed34f7aa9c22043229130052390d8c875c168b4e62572a9bd883aa288a673df",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-01-12",
+    "period_sha256": "33c619fb3a381c800e50c9f350762473123c7aede89e85ac4c5b7afd6f8204d1",
+    "train_end": "2025-01-12T22:00:00+00:00",
+    "train_start": "2021-01-12T22:00:00+00:00",
+    "validation_end": "2025-01-17T22:00:00+00:00",
+    "validation_start": "2025-01-13T10:00:00+00:00",
+    "week_ids": [
+     "2025-01-12"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "56b691020a750c8ca0ca55f20b255a614b3f960e5d93dfcb7441e67b8e9944f7",
+   "restored_weights_sha256": "c4f8556cb77908919cad1e0b4a05928ce1add37c3981d6f4e56b22c2ce4cb038",
+   "result_digest_ok": true,
+   "result_sha256": "18f3334cc13cc70f1c7957af43031c6072a5610c307bfe0726a3ef7cd4210e9a",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     2,
+     94
+    ],
+    [
+     3,
+     93
+    ],
+    [
+     4,
+     92
+    ],
+    [
+     5,
+     91
+    ],
+    [
+     6,
+     90
+    ],
+    [
+     12,
+     84
+    ],
+    [
+     18,
+     78
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792283243.6007783,
+    "score": 1792283243.6027577,
+    "update_started": 1792283243.6412618
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "short__WEEKLY-2025-01-19": {
+   "best_epoch": 33,
+   "donor_produced_by": "short__WEEKLY-2025-01-12",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 43,
+   "files_authenticated": true,
+   "history_len": 43,
+   "inference_donor": "0ed34f7aa9c22043229130052390d8c875c168b4e62572a9bd883aa288a673df",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "3962d40b62d5b0d543afe913ce62457305099bed2bf207f3b325087df3fa7b6b",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "c4f8556cb77908919cad1e0b4a05928ce1add37c3981d6f4e56b22c2ce4cb038",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-01-24T22:00:00+00:00",
+   "next_checkpoint_id": "92ab00b1be982249e2387f27d98622d2074d7cbc3514bed136dd54ffd2688756",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-01-19",
+    "period_sha256": "e5098121ea512a78ff4d6dd45e05fb762089e1509cb08f2d483be8326c607895",
+    "train_end": "2025-01-19T22:00:00+00:00",
+    "train_start": "2021-01-19T22:00:00+00:00",
+    "validation_end": "2025-01-24T22:00:00+00:00",
+    "validation_start": "2025-01-20T10:00:00+00:00",
+    "week_ids": [
+     "2025-01-19"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "7ce65064b33b6147921e5c96acfbfa379bdd8e9f4cb61897d765d749a13e7fe2",
+   "restored_weights_sha256": "7877a55efd6a4b8b36ba5a95c6c5a70d3bfa0103a3d4270d5d955a2a015fa396",
+   "result_digest_ok": true,
+   "result_sha256": "d631c11426092a1fafa75410e4e6df309f77855f9cdf906cc2fbf6992a9b85be",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     2,
+     94
+    ],
+    [
+     3,
+     93
+    ],
+    [
+     4,
+     92
+    ],
+    [
+     5,
+     91
+    ],
+    [
+     6,
+     90
+    ],
+    [
+     12,
+     84
+    ],
+    [
+     18,
+     78
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792283693.583637,
+    "score": 1792283693.585534,
+    "update_started": 1792283693.6239648
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "short__WEEKLY-2025-01-26": {
+   "best_epoch": 1,
+   "donor_produced_by": "short__WEEKLY-2025-01-19",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 11,
+   "files_authenticated": true,
+   "history_len": 11,
+   "inference_donor": "92ab00b1be982249e2387f27d98622d2074d7cbc3514bed136dd54ffd2688756",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "bd58fbd3996edaba478049686dbf5931b7fae1cc793cfb0acc205aeb856ba07f",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "7877a55efd6a4b8b36ba5a95c6c5a70d3bfa0103a3d4270d5d955a2a015fa396",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-01-31T22:00:00+00:00",
+   "next_checkpoint_id": "9f99942f131db8300f2bdffefc977691146b3126ce0dedfb201c229222265ea6",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-01-26",
+    "period_sha256": "1f1498dfdadfe24ff9a76dee04f3605119a3714cba06f89a571bd0eea4a7fb68",
+    "train_end": "2025-01-26T22:00:00+00:00",
+    "train_start": "2021-01-26T22:00:00+00:00",
+    "validation_end": "2025-01-31T22:00:00+00:00",
+    "validation_start": "2025-01-27T10:00:00+00:00",
+    "week_ids": [
+     "2025-01-26"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "4738584e7c22c3e349aa4d44d3d88e62a309c94e0b4b95dc2ddb316e5be3dea5",
+   "restored_weights_sha256": "803a48d212124db55d35eac74150d41e29db382765b8e5f5d4842511af712d8f",
+   "result_digest_ok": true,
+   "result_sha256": "840417a867b53aacfd9ece90de569e9ab481abfec3e9f71e04cd05b83f3e4f1e",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     2,
+     94
+    ],
+    [
+     3,
+     93
+    ],
+    [
+     4,
+     92
+    ],
+    [
+     5,
+     91
+    ],
+    [
+     6,
+     90
+    ],
+    [
+     12,
+     84
+    ],
+    [
+     18,
+     78
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792284068.2098417,
+    "score": 1792284068.2118814,
+    "update_started": 1792284068.2516668
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "short__WEEKLY-2025-02-02": {
+   "best_epoch": 22,
+   "donor_produced_by": "short__WEEKLY-2025-01-26",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 32,
+   "files_authenticated": true,
+   "history_len": 32,
+   "inference_donor": "9f99942f131db8300f2bdffefc977691146b3126ce0dedfb201c229222265ea6",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "1538aa7b7ff13b7f95774888edac365c6a2ebc338cc59025f80416c25c9f23ed",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "803a48d212124db55d35eac74150d41e29db382765b8e5f5d4842511af712d8f",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-02-07T22:00:00+00:00",
+   "next_checkpoint_id": "575e75e03715317072c0299ac678ad38db420e41a4eff7e4841f5d52611da50f",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-02-02",
+    "period_sha256": "e91c81f5c10a868a2d19bbe3c1cea249f82b71f905d30e31c6ca42eb7830c91d",
+    "train_end": "2025-02-02T22:00:00+00:00",
+    "train_start": "2021-02-02T22:00:00+00:00",
+    "validation_end": "2025-02-07T22:00:00+00:00",
+    "validation_start": "2025-02-03T10:00:00+00:00",
+    "week_ids": [
+     "2025-02-02"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "6df97e8d8e4040f4390875c022b82ac416f5f57e0a6aa51f6068a4b82c916822",
+   "restored_weights_sha256": "293dded624ca7c15cebfb119071c791f5ac7b32296148abe37faa435a8abc93c",
+   "result_digest_ok": true,
+   "result_sha256": "586af4fa21f2662d22f463b426c12e74d33ef111c72ab783f83b5deff3dfbdce",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     2,
+     94
+    ],
+    [
+     3,
+     93
+    ],
+    [
+     4,
+     92
+    ],
+    [
+     5,
+     91
+    ],
+    [
+     6,
+     90
+    ],
+    [
+     12,
+     84
+    ],
+    [
+     18,
+     78
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792284293.6162052,
+    "score": 1792284293.6181417,
+    "update_started": 1792284293.6567516
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  },
+  "short__WEEKLY-2025-02-09": {
+   "best_epoch": 14,
+   "donor_produced_by": "short__WEEKLY-2025-02-02",
+   "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "0.5*(fit_loss+inner_loss)",
+    "patience": 10,
+    "restore": "lowest_monitored_first_tie",
+    "rule": "i6dmo.mean_monitor_stop.v1"
+   },
+   "epochs": 24,
+   "files_authenticated": true,
+   "history_len": 24,
+   "inference_donor": "575e75e03715317072c0299ac678ad38db420e41a4eff7e4841f5d52611da50f",
+   "inference_scaler_eq_donor_scaler": true,
+   "inference_scaler_sha256": "31c8c26c39d7122aabeb92d5a6e3d2e069783a708a2dda6feebe0a48fa86ac3f",
+   "init_weights_eq_donor_weights": true,
+   "initial_weights_sha256": "293dded624ca7c15cebfb119071c791f5ac7b32296148abe37faa435a8abc93c",
+   "monitor": "0.5*(TRAIN+ALREADY_OBSERVED_WEEK)",
+   "next_checkpoint_available_by": "2025-02-14T22:00:00+00:00",
+   "next_checkpoint_id": "eecc74f7469d0b7f830c95a35d19a8bcc7bc52939e40204ea026fc2069e672be",
+   "next_checkpoint_scales_eq_period_train_scales": true,
+   "order_prediction_lt_score_lt_update": true,
+   "period": {
+    "cadence": "WEEKLY",
+    "id": "WEEKLY-2025-02-09",
+    "period_sha256": "8afd7e1008e47167b9386d1c5a17d6023de72a821e16e0023abccdbde6111507",
+    "train_end": "2025-02-09T22:00:00+00:00",
+    "train_start": "2021-02-09T22:00:00+00:00",
+    "validation_end": "2025-02-14T22:00:00+00:00",
+    "validation_start": "2025-02-10T10:00:00+00:00",
+    "week_ids": [
+     "2025-02-09"
+    ]
+   },
+   "predicted_npz_hash_matches": true,
+   "prediction_sha256": "832571ce744b14c77d6a91ae06698aac9dadb74fb7a919012cc94a1619cb24e7",
+   "restored_weights_sha256": "1d212f57d0ce364b74a2bcbde62682439b7da2b05f881cacef46808971ed5eff",
+   "result_digest_ok": true,
+   "result_sha256": "8932afe6f0aa2cf3bbb01f61e95d2ba17ef36d224e06386f45b11bb634610946",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "score_binds_prediction": true,
+   "split_roles": {
+    "fit": "FOUR_YEARS_BEFORE_OBSERVED_WEEK",
+    "inner": "ALREADY_OBSERVED_WEEK",
+    "test_read": true,
+    "use": "NEXT_WEEK_ONLY"
+   },
+   "stage": "PREDICTION_SEALED_BEFORE_OBSERVATION",
+   "state": "COMPLETE",
+   "stop_reason": "patience",
+   "test_heads_n": [
+    [
+     2,
+     94
+    ],
+    [
+     3,
+     93
+    ],
+    [
+     4,
+     92
+    ],
+    [
+     5,
+     91
+    ],
+    [
+     6,
+     90
+    ],
+    [
+     12,
+     84
+    ],
+    [
+     18,
+     78
+    ]
+   ],
+   "timestamps": {
+    "prediction": 1792284672.6595001,
+    "score": 1792284672.6614306,
+    "update_started": 1792284672.7000546
+   },
+   "training_eq_spec": true,
+   "update_donor_eq_inference_donor": true
+  }
+ },
+ "seed": 6102026,
+ "training": {
+  "batch_size": 256,
+  "learning_rate": 0.001,
+  "max_epochs": 200,
+  "min_delta": 1e-08,
+  "patience": 10,
+  "weight_decay": 0.0001
+ }
+}
