@@ -14,6 +14,13 @@ el naive de precios para ensayar una politica RL. El detalle vinculante es
 Preparacion de contratos y pruebas CPU sinteticas puede avanzar en paralelo;
 ningun fit financiero se adelanta a la admision real.
 
+Precision aprobada 2026-10-18: el primer contraste RL es ESTATICO, sin reajuste
+durante evaluacion. SAC con datos directos frente a SAC con ramas Conv1D pequenas
+y nucleo temporal, inicialmente 13 observaciones cada dos horas de mercado.
+Maximo una apertura por dia de negocio; salidas y cierre forzoso no se bloquean.
+Reajuste y otros algoritmos se contrastan despues. Implementacion en
+agent-multi y gym-fx, sin modificar DOIN ni retomar predictores.
+
 Directiva 2026-10-18: inventariar, recuperar y curar los datos antes de cualquier
 nuevo entrenamiento o seleccion. Eliminar los resultados, pesos, configuraciones,
 rankings, registros, metricas y copias derivados de los inputs afectados; no

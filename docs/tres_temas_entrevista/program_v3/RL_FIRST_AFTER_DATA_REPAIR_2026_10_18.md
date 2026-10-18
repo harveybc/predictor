@@ -16,6 +16,9 @@ to finish forecasting experiments and all representation studies before RL.
 5. RL2: train/evaluate the existing SAC plugin, first a compact control and
    then the existing modular temporal representation on the same selected
    information. The compact control does not replace the modular experiment.
+   Owner clarification: this FIRST contrast is STATIC, refit cadence NONE.
+   Validation/test evaluation performs inference without optimizer/replay
+   updates. Periodic adaptation is deferred to RL4, not silently enabled.
 6. RL3: DQN for a separately declared discrete action space; PPO/MaskablePPO
    and a modern continuous-control challenger only after the action interface
    and first SAC result make the comparison meaningful. No algorithm is
@@ -56,6 +59,12 @@ transition/reward before it becomes available.
 
 - EURUSD first; ETH only under a separate 24x7 calendar/instrument contract.
 - One concurrent position per instrument; BUY, SELL and FLAT semantics explicit.
+- At most one entry per business day (initial timezone America/New_York).
+  Protective/closing orders do not consume or obey the entry quota. Count both
+  submissions and filled entry parents, including delayed and partial fills;
+  cancellation does not restore the day's submission allowance. Expose quota
+  availability in the policy observation, and report entry and closed-trade
+  counts separately. A reversal closes first, with no same-action new entry.
 - Versioned source/broker session calendar and timezone, DST and holidays.
   Force flat 12 hours before close; prevent reopening until 12 hours after open.
   Entry cutoff/wind-down is configured, never guessed from a weekday name.
@@ -76,6 +85,7 @@ transition/reward before it becomes available.
 - WEEKLY warm-start updates during closure are the business default. NONE,
   QUARTERLY, MONTHLY, DAILY and per-tick are separately identified experiments,
   not a reason to discard the default or an automatic path to more updates.
+  For the first approved RL comparison, NONE explicitly overrides that default.
 - TRAIN2020-2023, VALIDATION2024 and TEST2025 are the declared time ranges.
   TEST2025 has already been examined in the prior initiative; repaired bytes
   do not make it a pristine final holdout. Declare this and reserve genuinely
@@ -117,6 +127,23 @@ drawdown, Sharpe/Sortino with declared sampling/annualization, trades, turnover,
 exposure, profit factor, transaction-cost breakdown, liquidation/constraint
 violations, and weekly/yearly coverage. Undefined ratios stay undefined.
 Use an equity-return series including flat periods, not only closed trades.
+Winning-trade percentage uses closed trades and net PnL, not submitted orders.
+
+The owner subsequently asked about caps of two or four entries/day. Keep one
+as the accepted control and prepare a proposed 1/2/4 contrast; this is a maximum,
+never a minimum activity objective. Compare each policy trained under its own
+cap on the same support, costs, seed protocol and daily risk budget. Do not
+infer a higher allowable leverage or daily loss budget from more entries.
+No live broker rule is disabled. The caps are experiment parameters, not a
+representation of FINRA's former rolling-five-day PDT count.
+
+Engineering specification and test mapping now live in agent-multi:
+`docs/work_plan/43_STATIC_RL_CURATED_COMPARISON.md`. Initial temporal branch
+filters=4, core filters=8, kernels=3, no temporal downsampling inside the
+encoder; flatten only at the actor/critic head boundary. The per-feature
+convolutions remain trainable with the agent. These are hypotheses, not fitted
+optimal sizes or transferred weights. Starting history=13 observations with
+input stride=2 admitted hourly bars, including the current completed bar.
 
 Report TRAIN and VALIDATION separately, including fixed-policy diagnostics and
 prospective walk-forward scores as distinct populations. Online updates may
