@@ -1,6 +1,6 @@
 {
   "initiative": "owner_authorized_weekly_test_replication",
-  "current_stage": "S10_MONITOR_CONTRAST_VERIFICATION",
+  "current_stage": "S14_MONITOR_CONTRAST_RUNNING",
   "plan": "PROCEDIMIENTO_CANONICO.md",
   "traceability": "PROCEDIMIENTO_CANONICO.md#pruebas-obligatorias",
   "history": [
@@ -16,7 +16,7 @@
     {"stage":"S14_TRAIN_REPORTING_CLARIFICATION","status":"CONTRACT_DOCUMENTED_TRAIN_REPLAY_PENDING","evidence":"GENERALIZATION_REPORTING.md; owner defines reported TRAIN as post-fit reload plus complete weekly adaptive TRAIN replay, not internal FIT; initial trajectory checkpoint policy must be frozen before execution; no new training campaign launched by this clarification"}
   ],
   "active_design": "MONITOR_CONTRAST_20261018.md",
-  "monitor_contrast_evidence": {"S0_S8":"DESIGNED_MC01_MC09", "S9":"15 tests passed including real trainer synthetic CPU checks", "S10":"IN_PROGRESS_GPU_CHECKS_PENDING", "historical_source_pin_test":"expected refusal: new experiment extends trainer/model, historical deployed runtimes unchanged"},
+  "monitor_contrast_evidence": {"S0_S8":"DESIGNED_MC01_MC09", "S9":"15 tests passed including real trainer synthetic CPU checks", "S10":"104 broader regressions passed; historical slots=25 rejection test stale; source-pin test excluded for new identity", "S11_S12":"3 GPU tests passed on each worker; both first weekly units completed; 2 reports read back, zero pending/discrepant", "S14":"600 units across two GPUs; timers, durable outbox and readback active; deployed dc818635; RETURN_MONITOR_CONTRAST_20261018.md", "historical_source_pin_test":"expected refusal: new experiment extends trainer/model, historical deployed runtimes unchanged"},
   "next_allowed_actions": ["verify monitor adapters and optional BN on both GPUs", "launch frozen weekly VALIDATION contrasts", "automated OLAP readback and physical mirrors", "implement subsequent full TRAIN_REPLAY diagnostic"],
   "blocked_actions": ["train before sealing current-week predictions", "replace saved predictions with updated-model outputs", "undeclared initial checkpoint change", "change model outside declared BN contrast", "substitute FIT for TRAIN_REPLAY", "open real-money positions", "run both preferred-host GPUs concurrently"]
 }
