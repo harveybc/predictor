@@ -18,7 +18,9 @@ maximo en moneda de cuenta igual a fraccion_elegida * rel_volume * balance(t).
 rel_volume es configurable (inicial0.1); el apalancamiento se aplica aparte
 para convertir margen a nominal. El minimo del broker nunca fuerza superar
 el presupuesto: si no alcanza, no abrir. Mantener esta regla en ambos SAC y
-controles; la comparacion actual usa apalancamiento1:1 y minimo/paso de ejemplo.
+controles; por instruccion del propietario la comparacion inicial usa
+apalancamiento1:50 y minimo/paso de ejemplo.1:100 configurable; el contraste
+1:1 queda para despues. Configurar el broker y el sizing con el mismo valor.
 
 Precision del propietario 2026-10-19: la seleccion de caracteristicas es una
 dependencia cientifica obligatoria del contraste RL solicitado, no decoracion.

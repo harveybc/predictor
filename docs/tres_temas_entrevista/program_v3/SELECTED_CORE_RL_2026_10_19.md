@@ -28,7 +28,7 @@ external inventory; this specific selection is complete
 
 ## Comparison Running
 
-Replacement started2026-10-19T10:40:33Z (05:40 Bogota). At startup verification,
+Leverage50 replacement started2026-10-19T10:50:19Z (05:50 Bogota). At startup verification,
 SAC direct was training with a fresh heartbeat on the5090. The same
 finite queue then runs validation, SAC temporal, its validation and four
 mechanical controls across both splits:12 tasks. No agent watches logs.
@@ -46,7 +46,7 @@ continue across restarts. One heavy process on this host, never5070Ti parallel.
 | Anti-overfitting ablations | Not active: no ES/dropout/BN/explicit weight decay in this fixed control |
 | Capital / activity | USD10000, one position and at most one entry per NY business day |
 | Mandatory order budget | Fraction chosen by action times0.1 times balance; one-base-unit illustrative minimum and downward step |
-| Protection / leverage | Finite positive SL/TP required before entry; ATR multipliers2/4; pilot leverage remains1:1 |
+| Protection / leverage | Finite positive SL/TP required before entry; ATR multipliers2/4; pilot leverage1:50 |
 | Closures | Existing12h force-flat/reopen rules and unchanged entry wind-down |
 | Costs | Existing nonzero analytical scenario, not broker-verified costs |
 | Direct arm | Existing compact SAC using the selected temporal window directly |
@@ -54,11 +54,11 @@ continue across restarts. One heavy process on this host, never5070Ti parallel.
 | Final heads | Same32/32 actor/critic heads; no retired pretrained encoder weights |
 
 Contract:
-`143051b15a901e842852431629b8af806b4abcde25e2a7a573037409c939265b`.
-Scientific runtime agent-multi `d61473b0`, gym-fx `69407a7`.
+`37e0619224109416dc35a726831183975fd41b03823a30685630dc2896d38029`.
+Scientific runtime agent-multi `ab265fad`, gym-fx `df1b602`.
 Preparation code `41f5af170`; selection operation `9d4d06a`.
-Verification: six prep tests,55 selector tests,127 focused RL/input/collector
-tests and108 focused gym protection/budget/session tests pass. Counts are
+Verification: six prep tests,55 selector tests,135 focused RL/input/collector
+tests and110 focused gym protection/budget/session tests pass. Counts are
 independent suites, not a universal quality certificate.
 
 The initial incomplete contract41c6acf3 was stopped and disabled after the
@@ -66,6 +66,12 @@ owner clarified the mandatory balance allocation. It used portfolio-fraction
 sizing without rel_volume and is not reused. New request v2 changes only the
 order-allocation contract and engineering guard, not selected data, window,
 architecture, seed or SAC budget. Both new arms start fresh under this identity.
+
+The owner then prioritized leverage1:50, not1:1. Incomplete contract143051b1
+was stopped and not reused. Request v3 binds leverage50 into the broker and
+both envelope leverage fields. The15 inputs,13 observations at stride2,
+models, seed, rel_volume0.1, costs, protection and budgets remain unchanged.
+Leverage1:100 is configurable; a1:1 contrast is deferred, not running in parallel.
 
 Balance allocation is a margin ceiling in account currency, not risk-to-SL:
 `min(abs(action),1) * rel_volume * balance(t)`. The existing0.002 cost headroom

@@ -10,10 +10,12 @@ Corte mas reciente: [15 variables seleccionadas y contraste SAC activo](SELECTED
 La seleccion acotada del nucleo EURUSD esta cerrada:30 candidatas,435 pares,
 nueve filtros,15 variables,37198 filas nativas OLAP y dos copias verificadas.
 El catalogo externo y la identificacion causal completa siguen pendientes.
-La cola seleccionada corregida arranco10:40:33Z, con latido inicial verificado,
+La cola seleccionada con apalancamiento1:50 arranco10:50:19Z,
 SAC directo en5090. Temporal sigue automaticamente con identicas15 entradas.
-Contrato143051b1, seleccion553fc047. Cada entrada exige SL/TP y presupuesto
-fraccion_elegida * rel_volume * balance(t), rel_volume0.1; apalancamiento1:1.
+Contrato37e06192, seleccion553fc047. Cada entrada exige SL/TP y presupuesto
+fraccion_elegida * rel_volume * balance(t), rel_volume0.1; apalancamiento1:50.
+El intento1:1 incompleto143051b1 se detuvo sin reutilizar pesos al recibir
+la nueva prioridad del propietario.1:100 configurable;1:1 queda para despues.
 El intento incompleto41c6acf3 se detuvo sin reutilizar pesos porque usaba
 fraccion de cartera en lugar del presupuesto relativo aclarado por el usuario.
 No hay resultados nuevos de politicas aun.
