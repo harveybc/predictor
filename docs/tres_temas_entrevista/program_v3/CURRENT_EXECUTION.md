@@ -6,6 +6,12 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Actualizacion por orden del propietario: nuevos ensayos del SAC temporal
+PAUSADOS. Su TRAIN y VALIDATION de referencia ya terminaron; no se detuvo
+ningun ajuste vivo ni se modifico la campana. Los controles siguen corriendo
+y el sucesor de early stopping del SAC directo sigue armado. No se han
+ejecutado pruebas cientificas de BatchNorm, dropout ni weight decay.
+
 Siguiente trabajo aprobado, ya desplegado: [early stopping del SAC directo](RL_PAIRED_EARLY_STOP_2026_10_19.md),
 contratoac792153, esperando cierre verificado del contraste37e06192.
 Arranque en5090, evaluacion y publicacion por checkpoint, cierre y segunda copia

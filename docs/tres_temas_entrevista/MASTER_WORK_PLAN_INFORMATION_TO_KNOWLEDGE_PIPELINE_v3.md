@@ -6,6 +6,13 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+Orden mas reciente: PAUSAR nuevos ensayos del SAC temporal. Sus ajustes de
+referencia TRAIN/VALIDATION ya finalizaron; no hay un fit temporal vivo que
+detener. Conservar sus resultados, no repetirlos ni lanzar nuevas variantes.
+Continuan los controles de cierre y el sucesor del SAC directo con early
+stopping; esta pausa no afecta al directo. BatchNorm, dropout y regularizacion
+de pesos siguen sin ejecucion cientifica y se probaran por separado.
+
 Prioridad aprobada mas reciente: controlar la generalizacion del SAC directo
 antes de ampliar modelos/barridos. Se desplego el sucesor de early stopping
 pareado, sin BatchNorm ni dropout y sin combinarlos. Cada5000 pasos evalua

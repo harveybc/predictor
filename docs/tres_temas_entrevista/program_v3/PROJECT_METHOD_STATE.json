@@ -17,6 +17,14 @@
     "plan": "RL_PAIRED_EARLY_STOP_2026_10_19.md"
   },
   "execution_owner": "Musashi",
+  "temporal_sac_pause": {
+    "requested_by_owner": true,
+    "scope": "NEW_TEMPORAL_SAC_FITS_AND_VARIANTS",
+    "new_dispatch_enabled": false,
+    "existing_temporal_fit_state": "TRAIN_AND_VALIDATION_COMPLETED",
+    "direct_early_stop_paused": false,
+    "completed_artifacts_preserved": true
+  },
   "gpu_allocation_policy": {
     "preferred": "5090_ESPECIALLY_HEAVY_MODELS_OR_LONG_WINDOWS",
     "secondary": "4090_PARALLEL_INDEPENDENT_WORK_IF_IDLE_AND_RESOURCE_ADMITTED",

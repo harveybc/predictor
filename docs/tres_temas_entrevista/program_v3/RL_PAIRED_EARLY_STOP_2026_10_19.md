@@ -13,6 +13,11 @@ change. The partial training percentages previously shown were not validation.
 
 ## Approved Next Experiment
 
+Owner follow-up: new temporal SAC experiments are paused. Its existing
+reference fits completed, so this pauses future dispatch rather than killing
+a running fit. The direct-only early-stop successor continues unchanged.
+Engineering tests are not financial evidence that a regularizer works.
+
 Keep the same15 selected variables, their bytes/normalization,13 observations
 at stride2,32/32 SAC heads, seed7, leverage50, relative margin budget0.1,
 mandatory ATR SL/TP, business calendar and cost scenario. Only add checkpoint
