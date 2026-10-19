@@ -12,6 +12,9 @@
   "first_RL_experiment": {"refit_cadence": "NONE", "max_entries_per_business_day": 1, "candidate_input_observations": 13, "candidate_input_stride_open_bars": 2, "arms": ["SAC_FLAT", "SAC_PER_FEATURE_CONV1D"], "engineering_repo": "agent-multi", "engineering_plan": "docs/work_plan/43_STATIC_RL_CURATED_COMPARISON.md", "financial_fit_started": false},
   "scientific_training_authorized": false,
   "data_admission_complete": false,
+  "boundary_recovery": {"provider": "FXCM", "source_archive": "2019/53", "observed_missing_hours_per_pair": 40, "pairs": ["eurusd", "gbpusd"], "whole_lake_admitted": false},
+  "histdata_clock_diagnostic": {"code": "b6ae8413f", "raw_years": [2023, 2024, 2025], "paired_daily_comparisons": 4578, "warehouse_reports": 6, "warehouse_metrics": 22890, "pending": 0, "mismatch": 0, "two_machine_copies_verified": true, "admitted": false, "automatic_clock_selection": false},
+  "selection_rebuild_adapter": {"code": "2e90ee2", "scope": "PROFILE_ONLY_THEN_PAIRWISE_AND_FILTERS", "synthetic_engine_execution_verified": true, "remote_publication": false, "causal_evidence_computed": false, "financial_execution": false},
   "feature_selection_complete": false,
   "current_runtime_method_state": "../../i6n/weekly_test/PROJECT_METHOD_STATE.json",
   "documents": {

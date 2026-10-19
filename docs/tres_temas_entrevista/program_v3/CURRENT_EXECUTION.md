@@ -6,6 +6,23 @@ trabajo. No hay entrenamiento financiero autorizado en esta reparacion.
 
 ## Ahora
 
+- Recuperacion concreta: descargadas 40 horas nativas faltantes por par del
+  archivo FXCM 2019/53, correspondientes a enero de 2020. La preparacion del
+  parche termino: 40 filas por par, hashes y precios conservados, 25 pruebas.
+  Es independiente del lago y no declara admision general.
+- Cuatro ZIP anuales nuevos de HistData descargados sin fallos: EURUSD y GBPUSD
+  2024/2025, 6243/6225 horas candidatas por par. Ya existen localmente; falta
+  consolidar la regla de reloj y verificar los reemplazos antes de incorporarlos.
+- HistData 2023: replay de los ZIP originales, 1539 comparaciones diarias
+  emparejadas. El conflicto horario sigue las fechas DST europeas. Evidencia
+  publicada para 2023-2025: 6 informes, 22890 metricas, cero pendientes/discrepancias y copias
+  fisicas coincidentes en dos maquinas. No se ha elegido un reloj a escondidas.
+- Doce consultas acotadas a archivos de minutos FXCM de las semanas faltantes
+  2024-2025 devolvieron 404; recibos guardados, sin bucle de reintentos inutiles.
+- Selector @2e90ee2: adaptador secuencial/reanudable probado con los motores
+  existentes de perfiles, pares y nueve filtros. Publicacion local DuckDB y
+  readback verificados sobre datos sinteticos; no es seleccion financiera final,
+  no calcula aun evidencia causal y falta conectar publicacion remota.
 - Datos: recuperacion nativa2020-2025 y candidatos alternativos. Forexite declara
   CET/CEST en su pagina oficial: reloj verificado, 86 archivos/206858 filas
   normalizados sin interpolacion. Faltan quote side, etiqueta temporal de minuto,

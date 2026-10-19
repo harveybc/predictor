@@ -92,3 +92,25 @@ no pending/mismatched delivery. A 1,585,152-byte DuckDB snapshot has matching
 copies on two machines, SHA-256
 `739f3bfd5ef8a71378c99b2c2c23be3c56ea37c8d9412808547eb39263e2ef1a`.
 These quality measurements do not grant data or feature-selection admission.
+
+## Additional execution, same data-first order
+
+Recovered and authenticated 40 missing FXCM boundary hours per pair from the
+2019/53 source archive; new candidate files preserve native prices and timestamp
+availability, with atomic completion and read-only status. Data code 5866040b6,
+25 parser/integrity tests passed. No source overwrite or interpolation.
+
+Downloaded four additional annual HistData archives for both pairs, 2024/2025.
+Raw-source clock comparisons now cover 2023-2025: 6 warehouse reports, 22,890
+metrics, readback without pending/mismatch and verified copies on two machines.
+These are source diagnostics, not experiment performance. Freeze the empirically
+supported time convention before using replacement observations; do not silently
+carry the conflicting provider-declared clock into the admitted lake.
+
+Feature-selector 2e90ee2 now executes a resumable passage through the existing
+PROFILE_ONLY worker, pairwise metrics and nine filters. Synthetic tests include
+real engines, row readback, restart and target availability at TRAIN/fold ends.
+It does not confer financial-data admission, causal evidence, final selection
+or remote publication. Deployment still needs the actual admitted input bundle,
+resource acceptance, remote OLAP/mirrors and the remaining selection stages.
+This preparation runs independently of source recovery, with no financial fits.
