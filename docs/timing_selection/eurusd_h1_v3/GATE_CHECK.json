@@ -1,0 +1,20 @@
+{
+ "manifest_sha256": "b4da1012c53fd21003ec36f1d0c9f0e79354db1661444013168f86592fc2cced",
+ "without_decision": {
+  "admitted": false,
+  "reasons": [
+   "MISSING_DECISION_RECORD"
+  ]
+ },
+ "synthetic_independent_decision_conformance_only": {
+  "admitted": true,
+  "reasons": []
+ },
+ "consuming_a_rejected_feature": {
+  "admitted": false,
+  "reasons": [
+   "CONSUMED_NOT_SELECTED: 1 feature(s), first ['OPEN']"
+  ]
+ },
+ "note": "the synthetic record proves gate conformance only; no decision has been made; the auditor role owns it"
+}

@@ -153,3 +153,14 @@ tables, the evaluator seal, OLAP readback, snapshot and gate check, with SHA256S
 `docs/timing_selection/eurusd_h1_v2/AUDIT_REQUEST_TIMING_SELECTION_FOR_MUSASHI.md`. The large
 artifacts (label ledger, feature matrices, models, predictions, warehouse files) live only in the two
 verified snapshot copies, never in Git.
+
+## 8. Revision-3 results (expert v2)
+
+The expert changed (heuristic-strategy abbfaa6: ZigZag v2, Depth 3 / Deviation 40.7 pips / Backstep 0 at
+cap 4/day, confirmation `confirmation_bars_fast`, executable fill path b+1). Per F08 the DAG reused the four
+target-independent stages and recomputed every target-dependent one (`run --reuse-from`). The targets
+module takes the confirmation definition from the config (`zigzag.confirmation`), and the evaluator takes
+the expert and the strategy rule (`strategy.executable`, `max_orders_per_day`, `k_tp`) from
+`FEATURE_SETS.json`. Sealed evidence, the clock and coverage witness against the admitted root, the
+independent physical copy record and the v3 results audit request are in
+`docs/timing_selection/eurusd_h1_v3/`. Revision 2 is kept and marked `SUPERSEDED.json`.

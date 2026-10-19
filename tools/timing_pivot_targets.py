@@ -29,6 +29,10 @@ Targets (family ``timing_pivot``):
        in pips from close(t) to the next final pivot level.  Not a trade P&L: no costs, no SL/TP, no
        entry price; it is not full-trade profit repeated at every row.
 
+Confirmation definition (configurable, part of the target identity): ``confirmation_bars`` (expert v1: the
+next FINAL pivot + Backstep, replayed) or ``confirmation_bars_fast`` (expert v2, abbfaa6: the first opposite
+candidate + Backstep, brute-force verified by its owner).  Every support end below uses the configured one.
+
 Label support (F01).  ``support_end`` is the last bar whose value can change the label:
   T1: confirmation bar of the first final pivot with index > t+k (it locks every pivot up to it);
   T2: max(t, confirmation bar of the first final pivot with index > t);
@@ -128,7 +132,18 @@ def _pivots(zz, high, low, params):
     return piv, idx, kind, lvl
 
 
-def label_arrays(high, low, close, zz, params, *, k_bars: int, conf=None, max_conf_lag: int = 400) -> dict:
+def confirm(zz, high, low, piv, params, *, confirmation: str = "confirmation_bars", max_conf_lag: int = 400):
+    """The expert's confirmation bars under the configured definition (refused when the module lacks it)."""
+    fn = getattr(zz, confirmation, None)
+    if fn is None:
+        raise TimingError(f"CONFIRMATION_DEFINITION_ABSENT: the expert module has no {confirmation}")
+    if confirmation == "confirmation_bars":
+        return fn(high, low, piv, params, max_lag=max_conf_lag)
+    return fn(high, low, piv, params)
+
+
+def label_arrays(high, low, close, zz, params, *, k_bars: int, conf=None, max_conf_lag: int = 400,
+                 confirmation: str = "confirmation_bars") -> dict:
     """T1/T2/T3 values and their support ends on the given bars (no cuts applied).  A pure function of the
     arrays: used for the full series and for every truncated / perturbed replay in ``finality_check``."""
     high, low, close = (np.asarray(x, float) for x in (high, low, close))
@@ -137,7 +152,7 @@ def label_arrays(high, low, close, zz, params, *, k_bars: int, conf=None, max_co
     piv, idx, kind, lvl = _pivots(zz, high, low, params)
     P = len(idx)
     if conf is None:
-        conf = zz.confirmation_bars(high, low, piv, params, max_lag=max_conf_lag) if P else []
+        conf = confirm(zz, high, low, piv, params, confirmation=confirmation, max_conf_lag=max_conf_lag) if P else []
     conf = np.asarray(conf, np.int64).reshape(-1)
     t = np.arange(n)
     if P == 0:
@@ -198,12 +213,12 @@ def _cut_positions(ts, cuts):
 
 
 def build_targets(bars: pd.DataFrame, zz, params, *, k_bars: int, cuts, max_conf_lag: int = 400,
-                  arrays: dict | None = None, with_ledger: bool = False):
+                  arrays: dict | None = None, with_ledger: bool = False, confirmation: str = "confirmation_bars"):
     """All timing targets on the bar grid of ``bars``; with ``with_ledger`` returns (frame, ledger)."""
     high, low, close = (bars[c].to_numpy(float) for c in ("HIGH", "LOW", "CLOSE"))
     n = len(bars)
     k = int(k_bars)
-    a = arrays or label_arrays(high, low, close, zz, params, k_bars=k, max_conf_lag=max_conf_lag)
+    a = arrays or label_arrays(high, low, close, zz, params, k_bars=k, max_conf_lag=max_conf_lag, confirmation=confirmation)
     ts = bars.index
     cut_pos = _cut_positions(ts, cuts)
     t1, st1 = _status(a["t1"], a["s1"], n, cut_pos)
@@ -286,13 +301,16 @@ def _utc(s):
     return t.tz_localize("UTC") if t.tzinfo is None else t.tz_convert("UTC")
 
 
-def target_identity(*, params, k_bars, zigzag_sha256, lake_sha256) -> str:
+def target_identity(*, params, k_bars, zigzag_sha256, lake_sha256, confirmation: str = "confirmation_bars") -> str:
     body = {"semantics": SEMANTICS, "k": int(k_bars), "zigzag": zigzag_sha256, "lake": lake_sha256,
             "params": [int(params.depth), float(params.deviation_pips), int(params.backstep)]}
+    if confirmation != "confirmation_bars":           # v2 identities stay byte-identical for the v1 definition
+        body["confirmation"] = confirmation
     return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def targets_document(frame: pd.DataFrame, *, params, k_bars: int, lake_sha256: str, zigzag_sha256: str) -> dict:
+def targets_document(frame: pd.DataFrame, *, params, k_bars: int, lake_sha256: str, zigzag_sha256: str,
+                     confirmation: str = "confirmation_bars") -> dict:
     k = int(k_bars)
     y = frame[f"timing_pivot_k{k}"]
     return {"label": "HINDSIGHT_ZIGZAG_TIMING_TARGETS_DEVELOPMENT_ONLY", "family": FAMILY, "semantics": SEMANTICS,
@@ -303,19 +321,21 @@ def targets_document(frame: pd.DataFrame, *, params, k_bars: int, lake_sha256: s
             "class_counts_labelled": {str(c): int((y == c).sum()) for c in (0, 1, 2)}, "not_labelled_rows": int(y.isna().sum()),
             "lake_sha256": lake_sha256, "zigzag_module_sha256": zigzag_sha256, "test_read": False,
             "span": [str(frame.timestamp.iloc[0]), str(frame.timestamp.iloc[-1])],
-            "identity": target_identity(params=params, k_bars=k, zigzag_sha256=zigzag_sha256, lake_sha256=lake_sha256),
+            "confirmation": confirmation,
+            "identity": target_identity(params=params, k_bars=k, zigzag_sha256=zigzag_sha256, lake_sha256=lake_sha256,
+                                        confirmation=confirmation),
             "note": "labels are the final repainted ZigZag (hindsight); labels only, never inputs"}
 
 
 # ----------------------------------------------------------------------------- finality evidence (A02/A03)
 def finality_check(bars: pd.DataFrame, zz, params, *, k_bars: int, cut_positions, seed: int = 0,
-                   full: dict | None = None, check_t2: bool = True) -> dict:
+                   full: dict | None = None, check_t2: bool = True, confirmation: str = "confirmation_bars") -> dict:
     """For each cut m: (a) TRUNCATION, recompute every target on bars[:m]; (b) FUTURE PERTURBATION, replace
     bars[m:] by a seeded random walk and recompute.  Every row t < m whose declared support end is < m must be
     identical in both replays; rows whose support reaches m may change (permitted, never used across m)."""
     high, low, close = (bars[c].to_numpy(float) for c in ("HIGH", "LOW", "CLOSE"))
     n = len(high)
-    full = full or label_arrays(high, low, close, zz, params, k_bars=k_bars)
+    full = full or label_arrays(high, low, close, zz, params, k_bars=k_bars, confirmation=confirmation)
     rng = np.random.default_rng(seed)
     out = []
     for m in cut_positions:
@@ -329,7 +349,7 @@ def finality_check(bars: pd.DataFrame, zz, params, *, k_bars: int, cut_positions
                 spread = np.abs(rng.normal(0, 4e-4, n - m)) * base
                 h2, l2, c2 = np.r_[high[:m], c_new + spread], np.r_[low[:m], c_new - spread], np.r_[close[:m], c_new]
             conf = None if check_t2 else [-1] * len(zz.hindsight_pivots(h2, l2, params))
-            rep = label_arrays(h2, l2, c2, zz, params, k_bars=k_bars, conf=conf)
+            rep = label_arrays(h2, l2, c2, zz, params, k_bars=k_bars, conf=conf, confirmation=confirmation)
             res = {}
             for tg in ("t1", "t2", "t3"):
                 if tg in ("t2", "t3") and not check_t2:
@@ -344,7 +364,7 @@ def finality_check(bars: pd.DataFrame, zz, params, *, k_bars: int, cut_positions
         out.append(rec)
     ok = all(rec[mode][tg]["changed_among_final"] == 0 for rec in out for mode in ("truncation", "future_perturbation")
              for tg in rec[mode])
-    return {"rule": SEMANTICS, "cuts": out, "all_final_rows_unchanged": bool(ok)}
+    return {"rule": SEMANTICS, "confirmation": confirmation, "cuts": out, "all_final_rows_unchanged": bool(ok)}
 
 
 def main(argv=None) -> int:

@@ -1,0 +1,54 @@
+{
+ "copies": [
+  {
+   "dest": "eurusd_h1_timing_v3",
+   "files": 32,
+   "mismatches": [],
+   "verified": true
+  },
+  {
+   "dest": "eurusd_h1_timing_v3",
+   "files": 32,
+   "mismatches": [],
+   "verified": true
+  }
+ ],
+ "device_note": "device ids are filesystem ids on ONE host; partitions of one physical disk are not independent copies",
+ "distinct_devices_including_source": 2,
+ "files": 32,
+ "independent_physical_copy": false,
+ "sha256sums": {
+  "CAUSAL_STAGE.json": "65521517fb216816824c28954932317304786d6161dbdaec31f45a03230a4479",
+  "CLOCK_AND_COVERAGE_WITNESS.json": "1b4b5742c7db864a231ecc5f6097ef0d9435879ecac5d3a22cf55caa3a34f512",
+  "DAG.json": "26fec65f7fd224bfef1f39402c8ec0e8361657a45ba612a7efcb412ee3340244",
+  "FROZEN_SUBSET.json": "1d13ca657bde1412f120adc4cd96a490cfddb5798cdf97cd9bfdbff0c64becf8",
+  "GATE_CHECK.json": "21bc68f95eccd3b0cde5463cf5aef73c2533bd68a623f4d16e9b3c9a4ab0b565",
+  "INVENTORY.json": "38d1c3537408e8d7be66bde6ae4b294e65f074521a81bbfccf064b08a838a86b",
+  "LABEL_LEDGER.parquet": "2ec041306050cc1301f7d26668eda296ee75c6063d4312f5c1f25fcd2e734d3b",
+  "MANIFEST.json": "8b9764d985a97a5c70113080675a822d9d38df191098c39107bd8f5ccfa733e6",
+  "OLAP_PUBLICATION.json": "5e34854ed3cb08ee3715693bb2ff296a5fccd7fcb2f24d32d37fcf473fd7652f",
+  "PERTURBATION.json": "b2c43ddd688d0d3ab0f636a52dd9d1a7d57e97548af31aff71e52329f044d53b",
+  "POOL_META.json": "da09c633af50c607d0ccb54bc26938586e3fe3f8895d61b2fca613bc9fa13259",
+  "PREPARED.json": "3d4f71eec20d476a83fa73db85d496fb55b8fda90f8ec0bbabd9d0668ebaa28a",
+  "QUALITY_PROFILES.json": "0dd1b6fac2052ee7652da75514726e02d90497956f4d4ba92282e084b3a87d31",
+  "READ_LEDGER.json": "b1d34d21ec4b4cc84466c829a5beb0471307e47ae71a71b7bff53a9ef23611f4",
+  "READ_LEDGER_ADDENDUM.json": "e022833540840539f68eec64309e16a22e4a82f666df4ad891963b231e551fc9",
+  "REPORT.json": "951f8f0203705a5c3ee62c542411c7e98bd53fe27f22388f1a1da219bafc6348",
+  "SELECTION_MANIFEST.json": "1fa60a70714cd2c74ad274f3bf88946754cbc1ed12a637f4746df63c805e2da3",
+  "TABLES.md": "67412ced37e9caba2dce1dbee9c011912acab3ce84b6986ec814004b5a5a49c4",
+  "TARGETS.json": "05e218096b48c40bd51450db042cd310dd887696e939dfcac6ad2588fdded6f0",
+  "campaign/CANDIDATES_FOR_VALIDATION.json": "344e2080adc55098a5d9dd053ea716432e9f4e3e51e449a9abf497d281c7415f",
+  "campaign/PHASE_2_COMPLETE.json": "f0dbf64fd7e8051f9640eaaec61c6da807269eb4f819d891ede99634dcbd5849",
+  "campaign/PHASE_3_FILTER_COMPLETE.json": "6b8d96ef7d1ba75b594ac52c622549c37747e33b8c14010a0c9ab936dbbed559",
+  "eval/COMPUTE_LEDGER.json": "94ea723af124793397f18ee7c4c02ee452c23b30889d434c77e3bb856827cf4b",
+  "eval/FROZEN.json": "5a594ee86d50866fdc83dcc4ae8c22f9f10371d9b68a89a593472031c70ac7bb",
+  "eval/RECONFIRM.json": "0878918f0401c975fd73086173055df244abdf02421a6ba6103f11aacfb5c966",
+  "eval/SEAL.json": "562308aef528e1d9582f6b687bf6269aada424958d76d2966f53d36872c61b13",
+  "eval/UNCERTAINTY.json": "b9f9fe03295958396f3aa47b6c54116b314167baed12aeb1e8a9ff6ccae9eed8",
+  "eval/scores_develop.csv": "0e93f924e3beee445a1cdfb93dfd34b7e01c88bc99f01be3bf1bf3e808a205d7",
+  "eval/scores_reobserved_2024.csv": "2a5d6a5fa344df1857f0654bafbf2fc923eec3838d9616bec8c2f4ce3ce1a212",
+  "eval/summary.csv": "746f18b6c2420e7bba2d4c9a16633b248025adcf0aa703f4f50a7cbca469d9c9",
+  "eval/trials_threshold_inner_a.csv": "71f421c111a0030a38c87768e7db70e1acdbb4507cd05c259ee573aa6aca1133",
+  "eval_input/FEATURE_SETS.json": "f068a313f28ab0175e984e0437d3d984543ddc1a45e27cdd607b9db62bf8587e"
+ }
+}

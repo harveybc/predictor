@@ -1,0 +1,10 @@
+{
+ "schema": "timing_selection.physical_copy.v1",
+ "host_role": "secondary worker (separate machine and disk)",
+ "method": "rsync -a --checksum, then sha256sum -c SHA256SUMS on the remote host",
+ "copies": {
+  "v2": "ALL_OK 31 files",
+  "v3": "ALL_OK 32 files"
+ },
+ "independent_physical_copy": true
+}

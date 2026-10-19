@@ -346,3 +346,25 @@ def test_a12_manifest_consumer_refuses_without_an_independent_decision_and_when_
     self_cert = dict(d, decider_role="producer")
     self_cert["record_sha256"] = gate.canonical_sha256(self_cert, "record_sha256")
     assert gate.evaluate(m, sel, decision_record=self_cert)["admitted"] is False
+
+
+def test_confirmation_definition_absent_is_refused():
+    tp = _cap("timing_pivot_targets")
+    with pytest.raises(tp.TimingError, match="CONFIRMATION_DEFINITION_ABSENT"):
+        tp.confirm(_FakeZZ(), np.ones(5), np.ones(5), [], None, confirmation="confirmation_bars_fast")
+
+
+def test_a03_finality_holds_with_the_v2_confirmation_definition(real_zz):
+    tp = _cap("timing_pivot_targets")
+    if not hasattr(real_zz, "confirmation_bars_fast"):
+        pytest.skip("expert module predates confirmation_bars_fast")
+    rng = np.random.default_rng(11)
+    n = 2500
+    c = 1.1 * np.exp(np.cumsum(rng.normal(0, 1.2e-3, n)))
+    o = np.r_[c[0], c[:-1]]
+    w = np.abs(rng.normal(0, 6e-4, n)) * c
+    bars = pd.DataFrame({"OPEN": o, "HIGH": np.maximum(o, c) + w, "LOW": np.minimum(o, c) - w, "CLOSE": c},
+                        index=pd.date_range("2021-01-04", periods=n, freq="h", tz="UTC"))
+    p = real_zz.Params(depth=3, deviation_pips=40.7, backstep=0)
+    rep = tp.finality_check(bars, real_zz, p, k_bars=2, cut_positions=[900, 1700], check_t2=True, confirmation="confirmation_bars_fast")
+    assert rep["all_final_rows_unchanged"] is True and rep["confirmation"] == "confirmation_bars_fast"

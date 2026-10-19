@@ -492,10 +492,11 @@ def run(config_path, out, reuse_from=None) -> dict:
     zp = cfg["zigzag"]["params"]
     params = zz.Params(depth=int(zp["depth"]), deviation_pips=float(zp["deviation_pips"]), backstep=int(zp["backstep"]))
     k = int(cfg["zigzag"]["k_bars"])
+    conf_def = cfg["zigzag"].get("confirmation", "confirmation_bars")
     sp = cfg["splits"]
     cand = cfg["candidates"]
     leaves = {"lake": lake["sha256"], "zigzag_module": cfg["zigzag"]["sha256"], "expert_params": _digest(zp), "k_bars": str(k),
-              "target_semantics": tp.SEMANTICS, "splits": _digest({"inner_a_end": INNER_A_END, **sp}),
+              "target_semantics": tp.SEMANTICS if conf_def == "confirmation_bars" else f"{tp.SEMANTICS}+{conf_def}", "splits": _digest({"inner_a_end": INNER_A_END, **sp}),
               "inventory_generator": (cand.get("inventory") or {}).get("generator_sha256", "none"),
               "inventory_bundle": (cand.get("inventory") or {}).get("bundle_sha256", "none"),
               "fractal_store": (cand.get("fractal") or {}).get("manifest_sha256", "none"),
@@ -508,17 +509,19 @@ def run(config_path, out, reuse_from=None) -> dict:
     plan = plan_invalidation(prev, dag)
     # ---- targets with the support ledger (target-dependent)
     cuts = _cuts(sp)
-    arrays = tp.label_arrays(bars.HIGH.to_numpy(float), bars.LOW.to_numpy(float), bars.CLOSE.to_numpy(float), zz, params, k_bars=k)
-    T, ledger = tp.build_targets(bars, zz, params, k_bars=k, cuts=cuts, arrays=arrays, with_ledger=True)
+    arrays = tp.label_arrays(bars.HIGH.to_numpy(float), bars.LOW.to_numpy(float), bars.CLOSE.to_numpy(float), zz, params, k_bars=k,
+                             confirmation=conf_def)
+    T, ledger = tp.build_targets(bars, zz, params, k_bars=k, cuts=cuts, arrays=arrays, with_ledger=True, confirmation=conf_def)
     T.index = bars.index
     ia_end = sp.get("inner_a_end", INNER_A_END)
     periods = {"TRAIN_2020_2022": sp["train"], "INNER_A_2023H1": [sp["inner"][0], ia_end],
                "INNER_B_2023H2": [ia_end, sp["inner"][1]], "REOBSERVED_2024": sp["confirm"]}
     status = tp.status_table(ledger, periods)
     cut_pos = tp._cut_positions(bars.index, cuts)
-    fin_cheap = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=cut_pos, full=arrays, check_t2=False)
+    fin_cheap = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=cut_pos, full=arrays, check_t2=False, confirmation=conf_def)
     t2_cuts = [tp._cut_positions(bars.index, [c])[0] for c in (sp["train"][1], sp["inner"][1], (sp.get("folds") or [sp["train"][1]])[0])]
-    fin_t2 = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=sorted(set(t2_cuts)), full=arrays, check_t2=True)
+    fin_t2 = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=sorted(set(t2_cuts)), full=arrays, check_t2=True,
+                               confirmation=conf_def)
     finality = {"t1_t3_all_cuts": fin_cheap, "t1_t2_t3_with_confirmation_replay": fin_t2,
                 "all_final_rows_unchanged": bool(fin_cheap["all_final_rows_unchanged"] and fin_t2["all_final_rows_unchanged"])}
     # ---- pool (target-independent; reusable)
@@ -583,7 +586,8 @@ def run(config_path, out, reuse_from=None) -> dict:
         folds=folds, causal_supported=[], contract_source="timing_pivot targets (timing_targets.v2) from the sealed ZigZag expert (labels only)",
         data_root=data)
     man.write_manifest(manifest, out / "MANIFEST.json")
-    targets_doc = tp.targets_document(T, params=params, k_bars=k, lake_sha256=lake["sha256"], zigzag_sha256=cfg["zigzag"]["sha256"])
+    targets_doc = tp.targets_document(T, params=params, k_bars=k, lake_sha256=lake["sha256"], zigzag_sha256=cfg["zigzag"]["sha256"],
+                                      confirmation=conf_def)
     targets_doc.update(status_by_period=status, finality=finality, ledger_sha256=man.sha256_file(out / "LABEL_LEDGER.parquet"),
                        cuts=cuts, roles={t["target_id"]: t["role"] for t in targets})
     _write_json(out / "TARGETS.json", targets_doc)
@@ -666,6 +670,9 @@ def run(config_path, out, reuse_from=None) -> dict:
     _write_json(ev / "FEATURE_SETS.json", {"sets": sets, "features_sha256": man.sha256_file(ev / "features_all.parquet"),
                                             "targets_sha256": man.sha256_file(ev / "targets_all.parquet"), "k_bars": k,
                                             "splits": sp, "inner_a_end": INNER_A_END, "subset_sha256": frozen_subset["subset_sha256"],
+                                            "expert": {"params": zp, "module_sha256": cfg["zigzag"]["sha256"], "confirmation": conf_def,
+                                                       "label": cfg["zigzag"].get("label")},
+                                            "strategy": cfg.get("strategy", {}),
                                             "fractal_manifest_sha256": (cand.get("fractal") or {}).get("manifest_sha256")})
     _write_json(out / "READ_LEDGER.json", read_ledger(cfg))
     _write_json(out / "DAG.json", {"nodes": DAG_NODES, "leaves": leaves, "identities": dag, "plan": plan,
@@ -780,7 +787,8 @@ def selection_manifest(cfg, manifest, targets, feat_cols, selected, recipe, with
            "targets": [{"name": t["target_id"], "horizons": [int(t["horizon_hours"])], "family": t["family"], "head": t["head"],
                         "role": t["role"], "horizon_unit": "observed market bars"} for t in targets],
            "target_params": {"zigzag": cfg["zigzag"]["params"], "k_bars": cfg["zigzag"]["k_bars"], "semantics": tp.SEMANTICS,
-                             "expert_label": "HINDSIGHT_NON_CAUSAL_EXPERT"},
+                             "confirmation": cfg["zigzag"].get("confirmation", "confirmation_bars"), "expert_label": cfg["zigzag"].get("label"),
+                             "expert_kind": "HINDSIGHT_NON_CAUSAL_EXPERT"},
            "split": {**cfg["splits"], "inner_a_end": INNER_A_END,
                      "roles": {"2020-2022": "selection (TRAIN)", "2023": "JOINT development (expert chosen with it)",
                                "2024": "PREVIOUSLY OBSERVED reconfirmation", "2025+": "never read"}},
@@ -900,7 +908,7 @@ SNAPSHOT_FILES = ("SELECTION_MANIFEST.json", "MANIFEST.json", "TARGETS.json", "L
                   "campaign/PHASE_2_COMPLETE.json", "campaign/PHASE_3_FILTER_COMPLETE.json", "campaign/CANDIDATES_FOR_VALIDATION.json",
                   "eval_input/FEATURE_SETS.json", "eval/SEAL.json", "eval/FROZEN.json", "eval/summary.csv", "eval/UNCERTAINTY.json",
                   "eval/scores_develop.csv", "eval/scores_reobserved_2024.csv", "eval/RECONFIRM.json", "eval/trials_threshold_inner_a.csv",
-                  "eval/COMPUTE_LEDGER.json", "READ_LEDGER_ADDENDUM.json", "GATE_CHECK.json", "SNAPSHOT.json")
+                  "eval/COMPUTE_LEDGER.json", "READ_LEDGER_ADDENDUM.json", "GATE_CHECK.json", "CLOCK_AND_COVERAGE_WITNESS.json", "SNAPSHOT.json")
 
 
 def snapshot(out, dests) -> dict:
