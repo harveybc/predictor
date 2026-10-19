@@ -1,10 +1,11 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-19",
-  "current_stage": "PAIRED_EARLY_STOP_RUNNING_REGULARIZATION_SUCCESSORS_DEPLOYED",
+  "current_stage": "PAIRED_EARLY_STOP_CLOSED_DROPOUT_RUNNING",
   "paired_early_stopping": {
-    "state": "RUNNING", "as_of": "2026-10-19T14:12:27Z", "observed_steps": 75000,
-    "completed_checkpoint_pairs": 14, "warehouse_reports_verified": 28,
+    "state": "COMPLETED_AND_WAREHOUSE_READBACK_VERIFIED", "as_of": "2026-10-19T15:05:19Z", "observed_steps": 100000,
+    "completed_checkpoint_pairs": 20, "warehouse_reports_verified": 42,
+    "stop_reason": "TRANSITION_CAP", "best_step": 100000, "physical_second_copy": "COLLECTION_COMPLETE",
     "contract_sha256": "ac7921533f6c4c95fb7a7de2e5cf6a7307415ca0c8cf7739c908027baa091ad6",
     "agent_code": "e119e8ad", "gym_code": "df1b602",
     "arms": ["SAC_FLAT"], "eval_interval": 5000, "patience": 10,
@@ -14,17 +15,18 @@
     "batch_norm_dropout_combination_authorized": false,
     "full_train_and_validation_monitor": true, "isolated_inference_processes": true,
     "restores_best_checkpoint": true, "focused_cpu_tests_passed": 159,
-    "GPU_monitor_verification": "FOURTEEN_REAL_CHECKPOINT_PAIRS_AND_READBACK_VERIFIED",
+    "GPU_monitor_verification": "TWENTY_REAL_CHECKPOINT_PAIRS_AND_READBACK_VERIFIED",
     "successor_publication_collection_timers_enabled": true,
     "plan": "RL_PAIRED_EARLY_STOP_2026_10_19.md"
   },
   "regularization_sequence": {
-    "state": "DEPLOYED_ALL_FOUR_WAIT_PREDECESSOR", "profiles_in_order": ["dropout005", "l2_1e6", "dropout005_l2_1e6", "batchnorm"],
-    "scope": "CRITIC_ONLY_ACTOR_UNCHANGED", "scientific_runtime": "d9e635f7", "unit_renderer": "381da73c",
+    "state": "DROPOUT_RUNNING_OTHER_THREE_WAIT_PREDECESSOR", "profiles_in_order": ["dropout005", "l2_1e6", "dropout005_l2_1e6", "batchnorm"],
+    "scope": "CRITIC_ONLY_ACTOR_UNCHANGED", "scientific_runtime": "d9e635f7", "unit_renderer": "a7b4da3e",
     "contract_prefixes": ["8c038a0fba26", "6648b2004659", "74f48bbae704", "684a5fb611a0"],
     "worker_timers_enabled": 4, "publication_timer_enabled": true, "second_physical_collection_timer_enabled": true,
     "focused_cpu_tests_passed": 182, "gpu_admission": "BOUNDED_SYNTHETIC_GATE_WHEN_PREDECESSOR_CLOSED_AND_GPU_FREE",
-    "batch_norm_dropout_combination_authorized": false, "new_scientific_fits_started": 0,
+    "batch_norm_dropout_combination_authorized": false, "new_scientific_fits_started": 1,
+    "dropout_start_check_steps": 1000, "dropout_gpu_smoke": "VERIFIED_SYNTHETIC_24_TRANSITIONS_20_UPDATES",
     "plan": "RL_REGULARIZATION_SEQUENCE_2026_10_19.md"
   },
   "execution_owner": "Musashi",

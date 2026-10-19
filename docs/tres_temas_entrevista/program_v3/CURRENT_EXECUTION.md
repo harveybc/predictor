@@ -6,6 +6,18 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Estado15:05Z: ensayo ES sin regularizador CERRADO a100000 pasos por cap, mejor
+100000,20 pares completos,42/42 informes con readback y segunda copia verificada.
+TRAIN +36107.59 USD(+361.08%), VALIDATION +75.19 USD(+0.75%); maxDD11.84%/10.64%,
+828/204 operaciones,52.42%/45.59% ganadoras, PF1.655/1.015. Sharpe diario
+no anualizado0.14566/0.000043: VALIDATION apenas positiva, no prueba de habilidad
+robusta. [Resultado final](RL_PAIRED_ES_RESULT_2026_10_19.md).
+Dropout0.05 YA RUNNING en5090,1000 pasos y prueba GPU sintetica verificada.
+Corregido el limite global systemd que contaba las esperas como arranques
+(renderer a7b4da3e,10 pruebas dirigidas); parametros cientificos intactos,
+reintentos nativos acotados y los cuatro timers de sucesion siguen activos.
+Los cortes inferiores se conservan como historia, no como estado actual.
+
 Comprobacion acotada de costes por sospecha del propietario: checkpoint90000
 reconcilia net profit con equity y suma de pnl. Costes7049.86 USD TRAIN y
 774.76 USD VALIDATION; comision5e-5, slippage_perc5e-5 y financiacion5% anual
