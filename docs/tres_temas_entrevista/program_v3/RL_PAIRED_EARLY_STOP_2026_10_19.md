@@ -13,6 +13,11 @@ change. The partial training percentages previously shown were not validation.
 
 ## Approved Next Experiment
 
+Later owner authorization: the isolated continuation is now explicitly
+approved in [the regularization sequence](RL_REGULARIZATION_SEQUENCE_2026_10_19.md).
+This supersedes the earlier no-automatic-ablation instruction BELOW only for
+new successor identities; the running unregularized experiment is unchanged.
+
 Owner follow-up: new temporal SAC experiments are paused. Its existing
 reference fits completed, so this pauses future dispatch rather than killing
 a running fit. The direct-only early-stop successor continues unchanged.

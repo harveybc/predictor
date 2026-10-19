@@ -6,7 +6,16 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
-Orden mas reciente: PAUSAR nuevos ensayos del SAC temporal. Sus ajustes de
+Orden vigente2026-10-19: al cerrar el SAC directo con early stopping, continuar
+AUTOMATICAMENTE con dropout0.05, L2 1e-6, dropout+L2 y BatchNorm por separado,
+en ese orden. Regularizacion inicial solo en criticos; actor y datos intactos,
+sin combinar BatchNorm/dropout y sin cambiar el experimento vivo. Contrastes
+con TRAIN/VALIDATION completos y el mismo criterio de parada; OLAP, backup y
+segunda copia automatizados. Ver [secuencia](program_v3/RL_REGULARIZATION_SEQUENCE_2026_10_19.md).
+No se promete que la regularizacion resuelva el cambio de regimen ni toda la
+brecha de generalizacion. Las pausas de nuevos SAC temporales siguen vigentes.
+
+Se mantiene la orden de PAUSAR nuevos ensayos del SAC temporal. Sus ajustes de
 referencia TRAIN/VALIDATION ya finalizaron; no hay un fit temporal vivo que
 detener. Conservar sus resultados, no repetirlos ni lanzar nuevas variantes.
 Continuan los controles de cierre y el sucesor del SAC directo con early
@@ -17,8 +26,9 @@ Prioridad aprobada mas reciente: controlar la generalizacion del SAC directo
 antes de ampliar modelos/barridos. Se desplego el sucesor de early stopping
 pareado, sin BatchNorm ni dropout y sin combinarlos. Cada5000 pasos evalua
 TRAIN y VALIDATION completos; paciencia10, min_delta1e-8 y restauracion del
-mejor checkpoint. Espera automaticamente el cierre de la campana ya activa;
-no cambia sus pesos ni su protocolo. Ver [subplan ES](program_v3/RL_PAIRED_EARLY_STOP_2026_10_19.md).
+mejor checkpoint. Ya esta corriendo; sus sucesores regularizados esperan
+automaticamente su cierre verificado, sin cambiar sus pesos ni su protocolo.
+Ver [subplan ES](program_v3/RL_PAIRED_EARLY_STOP_2026_10_19.md).
 
 Avance real2026-10-19: cerrado un subconjunto de15/30 variables derivadas del
 nucleo EURUSD reparado y admitido, con37198 filas OLAP verificadas y dos copias.

@@ -6,6 +6,25 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Nueva continuacion autorizada: [cuatro ablaciones secuenciales](RL_REGULARIZATION_SEQUENCE_2026_10_19.md)
+despues del cierre del early stopping actual, sin otra aprobacion intermedia:
+dropout0.05 -> L2 1e-6 -> dropout+L2 -> BatchNorm solo. Sin cambios al learner
+activo, sin nuevos SAC temporales y sin combinar BatchNorm con dropout.
+Desplegado y verificado: cuatro timers de worker mas publicacion en el host
+preferente y collector en la segunda maquina. Los cuatro reportan
+WAIT_PREDECESSOR, con contratos8c038a0f/6648b200/74f48bba/684a5fb6. Runtime
+cientifico d9e635f7; renderer operativo381da73c, con parser systemd real
+verificado y sin tocar el runtime e119e8ad del entrenamiento actual.
+182 pruebas CPU, incluidos cinco casos de monitor con motor real, pasan.
+No se declaran los nuevos ajustes ni sus admisiones GPU iniciados o medidos.
+La prueba GPU sintetica acotada corre automaticamente al liberarse el recurso.
+
+Corte14:12Z del ensayo actual:75000/100000 pasos,14 pares completos y28/28
+informes verificados sin pendientes/discrepancias. Mejor por la media:60000,
+TRAIN +12790.82 USD(+127.9082%), VALIDATION -620.06 USD(-6.2006%), maxDD
+17.8596%/13.7801%. Una media mejor aun puede empeorar VALIDATION; no se
+etiqueta como mejora de generalizacion ni se cambia el criterio en marcha.
+
 Corte13:48Z: SAC directo con early stopping activo,55000/100000 pasos,
 evaluando VALIDATION del checkpoint55000;10 pares completos y20/20 informes
 con readback, cero pendientes/discrepancias. Mejor segun el promedio aprobado:
