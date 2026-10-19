@@ -8,15 +8,23 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 Actualizacion por orden del propietario: nuevos ensayos del SAC temporal
 PAUSADOS. Su TRAIN y VALIDATION de referencia ya terminaron; no se detuvo
-ningun ajuste vivo ni se modifico la campana. Los controles siguen corriendo
-y el sucesor de early stopping del SAC directo sigue armado. No se han
+ningun ajuste vivo ni se modifico la campana. El contraste de referencia cerro
+sus 12 tareas y el sucesor de early stopping del SAC directo esta corriendo. No se han
 ejecutado pruebas cientificas de BatchNorm, dropout ni weight decay.
 
 Siguiente trabajo aprobado, ya desplegado: [early stopping del SAC directo](RL_PAIRED_EARLY_STOP_2026_10_19.md),
-contratoac792153, esperando cierre verificado del contraste37e06192.
+contratoac792153, iniciado automaticamente tras el cierre del contraste37e06192.
 Arranque en5090, evaluacion y publicacion por checkpoint, cierre y segunda copia
-estan automatizados. No usa BatchNorm ni dropout. Esto NO es un fit ya iniciado;
-el estado actual es WAIT_PREDECESSOR. El directo de referencia ya completo
+estan automatizados. No usa BatchNorm ni dropout. Corte12:53Z: tres pares
+TRAIN/VALIDATION completos (5000/10000/15000 pasos), mejor5000, paciencia2/10.
+En ese mejor checkpoint: TRAIN -8.9921%, VALIDATION -7.1295%, drawdown maximo
+13.5879%/7.1295%,707/174 operaciones,41.5842%/32.7586% ganadoras, Sharpe diario
+no anualizado -0.04029/-0.15787. Todavia no mejora la referencia. Se corrigio
+solo el publicador (agent-multi bda95142): los monitores anidados usaban un
+outbox incorrecto.6/6 informes tienen readback, cero pendientes/discrepancias.
+El learner sigue fijado a e119e8ad, sin cambios cientificos ni reinicios;
+publicador aislado y recolector compatible con el estado vivo heredado.
+El directo de referencia ya completo
 TRAIN y VALIDATION: +351.12% frente a-0.19%, respectivamente; ver subplan.
 
 Corte mas reciente: [15 variables seleccionadas y contraste SAC activo](SELECTED_CORE_RL_2026_10_19.md).
