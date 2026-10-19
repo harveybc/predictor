@@ -10,9 +10,13 @@ El propietario reitera que la seleccion debe alimentar el contraste RL final.
 No existe aun manifiesto financiero seleccionado sobre toda la poblacion
 reparada. El ensayo RAW en curso no satisface ese hito. No abrir nuevas
 campanas RAW antes de cerrar la seleccion; ver subplan RL seccion8.
-SAC plano ya completo: TRAIN2020-2023 +699.66 USD, VALIDATION2024 -366.67 USD;
-el segundo SAC temporal sigue automatico. Pesos congelados en VALIDATION,
-maximo una entrada por dia y sin posiciones abiertas al terminar ambos splits.
+Control RAW cerrado: 12/12 tareas, 12/12 informes con readback exacto, cero
+pendientes/discrepancias y copia fisica en dos maquinas verificada por hashes.
+SAC plano: TRAIN2020-2023 +699.66 USD, VALIDATION2024 -366.67 USD;
+SAC temporal: TRAIN +2275.59 USD, VALIDATION -496.18 USD. Pesos congelados en
+VALIDATION, maximo una entrada por dia y todos los rollouts terminan sin posicion.
+Resultados y limites: [cierre RAW](RL_RAW_CONTROL_RESULT_2026_10_19.md).
+No queda ningun fit de esta campana pendiente; la seleccion financiera SI.
 No atribuir toda diferencia a sobreajuste sin separar cambio de regimen.
 El control actual NO incorpora dropout ni early stopping: presupuesto fijo.
 

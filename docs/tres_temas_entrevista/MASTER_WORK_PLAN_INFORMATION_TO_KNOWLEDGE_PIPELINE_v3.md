@@ -8,14 +8,15 @@ como evidencia historica ni gobiernan ningun despacho.
 
 Precision del propietario 2026-10-19: la seleccion de caracteristicas es una
 dependencia cientifica obligatoria del contraste RL solicitado, no decoracion.
-El ensayo RAW en curso es solo un control independiente; no completa ni
+El ensayo RAW cerrado (12/12, OLAP y dos copias verificados) es solo un control independiente; no completa ni
 sustituye RL2 con seleccion. No abrir mas campanas RAW ni busquedas de agentes
 antes de cerrar el inventario admitido y la seleccion recalculada. El siguiente
 contraste comparte exactamente el manifiesto seleccionado: SAC directo frente
 a SAC con extractores por variable, fusionador y nucleo temporal. El control
 RAW se conserva unicamente para medir, por separado, el aporte de seleccionar.
 Los controles de sobreajuste se contrastan individualmente, sin cambiar el
-ensayo ya iniciado. Detalle y limitaciones en el subplan RL, seccion 8.
+ensayo ya cerrado. Detalle y limitaciones en el subplan RL, seccion 8, y
+[resultado del control](program_v3/RL_RAW_CONTROL_RESULT_2026_10_19.md).
 
 Continuacion operativa 2026-10-19: EURUSD tiene admision CORE_PRICES_ONLY
 completa (37309 horas, 72 meses, sin horas operativas requeridas ausentes ni
