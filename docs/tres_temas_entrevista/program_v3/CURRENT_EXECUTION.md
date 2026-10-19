@@ -6,6 +6,13 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Nueva directiva de diagnostico: [matriz por causa y metricas](RL_GENERALIZATION_DIAGNOSTICS_2026_10_19.md).
+Primero analisis sin fits de trazas y checkpoints; luego sondas y solo despues
+contrastes que respondan a evidencia. El documento distingue metricas retenidas
+de instrumentacion pendiente; no declara nuevos scripts/timers desplegados.
+La secuencia GPU actual conserva su contrato. Los estados con hora inferiores
+son cortes historicos y deben contrastarse con el estado generado.
+
 Estado15:05Z: ensayo ES sin regularizador CERRADO a100000 pasos por cap, mejor
 100000,20 pares completos,42/42 informes con readback y segunda copia verificada.
 TRAIN +36107.59 USD(+361.08%), VALIDATION +75.19 USD(+0.75%); maxDD11.84%/10.64%,

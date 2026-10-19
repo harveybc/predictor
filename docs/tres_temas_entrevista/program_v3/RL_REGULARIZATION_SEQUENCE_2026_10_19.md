@@ -1,5 +1,9 @@
 # Direct SAC Regularization Sequence
 
+Diagnostic follow-up: [generalization measurements and hypothesis register](RL_GENERALIZATION_DIAGNOSTICS_2026_10_19.md).
+Use existing checkpoint traces first; failed trading performance continues to
+the next sealed arm and does not by itself identify the cause of the gap.
+
 Owner authorization2026-10-19: no manual approval between the current early
 stopping run and the following regularization ablations. Preserve the active
 scientific contract/runtime until its authenticated closure.

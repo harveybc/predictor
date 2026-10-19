@@ -6,6 +6,14 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+Ampliacion2026-10-19: diagnosticar la generalizacion por causa y evidencia,
+aprovechando primero los checkpoints y trazas existentes sin reentrenar.
+Ver [matriz de diagnostico](program_v3/RL_GENERALIZATION_DIAGNOSTICS_2026_10_19.md):
+19 hipotesis, metricas comparables TRAIN/VALIDATION, pruebas discriminantes,
+instrumentacion pendiente y orden D0-D4. Es especificacion de trabajo, no
+telemetria ya desplegada. Sigue la cola regularizada sellada; no cambia el
+criterio de parada ni se levanta la pausa de nuevos ajustes temporales.
+
 Orden vigente2026-10-19: al cerrar el SAC directo con early stopping, continuar
 AUTOMATICAMENTE con dropout0.05, L2 1e-6, dropout+L2 y BatchNorm por separado,
 en ese orden. Regularizacion inicial solo en criticos; actor y datos intactos,
