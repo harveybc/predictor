@@ -6,6 +6,14 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Comprobacion acotada de costes por sospecha del propietario: checkpoint90000
+reconcilia net profit con equity y suma de pnl. Costes7049.86 USD TRAIN y
+774.76 USD VALIDATION; comision5e-5, slippage_perc5e-5 y financiacion5% anual
+activados. ASSUMED_SPREAD es filtro de sesion, no cargo adicional. No hay
+perfil bid/ask/swap verificado de broker; no se certifica realismo ni todos
+los fills con esta prueba.16 regresiones contables/financiacion pasan.
+Detalle: [costes](RL_COST_CHECK_2026_10_19.md). No se cambia el lote sellado.
+
 Nueva continuacion autorizada: [cuatro ablaciones secuenciales](RL_REGULARIZATION_SEQUENCE_2026_10_19.md)
 despues del cierre del early stopping actual, sin otra aprobacion intermedia:
 dropout0.05 -> L2 1e-6 -> dropout+L2 -> BatchNorm solo. Sin cambios al learner
