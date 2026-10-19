@@ -1,0 +1,85 @@
+{
+ "schema": "timing_eval.compute_ledger.v1",
+ "shards": {
+  "admitted_core_15_553fc047__m1_dmo_class": {
+   "device": "GPU: RTX 4090 Laptop (secondary worker role)",
+   "stack": "TF 2.21.0 / Keras 3.13, sklearn 1.8.0, TF_DETERMINISTIC_OPS=1, memory growth",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 @0eb4cc4 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 6G -t 14400s",
+   "fits": 18,
+   "fit_seconds_sum": 277.3,
+   "fit_seconds_median": 15.1
+  },
+  "admitted_core_15_553fc047__m2_gru": {
+   "device": "GPU: RTX 4090 Laptop (secondary worker role)",
+   "stack": "TF 2.21.0 / Keras 3.13, sklearn 1.8.0, TF_DETERMINISTIC_OPS=1, memory growth",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 @0eb4cc4 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 6G -t 14400s",
+   "fits": 18,
+   "fit_seconds_sum": 456.5,
+   "fit_seconds_median": 25.1
+  },
+  "admitted_core_15_553fc047__m3_hgb": {
+   "device": "CPU (coordinator role, crispdm-run -m 3G)",
+   "stack": "TF 2.18 / sklearn 1.5.1 (base env)",
+   "code": "heuristic-strategy @fd3b96c evaluator (m3 file names carry no decimal point: unaffected by the naming defect)",
+   "cap": "crispdm-run -m 3G -t 14400s",
+   "fits": 9,
+   "fit_seconds_sum": 599.3,
+   "fit_seconds_median": 65.8
+  },
+  "timing_selected__m1_dmo_class": {
+   "device": "GPU: RTX 4090 Laptop (secondary worker role)",
+   "stack": "TF 2.21.0 / Keras 3.13, sklearn 1.8.0, TF_DETERMINISTIC_OPS=1, memory growth",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 @0eb4cc4 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 6G -t 14400s",
+   "fits": 18,
+   "fit_seconds_sum": 316.3,
+   "fit_seconds_median": 18.6
+  },
+  "timing_selected__m2_gru": {
+   "device": "GPU: RTX 4090 Laptop (secondary worker role)",
+   "stack": "TF 2.21.0 / Keras 3.13, sklearn 1.8.0, TF_DETERMINISTIC_OPS=1, memory growth",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 @0eb4cc4 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 6G -t 14400s",
+   "fits": 18,
+   "fit_seconds_sum": 417.1,
+   "fit_seconds_median": 22.4
+  },
+  "timing_selected__m3_hgb": {
+   "device": "CPU (coordinator role, crispdm-run -m 3G)",
+   "stack": "TF 2.18 / sklearn 1.5.1 (base env)",
+   "code": "heuristic-strategy @fd3b96c evaluator (m3 file names carry no decimal point: unaffected by the naming defect)",
+   "cap": "crispdm-run -m 3G -t 14400s",
+   "fits": 9,
+   "fit_seconds_sum": 318.4,
+   "fit_seconds_median": 34.8
+  }
+ },
+ "superseded": {
+  "admitted_core_15_553fc047__m1_dmo_class": {
+   "state": "TECHNICAL_FAILURE_NOT_SCIENTIFIC",
+   "cause": "model files collided (Path.with_suffix cut the cell id at its decimal point; fits sharing a dropout value overwrote one file); additionally projected to exceed its 4 h CPU cap (grouped Conv1D on CPU ~800-1300 s per fit, 10/18 fits after 2 h 05)",
+   "used": false,
+   "rerun_as": "shards/admitted_core_15_553fc047__m1_dmo_class on GPU with the fixed evaluator"
+  },
+  "admitted_core_15_553fc047__m2_gru": {
+   "state": "TECHNICAL_FAILURE_NOT_SCIENTIFIC",
+   "cause": "model files collided (Path.with_suffix cut the cell id at its decimal point; fits sharing a dropout value overwrote one file)",
+   "used": false,
+   "rerun_as": "shards/admitted_core_15_553fc047__m2_gru on GPU with the fixed evaluator"
+  },
+  "timing_selected__m1_dmo_class": {
+   "state": "TECHNICAL_FAILURE_NOT_SCIENTIFIC",
+   "cause": "model files collided (Path.with_suffix cut the cell id at its decimal point; fits sharing a dropout value overwrote one file)",
+   "used": false,
+   "rerun_as": "shards/timing_selected__m1_dmo_class on GPU with the fixed evaluator"
+  },
+  "timing_selected__m2_gru": {
+   "state": "TECHNICAL_FAILURE_NOT_SCIENTIFIC",
+   "cause": "model files collided (Path.with_suffix cut the cell id at its decimal point; fits sharing a dropout value overwrote one file)",
+   "used": false,
+   "rerun_as": "shards/timing_selected__m2_gru on GPU with the fixed evaluator"
+  }
+ }
+}

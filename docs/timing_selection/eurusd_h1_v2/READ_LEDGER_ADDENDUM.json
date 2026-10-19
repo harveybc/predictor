@@ -1,0 +1,51 @@
+{
+ "schema": "timing_selection.read_ledger_addendum.v1",
+ "evaluator_executions": [
+  {
+   "stage": "develop (CPU, superseded)",
+   "periods_read": [
+    "TRAIN_2020_2022",
+    "INNER_A_2023H1",
+    "INNER_B_2023H2"
+   ],
+   "reads_2024": false,
+   "shards": [
+    "timing_selected m1/m2",
+    "admitted_core_15 m1/m2"
+   ],
+   "state": "TECHNICAL_FAILURE: model-file naming collision; outputs archived, never used"
+  },
+  {
+   "stage": "develop (GPU rerun of the four neural shards; CPU m3 shards kept)",
+   "periods_read": [
+    "TRAIN_2020_2022",
+    "INNER_A_2023H1",
+    "INNER_B_2023H2"
+   ],
+   "reads_2024": false
+  },
+  {
+   "stage": "freeze (executed twice: the first run failed after writing FROZEN.json on a daily-returns file-name mismatch)",
+   "periods_read": [
+    "INNER_A_2023H1 (choices)",
+    "INNER_B_2023H2 (frozen scoring)"
+   ],
+   "freeze_sha256_first": "50952d2b44516b962e1f00c5138a7d84dd2744428937414e5ad1354ab02830e2",
+   "freeze_sha256_second": "50952d2b44516b962e1f00c5138a7d84dd2744428937414e5ad1354ab02830e2",
+   "choices_changed": false
+  },
+  {
+   "stage": "reconfirm (first attempt failed at import, before any data was opened; second attempt is the single 2024 read)",
+   "periods_read": [
+    "REOBSERVED_2024"
+   ],
+   "after_freeze": true,
+   "decisions_changed": false
+  },
+  {
+   "stage": "seal",
+   "periods_read": [],
+   "note": "aggregation of sealed scores only"
+  }
+ ]
+}

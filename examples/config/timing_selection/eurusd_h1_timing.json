@@ -35,7 +35,8 @@
   "folds": [
    "2021-01-01",
    "2022-01-01"
-  ]
+  ],
+  "inner_a_end": "2023-07-01"
  },
  "candidates": {
   "inventory": {
@@ -57,7 +58,11 @@
     "<FRACTAL_STORE>/eurusd_h1_causal_fractal_w48_validation.parquet"
    ],
    "manifest_sha256": "906578e1c96ddd1aa2024a455467db91db623c6583a351ea2468f6d57cb2740f",
-   "source": "feature-eng satoshi/causal-fractal-eurusd-20261019 @6c028aa"
+   "source": "feature-eng satoshi/causal-fractal-eurusd-20261019 @6c028aa",
+   "manifest": "<FRACTAL_STORE>/MANIFEST.json",
+   "owner_module": "<FEATURE_ENG_ROOT>/app/plugins/causal_fractal.py",
+   "owner_module_sha256": "4fd73f0ddc4fe621c67f856676a03e890790b88f10a8ee67b6f17337ec8b9ea4",
+   "owner_module_commit": "feature-eng satoshi/causal-fractal-eurusd-20261019 @6c028aa"
   }
  },
  "pairwise_params": {
@@ -84,12 +89,12 @@
    "method": "MRMR",
    "k": 12,
    "prune_abs_spearman": 0.9,
+   "require_fdr_pass": true,
    "targets": [
     "timing_pivot_k2",
-    "timing_action_confirmed",
-    "timing_expert_leg_pnl_pips"
-   ],
-   "require_fdr_pass": true
+    "timing_valley_k2",
+    "timing_peak_k2"
+   ]
   }
  },
  "fdr_q": 0.1,
@@ -100,16 +105,16 @@
    "px.logret_24",
    "px.rv_24"
   ],
-  "targets": [
-   "timing_valley_k2",
-   "timing_peak_k2"
-  ],
   "q": 0.1,
   "event_quantile": 0.8,
   "n_controls": 5,
   "min_events": 20,
   "n_boot": 400,
-  "seed": 0
+  "seed": 0,
+  "negative_control_reference": "px.logret_2",
+  "workers": 4,
+  "pc_alpha": 0.05,
+  "alpha": 0.01
  },
  "comparison_sets": {
   "admitted_core_15_553fc047": [
@@ -133,5 +138,9 @@
  "n_shards": 4,
  "phase3_workers": 1,
  "seed": 6102026,
+ "adapter_revision": "heuristic-strategy app/short_horizon/execution.py + tools/short_horizon_zigzag_study.Ctx.run @8b289f3 (parity vs gym-fx e287ea2 recorded at b9b4f9c)",
+ "not_comparable": {
+  "manifest_19_2ff34fa2": "its feature matrix (INPUT.npz with daily macro / cross-asset columns) exists only in a private deployment directory and cannot be regenerated from the lake; no identical-row comparison is possible"
+ },
  "_note": "Replace <...> placeholders with local checkouts/stores; every sha256 is a pin verified at load. No host name, address or private path belongs in this file."
 }

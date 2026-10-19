@@ -45,53 +45,55 @@ built-in list; phase-1 workers speak a JSON subprocess protocol; the causal work
 of target packs). feature-eng plugins resolve through `feature_eng.plugins`; heuristic-strategy
 strategies through its own entry points (`pip install -e .` required).
 
-## 2. What this extension adds (all new files unless marked EXTENDED)
+## 2. What this extension adds: files touched (additivity)
 
-| Repo / file | Kind | Role |
-|---|---|---|
-| predictor `tools/timing_pivot_targets.py` | ADDED | targets T1 (pivot within k, 3-class + 0/1 indicators), T2 (confirmed-timing action), T3 (expert leg P&L in pips); purges at cuts; the expert module loaded BY PATH with a sha256 pin |
-| predictor `tools/timing_price_pool.py` | ADDED | causal multi-scale price pool (returns / ranges / close location / efficiency ratio / realized vol at 1,2,4,6,12,24,48 h; ATR and ratios; hour / weekday / session encodings), availability gate (refuses centred filters and future availability), within-day-variance report |
-| predictor `tools/timing_selection.py` | ADDED | the JSON-config driver: pool assembly (inventory via the owners' generator by path, price pool, fractal store), manifest with the `timing_pivot` family, phases 2/3 through the pinned engines UNCHANGED, univariate FDR screen, fold stability, redundancy (clusters, VIF, fractal vs realized vol), causal stage through causal-inference, selection recipe, evaluator inputs, sealed manifest, `attach-eval` |
-| predictor `tools/test_timing_selection.py` | ADDED | 11 acceptance tests incl. an end-to-end synthetic run through the real engines |
-| predictor `examples/config/timing_selection/eurusd_h1_timing.json` | ADDED | the config (placeholders for private paths; every input pinned by sha256) |
-| causal-inference `provider/src/causal_inference_provider/fs_timing_pack.py` | ADDED | EURUSD_TIMING pack: definitions, validation, HAC lag screen (lags 0..k, BH), PCMCI+ wrapper (NOT_RUN without tigramite), matched-control contrast (event_impact.match_controls) |
-| causal-inference `feature_selection_worker.py` | EXTENDED (append-only) | `TARGET_PACKS` += `EURUSD_TIMING`; `TARGET_CELL_COUNTS["EURUSD_TIMING"] = 4`; test TP01 asserts the old entries unchanged |
-| causal-inference `provider/tests/test_fs_timing_pack.py` | ADDED | TP01-TP06 |
-| heuristic-strategy `tools/short_horizon_timing_eval.py` | ADDED | the predictive-validation evaluator: per-bar MLP with the owner's monitor, temperature on 2023, threshold on 2023 by Sharpe through the sealed adapter, 2024 once, identical rows for every set |
-| heuristic-strategy `tests/unit_tests/test_short_horizon_timing_eval.py` | ADDED | TE01-TE04 |
-| dataset_selection `docs/PORTABILITY.md`, `examples/timing_pivot_eurusd.json`, `docs/TIMING_SELECTION_MAP.md` | EXTENDED (new row) / ADDED | extension table entry, example config, the map |
+| Repo / file | Kind | Role | Proof existing behaviour is unchanged |
+|---|---|---|---|
+| predictor `tools/timing_pivot_targets.py` | ADDED | targets T1/T2/T3 (timing_targets.v2), support ledger, censoring, purges, finality replays | no existing file modified (`git diff --diff-filter=M` vs 15893493 is empty) |
+| predictor `tools/timing_price_pool.py` | ADDED | multi-scale causal price pool, availability gate, quality profile, prefix/perturbation checker, within-day variance | as above |
+| predictor `tools/timing_selection.py` | ADDED | JSON-config driver (verbs run, causal, attach-eval, tables, publish, snapshot); DAG; read ledger; gate-shaped manifest | as above |
+| predictor `tools/test_timing_selection.py` | ADDED | 18 acceptance tests (A01-A05, A10, A12 and the screens) | existing suites `tools/test_fs_phase23_driver.py`, `tools/test_fs_rep_dispositions.py`, `tests/test_df_consumption_gate.py`, `tests/test_df_ecl_contrast_gates.py`, `tests/test_flow_v3_gate.py`: 93 passed / 17 failed / 1 skipped at base 15893493 AND on the branch, identical failure sets (12 failures are `duckdb` not installed); `tests/test_fs_close_manifest.py`, `tests/test_fs_close_weekly.py` (selected-manifest gate consumers): 25 passed at base and on the branch |
+| predictor `examples/config/timing_selection/eurusd_h1_timing.json`, `docs/TIMING_SELECTION.md` | ADDED | config with placeholders; this document | - |
+| causal-inference `provider/src/causal_inference_provider/fs_timing_pack.py` | ADDED | pack EURUSD_TIMING: definitions, validation, HAC lag screen, matched-control contrast, PCMCI+ wrappers, mixed-data RegressionCI stage with controls | - |
+| causal-inference `provider/src/causal_inference_provider/feature_selection_worker.py` | EXTENDED (append-only) | `TARGET_PACKS` += `EURUSD_TIMING`; `TARGET_CELL_COUNTS["EURUSD_TIMING"] = 4` (two literal lines) | test TP01 asserts EURUSD/ETH entries, cell counts 14/6, denominators (14) and feature count (366) unchanged; existing suites `test_feature_selection_worker.py`, `test_fs_causal.py`, `test_fs_causal_batch.py`, `test_fs_causal_discovery.py`, `test_event_impact.py`: 59 passed / 1 skipped at base a4cb9ea AND on the branch |
+| causal-inference `provider/tests/test_fs_timing_pack.py` | ADDED | TP01-TP09 | - |
+| heuristic-strategy `tools/short_horizon_timing_eval.py` | ADDED | evaluator (develop / freeze / reconfirm / seal) | existing short-horizon suites (9 files): 92 passed / 1 skipped at base cead861c AND on the branch |
+| heuristic-strategy `tests/unit_tests/test_short_horizon_timing_eval.py`, `test_short_horizon_timing_adapter_contract.py` | ADDED | TE01-TE08 (10 cases), AC01-AC09 | - |
+| dataset_selection `docs/PORTABILITY.md` | EXTENDED (one table row + one pointer line) | extension table entry | documentation only |
+| dataset_selection `docs/TIMING_SELECTION_MAP.md`, `examples/timing_pivot_eurusd.json` | ADDED | map and example config | - |
 
-Engine stages that ran UNCHANGED on the timing population: `fs_phase23_manifest.build_manifest`
-(the `targets` list accepts the new family/heads as data), `feature_pairwise_campaign` plan /
-run-worker / follow / close-phase2, `feature_filter_selection.run_filter_methods` (its quantile coding
-keeps a 3-class target's classes distinct, test `test_engine_mi_codes_keep_three_classes_distinct`),
-`fs_phase23_warehouse_adapter` (sqlite3 backend where duckdb is absent). Code was needed only for the
-targets, the price pool, the screens/reports, the causal adapter and the evaluator.
+Engine stages that ran UNCHANGED on the timing population: `fs_phase23_manifest.build_manifest`,
+`feature_pairwise_campaign` plan / run-worker / follow / close-phase2 / run-phase3 / close-phase3,
+`feature_filter_selection.run_filter_methods` (nine methods; its quantile coding keeps the 3 classes
+distinct), `fs_phase23_warehouse_adapter` (sqlite3 backend: duckdb is not installed here),
+`feature_selection_profile.profile_series` (phase-1 profiler on the new families), `fs_causal.hac_partial_test`,
+`event_impact.match_controls`, tigramite `PCMCI.run_pcmciplus` with `RegressionCI`, the strategy adapter
+`Ctx.run` / `execution.run_backtest`, and the pivot-detector helpers (`temperature`, `calibrate`,
+`signals_from`). New code was needed only for the targets and ledger, the price pool and checks, the screens
+and reports, the causal pack wrappers and controls, the evaluator stages and the publication/snapshot verbs.
 
-## 3. Runbook (CPU, memory-capped, DEVELOPMENT)
+## 3. Runbook (CPU, memory-capped, DEVELOPMENT; every command checked with `--help`)
 
 ```bash
-# tests first
-CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 3G -t 600s -n fs-timing -- python -m pytest tools/test_timing_selection.py -q -p no:cacheprovider
+# tests first (predictor; the real-expert finality test needs the two env vars)
+TIMING_ZIGZAG_MODULE=<HS>/app/short_horizon/zigzag.py TIMING_ZIGZAG_SHA256=<sha256> CUDA_VISIBLE_DEVICES="" \
+  crispdm-run -q -m 3G -t 1200s -n fs-timing -- python -m pytest tools/test_timing_selection.py -q -p no:cacheprovider
 # the selection (fill the placeholders of the example config in a private copy)
-CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 3G -t 3600s -n fs-timing -- python tools/timing_selection.py run --config <CFG> --out <OUT>
-# predictive validation through the strategy's harness (needs trading-contracts on PYTHONPATH)
-CUDA_VISIBLE_DEVICES="" PYTHONPATH=<TRADING_CONTRACTS>/src crispdm-run -q -m 3G -t 3600s -n fs-timing -- \
-  python <HEURISTIC_STRATEGY>/tools/short_horizon_timing_eval.py --eval-input <OUT>/eval_input --data <LAKE>/1h.parquet --out <OUT>/eval
+CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 3G -t 5400s -n fs-timing -- python tools/timing_selection.py run --config <CFG> --out <OUT>
+# the causal stage with the mixed-data test (an interpreter with tigramite 5.2.7.0)
+CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 3G -t 5400s -n fs-timing -- <VENV>/bin/python tools/timing_selection.py causal --config <CFG> --out <OUT>
+# predictive validation (heuristic-strategy; trading-contracts on PYTHONPATH): one develop shard per set x arm,
+# then freeze (INNER_A choices, INNER_B frozen score), reconfirm (the single 2024 read), seal
+python tools/short_horizon_timing_eval.py develop --eval-input <OUT>/eval_input --out <OUT>/eval --set <SET> --arm <ARM>
+python tools/short_horizon_timing_eval.py freeze --eval-input <OUT>/eval_input --data <LAKE>/1h.parquet --out <OUT>/eval
+python tools/short_horizon_timing_eval.py reconfirm --eval-input <OUT>/eval_input --data <LAKE>/1h.parquet --out <OUT>/eval
+python tools/short_horizon_timing_eval.py seal --eval-input <OUT>/eval_input --out <OUT>/eval
+# seal, render, publish, snapshot (predictor)
 python tools/timing_selection.py attach-eval --out <OUT> --eval <OUT>/eval
+python tools/timing_selection.py tables --out <OUT>
+python tools/timing_selection.py publish --out <OUT> --db <OLAP>.sqlite
+python tools/timing_selection.py snapshot --out <OUT> --dest <COPY_1> --dest <COPY_2>
 ```
-
-Outputs under `<OUT>`: `MANIFEST.json` (population, `fs_phase23.population_manifest.v1`), `TARGETS.json`,
-`campaign/` (PLAN, terminals, `PHASE_2_COMPLETE.json`, `PHASE_3_FILTER_COMPLETE.json`,
-`CANDIDATES_FOR_VALIDATION.json`, `PHASE2_MATRICES.npz`), `metrics.duckdb` (sqlite3 or duckdb),
-`REPORT.json` (screens, stability, within-day variance, redundancy, recipe), `CAUSAL_STAGE.json`,
-`eval_input/` (features/targets for all loaded rows + `FEATURE_SETS.json`), `SELECTION_MANIFEST.json`
-(`feature_selection.manifest.v1`, DRAFT until an independent decision record exists).
-
-Rules enforced: TEST rows refused at every loader; TRAIN = 2020-2022 for the engines; INNER 2023 only in
-the evaluator's monitor/threshold; CONFIRM 2024 read once by the evaluator; labels purged at every cut;
-no host name, address or private path in any artifact (paths are redacted to basenames).
-
 
 ## 4. Plan-audit dispositions (F01-F09)
 
@@ -142,3 +144,12 @@ Srivastava et al., "Dropout: A Simple Way to Prevent Neural Networks from Overfi
 https://jmlr.org/papers/v15/srivastava14a.html ; scikit-learn histogram gradient boosting,
 https://scikit-learn.org/stable/modules/ensemble.html#histogram-based-gradient-boosting ; Bailey, Lopez de
 Prado, "The Deflated Sharpe Ratio", https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf .
+
+## 7. Revision-2 results
+
+The sealed evidence (manifest, targets document, inventory, DAG, read ledgers, checks, causal stage,
+tables, the evaluator seal, OLAP readback, snapshot and gate check, with SHA256SUMS) is in
+`docs/timing_selection/eurusd_h1_v2/`. The results audit request for the auditor role is
+`docs/timing_selection/eurusd_h1_v2/AUDIT_REQUEST_TIMING_SELECTION_FOR_MUSASHI.md`. The large
+artifacts (label ledger, feature matrices, models, predictions, warehouse files) live only in the two
+verified snapshot copies, never in Git.

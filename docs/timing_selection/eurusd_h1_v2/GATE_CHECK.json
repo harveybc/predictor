@@ -1,0 +1,20 @@
+{
+ "manifest_sha256": "4fd6710e5a1fa746d6b1303ca871dbbe3c81fc516638e04eb352300c6bcbf2d0",
+ "without_decision": {
+  "admitted": false,
+  "reasons": [
+   "MISSING_DECISION_RECORD"
+  ]
+ },
+ "synthetic_independent_decision_conformance_only": {
+  "admitted": true,
+  "reasons": []
+ },
+ "consuming_a_rejected_feature": {
+  "admitted": false,
+  "reasons": [
+   "CONSUMED_NOT_SELECTED: 1 feature(s), first ['OPEN']"
+  ]
+ },
+ "note": "the synthetic record proves gate conformance only; no decision has been made; Musashi (auditor role) owns it"
+}

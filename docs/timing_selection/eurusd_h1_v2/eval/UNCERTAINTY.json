@@ -1,0 +1,156 @@
+{
+ "INNER_B_2023H2": {
+  "timing_selected_minus_admitted_core_15_553fc047__m1_dmo_class": {
+   "rows": 2874,
+   "mean_logloss_diff": -0.008258514260599628,
+   "logloss_diff_ci": {
+    "q025": -0.015931046641212556,
+    "q500": -0.008096284724604545,
+    "q975": 4.4342408170298725e-05,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "sharpe_candidate": -3.2452720611702457,
+   "sharpe_baseline": -1.88564907034894,
+   "sharpe_diff_ci": {
+    "q025": -4.084382759921591,
+    "q500": -1.334656494467019,
+    "q975": 1.4984517672849853,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "note": "negative log-loss difference favours the candidate; seed-mean predictions and returns"
+  },
+  "timing_selected_minus_admitted_core_15_553fc047__m2_gru": {
+   "rows": 2874,
+   "mean_logloss_diff": 0.006863872179171709,
+   "logloss_diff_ci": {
+    "q025": -0.00038768259124916565,
+    "q500": 0.007082066255596066,
+    "q975": 0.014145346344300754,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "sharpe_candidate": -1.6831305023600796,
+   "sharpe_baseline": -3.2714172455656243,
+   "sharpe_diff_ci": {
+    "q025": -1.2078086990982113,
+    "q500": 1.6339152396484327,
+    "q975": 4.760884183529417,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "note": "negative log-loss difference favours the candidate; seed-mean predictions and returns"
+  },
+  "timing_selected_minus_admitted_core_15_553fc047__m3_hgb": {
+   "rows": 2874,
+   "mean_logloss_diff": 0.009563674339275078,
+   "logloss_diff_ci": {
+    "q025": -0.0016153805962644573,
+    "q500": 0.009618442929812569,
+    "q975": 0.021516420343134057,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "sharpe_candidate": -0.5697521978925157,
+   "sharpe_baseline": -0.549248333520662,
+   "sharpe_diff_ci": {
+    "q025": -3.6610025797982058,
+    "q500": 0.008415608351237317,
+    "q975": 3.7608778566217103,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "note": "negative log-loss difference favours the candidate; seed-mean predictions and returns"
+  }
+ },
+ "trial_family": {
+  "sets": [
+   "admitted_core_15_553fc047",
+   "timing_selected"
+  ],
+  "arms": [
+   "m1_dmo_class",
+   "m2_gru",
+   "m3_hgb"
+  ],
+  "cells": {
+   "m1_dmo_class": 6,
+   "m2_gru": 6,
+   "m3_hgb": 3
+  },
+  "seeds": 3,
+  "thresholds": 4,
+  "bootstrap": {
+   "block": "ISO calendar week",
+   "reps": 2000,
+   "seed": 20261019
+  },
+  "selection_awareness": "subsets chosen on TRAIN only (never 2023/2024); cell, temperature and threshold chosen on INNER_A; INNER_B and 2024 scored frozen; DSR supplement in SEAL"
+ },
+ "REOBSERVED_2024": {
+  "timing_selected_minus_admitted_core_15_553fc047__m1_dmo_class": {
+   "rows": 6089,
+   "mean_logloss_diff": -0.010792342723202156,
+   "logloss_diff_ci": {
+    "q025": -0.016967056705621365,
+    "q500": -0.010978958435263112,
+    "q975": -0.004575955309817527,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "sharpe_candidate": -1.8461197301970165,
+   "sharpe_baseline": -1.3809521803818858,
+   "sharpe_diff_ci": {
+    "q025": -3.1695495359203125,
+    "q500": -0.47919377276895136,
+    "q975": 2.0652082738278783,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "note": "negative log-loss difference favours the candidate; seed-mean predictions and returns"
+  },
+  "timing_selected_minus_admitted_core_15_553fc047__m2_gru": {
+   "rows": 6089,
+   "mean_logloss_diff": 0.000738397319881496,
+   "logloss_diff_ci": {
+    "q025": -0.00435118123641,
+    "q500": 0.0006175416369370082,
+    "q975": 0.005913016927718679,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "sharpe_candidate": -2.4196461825126563,
+   "sharpe_baseline": -2.05186438216792,
+   "sharpe_diff_ci": {
+    "q025": -2.3681344042311,
+    "q500": -0.4246397800253121,
+    "q975": 1.5138336150711436,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "note": "negative log-loss difference favours the candidate; seed-mean predictions and returns"
+  },
+  "timing_selected_minus_admitted_core_15_553fc047__m3_hgb": {
+   "rows": 6089,
+   "mean_logloss_diff": 0.005017425086790166,
+   "logloss_diff_ci": {
+    "q025": -0.004114992155050602,
+    "q500": 0.005188193844790877,
+    "q975": 0.013756315574486469,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "sharpe_candidate": -0.5919868702653579,
+   "sharpe_baseline": -0.11760000744426735,
+   "sharpe_diff_ci": {
+    "q025": -2.827297885790443,
+    "q500": -0.4263468308909424,
+    "q975": 1.9836909658103399,
+    "reps": 2000,
+    "block": "ISO calendar week"
+   },
+   "note": "negative log-loss difference favours the candidate; seed-mean predictions and returns"
+  }
+ }
+}

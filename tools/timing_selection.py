@@ -899,7 +899,8 @@ SNAPSHOT_FILES = ("SELECTION_MANIFEST.json", "MANIFEST.json", "TARGETS.json", "L
                   "FROZEN_SUBSET.json", "TABLES.md", "OLAP_PUBLICATION.json", "PREPARED.json", "POOL_META.json",
                   "campaign/PHASE_2_COMPLETE.json", "campaign/PHASE_3_FILTER_COMPLETE.json", "campaign/CANDIDATES_FOR_VALIDATION.json",
                   "eval_input/FEATURE_SETS.json", "eval/SEAL.json", "eval/FROZEN.json", "eval/summary.csv", "eval/UNCERTAINTY.json",
-                  "eval/scores_develop.csv", "eval/scores_reobserved_2024.csv", "eval/RECONFIRM.json", "eval/trials_threshold_inner_a.csv")
+                  "eval/scores_develop.csv", "eval/scores_reobserved_2024.csv", "eval/RECONFIRM.json", "eval/trials_threshold_inner_a.csv",
+                  "eval/COMPUTE_LEDGER.json", "READ_LEDGER_ADDENDUM.json", "GATE_CHECK.json", "SNAPSHOT.json")
 
 
 def snapshot(out, dests) -> dict:
