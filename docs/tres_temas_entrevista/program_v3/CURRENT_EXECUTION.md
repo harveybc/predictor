@@ -6,6 +6,13 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Siguiente trabajo aprobado, ya desplegado: [early stopping del SAC directo](RL_PAIRED_EARLY_STOP_2026_10_19.md),
+contratoac792153, esperando cierre verificado del contraste37e06192.
+Arranque en5090, evaluacion y publicacion por checkpoint, cierre y segunda copia
+estan automatizados. No usa BatchNorm ni dropout. Esto NO es un fit ya iniciado;
+el estado actual es WAIT_PREDECESSOR. El directo de referencia ya completo
+TRAIN y VALIDATION: +351.12% frente a-0.19%, respectivamente; ver subplan.
+
 Corte mas reciente: [15 variables seleccionadas y contraste SAC activo](SELECTED_CORE_RL_2026_10_19.md).
 La seleccion acotada del nucleo EURUSD esta cerrada:30 candidatas,435 pares,
 nueve filtros,15 variables,37198 filas nativas OLAP y dos copias verificadas.

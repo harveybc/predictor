@@ -6,6 +6,13 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+Prioridad aprobada mas reciente: controlar la generalizacion del SAC directo
+antes de ampliar modelos/barridos. Se desplego el sucesor de early stopping
+pareado, sin BatchNorm ni dropout y sin combinarlos. Cada5000 pasos evalua
+TRAIN y VALIDATION completos; paciencia10, min_delta1e-8 y restauracion del
+mejor checkpoint. Espera automaticamente el cierre de la campana ya activa;
+no cambia sus pesos ni su protocolo. Ver [subplan ES](program_v3/RL_PAIRED_EARLY_STOP_2026_10_19.md).
+
 Avance real2026-10-19: cerrado un subconjunto de15/30 variables derivadas del
 nucleo EURUSD reparado y admitido, con37198 filas OLAP verificadas y dos copias.
 Ya corre SAC directo frente a la representacion temporal con ESE MISMO

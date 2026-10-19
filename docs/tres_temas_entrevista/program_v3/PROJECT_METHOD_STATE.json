@@ -1,7 +1,21 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-19",
-  "current_stage": "SCOPED_CORE_SELECTION_CLOSED_SELECTED_SAC_RUNNING_FULL_EXTERNAL_CATALOG_PENDING",
+  "current_stage": "SELECTED_SAC_RUNNING_PAIRED_EARLY_STOP_SUCCESSOR_DEPLOYED_WAIT_PREDECESSOR",
+  "paired_early_stopping": {
+    "state": "DEPLOYED_WAIT_PREDECESSOR", "contract_sha256": "ac7921533f6c4c95fb7a7de2e5cf6a7307415ca0c8cf7739c908027baa091ad6",
+    "agent_code": "e119e8ad", "gym_code": "df1b602",
+    "arms": ["SAC_FLAT"], "eval_interval": 5000, "patience": 10,
+    "absolute_min_delta": 1e-8, "training_transition_cap": 100000,
+    "metric": "NEGATIVE_MEAN_FULL_TRAIN_VALIDATION_DAILY_LOG_GROWTH",
+    "batch_norm": false, "dropout": false, "weight_decay": false,
+    "batch_norm_dropout_combination_authorized": false,
+    "full_train_and_validation_monitor": true, "isolated_inference_processes": true,
+    "restores_best_checkpoint": true, "focused_cpu_tests_passed": 157,
+    "GPU_monitor_verification": "PENDING_FIRST_REAL_CHECKPOINT",
+    "successor_publication_collection_timers_enabled": true,
+    "plan": "RL_PAIRED_EARLY_STOP_2026_10_19.md"
+  },
   "execution_owner": "Musashi",
   "gpu_allocation_policy": {
     "preferred": "5090_ESPECIALLY_HEAVY_MODELS_OR_LONG_WINDOWS",
