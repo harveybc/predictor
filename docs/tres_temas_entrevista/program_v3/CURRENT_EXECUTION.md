@@ -6,6 +6,16 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+El propietario reitera que la seleccion debe alimentar el contraste RL final.
+No existe aun manifiesto financiero seleccionado sobre toda la poblacion
+reparada. El ensayo RAW en curso no satisface ese hito. No abrir nuevas
+campanas RAW antes de cerrar la seleccion; ver subplan RL seccion8.
+SAC plano ya completo: TRAIN2020-2023 +699.66 USD, VALIDATION2024 -366.67 USD;
+el segundo SAC temporal sigue automatico. Pesos congelados en VALIDATION,
+maximo una entrada por dia y sin posiciones abiertas al terminar ambos splits.
+No atribuir toda diferencia a sobreajuste sin separar cambio de regimen.
+El control actual NO incorpora dropout ni early stopping: presupuesto fijo.
+
 El intento `c6d31d3a...` fallo tras 6000 pasos por ordenes protectoras
 Submitted cuya cancelacion nativa era ignorada. No produjo modelo aceptado.
 Corregidos cancelacion, hermanos OCO y limpieza reentrante de brackets;

@@ -209,3 +209,87 @@ migration protocol, no new champion/consensus mechanism. Do not start it now.
 Next: finish clock/value/calendar and inventory admission; Satoshi can perform
 the bounded independent tasks in SATOSHI_DATA_AND_RL_ORDER_2026_10_18.md without
 touching live data services or launching any scientific run.
+
+## 8. Selected Inputs And Overfitting Clarification, 2026-10-19
+
+The financial selection on repaired data is NOT complete. The live raw-price
+control has eight deterministic inputs: OPEN, HIGH, LOW, CLOSE,
+log(CLOSE/OPEN), log(HIGH/LOW), log(CLOSE/previous observed CLOSE), and actual
+elapsed hours since the previous observed bar. These are not eight winners
+of a 300-variable selection. No withdrawn selection/causal scores are reused.
+The selector adapter has only synthetic profile/pair/filter acceptance; it
+does not establish financial or causal completion.
+
+The required selected-input comparison remains sequentially dependent on:
+
+1. Close the required-variable inventory and source/dependency quality; recover
+   actual missing data before excluding unrecoverable variables. Core OHLC
+   admission alone does not admit the whole configured candidate population.
+2. Rebuild causal availability-aligned preprocessing and individual metrics,
+   pair/lag/redundancy evidence, temporal stability, candidate subsets and
+   declared causal evidence. NOT_IDENTIFIED does not mean useless. Do not
+   make price-prediction MAE the sole criterion for a policy/risk feature.
+3. Publish a new selected manifest with identities, inclusion/exclusion reasons,
+   support, method/config and OLAP readback/physical copies. No fixed number
+   of survivors or old subset is presumed.
+4. Compare selected direct inputs versus the SAME selected inputs through
+   per-variable causal Conv1D branches, time-aligned channel concatenation,
+   temporal core, and SAC actor/critics. Keep splits, calendar, costs, action
+   space, seeds, fitting/monitoring and budget paired. Report the RAW control
+   separately, so selection gain and representation gain are not conflated.
+
+The running temporal RAW control uses one causal Conv1D(4 filters, kernel3)
+per input, concatenation without mixing time positions, one causal Conv1D
+core(8 filters, kernel3), then flattening only at the SAC-head boundary and
+heads [32,32]. Actor and critics have independently trainable representations;
+there is no imported/pretrained encoder or frozen extractors. Both consume
+13 observed bars at stride2, including the current completed bar. It tests
+compact representation code on RAW data, not the required selected manifest.
+
+Current overfitting measures: restricted capacity; chronological TRAIN2020-23
+and VALIDATION2024; frozen-policy evaluation and before/after weight hashes;
+no validation gradients/replay insertion; causal scaling; no TEST tuning.
+These reduce capacity/leakage or measure generalization, but do not guarantee
+absence of overfitting or distinguish it completely from market-regime shift.
+The fixed100000-transition baseline has NO validation-monitored early stop,
+dropout, BatchNorm or explicit weight decay. Replay, twin critics, target
+networks and entropy tuning are SAC mechanisms, not proof of generalization.
+
+Prospective independent ablations, after the selected manifest is ready:
+
+| Arm | Only change relative to its declared common control |
+|---|---|
+| ES | Frozen TRAIN/VALIDATION monitoring and best-checkpoint restoration |
+| DO | Dropout, initially p=0.05; explicit placement and inference-mode tests |
+| WD | Weight decay, initially 1e-6, with optimizer/parameter groups recorded |
+| BN | BatchNorm, one explicitly located layer; no shared TRAIN/VALIDATION running-stat updates |
+
+First compare each independently; combine only after measuring its isolated
+effect. Configuration values above are hypotheses, not active settings or
+performance claims. A BatchNorm/Dropout critic algorithm such as CrossQ/DroQ
+would be a separate algorithm contrast, not silently renamed vanilla SAC.
+Predeclare matched maximum transition budgets and seeds for every new arm;
+the old100k result cannot stand in for a differently budgeted no-ES control.
+
+The owner's ES mean is supported as a candidate, not declared a theorem:
+M_k = -(J_train(theta_k) + J_validation(theta_k))/2, minimized. Evaluate the
+SAME frozen checkpoint in both periods, with identical business/cost rules.
+Use a comparable per-day net-performance measure (for example mean daily
+log-equity return including flat days), not raw four-year profit averaged
+with raw one-year profit, critic loss, entropy reward or training exploration
+returns collected under older policies. Store profit, risk and train/validation
+gap separately. Averaging TRAIN with validation does not remove validation
+selection bias; validation remains development when choosing checkpoints.
+
+Monitor at fixed transition intervals, not every market tick or gradient step.
+The implementation must pause/restore all policy, optimizer, entropy, replay,
+environment and RNG state as needed: evaluation may neither train nor perturb
+the continuing training trajectory. Restore the exact selected checkpoint;
+record reason, evaluations, patience, tolerance, monitor components and hashes.
+Patience counts evaluations, not epochs; configurable tolerance1e-8 and patience
+at least10 evaluations are prospective defaults requiring cost/budget design.
+No new ablation campaign or changed settings are deployed by this document.
+
+Primary implementation references checked2026-10-19:
+- SB3 callbacks: https://stable-baselines3.readthedocs.io/en/master/_modules/stable_baselines3/common/callbacks.html
+- RL generalization/regularization evidence, not an FX guarantee: https://arxiv.org/abs/1812.02341

@@ -1,7 +1,7 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-19",
-  "current_stage": "EURUSD_RAW_SAC_TRAINING_ON_GPU_FULL_SELECTION_STILL_PENDING",
+  "current_stage": "SELECTION_REBUILD_REQUIRED_RAW_CONTROL_RUNNING_NOT_SELECTED_COMPARISON",
   "execution_owner": "Musashi",
   "priority_order": ["DATA_RECOVERY", "DATA_ADMISSION", "PREPROCESSING_ACCEPTANCE", "FEATURE_SELECTION_REBUILD", "RL_BUSINESS_ENVIRONMENT", "RL_BASELINES", "SAC_RAW_MODULAR", "RL_COMPARISONS_AND_PAPER", "DEFERRED_FORECASTING", "DEFERRED_NEAT"],
   "handoff_status": "RETURNS_INTEGRATED_REVIEW_CORRECTIONS_APPLIED_ENVIRONMENT_FINDINGS_OPEN",
@@ -20,7 +20,7 @@
     "validation": "2024", "validation_rows": 6221,
     "test_used_for_tuning": false,
     "resource_policy": "ONE_HEAVY_PROCESS_ON_5090_NO_PARALLEL_5070TI",
-    "status": "RUNNING", "running_arm": "SAC_FLAT",
+    "status": "RUNNING", "running_arm": "SAC_PER_FEATURE_CONV1D",
     "started_at": "2026-10-19T08:10:33Z",
     "contract_sha256": "b195273eb9f91cff23a735d3c72ee8ab95754dbf85c1c663fe46dc42550a30b7",
     "agent_code": "75f24688", "gym_code": "461b594",
@@ -40,6 +40,17 @@
   "histdata_clock_diagnostic": {"code": "b6ae8413f", "raw_years": [2023, 2024, 2025], "paired_daily_comparisons": 4578, "warehouse_reports": 6, "warehouse_metrics": 22890, "pending": 0, "mismatch": 0, "two_machine_copies_verified": true, "admitted": false, "automatic_clock_selection": false},
   "selection_rebuild_adapter": {"code": "2e90ee2", "scope": "PROFILE_ONLY_THEN_PAIRWISE_AND_FILTERS", "synthetic_engine_execution_verified": true, "remote_publication": false, "causal_evidence_computed": false, "financial_execution": false},
   "feature_selection_complete": false,
+  "selected_rl_comparison": {
+    "state": "WAIT_REBUILT_FINANCIAL_SELECTION",
+    "required_input": "NEW_SELECTED_MANIFEST_FROM_REPAIRED_ADMITTED_CANDIDATES",
+    "arms": ["SAC_SELECTED_DIRECT", "SAC_SELECTED_PER_FEATURE_FUSION_CORE"],
+    "raw_control_is_substitute": false,
+    "additional_raw_campaigns_allowed_before_selection": false,
+    "overfitting_ablations": "PROSPECTIVE_SEPARATE_ES_DROPOUT_WEIGHT_DECAY_BATCHNORM",
+    "current_raw_has_early_stopping": false,
+    "current_raw_has_dropout": false,
+    "plan": "RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md#8-selected-inputs-and-overfitting-clarification-2026-10-19"
+  },
   "current_runtime_method_state": "../../i6n/weekly_test/PROJECT_METHOD_STATE.json",
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
