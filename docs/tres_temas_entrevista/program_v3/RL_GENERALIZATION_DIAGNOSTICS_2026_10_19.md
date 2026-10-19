@@ -1,5 +1,8 @@
 # SAC Generalization Diagnostic Plan
 
+Executed narrow checkpoint analysis: [GD18 result](RL_CHECKPOINT_DIAGNOSTIC_RESULT_2026_10_19.md).
+Other diagnostic measurements below remain planned unless separately evidenced.
+
 Date: 2026-10-19. Owner request: distinguish every suspected cause of poor
 generalization using measured evidence and targeted interventions. This is a
 diagnostic specification, not a claim that new telemetry has been implemented.

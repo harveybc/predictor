@@ -6,6 +6,14 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Diagnostico18:40Z: [curvas TRAIN/VALIDATION completas](RL_CHECKPOINT_DIAGNOSTIC_RESULT_2026_10_19.md)
+recalculadas desde48 pares:20 sin regularizacion,20 dropout,8 L2 hasta40000.
+Reinicios de paciencia con V peor que el elegido anterior:5/9,2/3,2/2.
+En la referencia,el final100000 tambien tiene la mejor V(+0.751879%): no
+respalda detener antes como solucion. Dropout no tiene ningun checkpoint
+rentable en V(0/20).48/48 informes OLAP con readback y copia fisica coincidente;
+17 pruebas CPU. No se cambiaron periodos, checkpoints elegidos ni learners.
+
 Nueva directiva de diagnostico: [matriz por causa y metricas](RL_GENERALIZATION_DIAGNOSTICS_2026_10_19.md).
 Primero analisis sin fits de trazas y checkpoints; luego sondas y solo despues
 contrastes que respondan a evidencia. El documento distingue metricas retenidas
