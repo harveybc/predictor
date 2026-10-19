@@ -6,11 +6,22 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
-Entrenamiento SAC real iniciado 2026-10-19T07:34:12Z: contrato local
-`c6d31d3a...`, 12 tareas secuenciales, SAC_FLAT entrenando en la 5090.
+El intento `c6d31d3a...` fallo tras 6000 pasos por ordenes protectoras
+Submitted cuya cancelacion nativa era ignorada. No produjo modelo aceptado.
+Corregidos cancelacion, hermanos OCO y limpieza reentrante de brackets;
+la prohibicion de cruzar cierres con exposicion no cambia. Revision
+independiente aceptada y regresiones retenidas. La evidencia de reapertura
+calcula los mismos conteos/racha final sin recorrer todo el historial en cada
+barra: replay de observaciones/recompensa/equity/posicion/ordenes bit-identico.
+297 pruebas del simulador, 65 de integracion y 72 de cola/publicacion/copia
+pasan sin omisiones. Replay aleatorio completo: TRAIN 24894 barras en 264 s;
+VALIDATION 6221 barras, sin fallo. No son metricas de una politica entrenada.
+
+Relanzado 2026-10-19T08:10:33Z con contrato `b195273e...`, 12 tareas,
+ambos SAC de 100000 pasos, modelo y datos sin cambios. Primeras 1000
+transiciones reales verificadas; la cola mantiene una sola carga en la 5090.
 Servicios persistentes y publicador con timer instalados; lingering habilitado.
-Sin aprobacion pendiente. Runtime agent-multi `6880627d`, gym-fx `e8710fe`.
-Pruebas: 295 de simulador y 85 de integracion/cola, sin omisiones.
+Sin aprobacion pendiente. Runtime agent-multi `75f24688`, gym-fx `461b594`.
 El orden corregido pone ambos SAC antes de los controles CPU. El primer
 control parcial se cancelo por programacion, sin modelos SAC entrenados ni
 terminales publicados; no se presenta como resultado. Datos, modelos, seed,
