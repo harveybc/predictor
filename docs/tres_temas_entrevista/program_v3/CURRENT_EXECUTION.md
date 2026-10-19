@@ -1,8 +1,33 @@
 # Ejecucion vigente
 
-Actualizado2026-10-18. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
+Actualizado2026-10-19. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
 Ninguna orden ni donante de las campanas predictivas retiradas puede despachar
-trabajo. No hay entrenamiento financiero autorizado en esta reparacion.
+trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
+
+## Continuacion del 19 de octubre
+
+- EURUSD: admision CORE_PRICES_ONLY completa, 37309 horas observadas, los
+  72 meses 2020-2025 y cero horas requeridas ausentes bajo el calendario
+  operativo conservador declarado. Sin interpolacion. 37306 barras tienen
+  linaje exacto de dos barras M30; tres son reemplazos nativos verificados.
+  El calendario no se presenta como certificacion universal del broker.
+- HistData: reloj de los seis archivos 2023-2025 contrastado contra FXCM y
+  testigos independientes; 32326 horas completas normalizadas. Consolidacion
+  terminada. Cuatro informes nuevos publicados con readback exacto y copia
+  fisica coincidente en dos maquinas; cero pendientes/discrepancias.
+- El control bruto EURUSD puede avanzar independientemente del inventario
+  completo: SAC plano y Conv1D compacto, sin reajuste, TRAIN2020-2023 y
+  VALIDATION2024, mas controles sin operar/largo/corto/aleatorio. La politica
+  RAW_BASELINE se identifica expresamente: no es una seleccion final simulada.
+- Antes del fit: aceptar la ruta real de hora de disponibilidad/fill y sus
+  cierres de sesion. La cola es secuencial, con estado durable y continuacion
+  automatica; una sola carga pesada en la 5090. Costes no nulos declarados como
+  escenario, no falsamente verificados con el broker. TEST no se usa para ajustar.
+- El resto del inventario, la seleccion financiera recalculada y su evidencia
+  causal siguen pendientes. GBPUSD no esta admitido por esta entrega.
+
+Las cifras de las secciones siguientes son cortes anteriores, no el estado
+vigente del nucleo EURUSD descrito arriba.
 
 ## Ahora
 

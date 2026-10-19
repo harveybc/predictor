@@ -4,6 +4,22 @@ Owner approval: continue autonomously, plan first, adapt to evidence. Musashi
 owns RL; Satoshi's concurrent data work must not be duplicated or overwritten.
 This plan refines RL_FIRST, not a new forecasting or DOIN campaign.
 
+## Current continuation, 2026-10-19
+
+EURUSD core admission is now complete: 37309 observed H1 bars, all 72 months,
+zero missing required hours on the declared conservative operating calendar.
+37306 rows replay exactly from M30; three verified native fallback rows retain
+their provenance. This admits the independent raw-price control, not the full
+inventory or final feature selection. Its pipeline uses four-year TRAIN and
+one-year VALIDATION without refitting, 13 observations at stride two, a
+single 5090 job, four mechanical controls then flat/compact-temporal SAC.
+The financial-data raw-input renderer binds prices, calendar, availability,
+transforms and explicit initial warmup; the engine must first pass real-data
+completed-bar/fill/session acceptance. Nonzero analytical trading-cost
+assumptions are frozen and labelled, not claimed broker measurements.
+The full catalog and selection rebuilding continue under their own admission.
+No further owner approval is required for these already authorized actions.
+
 | Step | Work and acceptance | State |
 |---|---|---|
 | 1 | Read generated recovery and selection receipts; verify input bytes, timestamps/availability, business calendar and complete split support | CHECKED: neither data admission nor rebuilt selection complete |

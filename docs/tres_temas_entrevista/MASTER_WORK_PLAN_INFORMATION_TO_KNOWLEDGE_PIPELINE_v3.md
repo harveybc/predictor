@@ -1,10 +1,20 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-18. Este documento contiene solo el plan vigente.
+Actualizado: 2026-10-19. Este documento contiene solo el plan vigente.
 Los resultados afectados por datos defectuosos se eliminan, no se conservan
 como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
+
+Continuacion operativa 2026-10-19: EURUSD tiene admision CORE_PRICES_ONLY
+completa (37309 horas, 72 meses, sin horas operativas requeridas ausentes ni
+interpolacion). Con esa poblacion se prepara el control bruto SAC estatico y
+sus controles mecanicos, independiente del cierre del inventario restante.
+Su politica RAW_BASELINE no se presenta como seleccion final. No entrenar con
+datos pendientes: la admision del nucleo y la aceptacion real de hora/fill/
+sesiones preceden ese control. La comparacion con caracteristicas seleccionadas
+espera su propia seleccion recalculada. Costes iniciales son supuestos
+analiticos no nulos, etiquetados; no hechos verificados del broker.
 
 Cambio de prioridad 2026-10-18: terminar datos y seleccion; despues RL como
 primer consumidor, reutilizando componentes validos. Los experimentos de
@@ -42,7 +52,8 @@ El lake canonico debe contener solamente recursos admitidos. Despues se
 recalculan preprocesamiento y todas las fases de seleccion con nueva identidad;
 los datos descartados/sustituidos se eliminan tras la recuperacion aplicable.
 No declarar admision completa, seleccion terminada o campanas activas sin
-verificacion real. No se lanzan mas fits durante esta reparacion.
+verificacion real. Solo el control bruto con su poblacion ya admitida puede
+avanzar en paralelo; la poblacion ampliada no hereda esa admision.
 
 Procedimiento completo: financial-data/work_plan/17_CANONICAL_INVENTORY_AND_CURATION.md.
 Politica: financial-data/configs/curation_policy.v1.json.
@@ -155,8 +166,10 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I11. Extensión final opcional: calendario económico causal como entrada.
 - [ ] I12. Posprograma: configurar `feature-selector` desde el chat de M5PHET.
 
-Prioridad actual serial: inventario y recuperacion -> admision -> preparacion
-verificada -> seleccion recalculada -> RL. Predictores y NEAT quedan diferidos
+Prioridad de la poblacion ampliada: inventario y recuperacion -> admision ->
+preparacion verificada -> seleccion recalculada -> RL con seleccion. El control
+bruto usa exclusivamente el nucleo admitido, sin esperar esa poblacion.
+Predictores y NEAT quedan diferidos
 al final por directiva del usuario, aunque mantengan sus identificadores I6/I9.
 No hay permiso para adelantar fits,
 extractores o trading con inputs pendientes. El paralelismo se usa dentro de
