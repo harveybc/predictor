@@ -6,6 +6,18 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Corte13:48Z: SAC directo con early stopping activo,55000/100000 pasos,
+evaluando VALIDATION del checkpoint55000;10 pares completos y20/20 informes
+con readback, cero pendientes/discrepancias. Mejor segun el promedio aprobado:
+50000 pasos, paciencia0/10 al ultimo par completo. TRAIN +4587.01 USD
+(+45.8701%), VALIDATION -420.02 USD(-4.2002%); maxDD24.5674%/9.2171%,
+828/203 operaciones,46.4976%/44.3350% ganadoras, profit factor1.11838/0.91555.
+Sharpe diario no anualizado0.03642/-0.03031. Sigue sin rentabilidad en
+VALIDATION y no supera su referencia anterior. No se cambio la campana.
+Auditoria separada del plan ZigZag de Satoshi: [dictamen y correcciones](MUSASHI_TIMING_SELECTION_PLAN_AUDIT_2026_10_19.md),
+REVISE_BEFORE_FINAL_SEAL; no certifica resultados ni autoriza nuevas pruebas RL.
+Los cortes previos siguientes se conservan como historia, no como estado actual.
+
 Actualizacion por orden del propietario: nuevos ensayos del SAC temporal
 PAUSADOS. Su TRAIN y VALIDATION de referencia ya terminaron; no se detuvo
 ningun ajuste vivo ni se modifico la campana. El contraste de referencia cerro
