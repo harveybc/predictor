@@ -6,14 +6,18 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
-Ejecucion real iniciada 2026-10-19T07:20Z: contrato local `829e6959...`,
-12 tareas secuenciales, primer control NO_TRADE recorriendo TRAIN.
+Entrenamiento SAC real iniciado 2026-10-19T07:34:12Z: contrato local
+`c6d31d3a...`, 12 tareas secuenciales, SAC_FLAT entrenando en la 5090.
 Servicios persistentes y publicador con timer instalados; lingering habilitado.
-Sin aprobacion pendiente. Runtime agent-multi `b211624a`, gym-fx `e8710fe`.
+Sin aprobacion pendiente. Runtime agent-multi `6880627d`, gym-fx `e8710fe`.
 Pruebas: 295 de simulador y 85 de integracion/cola, sin omisiones.
-SAC tiene la 5090 asignada para cuando llegue su turno; no se afirma que ya
-este entrenando mientras se ejecutan los controles CPU. El estado generado,
-no este corte, determina la tarea actual.
+El orden corregido pone ambos SAC antes de los controles CPU. El primer
+control parcial se cancelo por programacion, sin modelos SAC entrenados ni
+terminales publicados; no se presenta como resultado. Datos, modelos, seed,
+costes y presupuestos se compararon y son identicos. Se corrigio ademas una
+colision operativa: el EnvironmentFile del warehouse ocultaba CUDA; el servicio
+fija ahora la 5090 al ejecutar el proceso sin cambiar los secretos ni el modelo.
+El estado generado, no este corte, determina el progreso actual.
 
 - EURUSD: admision CORE_PRICES_ONLY completa, 37309 horas observadas, los
   72 meses 2020-2025 y cero horas requeridas ausentes bajo el calendario
