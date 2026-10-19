@@ -1,0 +1,11 @@
+{
+  "schema": "feature_selection.decision.v1",
+  "decision_id": "TIMING_PROXY_SELECTION:timing-selection:47d1e3fca7d01d2a:decision",
+  "decider_role": "auditor",
+  "decided_on": "2026-10-19",
+  "manifest_sha256": "b4da1012c53fd21003ec36f1d0c9f0e79354db1661444013168f86592fc2cced",
+  "verdict": "REVISE_BEFORE_BUSINESS_USE",
+  "scope": "RETROSPECTIVE_LAKE_PROXY_RESEARCH_ONLY",
+  "audit_report": "musashi_audit/AUDIT_RESULT.md",
+  "record_sha256": "3d4f734a4abf58dc5330413ba7340b7b6c95d7807d8fbfae0384fe6b63990111"
+}

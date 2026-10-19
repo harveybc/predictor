@@ -1,0 +1,4921 @@
+{
+  "audited_predictor_commit": "53d2bfb79e5363b77cc04e654320f5b0ca7e5c3b",
+  "pins": {
+    "lake": "c6628375b2872f16dcdbd6b1b90ed8e68bc5bdd852efdef01f2515b8712d4e2e",
+    "admitted": "c80847bb149c7af1ad50e42301b5cd70608e6c37702ce8cc6a7b9eb70f36d2ca",
+    "expert": "fc24c6f22aa4f7696548d1117b1d2cfad42a43eccd116f0bbcffe6a71df1624a",
+    "features": "a3ab933f5ca62b66cf3f1b638773c62f5b122e4bbf861df81edf9251b59c28ba",
+    "targets": "34cbaed87c3eef175b029d0047ab0b4530e0fe6e2d9def679a565c4c81de0732"
+  },
+  "business_support": {
+    "TRAIN_2020_2022": {
+      "rows": 18612,
+      "outside_operational_origin": 3708,
+      "horizon_crosses_segment": 307,
+      "horizon_endpoint_not_before_flat": 2158
+    },
+    "INNER_A_2023H1": {
+      "rows": 2440,
+      "outside_operational_origin": 512,
+      "horizon_crosses_segment": 50,
+      "horizon_endpoint_not_before_flat": 270
+    },
+    "INNER_B_2023H2": {
+      "rows": 2952,
+      "outside_operational_origin": 588,
+      "horizon_crosses_segment": 50,
+      "horizon_endpoint_not_before_flat": 334
+    },
+    "REOBSERVED_2024": {
+      "rows": 6236,
+      "outside_operational_origin": 1264,
+      "horizon_crosses_segment": 104,
+      "horizon_endpoint_not_before_flat": 735
+    }
+  },
+  "classification": [
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m1_dmo_class",
+      "period": "INNER_B_2023H2",
+      "n": 2952,
+      "ensemble_log_loss": 1.0041756160264994,
+      "train_prior_log_loss": 0.9772712825898907,
+      "delta_vs_train_prior": 0.026904333436608696
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m1_dmo_class",
+      "period": "REOBSERVED_2024",
+      "n": 6236,
+      "ensemble_log_loss": 1.0064947495333518,
+      "train_prior_log_loss": 0.9833499711572,
+      "delta_vs_train_prior": 0.02314477837615181
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m2_gru",
+      "period": "INNER_B_2023H2",
+      "n": 2952,
+      "ensemble_log_loss": 1.0092936089511717,
+      "train_prior_log_loss": 0.9772712825898907,
+      "delta_vs_train_prior": 0.032022326361280995
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m2_gru",
+      "period": "REOBSERVED_2024",
+      "n": 6236,
+      "ensemble_log_loss": 1.0200548631534314,
+      "train_prior_log_loss": 0.9833499711572,
+      "delta_vs_train_prior": 0.03670489199623139
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m3_hgb",
+      "period": "INNER_B_2023H2",
+      "n": 2952,
+      "ensemble_log_loss": 0.9813770971336724,
+      "train_prior_log_loss": 0.9772712825898907,
+      "delta_vs_train_prior": 0.004105814543781672
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m3_hgb",
+      "period": "REOBSERVED_2024",
+      "n": 6236,
+      "ensemble_log_loss": 0.9943549293810857,
+      "train_prior_log_loss": 0.9833499711572,
+      "delta_vs_train_prior": 0.011004958223885697
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m1_dmo_class",
+      "period": "INNER_B_2023H2",
+      "n": 2952,
+      "ensemble_log_loss": 0.9928386356014448,
+      "train_prior_log_loss": 0.9772712825898907,
+      "delta_vs_train_prior": 0.015567353011554097
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m1_dmo_class",
+      "period": "REOBSERVED_2024",
+      "n": 6236,
+      "ensemble_log_loss": 0.9959961754699194,
+      "train_prior_log_loss": 0.9833499711572,
+      "delta_vs_train_prior": 0.012646204312719345
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m2_gru",
+      "period": "INNER_B_2023H2",
+      "n": 2952,
+      "ensemble_log_loss": 0.9967680770190828,
+      "train_prior_log_loss": 0.9772712825898907,
+      "delta_vs_train_prior": 0.019496794429192055
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m2_gru",
+      "period": "REOBSERVED_2024",
+      "n": 6236,
+      "ensemble_log_loss": 1.0037175954171238,
+      "train_prior_log_loss": 0.9833499711572,
+      "delta_vs_train_prior": 0.020367624259923778
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m3_hgb",
+      "period": "INNER_B_2023H2",
+      "n": 2952,
+      "ensemble_log_loss": 0.9822139320506676,
+      "train_prior_log_loss": 0.9772712825898907,
+      "delta_vs_train_prior": 0.004942649460776938
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m3_hgb",
+      "period": "REOBSERVED_2024",
+      "n": 6236,
+      "ensemble_log_loss": 0.9903204882032945,
+      "train_prior_log_loss": 0.9833499711572,
+      "delta_vs_train_prior": 0.0069705170460945265
+    }
+  ],
+  "train_class_prior": [
+    0.5719428325811304,
+    0.21265849989254246,
+    0.2153986675263271
+  ],
+  "clock_mapping": {
+    "identity_utc": {
+      "matched": 29149,
+      "exact_close_matches": 102,
+      "p50_abs": 0.0010199999999997988,
+      "p95_abs": 0.004649999999999821
+    },
+    "fixed_plus4": {
+      "matched": 30152,
+      "exact_close_matches": 17775,
+      "p50_abs": 0.0,
+      "p95_abs": 0.0014899999999999913
+    },
+    "fixed_plus5": {
+      "matched": 30107,
+      "exact_close_matches": 12676,
+      "p50_abs": 0.00010999999999983245,
+      "p95_abs": 0.0016700000000000603
+    },
+    "candidate_NY_to_UTC": {
+      "matched": 30236,
+      "exact_close_matches": 28291,
+      "p50_abs": 0.0,
+      "p95_abs": 0.0001900000000001345
+    }
+  },
+  "admitted_missing_from_lake_by_year_candidate_clock": {
+    "2020": 24,
+    "2021": 24,
+    "2022": 4,
+    "2023": 818,
+    "2024": 10
+  },
+  "elapsed_feature_skipped_admitted_bars": [
+    {
+      "origin_label": "2020-03-15 16:00:00+00:00",
+      "elapsed_feature": 49.0,
+      "admitted_bars_skipped": 1,
+      "year": 2020
+    },
+    {
+      "origin_label": "2020-03-22 16:00:00+00:00",
+      "elapsed_feature": 49.0,
+      "admitted_bars_skipped": 1,
+      "year": 2020
+    },
+    {
+      "origin_label": "2020-03-29 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2020
+    },
+    {
+      "origin_label": "2020-03-29 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2020
+    },
+    {
+      "origin_label": "2020-11-01 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2020
+    },
+    {
+      "origin_label": "2020-11-30 19:00:00+00:00",
+      "elapsed_feature": 20.0,
+      "admitted_bars_skipped": 19,
+      "year": 2020
+    },
+    {
+      "origin_label": "2021-03-21 16:00:00+00:00",
+      "elapsed_feature": 49.0,
+      "admitted_bars_skipped": 1,
+      "year": 2021
+    },
+    {
+      "origin_label": "2021-03-28 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2021
+    },
+    {
+      "origin_label": "2021-03-28 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2021
+    },
+    {
+      "origin_label": "2021-05-31 20:00:00+00:00",
+      "elapsed_feature": 21.0,
+      "admitted_bars_skipped": 20,
+      "year": 2021
+    },
+    {
+      "origin_label": "2021-11-07 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2021
+    },
+    {
+      "origin_label": "2022-03-20 16:00:00+00:00",
+      "elapsed_feature": 49.0,
+      "admitted_bars_skipped": 1,
+      "year": 2022
+    },
+    {
+      "origin_label": "2022-03-27 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2022
+    },
+    {
+      "origin_label": "2022-03-27 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2022
+    },
+    {
+      "origin_label": "2022-11-06 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2022
+    },
+    {
+      "origin_label": "2023-01-27 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-19 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-20 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-20 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-20 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-20 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-20 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-20 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-20 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-21 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-21 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-21 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-21 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-21 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-21 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-21 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-22 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-22 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-22 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-22 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-22 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-22 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-23 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-23 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-23 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-23 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-23 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-23 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-23 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-24 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-24 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-24 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-24 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-24 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-26 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-26 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-27 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-27 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-27 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-27 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-27 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-27 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-27 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-28 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-28 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-28 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-28 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-28 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-28 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-02-28 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-01 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-01 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-01 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-01 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-01 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-01 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-01 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-02 08:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-02 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-02 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-02 16:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-02 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-03 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-03 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-03 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-03 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-03 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-05 18:00:00+00:00",
+      "elapsed_feature": 51.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-06 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-06 10:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-06 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-06 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-06 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-06 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-07 08:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-07 12:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-07 16:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-07 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-08 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-08 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-08 12:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-08 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-08 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-08 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-09 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-09 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-09 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-09 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-09 16:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-09 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-10 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-10 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-10 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-10 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-10 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-12 16:00:00+00:00",
+      "elapsed_feature": 49.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-12 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-13 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-13 10:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-13 14:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-13 18:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-14 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-14 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-14 14:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-14 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-14 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-15 08:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-15 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-15 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-15 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-15 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-15 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-16 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-16 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-16 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-16 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-16 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-16 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-17 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-17 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-17 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-17 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-17 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-19 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-19 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-20 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-20 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-20 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-20 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-20 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-20 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-20 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-21 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-21 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-21 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-21 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-21 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-21 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-21 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-22 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-22 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-22 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-22 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-22 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-22 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-22 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-23 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-23 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-23 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-23 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-23 18:00:00+00:00",
+      "elapsed_feature": 4.0,
+      "admitted_bars_skipped": 3,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-24 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-24 10:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-24 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-24 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-26 17:00:00+00:00",
+      "elapsed_feature": 51.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-26 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-27 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-27 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-27 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-27 17:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-27 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-28 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-28 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-28 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-28 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-28 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-28 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-28 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-29 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-29 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-29 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-29 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-29 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-29 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-29 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-30 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-30 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-30 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-30 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-30 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-30 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-30 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-31 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-31 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-31 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-31 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-03-31 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-02 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-03 11:00:00+00:00",
+      "elapsed_feature": 4.0,
+      "admitted_bars_skipped": 3,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-03 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-03 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-04 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-04 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-04 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-04 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-04 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-04 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-05 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-05 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-05 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-05 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-05 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-09 17:00:00+00:00",
+      "elapsed_feature": 70.0,
+      "admitted_bars_skipped": 21,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-09 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-10 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-10 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-10 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-10 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-10 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-11 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-11 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-11 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-11 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-11 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-11 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-12 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-12 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-12 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-12 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-12 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-12 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-13 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-13 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-13 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-13 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-13 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-13 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-13 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-14 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-14 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-14 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-16 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-17 05:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-17 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-17 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-17 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-17 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-17 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-17 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-17 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-18 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-18 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-18 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-18 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-18 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-18 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-18 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-19 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-19 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-19 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-19 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-20 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-20 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-20 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-20 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-20 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-21 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-21 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-21 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-21 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-23 18:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-23 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-24 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-24 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-24 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-24 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-24 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-24 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-24 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-25 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-25 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-25 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-25 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-25 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-25 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-25 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-26 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-26 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-26 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-26 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-26 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-26 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-26 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-27 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-27 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-27 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-27 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-27 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-27 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-28 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-28 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-28 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-28 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-28 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-30 18:00:00+00:00",
+      "elapsed_feature": 51.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-04-30 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-01 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-01 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-01 17:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-01 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-02 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-02 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-02 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-02 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-02 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-02 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-02 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-03 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-03 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-03 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-03 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-03 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-03 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-03 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-04 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-04 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-04 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-04 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-04 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-04 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-04 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-05 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-05 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-05 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-05 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-05 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-07 18:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-07 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-08 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-08 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-08 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-08 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-08 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-08 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-08 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-09 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-09 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-09 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-09 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-09 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-09 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-09 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-10 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-10 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-10 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-10 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-10 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-10 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-11 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-11 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-11 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-11 17:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-11 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-12 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-12 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-12 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-14 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-15 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-15 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-15 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-15 17:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-16 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-16 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-16 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-16 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-16 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-16 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-17 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-17 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-17 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-17 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-17 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-17 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-17 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-18 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-18 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-18 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-18 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-18 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-18 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-19 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-19 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-19 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-19 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-19 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-21 18:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-21 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-22 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-22 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-22 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-22 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-22 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-22 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-22 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-23 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-23 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-23 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-23 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-23 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-23 20:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-24 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-24 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-24 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-24 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-24 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-24 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-24 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-25 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-25 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-25 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-25 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-25 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-26 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-26 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-26 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-28 18:00:00+00:00",
+      "elapsed_feature": 52.0,
+      "admitted_bars_skipped": 3,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-28 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-29 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-29 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-29 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-29 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-29 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-29 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-30 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-30 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-30 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-30 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-30 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-30 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-31 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-31 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-31 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-31 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-31 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-31 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-05-31 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-01 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-01 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-01 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-01 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-01 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-01 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-01 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-02 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-02 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-02 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-02 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-04 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-05 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-05 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-05 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-05 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-05 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-05 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-06 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-06 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-06 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-06 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-06 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-06 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-07 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-07 10:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-07 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-07 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-07 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-07 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-08 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-08 11:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-08 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-08 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-08 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-08 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-09 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-09 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-09 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-09 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-11 18:00:00+00:00",
+      "elapsed_feature": 51.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-11 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-12 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-12 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-12 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-12 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-12 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-12 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-12 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-13 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-13 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-13 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-13 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-13 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-13 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-13 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-14 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-14 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-14 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-14 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-14 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-14 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-14 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-15 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-15 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-15 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-15 16:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-15 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-15 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-16 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-16 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-16 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-16 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-18 19:00:00+00:00",
+      "elapsed_feature": 52.0,
+      "admitted_bars_skipped": 3,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-19 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-19 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-19 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-19 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-19 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-19 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-19 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-20 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-20 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-20 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-20 17:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-20 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-21 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-21 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-21 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-21 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-21 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-21 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-21 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-21 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-22 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-22 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-22 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-22 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-22 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-22 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-23 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-23 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-23 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-23 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-25 17:00:00+00:00",
+      "elapsed_feature": 51.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-25 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-26 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-26 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-26 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-26 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-26 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-27 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-27 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-27 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-27 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-27 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-27 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-28 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-28 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-28 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-28 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-28 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-28 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-28 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-28 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-29 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-29 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-29 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-29 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-29 17:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-29 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-30 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-30 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-30 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-30 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-06-30 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-02 18:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-02 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-03 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-03 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-03 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-03 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-03 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-04 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-04 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-04 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-04 17:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-04 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-05 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-05 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-05 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-05 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-05 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-05 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-06 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-06 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-06 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-06 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-06 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-06 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-06 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-07 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-07 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-07 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-09 17:00:00+00:00",
+      "elapsed_feature": 52.0,
+      "admitted_bars_skipped": 3,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-09 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-10 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-10 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-10 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-10 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-10 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-10 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-10 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-11 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-11 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-11 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-11 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-11 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-12 06:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-12 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-12 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-12 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-12 16:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-12 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-13 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-13 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-13 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-13 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-13 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-13 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-14 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-14 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-14 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-14 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-14 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-16 18:00:00+00:00",
+      "elapsed_feature": 51.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-16 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-17 09:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-17 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-17 15:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-17 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-17 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-18 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-18 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-18 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-18 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-18 18:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-18 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-19 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-19 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-19 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-19 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-19 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-19 17:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-19 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-20 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-20 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-20 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-20 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-20 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-20 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-20 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-21 10:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-21 13:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-21 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-23 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-23 19:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-24 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-24 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-24 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-24 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-24 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-24 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-24 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-25 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-25 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-25 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-25 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-25 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-25 19:00:00+00:00",
+      "elapsed_feature": 3.0,
+      "admitted_bars_skipped": 2,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-26 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-26 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-26 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-26 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-26 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-26 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-26 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-27 07:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-27 09:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-27 11:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-27 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-27 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-27 18:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-27 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-28 08:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-28 10:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-28 12:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-28 14:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-07-28 16:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2023-11-05 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2023
+    },
+    {
+      "origin_label": "2024-01-15 15:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2024
+    },
+    {
+      "origin_label": "2024-01-16 13:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2024
+    },
+    {
+      "origin_label": "2024-01-16 19:00:00+00:00",
+      "elapsed_feature": 4.0,
+      "admitted_bars_skipped": 3,
+      "year": 2024
+    },
+    {
+      "origin_label": "2024-03-17 16:00:00+00:00",
+      "elapsed_feature": 49.0,
+      "admitted_bars_skipped": 1,
+      "year": 2024
+    },
+    {
+      "origin_label": "2024-03-24 16:00:00+00:00",
+      "elapsed_feature": 49.0,
+      "admitted_bars_skipped": 1,
+      "year": 2024
+    },
+    {
+      "origin_label": "2024-03-31 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2024
+    },
+    {
+      "origin_label": "2024-03-31 20:00:00+00:00",
+      "elapsed_feature": 2.0,
+      "admitted_bars_skipped": 1,
+      "year": 2024
+    },
+    {
+      "origin_label": "2024-11-03 17:00:00+00:00",
+      "elapsed_feature": 50.0,
+      "admitted_bars_skipped": 1,
+      "year": 2024
+    }
+  ],
+  "snapshot_scope": {
+    "listed_files": 32,
+    "omitted_replay_inputs": [
+      "data/pool_all.parquet",
+      "data/features_train.parquet",
+      "data/targets_train.parquet",
+      "eval_input/features_all.parquet",
+      "eval_input/targets_all.parquet",
+      "metrics.duckdb"
+    ],
+    "model_files_listed": 0,
+    "prediction_files_listed": 0,
+    "manifested_selected_models": 18
+  },
+  "daily_return_counterexample": {
+    "initial_equity": 100,
+    "daily_closes": [
+      110.0,
+      121.0
+    ],
+    "adapter_definition_returns": [
+      0.1,
+      0.1
+    ],
+    "evaluator_returns": [
+      0.0,
+      0.1
+    ]
+  },
+  "all_declared_cut_label_replay": {
+    "rule": "timing_targets.v2",
+    "confirmation": "confirmation_bars_fast",
+    "cuts": [
+      {
+        "cut_position": 6744,
+        "cut_time": "2021-01-03 17:00:00+00:00",
+        "truncation": {
+          "t1": {
+            "rows_declared_final": 6728,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t2": {
+            "rows_declared_final": 6730,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 6728,
+            "changed_among_final": 0,
+            "changed_among_not_final": 3
+          }
+        },
+        "future_perturbation": {
+          "t1": {
+            "rows_declared_final": 6728,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t2": {
+            "rows_declared_final": 6730,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 6728,
+            "changed_among_final": 0,
+            "changed_among_not_final": 3
+          }
+        }
+      },
+      {
+        "cut_position": 12963,
+        "cut_time": "2022-01-02 17:00:00+00:00",
+        "truncation": {
+          "t1": {
+            "rows_declared_final": 12956,
+            "changed_among_final": 0,
+            "changed_among_not_final": 2
+          },
+          "t2": {
+            "rows_declared_final": 12958,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 12956,
+            "changed_among_final": 0,
+            "changed_among_not_final": 5
+          }
+        },
+        "future_perturbation": {
+          "t1": {
+            "rows_declared_final": 12956,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t2": {
+            "rows_declared_final": 12958,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 12956,
+            "changed_among_final": 0,
+            "changed_among_not_final": 5
+          }
+        }
+      },
+      {
+        "cut_position": 19202,
+        "cut_time": "2023-01-01 17:00:00+00:00",
+        "truncation": {
+          "t1": {
+            "rows_declared_final": 19196,
+            "changed_among_final": 0,
+            "changed_among_not_final": 4
+          },
+          "t2": {
+            "rows_declared_final": 19198,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 19196,
+            "changed_among_final": 0,
+            "changed_among_not_final": 4
+          }
+        },
+        "future_perturbation": {
+          "t1": {
+            "rows_declared_final": 19196,
+            "changed_among_final": 0,
+            "changed_among_not_final": 4
+          },
+          "t2": {
+            "rows_declared_final": 19198,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 19196,
+            "changed_among_final": 0,
+            "changed_among_not_final": 4
+          }
+        }
+      },
+      {
+        "cut_position": 21647,
+        "cut_time": "2023-07-02 18:00:00+00:00",
+        "truncation": {
+          "t1": {
+            "rows_declared_final": 21642,
+            "changed_among_final": 0,
+            "changed_among_not_final": 3
+          },
+          "t2": {
+            "rows_declared_final": 21644,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 21642,
+            "changed_among_final": 0,
+            "changed_among_not_final": 3
+          }
+        },
+        "future_perturbation": {
+          "t1": {
+            "rows_declared_final": 21642,
+            "changed_among_final": 0,
+            "changed_among_not_final": 1
+          },
+          "t2": {
+            "rows_declared_final": 21644,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 21642,
+            "changed_among_final": 0,
+            "changed_among_not_final": 3
+          }
+        }
+      },
+      {
+        "cut_position": 24611,
+        "cut_time": "2024-01-01 17:00:00+00:00",
+        "truncation": {
+          "t1": {
+            "rows_declared_final": 24599,
+            "changed_among_final": 0,
+            "changed_among_not_final": 2
+          },
+          "t2": {
+            "rows_declared_final": 24601,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 24599,
+            "changed_among_final": 0,
+            "changed_among_not_final": 10
+          }
+        },
+        "future_perturbation": {
+          "t1": {
+            "rows_declared_final": 24599,
+            "changed_among_final": 0,
+            "changed_among_not_final": 1
+          },
+          "t2": {
+            "rows_declared_final": 24601,
+            "changed_among_final": 0,
+            "changed_among_not_final": 0
+          },
+          "t3": {
+            "rows_declared_final": 24599,
+            "changed_among_final": 0,
+            "changed_among_not_final": 10
+          }
+        }
+      }
+    ],
+    "all_final_rows_unchanged": true
+  },
+  "strategy_replay_2024": [
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m1_dmo_class",
+      "seed": 6102026,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m1_dmo_class",
+      "seed": 6102027,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m1_dmo_class",
+      "seed": 6102028,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m2_gru",
+      "seed": 6102026,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m2_gru",
+      "seed": 6102027,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m2_gru",
+      "seed": 6102028,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m3_hgb",
+      "seed": 6102026,
+      "net_delta": 1.1368683772161603e-13,
+      "sharpe_delta": 5.551115123125783e-17,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m3_hgb",
+      "seed": 6102027,
+      "net_delta": 1.1368683772161603e-13,
+      "sharpe_delta": 5.551115123125783e-17,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "admitted_core_15_553fc047",
+      "arm": "m3_hgb",
+      "seed": 6102028,
+      "net_delta": 1.1368683772161603e-13,
+      "sharpe_delta": 5.551115123125783e-17,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m1_dmo_class",
+      "seed": 6102026,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m1_dmo_class",
+      "seed": 6102027,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m1_dmo_class",
+      "seed": 6102028,
+      "net_delta": 0.0,
+      "sharpe_delta": -2.220446049250313e-16,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m2_gru",
+      "seed": 6102026,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m2_gru",
+      "seed": 6102027,
+      "net_delta": 0.0,
+      "sharpe_delta": 4.440892098500626e-16,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m2_gru",
+      "seed": 6102028,
+      "net_delta": 0.0,
+      "sharpe_delta": 0.0,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m3_hgb",
+      "seed": 6102026,
+      "net_delta": 0.0,
+      "sharpe_delta": 2.220446049250313e-16,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m3_hgb",
+      "seed": 6102027,
+      "net_delta": 0.0,
+      "sharpe_delta": 2.220446049250313e-16,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    },
+    {
+      "set": "timing_selected",
+      "arm": "m3_hgb",
+      "seed": 6102028,
+      "net_delta": 0.0,
+      "sharpe_delta": 2.220446049250313e-16,
+      "entries_delta": 0,
+      "initial_capital": 10000.0,
+      "first_daily_close": 10000.0
+    }
+  ],
+  "frozen_strategy_binding_probe": "CHANGED_CAP_REACHED_MODEL_LOAD_WITHOUT_FREEZE_REFUSAL",
+  "limits": [
+    "No fitting or GPU use",
+    "NY mapping remains a candidate until verified by data owner",
+    "Per-seed trained models authenticated but not re-inferred",
+    "Business counts use the sealed adapter calendar, not a broker-certified calendar"
+  ]
+}
