@@ -1,8 +1,15 @@
-# Timing-target feature selection (ZigZag expert as the label)
+# Timing-target feature selection: TIMING_PROXY_SELECTION (ZigZag expert as the label)
 
-Purpose: select features for TIMING (pivot / entry-exit) decisions of RL agents and heuristic strategies,
-using the optimized ZigZag hindsight expert as the target. The expert's peaks and valleys are the close
-tick of one order and the open tick of the next; this is NOT price prediction and claims no RL value.
+Purpose: select features for TIMING (pivot / entry-exit) decisions, using the optimized ZigZag hindsight
+expert as the target. The expert's peaks and valleys are the close tick of one order and the open tick of the
+next; this is NOT price prediction. This is expert-demonstration / hindsight-guided learning, not
+human-preference RLHF. The output is a TIMING_PROXY_SELECTION: usefulness is established for the pivot
+classification proxy and its trivial reversal strategy only, not for an RL policy; a fixed-budget SAC
+comparison against the admitted-core 15 is a later, separately authorized integration.
+
+Revision 2 (2026-10-19) incorporates Musashi's plan audit (REVISE_BEFORE_FINAL_SEAL, predictor
+`codex/data-coverage-repair-20261018` @ed5b1acc). Everything computed under revision 1 (targets
+`timing_targets.v1`) is superseded and was recomputed through the dependency DAG of section 5.
 Everything here is ADDITIVE: no existing engine, method list, target pack, manifest or selection identity
 is modified; the timing family is registered beside the existing ones and driven by a JSON config.
 
@@ -84,3 +91,54 @@ Outputs under `<OUT>`: `MANIFEST.json` (population, `fs_phase23.population_manif
 Rules enforced: TEST rows refused at every loader; TRAIN = 2020-2022 for the engines; INNER 2023 only in
 the evaluator's monitor/threshold; CONFIRM 2024 read once by the evaluator; labels purged at every cut;
 no host name, address or private path in any artifact (paths are redacted to basenames).
+
+
+## 4. Plan-audit dispositions (F01-F09)
+
+| Finding | Disposition | Artifact / test |
+|---|---|---|
+| F01 label support beyond k | Per-row ledger (origin, origin availability, event time, support end and label availability per target, expert_trade_id, label_group_id, status); support = the confirmation of the certifying pivot, verified by truncation AND future-perturbation replays (not a median lag); unconfirmed / beyond-data rows CENSORED (never NONE / zero); FIT rows whose support reaches any cut PURGED (cuts 2021-01-01, 2022-01-01, 2023-01-01, 2023-07-01, 2024-01-01, 2025-01-01); groups cannot straddle a cut because a purged row's whole certifying group is purged before it; uncertainty by ISO-week block bootstrap | `tools/timing_pivot_targets.py` (`label_arrays`, `build_targets`, `finality_check`, `status_table`); `LABEL_LEDGER.parquet`, `TARGETS.json`; tests `test_a01_*`, `test_a03_*` |
+| F02 2024 already observed | 2023 = JOINT development (the expert was chosen with 2023); 2024 = PREVIOUSLY OBSERVED reconfirmation, read once by `reconfirm` after `FROZEN.json`; the subset is frozen (`FROZEN_SUBSET.json`) before any 2023 read | `READ_LEDGER.json`, `FROZEN_SUBSET.json`, evaluator `FROZEN.json`, `RECONFIRM.json`; test `test_te02_*` |
+| F03 expert parity is not business parity | The adapter reused is heuristic-strategy `execution.py` + `Ctx.run` (pinned commit); its behaviour is pinned by tests: fill at the OPEN two bars after the signal bar (never the pivot extreme), stop-before-TP collision flagged, gap fills at the open, forced flat 12 h before close, <= 4 orders/day, integer units sized from the balance with margin refusal, close-and-reverse = two costed fills. The 12 h no-reopen rule is NOT applied by the `signal_blocks` path: the evaluator adds a declared reopen guard. Our >= 3/week / <= 4/day rule stays separate from the SAC <= 1/day contract and only marks validity | heuristic-strategy `tests/unit_tests/test_short_horizon_timing_adapter_contract.py` (AC01-AC09) |
+| F04 candidate clock and phase-1 quality | Ordered inventory 30 + 47 + 12 = 89 with exact alias groups; quality profiles of every new column (own profile + the existing causal-inference `profile_series`); fractal store keyed by (EURUSD, timestamp, lake bar convention, lake bytes) with 0 close mismatches; prefix + future-perturbation checks for the inventory generator, the price pool, the fractal producer and the scaler; window units declared (observed market bars; elapsed hours only for `px.elapsed_hours`). The repaired admitted root is NOT available on this host: no hand clock shift is applied and calendar encodings are declared lake-clock features | `INVENTORY.json`, `QUALITY_PROFILES.json`, `PERTURBATION.json`, `POOL_META.json`; tests `test_a02_*`, `test_a05_*` |
+| F05 T1/T2/T3 are different tasks | T1 = primary anticipatory target (earliest-event rule, tie refused, k in observed bars, (t, t+k], every hourly origin kept); T2 = reactive comparator reported separately; T3 = remaining gross distance for an agent holding the expert's leg (not trade P&L). The selection recipe uses the T1 task only; T2/T3 subsets are reported as comparators. Per-direction PR-AUC / precision / recall / support with NONE in the base rate. The admitted-core 15 is an unchanged scored baseline on identical rows and its members compete in the pool; rows lost to the longest warm-up are reported | `REPORT.json` (`recipe`, `comparator_subsets_T2_T3`), evaluator `per_direction`, `DEVELOP.json` (`rows_lost_to_union_warmup`) |
+| F06 adaptive search | Bounded trial ledger (expert, k, targets, sets, arms, regularization cells, seeds, thresholds, choices); owner's mean TRAIN/INNER monitor kept, both terms in inference mode with the same weights at the same checkpoint, running loss logged apart; budget, best step, patience, stop cause logged; INNER_A (2023H1) for every choice, INNER_B (2023H2) scored frozen; ISO-week block bootstrap of paired differences; DSR as a supplement; declared regularization grid (section 6) | evaluator `SEAL.json` (`trial_ledger`, `deflated_sharpe_supplement`), `UNCERTAINTY.json`; tests `test_te03_*`..`test_te08_*` |
+| F07 association is not intervention | Every causal-stage result labelled CONDITIONAL_PREDICTIVE_ASSOCIATION; PCMCI+ with tigramite RegressionCI (mixed data; T1 as ONE categorical variable; binary candidates typed discrete), positive control (label leak at lag 1) and negative controls (noise, circular shift), temporal halves; lag-0 mapping declared; NO_LINK never rejects a feature | causal-inference `fs_timing_pack.mixed_ci_stage`; `CAUSAL_STAGE.json`; tests TP07, TP08 |
+| F08 target identity changes | Dependency DAG with content identities; an expert hash / semantics change recomputes every target-dependent stage and reuses only target-independent ones (pool, quality, perturbation, within-day variance); phase-2 pair metrics are target-independent in content but identity-bound in the pinned engine, so they are recomputed (declared) | `DAG.json`; tests `test_a10_*` |
+| F09 proxy, not RL | Manifest named TIMING_PROXY_SELECTION, `proxy_only: true`, scope statement; no RL run | `SELECTION_MANIFEST.json` |
+
+## 5. Dependency DAG (invalidation)
+
+Target-independent (reusable with identical inputs): `pool_features` <- lake, inventory generator, bundle
+script, fractal store, pool code, candidate config; `quality_profiles`, `perturbation_checks`,
+`within_day_variance` <- pool. Target-dependent (recomputed on any change of expert bytes, expert
+parameters, k, target semantics or splits): `targets_ledger` -> `finality_check`, `population_manifest` ->
+`phase2_pairwise` (identity-bound) -> `phase3_filters` -> `recipe`; `univariate_screen` -> `fold_stability`;
+`causal`; `eval_inputs` -> `evaluator` -> `selection_manifest`. `run --reuse-from PREV` applies the plan;
+`DAG.json` records leaves, node identities and the plan.
+
+## 6. Regularización
+
+Owner decision 2026-10-19 (delegated), declared in the evaluator's trial ledger; never a silent monitor
+change. Neural arms (m1 I6-DMO-class, m2 GRU): AdamW decoupled weight decay 1e-4 (unchanged recipe) plus
+DROPOUT 0.1 after the fusion/core block and before the dense head (on the GRU output, never inside the
+recurrence: `recurrent_dropout = 0`), with the owner's early stopping. No BatchNorm: BN combined with
+dropout suffers a variance shift between training and inference (Li et al., CVPR 2019), and BN's
+train/inference statistics are fragile under regime shift in financial series; Musashi's campaign also
+excludes BN. LayerNorm is not added. Declared ablation grid on identical rows, seeds and budget: dropout
+{0, 0.1, 0.2} x weight decay {1e-4, 1e-3} (6 cells x 3 seeds) for m1 and m2; primary cell (0.1, 1e-4).
+Gradient boosting (m3): capacity is regularized, not the monitor: max_depth 4, min_samples_leaf 200,
+l2_regularization {0, 1, 10} (primary 0), learning_rate 0.05, max_iter 400 with the same monitor every 10
+iterations. Pre-declared cell rule, decided on INNER_A only: lowest mean INNER_A loss at the restored
+checkpoint across seeds, ties by the smaller mean TRAIN-INNER gap; a non-primary winner is recorded as a
+replacement. Reported per cell: per-epoch TRAIN and INNER losses and their gap, stop cause, best epoch,
+downstream metrics.
+
+References: Li, Chen, Hu, Yang, "Understanding the Disharmony between Dropout and Batch Normalization by
+Variance Shift", CVPR 2019,
+https://openaccess.thecvf.com/content_CVPR_2019/html/Li_Understanding_the_Disharmony_Between_Dropout_and_Batch_Normalization_by_Variance_Shift_CVPR_2019_paper.html ;
+Loshchilov, Hutter, "Decoupled Weight Decay Regularization", ICLR 2019, https://arxiv.org/abs/1711.05101 ;
+Srivastava et al., "Dropout: A Simple Way to Prevent Neural Networks from Overfitting", JMLR 2014,
+https://jmlr.org/papers/v15/srivastava14a.html ; scikit-learn histogram gradient boosting,
+https://scikit-learn.org/stable/modules/ensemble.html#histogram-based-gradient-boosting ; Bailey, Lopez de
+Prado, "The Deflated Sharpe Ratio", https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf .

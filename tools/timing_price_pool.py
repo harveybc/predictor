@@ -18,7 +18,9 @@ ATR_SHORT, ATR_LONG = 14, 120
 FORBIDDEN_TRANSFORM = re.compile(
     r"(stl|loess|lowess|centred|centered|two[_-]?sided|seasonal|trend[_-]?comp|resid|smooth|savgol|hp[_-]?filter)",
     re.IGNORECASE)
-# UTC session blocks (ASSUMED, not a broker calendar): Asia 00-07, Europe 07-13, US 13-21, off 21-24
+# Session blocks on the LAKE BAR CLOCK AS LABELLED (vendor clock; its UTC mapping is under repair and is NOT
+# applied here, no hand shift): hours 00-07, 07-13, 13-21 of the label.  Names are conventions only; they are
+# not certified UTC sessions.  The same caveat applies to every cal.* hour / weekday encoding.
 SESSIONS = {"cal.session_asia": (0, 7), "cal.session_europe": (7, 13), "cal.session_us": (13, 21)}
 
 
@@ -97,6 +99,75 @@ def availability_gate(features: list[dict]) -> list[str]:
                                     f"'timestamp' (<= t) or 'known in advance' is admissible")
         admitted.append(fid)
     return admitted
+
+
+UNITS = {"px.logret_": "market bars", "px.range_": "market bars", "px.close_loc_": "market bars", "px.er_": "market bars",
+         "px.rv_": "market bars", "px.atr_": "market bars", "px.range_ratio": "market bars", "px.bar_body": "one bar",
+         "px.elapsed_hours": "elapsed hours", "cal.": "label clock"}
+
+
+def window_unit(feature_id: str) -> str:
+    """Declared window unit of a pool feature: rolling windows count OBSERVED market bars, never elapsed hours."""
+    for pre, unit in UNITS.items():
+        if feature_id.startswith(pre):
+            return unit
+    return "declared by producer"
+
+
+def quality_profile(frame: pd.DataFrame) -> dict:
+    """Phase-1 style quality per column on the bar grid: coverage, duplicate timestamps, finite share, warm-up,
+    extrema (genuine values kept; no clipping), constants, and declared availability/unit."""
+    idx = frame.index
+    dup = int(pd.Index(idx).duplicated().sum())
+    out = {"rows": int(len(frame)), "duplicate_timestamps": dup, "columns": {}}
+    for col in frame.columns:
+        v = frame[col].to_numpy(float)
+        fin = np.isfinite(v)
+        first = int(np.argmax(fin)) if fin.any() else None
+        tail = v[first:] if first is not None else v[:0]
+        interior_nonfinite = int((~np.isfinite(tail)).sum()) if first is not None else None
+        fv = v[fin]
+        out["columns"][col] = {
+            "finite_share": float(fin.mean()) if len(v) else 0.0,
+            "warmup_rows": first, "warmup_until": str(idx[first]) if first is not None else None,
+            "interior_nonfinite": interior_nonfinite,
+            "min": float(fv.min()) if fv.size else None, "max": float(fv.max()) if fv.size else None,
+            "p001": float(np.quantile(fv, 0.001)) if fv.size else None, "p999": float(np.quantile(fv, 0.999)) if fv.size else None,
+            "distinct_values": int(np.unique(fv).size) if fv.size else 0,
+            "constant": bool(fv.size and np.nanstd(fv) == 0), "window_unit": window_unit(col)}
+    return out
+
+
+def perturbation_check(fn, bars: pd.DataFrame, cut: int, *, seed: int = 0, rtol: float = 0.0) -> dict:
+    """Prefix invariance + future perturbation for a generator ``fn(bars) -> DataFrame`` on the same index:
+    (a) fn(bars[:cut]) equals fn(bars)[:cut]; (b) replacing bars[cut:] by a seeded random walk leaves
+    fn(...)[:cut] unchanged.  Exact equality (rtol 0) unless declared."""
+    full = fn(bars)
+    pre = fn(bars.iloc[:cut])
+    rng = np.random.default_rng(seed)
+    pert = bars.copy()
+    m = len(bars) - cut
+    base = float(bars.CLOSE.iloc[cut - 1])
+    c = base * np.exp(rng.normal(0, 8e-4, m).cumsum())
+    w = np.abs(rng.normal(0, 4e-4, m)) * base
+    pert.iloc[cut:, pert.columns.get_loc("CLOSE")] = c
+    pert.iloc[cut:, pert.columns.get_loc("OPEN")] = np.r_[base, c[:-1]]
+    pert.iloc[cut:, pert.columns.get_loc("HIGH")] = np.maximum(c, np.r_[base, c[:-1]]) + w
+    pert.iloc[cut:, pert.columns.get_loc("LOW")] = np.minimum(c, np.r_[base, c[:-1]]) - w
+    perturbed = fn(pert)
+
+    def diff(a, b):
+        a, b = a.to_numpy(float), b.to_numpy(float)
+        same = (np.isnan(a) & np.isnan(b)) | (np.abs(a - b) <= rtol * np.maximum(np.abs(a), 1e-300)) | (a == b)
+        bad = ~same
+        return {"cells_differing": int(bad.sum()), "columns_differing": sorted(set(np.array(list(range(a.shape[1])))[bad.any(axis=0)].tolist()))}
+
+    a = diff(full.iloc[:cut], pre)
+    b = diff(full.iloc[:cut], perturbed.iloc[:cut])
+    cols = list(full.columns)
+    return {"cut_position": int(cut), "prefix": {"cells_differing": a["cells_differing"], "columns": [cols[i] for i in a["columns_differing"]]},
+            "future_perturbation": {"cells_differing": b["cells_differing"], "columns": [cols[i] for i in b["columns_differing"]]},
+            "passed": a["cells_differing"] == 0 and b["cells_differing"] == 0}
 
 
 def within_day_variance(frame: pd.DataFrame, *, rel_tol: float = 1e-9) -> dict:
