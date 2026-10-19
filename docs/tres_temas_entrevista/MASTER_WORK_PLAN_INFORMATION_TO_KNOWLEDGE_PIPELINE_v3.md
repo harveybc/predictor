@@ -6,6 +6,20 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+Avance real2026-10-19: cerrado un subconjunto de15/30 variables derivadas del
+nucleo EURUSD reparado y admitido, con37198 filas OLAP verificadas y dos copias.
+Ya corre SAC directo frente a la representacion temporal con ESE MISMO
+manifiesto; no otro RAW. Ver [seleccion y contraste](program_v3/SELECTED_CORE_RL_2026_10_19.md).
+Este cierre acotado no declara admitido/seleccionado el catalogo externo ni
+efectos causales identificados. Mantener ambos alcances separados.
+
+Regla inmutable de cada entrada: SL y TP obligatorios, mas un presupuesto
+maximo en moneda de cuenta igual a fraccion_elegida * rel_volume * balance(t).
+rel_volume es configurable (inicial0.1); el apalancamiento se aplica aparte
+para convertir margen a nominal. El minimo del broker nunca fuerza superar
+el presupuesto: si no alcanza, no abrir. Mantener esta regla en ambos SAC y
+controles; la comparacion actual usa apalancamiento1:1 y minimo/paso de ejemplo.
+
 Precision del propietario 2026-10-19: la seleccion de caracteristicas es una
 dependencia cientifica obligatoria del contraste RL solicitado, no decoracion.
 El ensayo RAW cerrado (12/12, OLAP y dos copias verificados) es solo un control independiente; no completa ni

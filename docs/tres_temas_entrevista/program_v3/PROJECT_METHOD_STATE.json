@@ -1,7 +1,7 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-19",
-  "current_stage": "SELECTION_REBUILD_REQUIRED_RAW_CONTROL_CLOSED_NOT_SELECTED_COMPARISON",
+  "current_stage": "SCOPED_CORE_SELECTION_CLOSED_SELECTED_SAC_RUNNING_FULL_EXTERNAL_CATALOG_PENDING",
   "execution_owner": "Musashi",
   "priority_order": ["DATA_RECOVERY", "DATA_ADMISSION", "PREPROCESSING_ACCEPTANCE", "FEATURE_SELECTION_REBUILD", "RL_BUSINESS_ENVIRONMENT", "RL_BASELINES", "SAC_RAW_MODULAR", "RL_COMPARISONS_AND_PAPER", "DEFERRED_FORECASTING", "DEFERRED_NEAT"],
   "handoff_status": "RETURNS_INTEGRATED_REVIEW_CORRECTIONS_APPLIED_ENVIRONMENT_FINDINGS_OPEN",
@@ -43,10 +43,29 @@
   "data_admission_complete": false,
   "boundary_recovery": {"provider": "FXCM", "source_archive": "2019/53", "observed_missing_hours_per_pair": 40, "pairs": ["eurusd", "gbpusd"], "whole_lake_admitted": false},
   "histdata_clock_diagnostic": {"code": "b6ae8413f", "raw_years": [2023, 2024, 2025], "paired_daily_comparisons": 4578, "warehouse_reports": 6, "warehouse_metrics": 22890, "pending": 0, "mismatch": 0, "two_machine_copies_verified": true, "admitted": false, "automatic_clock_selection": false},
-  "selection_rebuild_adapter": {"code": "2e90ee2", "scope": "PROFILE_ONLY_THEN_PAIRWISE_AND_FILTERS", "synthetic_engine_execution_verified": true, "remote_publication": false, "causal_evidence_computed": false, "financial_execution": false},
+  "selection_rebuild_adapter": {"code": "9d4d06a", "scope": "ADMITTED_EURUSD_CORE_PROFILE_PAIRWISE_FILTER_SUBSET", "synthetic_engine_execution_verified": true, "remote_publication": true, "causal_evidence_computed": false, "financial_execution": true, "tests_passed": 55},
   "feature_selection_complete": false,
+  "feature_selection_complete_scope": "FULL_EXTERNAL_FINANCIAL_CATALOGUE",
+  "admitted_core_selection": {
+    "state": "FILTER_SELECTION_OLAP_AND_TWO_PHYSICAL_COPIES_VERIFIED",
+    "selection_complete": "WITHIN_DECLARED_ADMITTED_POPULATION",
+    "full_inventory_complete": false, "causal_evidence_computed": false,
+    "candidate_count": 30, "selected_count": 15, "pairs": 435,
+    "warehouse_rows": 37198, "pending": 0, "mismatch": 0,
+    "verified_snapshot_files": 39, "additional_verified_deployment_files": 2,
+    "selection_sha256": "553fc04707ee3d1d2d552a21af073bf942e3a1b880150f2b34245764446c09e2"
+  },
   "selected_rl_comparison": {
-    "state": "WAIT_REBUILT_FINANCIAL_SELECTION",
+    "state": "RUNNING_SCOPED_SELECTED_INPUTS_DIRECT_SAC",
+    "scope": "ADMITTED_EURUSD_CORE_DERIVED_NOT_FULL_CATALOGUE",
+    "contract_sha256": "143051b15a901e842852431629b8af806b4abcde25e2a7a573037409c939265b",
+    "selection_sha256": "553fc04707ee3d1d2d552a21af073bf942e3a1b880150f2b34245764446c09e2",
+    "started_at": "2026-10-19T10:40:33Z", "agent_code": "d61473b0", "gym_code": "69407a7",
+    "declared_tasks": 12, "training_transitions_each_SAC": 100000,
+    "startup_observed_steps": 0, "refit_cadence": "NONE",
+    "order_budget": {"sizing_mode": "balance_budget", "rel_volume": 0.1, "balance_basis": "CASH_WHILE_FLAT", "allocation_units": "ACCOUNT_CURRENCY_MARGIN_CEILING", "leverage": 1, "min_order_volume": 1, "volume_step": 1, "broker_constraints_scope": "ILLUSTRATIVE_NOT_VERIFIED", "sl_tp_required": true},
+    "superseded_incomplete_contract": "41c6acf3_NOT_REUSED_PORTFOLIO_FRACTION_REPLACED",
+    "persistent_worker_and_publication_and_collection": true,
     "required_input": "NEW_SELECTED_MANIFEST_FROM_REPAIRED_ADMITTED_CANDIDATES",
     "arms": ["SAC_SELECTED_DIRECT", "SAC_SELECTED_PER_FEATURE_FUSION_CORE"],
     "raw_control_is_substitute": false,
@@ -76,6 +95,6 @@
     "prepare existing RL environment and synthetic CPU business/accounting tests in parallel",
     "use bounded Satoshi research/evidence lanes without monitoring or fits"
   ],
-  "not_established": ["whole_inventory_acceptance", "complete_cleanup_including_Git_history", "recomputed_final_selection", "RL_environment_acceptance", "RL_campaign_ready_or_running", "profitable_policy"],
+  "not_established": ["whole_inventory_acceptance", "complete_cleanup_including_Git_history", "full_external_catalogue_final_selection", "causal_effect_identification", "universal_RL_environment_certification", "profitable_policy"],
   "test_policy": "2025 was already examined; no restored pristine-holdout claim"
 }

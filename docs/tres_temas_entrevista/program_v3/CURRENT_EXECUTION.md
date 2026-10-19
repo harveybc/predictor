@@ -6,6 +6,20 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Corte mas reciente: [15 variables seleccionadas y contraste SAC activo](SELECTED_CORE_RL_2026_10_19.md).
+La seleccion acotada del nucleo EURUSD esta cerrada:30 candidatas,435 pares,
+nueve filtros,15 variables,37198 filas nativas OLAP y dos copias verificadas.
+El catalogo externo y la identificacion causal completa siguen pendientes.
+La cola seleccionada corregida arranco10:40:33Z, con latido inicial verificado,
+SAC directo en5090. Temporal sigue automaticamente con identicas15 entradas.
+Contrato143051b1, seleccion553fc047. Cada entrada exige SL/TP y presupuesto
+fraccion_elegida * rel_volume * balance(t), rel_volume0.1; apalancamiento1:1.
+El intento incompleto41c6acf3 se detuvo sin reutilizar pesos porque usaba
+fraccion de cartera en lugar del presupuesto relativo aclarado por el usuario.
+No hay resultados nuevos de politicas aun.
+Los parrafos siguientes sobre seleccion pendiente describen el catalogo
+completo y el corte anterior, no niegan este nuevo subconjunto cerrado.
+
 El propietario reitera que la seleccion debe alimentar el contraste RL final.
 No existe aun manifiesto financiero seleccionado sobre toda la poblacion
 reparada. El ensayo RAW en curso no satisface ese hito. No abrir nuevas
