@@ -22,6 +22,17 @@ controles; por instruccion del propietario la comparacion inicial usa
 apalancamiento1:50 y minimo/paso de ejemplo.1:100 configurable; el contraste
 1:1 queda para despues. Configurar el broker y el sizing con el mismo valor.
 
+Asignacion permanente de GPU (precision del propietario2026-10-19): priorizar
+la5090 para todo trabajo compatible, especialmente modelos complejos y ventanas
+largas. Usar la4090 en paralelo para unidades independientes cuando este libre
+de trabajo del plan o de otros agentes y pase admision de RAM, VRAM y disco.
+No duplicar una unidad ni cambiar un contraste activo para ocupar una GPU.
+Cada asignacion debe registrar dispositivo/runtime; una diferencia de GPU no
+se presenta como una reproduccion bitwise. En el host de la5090 sigue vigente
+un solo proceso pesado: no usar la5070Ti simultaneamente por la RAM compartida.
+La cola SAC actual es secuencial y conserva su identidad; el proximo lote
+paralelo debe declarar sus unidades/asignaciones antes de arrancar.
+
 Precision del propietario 2026-10-19: la seleccion de caracteristicas es una
 dependencia cientifica obligatoria del contraste RL solicitado, no decoracion.
 El ensayo RAW cerrado (12/12, OLAP y dos copias verificados) es solo un control independiente; no completa ni

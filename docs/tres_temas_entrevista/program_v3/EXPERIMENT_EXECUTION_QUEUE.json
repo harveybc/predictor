@@ -8,6 +8,15 @@
     "financial_training_scope": "SCOPED_ADMITTED_CORE_SELECTED_COMPARISON_NOT_FULL_EXTERNAL_CATALOGUE",
     "gpu_use_now": "ONE_5090_HEAVY_SELECTED_SAC_NO_PARALLEL_5070TI_NO_NEW_RAW_CAMPAIGNS",
     "gpu_preference_after_acceptance": ["preferred_5090", "secondary_4090", "admitted_optional_workers"],
+    "gpu_scheduling": {
+      "priority": "5090_FOR_ALL_COMPATIBLE_WORK_HEAVIEST_MODELS_AND_LONGEST_WINDOWS_FIRST",
+      "parallel_secondary": "4090_FOR_INDEPENDENT_PLAN_UNITS_IF_IDLE_AND_RESOURCE_ADMITTED",
+      "respect_other_agents_work": true,
+      "duplicate_execution_allowed": false,
+      "current_selected_queue": "SEQUENTIAL_PINNED_NO_IN_PLACE_CONVERSION_TO_DISTRIBUTED",
+      "next_parallel_batch": "DECLARE_TASK_OWNERSHIP_HARDWARE_AND_RUNTIME_BEFORE_DISPATCH",
+      "gpu_hardware_bitwise_equivalence_claimed": false
+    },
     "shared_host_heavy_jobs": 1,
     "reuse_affected_artifacts": false,
     "metrics": "existing_OLAP_exact_readback_and_two_physical_copies",

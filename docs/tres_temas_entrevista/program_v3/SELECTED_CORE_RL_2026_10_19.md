@@ -35,6 +35,15 @@ mechanical controls across both splits:12 tasks. No agent watches logs.
 Persistent worker, publication/readback timer and closed-artifact collector
 continue across restarts. One heavy process on this host, never5070Ti parallel.
 
+Resource policy clarified by owner:5090 preferred for all compatible work and
+especially complex models or long windows;4090 authorized for independent
+units in parallel when free of other agents' work and resource-admitted.
+Inspection found no CUDA process on4090, approximately18GiB available RAM and
+515GB free disk. This is a resource observation, not a launched second fit.
+The current pinned queue is sequential; no active scientific runtime or
+task identity was modified to convert it into a distributed queue mid-run.
+The next parallel batch must declare unit ownership, runtime and device.
+
 | Setting | Both SAC arms |
 |---|---|
 | Selected information | Same ordered15 variables, data, availability and selection pins |
