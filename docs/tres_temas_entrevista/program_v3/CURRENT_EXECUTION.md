@@ -6,6 +6,15 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del 19 de octubre
 
+Ejecucion real iniciada 2026-10-19T07:20Z: contrato local `829e6959...`,
+12 tareas secuenciales, primer control NO_TRADE recorriendo TRAIN.
+Servicios persistentes y publicador con timer instalados; lingering habilitado.
+Sin aprobacion pendiente. Runtime agent-multi `b211624a`, gym-fx `e8710fe`.
+Pruebas: 295 de simulador y 85 de integracion/cola, sin omisiones.
+SAC tiene la 5090 asignada para cuando llegue su turno; no se afirma que ya
+este entrenando mientras se ejecutan los controles CPU. El estado generado,
+no este corte, determina la tarea actual.
+
 - EURUSD: admision CORE_PRICES_ONLY completa, 37309 horas observadas, los
   72 meses 2020-2025 y cero horas requeridas ausentes bajo el calendario
   operativo conservador declarado. Sin interpolacion. 37306 barras tienen
@@ -23,6 +32,11 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
   cierres de sesion. La cola es secuencial, con estado durable y continuacion
   automatica; una sola carga pesada en la 5090. Costes no nulos declarados como
   escenario, no falsamente verificados con el broker. TEST no se usa para ajustar.
+- Ruta real aceptada: reloj de disponibilidad/fill/cuota y fronteras de cierre,
+  incluidas reproducciones reales de semana/mes. Copia fisica del nucleo y de
+  sus metricas publicada; el nuevo informe de admision tambien tiene readback
+  exacto y copia coincidente en dos maquinas. El cierre RL exige sus propios
+  12 terminales, readback y backup, no hereda el cierre del nucleo.
 - El resto del inventario, la seleccion financiera recalculada y su evidencia
   causal siguen pendientes. GBPUSD no esta admitido por esta entrega.
 

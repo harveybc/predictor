@@ -1,7 +1,7 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-19",
-  "current_stage": "EURUSD_CORE_ADMITTED_REAL_ENVIRONMENT_ACCEPTANCE_AND_RAW_RL_PREPARATION",
+  "current_stage": "EURUSD_RAW_RL_CONTROLS_RUNNING_FULL_SELECTION_STILL_PENDING",
   "execution_owner": "Musashi",
   "priority_order": ["DATA_RECOVERY", "DATA_ADMISSION", "PREPROCESSING_ACCEPTANCE", "FEATURE_SELECTION_REBUILD", "RL_BUSINESS_ENVIRONMENT", "RL_BASELINES", "SAC_RAW_MODULAR", "RL_COMPARISONS_AND_PAPER", "DEFERRED_FORECASTING", "DEFERRED_NEAT"],
   "handoff_status": "RETURNS_INTEGRATED_REVIEW_CORRECTIONS_APPLIED_ENVIRONMENT_FINDINGS_OPEN",
@@ -12,7 +12,7 @@
   "first_RL_experiment": {"refit_cadence": "NONE", "max_entries_per_business_day": 1, "candidate_input_observations": 13, "candidate_input_stride_open_bars": 2, "arms": ["SAC_FLAT", "SAC_PER_FEATURE_CONV1D"], "engineering_repo": "agent-multi", "engineering_plan": "docs/work_plan/43_STATIC_RL_CURATED_COMPARISON.md", "financial_fit_started": false},
   "scientific_training_authorized": true,
   "core_eurusd_admission": {"scope": "CORE_PRICES_ONLY", "rows": 37309, "months": 72, "missing_required_operating_hours": 0, "interpolated_values": 0, "coherent_m30_verified_rows": 37306, "verified_native_fallback_rows": 3, "calendar_scope": "DECLARED_CONSERVATIVE_BUSINESS_OPERATING_CALENDAR", "global_venue_calendar_certified": false, "full_feature_selection_complete": false, "data_code": "b56d83b2d051fb4e36728295c19ac56e9ac5500d"},
-  "raw_baseline_continuation": {"authorized": true, "input_policy": "RAW_BASELINE_NOT_FINAL_FEATURE_SELECTION", "requires": ["CORE_PRICE_ADMISSION", "REAL_ENVIRONMENT_CLOCK_AND_SESSION_ACCEPTANCE"], "refit_cadence": "NONE", "train": "2020-2023", "validation": "2024", "test_used_for_tuning": false, "resource_policy": "ONE_HEAVY_PROCESS_ON_5090_NO_PARALLEL_5070TI", "status": "PREPARING"},
+  "raw_baseline_continuation": {"authorized": true, "input_policy": "RAW_BASELINE_NOT_FINAL_FEATURE_SELECTION", "requires": ["CORE_PRICE_ADMISSION", "REAL_ENVIRONMENT_CLOCK_AND_SESSION_ACCEPTANCE"], "requirements_met": true, "refit_cadence": "NONE", "train": "2020-2023", "train_rows": 24894, "validation": "2024", "validation_rows": 6221, "test_used_for_tuning": false, "resource_policy": "ONE_HEAVY_PROCESS_ON_5090_NO_PARALLEL_5070TI", "status": "RUNNING", "started_at": "2026-10-19T07:20:31Z", "contract_sha256": "829e6959925797dd1bc46e10a9e16d6c4c885a23cf38d9838ba5f63ed1f66136", "agent_code": "b211624a050f5143927ebb79c9152a18f7f0896a", "gym_code": "e8710fe7e75f41647b691255b8c442f8f38d9409", "gym_tests_passed": 295, "queue_integration_tests_passed": 85, "persistent_services_enabled": true, "metrics_publication_timer_enabled": true, "declared_tasks": 12},
   "data_admission_complete": false,
   "boundary_recovery": {"provider": "FXCM", "source_archive": "2019/53", "observed_missing_hours_per_pair": 40, "pairs": ["eurusd", "gbpusd"], "whole_lake_admitted": false},
   "histdata_clock_diagnostic": {"code": "b6ae8413f", "raw_years": [2023, 2024, 2025], "paired_daily_comparisons": 4578, "warehouse_reports": 6, "warehouse_metrics": 22890, "pending": 0, "mismatch": 0, "two_machine_copies_verified": true, "admitted": false, "automatic_clock_selection": false},
