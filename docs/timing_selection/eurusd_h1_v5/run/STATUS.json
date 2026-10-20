@@ -1,0 +1,30 @@
+{
+ "schema": "timing_v5.chain_status.v1",
+ "steps": {
+  "tests_predictor": {
+   "state": "DONE",
+   "at": "2026-10-20T19:54:48Z"
+  },
+  "tests_strategy": {
+   "state": "DONE",
+   "at": "2026-10-20T19:55:00Z"
+  },
+  "tests_causal": {
+   "state": "DONE",
+   "at": "2026-10-20T19:55:05Z"
+  },
+  "tests_profit": {
+   "state": "DONE",
+   "at": "2026-10-20T19:55:08Z"
+  },
+  "selection": {
+   "state": "DONE",
+   "at": "2026-10-20T19:58:42Z"
+  },
+  "causal": {
+   "state": "FAILED_rc1",
+   "at": "2026-10-20T19:58:47Z"
+  }
+ },
+ "updated": "2026-10-20T19:58:47Z"
+}
