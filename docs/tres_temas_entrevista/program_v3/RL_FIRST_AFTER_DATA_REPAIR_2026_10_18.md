@@ -6,6 +6,11 @@ to finish forecasting experiments and all representation studies before RL.
 
 ## 1. Execution Order
 
+Newest RL2 priority2026-10-20:
+[immediate minimal temporal SAC](RL_MINIMAL_TEMPORAL_2026_10_20.md),explicitly
+authorized by the owner. Temporal pause released; flat-capacity sweep stopped
+with partial evidence retained. No change to data,business rules or TEST use.
+
 Current RL2 refinement, owner authorized2026-10-20:
 [capacity and chronological diagnostics](RL_CAPACITY_DIAGNOSTICS_2026_10_20.md).
 Four critic-regularization contrasts are closed; fresh [8]/[16]/[16,16] SAC

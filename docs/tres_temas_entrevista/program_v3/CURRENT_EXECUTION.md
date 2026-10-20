@@ -6,6 +6,21 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
+PRIORIDAD MAS RECIENTE: [Conv1D minima inmediata](RL_MINIMAL_TEMPORAL_2026_10_20.md).
+El propietario levanto la pausa temporal. El barrido Dense esta detenido:
+6 pares completos de[8] conservados como parciales,ningun resultado final
+de capacidad; sucesores/timers flat deshabilitados. Conv1D YA RUNNING en5090:
+15 ramas de2 filtros,nucleo4,kernel3,heads[8],misma entrada13x15/stride2 y
+todo el contrato cientifico/negocio intacto. Runtime96e19edb,contrato9cae5a6f;
+166 pruebas locales,29 en worker y prueba GPU16 updates/recarga exacta pasan.
+Publicacion,cierre y copia fisica automatizados. Arranque no es resultado
+financiero; todavia no hay un par completo nuevo en este corte. TEST intacto
+por esta iniciativa. El parrafo del barrido inferior es historia, no actividad.
+
+Seguimiento real:5000 transiciones en109.0488s antes de evaluar TRAIN/VALIDATION.
+Encoder/config efectivos verificados. Politica guardada:1062 parametros actor,
+1638 criticos y1638 target;52 valores extraidos temporalmente mas17 de estado.
+
 [Capacidad y diagnosticos](RL_CAPACITY_DIAGNOSTICS_2026_10_20.md): las cuatro
 ablaciones cerraron sin mejorar la rentabilidad de VALIDATION del control.
 No se descartan familias completas ni se declara imposible el sobreentrenamiento.

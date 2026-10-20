@@ -1,5 +1,10 @@
 # SAC Generalization Diagnostic Plan
 
+Latest execution override2026-10-20: the owner releases the temporal-fit pause
+and prioritizes [minimal Conv1D](RL_MINIMAL_TEMPORAL_2026_10_20.md) over the
+flat-capacity sweep. The frozen historical plan below describes its original
+authorization; it must not block the newly authorized temporal contrast.
+
 Executed narrow checkpoint analysis: [GD18 result](RL_CHECKPOINT_DIAGNOSTIC_RESULT_2026_10_19.md).
 Other diagnostic measurements below remain planned unless separately evidenced.
 
