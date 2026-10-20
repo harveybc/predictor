@@ -6,6 +6,17 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
+ULTIMO CIERRE: [barrido de capacidad temporal](RL_TEMPORAL_CAPACITY_RESULT_2026_10_20.md).
+7/7 ensayos cerrados automaticamente,todos al primer intento;09:50:33 a
+18:07:38UTC,unas8h17min. Ninguno supera VALIDATION del minimo(-7.28%);
+core8:-11.55%,core16:-17.65%,hidden16:-23.99%,hidden32:-17.66%,
+ramas4:-26.36%,ramas8:-22.60%,profundidad2:-15.61%. Todos con peor
+drawdown de validacion que la referencia. No hubo promocion y,por regla
+predeclarada,no se activaron las4 confirmaciones condicionales.70/70 nuevos
+informes con readback,0 pendientes/discrepancias,8 corridas cerradas verificadas
+en segunda copia(incluye baseline). No queda fit activo de esta secuencia;
+TEST intacto. Los parrafos de despliegue inferiores son historia.
+
 SECUENCIA VIGENTE YA DESPLEGADA: [capacidad temporal gradual automatica](RL_TEMPORAL_CAPACITY_SWEEP_2026_10_20.md).
 Mantiene ventana13/stride2,15 variables,100000 pasos y negocio;primero nucleo
 8/16,luego heads16/32,ramas4/8 y profundidad2,con sucesores elegidos por regla
