@@ -100,6 +100,64 @@ def load_zigzag_module(path, expected_sha256: str):
     return mod
 
 
+def load_short_horizon_module(module_path, expected_sha256: str, sibling_pins: dict | None = None):
+    """Import a heuristic-strategy ``app/short_horizon`` module (e.g. ``bar_source``) by path, pinned by sha256
+    together with the siblings it imports, under its own absolute name ``app.short_horizon.<stem>``.  The
+    strategy package is registered as ``app.short_horizon`` only when that name is free (predictor's own ``app``
+    package has no ``short_horizon``); a different package already registered there is refused."""
+    import importlib
+    import types
+    module_path = Path(module_path)
+    pkg_dir = module_path.parent
+    for name, want in {module_path.name: expected_sha256, **(sibling_pins or {})}.items():
+        got = sha256_file(pkg_dir / name)
+        if got != want:
+            raise TimingError(f"MODULE_DIGEST: {name} is {got[:12]}, pinned {want[:12]}")
+    import app as _app  # noqa: F401  (predictor's package; it must exist and must not shadow short_horizon)
+    have = sys.modules.get("app.short_horizon")
+    if have is not None and Path(have.__path__[0]).resolve() != pkg_dir.resolve():
+        raise TimingError("SHORT_HORIZON_PACKAGE_CONFLICT: app.short_horizon already bound to another directory")
+    if have is None:
+        spec = importlib.util.spec_from_file_location("app.short_horizon", pkg_dir / "__init__.py",
+                                                      submodule_search_locations=[str(pkg_dir)])
+        pkg = importlib.util.module_from_spec(spec)
+        sys.modules["app.short_horizon"] = pkg
+        spec.loader.exec_module(pkg)
+        setattr(sys.modules["app"], "short_horizon", pkg)
+    return importlib.import_module(f"app.short_horizon.{module_path.stem}")
+
+
+def load_admitted_bars(source: dict, start, end_exclusive) -> pd.DataFrame:
+    """Admitted UTC bar starts through the clock lane's ``bar_source.load_ohlc(..., source="admitted")``
+    (availability = start + 1 h checked by its reader; TEST refused before reading).  The frame keeps the
+    legacy shape (OPEN/HIGH/LOW/CLOSE, index ``DATE_TIME``) with a UTC bar-START index."""
+    for key in ("path", "admission"):
+        spec = source[key] if key != "path" else {"path": source["path"], "sha256": source["sha256"]}
+        if sha256_file(spec["path"]) != spec["sha256"]:
+            raise TimingError(f"SOURCE_DIGEST: {Path(spec['path']).name} differs from its pin")
+    if sha256_file(source["closures"]["path"]) != source["closures"]["sha256"]:
+        raise TimingError("SOURCE_DIGEST: closure intervals differ from their pin")
+    adm = json.loads(Path(source["admission"]["path"]).read_text())
+    entry = adm["pairs"]["eurusd"]
+    if not (adm.get("status") == "ADMITTED" and entry["sha256"] == source["sha256"]
+            and entry["availability_semantics"] == "UTC_NATIVE_BAR_START_PLUS_ONE_HOUR"
+            and adm["closure_intervals_sha256"] == source["closures"]["sha256"]):
+        raise TimingError("ADMISSION_MISMATCH: the admission receipt does not bind this source and closure file")
+    bs = load_short_horizon_module(source["bar_source_module"], source["bar_source_sha256"], source.get("sibling_sha256"))
+    start, end = pd.Timestamp(start, tz="UTC"), pd.Timestamp(end_exclusive, tz="UTC")
+    if end > TEST_START:
+        raise TimingError(f"TEST_ROWS_FORBIDDEN: window end {end} reaches {TEST_START}")
+    frame = bs.load_ohlc(source["path"], start, end, source="admitted")
+    frame.index = pd.DatetimeIndex(frame.index).tz_convert("UTC").rename("DATE_TIME")
+    return frame[["OPEN", "HIGH", "LOW", "CLOSE"]].astype(float)
+
+
+def load_closures(source: dict) -> list:
+    if sha256_file(source["closures"]["path"]) != source["closures"]["sha256"]:
+        raise TimingError("SOURCE_DIGEST: closure intervals differ from their pin")
+    return json.loads(Path(source["closures"]["path"]).read_text())
+
+
 def load_lake_bars(path, start, end_exclusive) -> pd.DataFrame:
     """Lake OHLC parquet ``[start, end)`` with the TEST boundary enforced at read time (no row created)."""
     start, end = pd.Timestamp(start, tz="UTC"), pd.Timestamp(end_exclusive, tz="UTC")

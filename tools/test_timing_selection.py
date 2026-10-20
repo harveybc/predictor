@@ -368,3 +368,117 @@ def test_a03_finality_holds_with_the_v2_confirmation_definition(real_zz):
     p = real_zz.Params(depth=3, deviation_pips=40.7, backstep=0)
     rep = tp.finality_check(bars, real_zz, p, k_bars=2, cut_positions=[900, 1700], check_t2=True, confirmation="confirmation_bars_fast")
     assert rep["all_final_rows_unchanged"] is True and rep["confirmation"] == "confirmation_bars_fast"
+
+
+def test_utc_clock_names_zones_and_separates_closures_from_unexpected_gaps():
+    pp = _cap("timing_price_pool")
+    idx = pd.date_range("2023-01-08 22:00", "2023-01-13 21:00", freq="h", tz="UTC").append(
+        pd.date_range("2023-01-15 22:00", "2023-01-20 21:00", freq="h", tz="UTC"))
+    idx = idx.delete(30)                                               # one unexpected missing bar inside week 1
+    rng = np.random.default_rng(0)
+    c = 1.1 + rng.normal(0, 1e-4, len(idx)).cumsum()
+    bars = pd.DataFrame({"OPEN": c, "HIGH": c + 1e-4, "LOW": c - 1e-4, "CLOSE": c}, index=idx)
+    f = pp.price_pool(bars, clock="utc", closures=[["2023-01-13 22:00", "2023-01-15 22:00"]])
+    assert {"cal.utc_hod_sin", "cal.london_hod_cos", "cal.utc_session_us"} <= set(f.columns) and "cal.hod_sin" not in f.columns
+    gap = f["px.unexpected_gap_hours"].to_numpy()
+    assert gap[30] == 1.0                                              # the missing bar
+    weekend_first = int(np.flatnonzero(idx >= pd.Timestamp("2023-01-15 22:00", tz="UTC"))[0])
+    assert f["px.elapsed_hours"].iloc[weekend_first] == 49.0 and gap[weekend_first] == 0.0   # a declared closure
+    assert f["px.hours_since_session_open"].iloc[weekend_first] == 0.0
+    assert pp.perturbation_check(lambda b: pp.price_pool(b, clock="utc", closures=[["2023-01-13 22:00", "2023-01-15 22:00"]]),
+                                 bars, 150, seed=1)["passed"] is True
+
+
+def test_blocked_permutation_screen_holds_its_size_on_autocorrelated_noise_and_finds_a_real_signal():
+    ts = _cap("timing_selection")
+    rng = np.random.default_rng(3)
+    n = 4000
+    # a persistent label (runs of ~24 rows) and persistent noise features: an iid test would over-reject
+    y = np.repeat(rng.integers(0, 3, n // 24 + 1), 24)[:n]
+    X = pd.DataFrame({f"n{i}": pd.Series(rng.normal(size=n)).rolling(48, min_periods=1).mean().to_numpy() for i in range(12)})
+    X["sig"] = (y == 1).astype(float) + rng.normal(0, 0.8, n)
+    rep = ts.blocked_permutation_screen(X, y, q=0.1, n_perm=499, min_shift=168, seed=1)
+    assert rep["sig"]["pass_fdr"] is True and rep["sig"]["p"] <= 1 / 500 + 1e-12
+    assert sum(r["pass_fdr"] for k, r in rep.items() if k != "sig") <= 1
+    iid = ts.univariate_screen(X, y, head="classification", q=0.1)
+    assert sum(r["pass_fdr"] for k, r in iid.items() if k != "sig") >= sum(r["pass_fdr"] for k, r in rep.items() if k != "sig")
+
+
+@pytest.fixture
+def hs_root():
+    root = os.environ.get("TIMING_HS_ROOT")
+    if not root or not (Path(root) / "app/short_horizon/bar_source.py").exists():
+        pytest.skip("TIMING_HS_ROOT (heuristic-strategy with app/short_horizon/bar_source.py) not set")
+    return Path(root)
+
+
+def _admitted_fixture(tmp, n_weeks=9):
+    """Admitted-like source: UTC bar starts Sun 22:00 -> Fri 22:00 (winter), availability +1 h, closures declared."""
+    rng = np.random.default_rng(5)
+    starts, closures = [], []
+    w0 = pd.Timestamp("2020-01-05 22:00", tz="UTC")
+    for w in range(n_weeks):
+        o = w0 + pd.Timedelta(days=7 * w)
+        c = o + pd.Timedelta(days=5)
+        starts.append(pd.date_range(o, c - pd.Timedelta(hours=1), freq="h"))
+        closures.append([str(c), str(c + pd.Timedelta(days=2))])
+    idx = starts[0]
+    for s_ in starts[1:]:
+        idx = idx.append(s_)
+    close = 1.10 + 0.01 * np.sin(np.arange(len(idx)) / 7.0) + rng.normal(0, 2e-4, len(idx)).cumsum() * 0.05
+    op = np.r_[close[0], close[:-1]]
+    df = pd.DataFrame({"timestamp": idx, "available_at": idx + pd.Timedelta(hours=1), "BidOpen": op,
+                       "BidHigh": np.maximum(op, close) + 1.5e-4, "BidLow": np.minimum(op, close) - 1.5e-4, "BidClose": close,
+                       "source_id": "fixture:1"})
+    p = tmp / "eurusd.parquet"
+    df.to_parquet(p, index=False)
+    cp = tmp / "CLOSURE_INTERVALS.json"
+    cp.write_text(json.dumps([["2019-12-27T22:00:00+00:00", str(w0)]] + closures))
+    sha = lambda f: hashlib.sha256(f.read_bytes()).hexdigest()  # noqa: E731
+    ap = tmp / "ADMISSION.json"
+    ap.write_text(json.dumps({"schema": "financial_data.core_price_inventory.v1", "admitted": True, "status": "ADMITTED",
+                              "closure_intervals_file": cp.name, "closure_intervals_sha256": sha(cp),
+                              "pairs": {"eurusd": {"file": p.name, "sha256": sha(p), "availability_semantics": "UTC_NATIVE_BAR_START_PLUS_ONE_HOUR"}}}))
+    return p, ap, cp, sha
+
+
+def test_admitted_source_end_to_end_applies_one_mask_to_every_target(tmp_path, hs_root):
+    ts = _cap("timing_selection")
+    p, ap, cp, sha = _admitted_fixture(tmp_path)
+    zz = tmp_path / "zz.py"
+    zsha = _write_zz(zz)
+    bs = hs_root / "app/short_horizon/bar_source.py"
+    sib = {n: sha(hs_root / "app/short_horizon" / n) for n in ("clock_identity.py", "data.py")}
+    cfg = {"schema": "predictor.timing_selection.v1", "population_id": "SYNTH_ADMITTED",
+           "source": {"kind": "admitted", "path": str(p), "sha256": sha(p), "admission": {"path": str(ap), "sha256": sha(ap)},
+                      "closures": {"path": str(cp), "sha256": sha(cp)}, "bar_source_module": str(bs), "bar_source_sha256": sha(bs),
+                      "sibling_sha256": sib, "load": ["2020-01-01", "2020-03-15"]},
+           "zigzag": {"module": str(zz), "sha256": zsha, "params": {"depth": 3, "deviation_pips": 36.3, "backstep": 2}, "k_bars": 2},
+           "splits": {"train": ["2020-01-01", "2020-02-09"], "inner": ["2020-02-09", "2020-02-23"], "inner_a_end": "2020-02-16",
+                      "confirm": ["2020-02-23", "2020-03-15"], "folds": ["2020-01-19", "2020-01-26"]},
+           "business_calendar": {"reopen_hours": 12, "preclose_hours": 12},
+           "candidates": {"inventory": None, "price_pool": True, "price_pool_clock": "utc", "price_pool_closure_features": True, "fractal": None},
+           "screen": {"method": "blocked_circular_shift", "n_perm": 199, "min_shift_rows": 48, "seed": 1},
+           "finality_all_targets_all_cuts": True,
+           "pairwise_params": {"lags_hours": [0, 1, 2, 6], "min_support": 50, "dcor_max_rows": 128},
+           "filter": {"seed": 1, "k_grid": [4, 8], "recipe": {"method": "MRMR", "k": 8, "require_fdr_pass": False}},
+           "causal": {"enabled": False}, "comparison_sets": {"baseline_two": ["px.rv_24", "cal.utc_hod_sin"]}, "n_shards": 1, "seed": 1}
+    (tmp_path / "cfg.json").write_text(json.dumps(cfg))
+    out = tmp_path / "out"
+    rep = ts.run(tmp_path / "cfg.json", out)
+    fs = json.loads((out / "eval_input/FEATURE_SETS.json").read_text())
+    assert fs["schema"] == "timing_eval_input.v2" and fs["source"]["kind"] == "admitted" and fs["eligibility"]["digest"]
+    el = pd.read_parquet(out / "eval_input/ELIGIBILITY.parquet")
+    tg = pd.read_parquet(out / "eval_input/targets_all.parquet")
+    finite = np.isfinite(tg["timing_pivot_k2"].to_numpy())
+    assert finite.any() and el["t1_eligible"].to_numpy()[finite].all()                 # every usable label is eligible
+    assert (~el["business_eligible"]).sum() > 0
+    td = json.loads((out / "TARGETS.json").read_text())
+    assert "t1_t2_t3_all_cuts" in td["finality"] and td["finality"]["all_final_rows_unchanged"] is True
+    assert td["eligibility"]["counts_by_period_and_reason"]["t1"]["TRAIN_2020_2022"]["origins"] > 0
+    assert rep["screen_gate"]["method"] == "blocked_circular_shift"
+    ap.write_text(ap.read_text().replace('"ADMITTED"', '"REJECTED"'))                    # receipt no longer binds
+    cfg["source"]["admission"]["sha256"] = sha(ap)
+    (tmp_path / "cfg2.json").write_text(json.dumps(cfg))
+    with pytest.raises(Exception, match="ADMISSION_MISMATCH"):
+        ts.run(tmp_path / "cfg2.json", tmp_path / "out2")

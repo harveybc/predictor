@@ -33,8 +33,13 @@ def _true_range(h, l, c):
     return np.nanmax(np.column_stack([h - l, np.abs(h - pc), np.abs(l - pc)]), axis=1)
 
 
-def price_pool(bars: pd.DataFrame) -> pd.DataFrame:
-    """The pool on the bar grid of ``bars`` (OPEN/HIGH/LOW/CLOSE, UTC index)."""
+def price_pool(bars: pd.DataFrame, clock: str = "label", closures=None) -> pd.DataFrame:
+    """The pool on the bar grid of ``bars`` (OPEN/HIGH/LOW/CLOSE).  ``clock="label"`` (legacy v1-v3): calendar
+    encodings of the index as labelled, named ``cal.*``.  ``clock="utc"`` (v4, admitted UTC bar starts): UTC
+    encodings named ``cal.utc_*`` plus the Europe/London local hour (DST per the tz database) named
+    ``cal.london_hod_*``.  With ``closures`` (UTC [start, stop) intervals) two closure-aware columns separate
+    declared closures from unexpected missing bars: ``px.hours_since_session_open`` and
+    ``px.unexpected_gap_hours`` (elapsed hours beyond what the closure calendar explains; 0 normally)."""
     h, l, c = (bars[k].to_numpy(float) for k in ("HIGH", "LOW", "CLOSE"))
     H, L, C = pd.Series(h), pd.Series(l), pd.Series(c)
     out = {}
@@ -58,13 +63,38 @@ def price_pool(bars: pd.DataFrame) -> pd.DataFrame:
     idx = bars.index
     hour = np.asarray(idx.hour, float)
     dow = np.asarray(idx.dayofweek, float)
-    out["cal.hod_sin"] = np.sin(2 * np.pi * hour / 24)
-    out["cal.hod_cos"] = np.cos(2 * np.pi * hour / 24)
-    out["cal.dow_sin"] = np.sin(2 * np.pi * dow / 7)
-    out["cal.dow_cos"] = np.cos(2 * np.pi * dow / 7)
+    pre = "cal." if clock == "label" else "cal.utc_"
+    if clock not in ("label", "utc"):
+        raise ValueError(f"unknown clock {clock!r}")
+    out[pre + "hod_sin"] = np.sin(2 * np.pi * hour / 24)
+    out[pre + "hod_cos"] = np.cos(2 * np.pi * hour / 24)
+    out[pre + "dow_sin"] = np.sin(2 * np.pi * dow / 7)
+    out[pre + "dow_cos"] = np.cos(2 * np.pi * dow / 7)
     for name, (a, b) in SESSIONS.items():
-        out[name] = ((hour >= a) & (hour < b)).astype(float)
-    out["px.elapsed_hours"] = np.r_[np.nan, np.diff(idx.asi8) / 3.6e12]
+        out[name if clock == "label" else name.replace("cal.", "cal.utc_")] = ((hour >= a) & (hour < b)).astype(float)
+    if clock == "utc":
+        lon = idx.tz_convert("Europe/London")
+        lh = np.asarray(lon.hour, float)
+        out["cal.london_hod_sin"] = np.sin(2 * np.pi * lh / 24)
+        out["cal.london_hod_cos"] = np.cos(2 * np.pi * lh / 24)
+    elapsed = np.r_[np.nan, np.diff(idx.asi8) / 3.6e12]
+    out["px.elapsed_hours"] = elapsed
+    if closures is not None:
+        from tools import timing_eligibility as EL
+        cl = closures if isinstance(closures, pd.DataFrame) else EL.parse_closures(closures)
+        _, open_ns, _, _ = EL.sessions(idx, cl)
+        since = (idx.asi8 - open_ns) / 3.6e12
+        out["px.hours_since_session_open"] = np.where(open_ns == np.iinfo(np.int64).min, np.nan, since)
+        lo = cl["start"].to_numpy(dtype="datetime64[ns]").astype(np.int64)
+        hi = cl["stop"].to_numpy(dtype="datetime64[ns]").astype(np.int64)
+        prev = np.r_[idx.asi8[0], idx.asi8[:-1]]
+        explained = np.zeros(len(idx))
+        for a, b in zip(lo, hi):                                      # closure hours that fall between consecutive bars
+            ov = np.clip(np.minimum(idx.asi8, b) - np.maximum(prev + int(3.6e12), a), 0, None)
+            explained += ov / 3.6e12
+        gap = elapsed - 1.0 - explained
+        gap[0] = np.nan
+        out["px.unexpected_gap_hours"] = np.where(np.isfinite(gap), np.maximum(gap, 0.0), np.nan)
     frame = pd.DataFrame(out)
     frame.index = idx
     return frame
@@ -73,7 +103,7 @@ def price_pool(bars: pd.DataFrame) -> pd.DataFrame:
 def pool_metadata(frame: pd.DataFrame) -> list[dict]:
     meta = []
     for col in frame.columns:
-        known = col.startswith("cal.")
+        known = col.startswith("cal.") or col == "px.hours_since_session_open"
         meta.append({"feature_id": col, "family": "calendar_known" if known else "price_pool",
                      "source": "derived:clock" if known else "derived:lake_ohlc_h1",
                      "transform": "trailing-window function of bars <= t" if not known else "bar label encoding",
@@ -101,9 +131,11 @@ def availability_gate(features: list[dict]) -> list[str]:
     return admitted
 
 
-UNITS = {"px.logret_": "market bars", "px.range_": "market bars", "px.close_loc_": "market bars", "px.er_": "market bars",
+UNITS = {"px.hours_since_session_open": "elapsed hours since the declared session open",
+         "px.unexpected_gap_hours": "elapsed hours not explained by declared closures", "px.logret_": "market bars", "px.range_": "market bars", "px.close_loc_": "market bars", "px.er_": "market bars",
          "px.rv_": "market bars", "px.atr_": "market bars", "px.range_ratio": "market bars", "px.bar_body": "one bar",
-         "px.elapsed_hours": "elapsed hours", "cal.": "label clock"}
+         "px.elapsed_hours": "elapsed hours", "cal.utc_": "UTC clock", "cal.london_": "Europe/London wall clock (DST per tz database)",
+         "cal.": "label clock"}
 
 
 def window_unit(feature_id: str) -> str:

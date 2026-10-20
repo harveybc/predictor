@@ -122,8 +122,12 @@ def inventory_candidates(bars: pd.DataFrame, spec: dict):
     bundle = _load_by_path("core_selection_bundle", spec["bundle_script"], spec.get("bundle_sha256"))
     gen = _load_by_path("core_selection_technical_generator", spec["generator_module"], spec.get("generator_sha256"))
 
+    shift = pd.Timedelta(hours=1) if spec.get("datetime_convention") == "availability_instant" else pd.Timedelta(0)
+
     def fn(b):
-        x = bundle.candidate_frame(b.reset_index(), gen.add_derived_features, gen.FEATURE_COLS)
+        frame = b.reset_index()
+        frame["DATE_TIME"] = pd.DatetimeIndex(frame["DATE_TIME"]) + shift      # the bundle's own convention when declared
+        x = bundle.candidate_frame(frame, gen.add_derived_features, gen.FEATURE_COLS)
         cols = [c for c in x.columns if c != "DATE_TIME"]
         out = x[cols].copy()
         out.index = b.index
@@ -135,7 +139,9 @@ def inventory_candidates(bars: pd.DataFrame, spec: dict):
         known = c in ("hod_sin", "hod_cos", "dow_sin", "dow_cos")
         meta.append({"feature_id": c, "family": "calendar_known" if known else ("raw_price" if c in RAW_LEVEL_COLUMNS or c.startswith("RAW_") else "technical"),
                      "source": "inventory: financial-data core_selection_bundle.candidate_frame + feature-eng normalize_phase1b",
-                     "transform": "trailing indicator (pandas_ta / rolling / ewm) of bars <= t" if not known else "bar label encoding (lake clock)",
+                     "transform": "trailing indicator (pandas_ta / rolling / ewm) of bars <= t" if not known else
+                     ("UTC calendar encoding of the bar's availability instant (bar start + 1 h)" if spec.get("datetime_convention") == "availability_instant"
+                      else "bar label encoding (lake clock)"),
                      "unit": "price" if c in RAW_LEVEL_COLUMNS else "dimensionless", "clock": "KNOWN_IN_ADVANCE" if known else "OBSERVED",
                      "availability_time": "known in advance" if known else "timestamp", "support_h": 0 if known else 1,
                      "train_coverage": float(x[c].notna().mean()), "source_bytes": int(x[c].notna().sum()) * 8})
@@ -143,10 +149,30 @@ def inventory_candidates(bars: pd.DataFrame, spec: dict):
 
 
 def fractal_candidates(bars: pd.DataFrame, spec: dict, lake_sha256: str):
-    """The causal fractal columns from the fractal lane's store, keyed by (asset, timestamp, bar convention,
-    source): the store MANIFEST must name the same lake bytes and asset, and the store's own close must equal
-    the lake close on every joined row (supporting evidence, never the key)."""
+    """The causal fractal columns.  ``compute_with_module`` + ``windows``: recomputed on THIS source's closes with
+    the owner's plugin (feature-eng ``app/plugins/causal_fractal.py``), columns ``<feature>_w<window>``.
+    Otherwise from the fractal lane's store, keyed by (asset, timestamp, bar convention, source): the store
+    MANIFEST must name the same lake bytes and asset, and the store's own close must equal the lake close on every
+    joined row (supporting evidence, never the key)."""
     note = {}
+    if spec.get("compute_with_module"):
+        mod = _load_by_path("causal_fractal_plugin", spec["compute_with_module"], spec.get("module_sha256"))
+        close = bars["CLOSE"].to_numpy(float)
+        frames = []
+        for w in spec.get("windows", [200]):
+            f = mod.causal_fractal_frame(close, window=int(w))[list(FRACTAL_COLUMNS)]
+            f.columns = [f"{c}_w{int(w)}" for c in f.columns]
+            frames.append(f)
+        x = pd.concat(frames, axis=1)
+        x.index = bars.index
+        note = {"source": "computed_with_owner_plugin", "module_sha256": tp.sha256_file(spec["compute_with_module"]),
+                "module_commit": spec.get("module_commit"), "windows_bars": [int(w) for w in spec.get("windows", [200])],
+                "input": "closes of the configured bar source (observed bars; windows in observed bars)"}
+        meta = [{"feature_id": c, "family": "fractal", "source": "feature-eng causal_fractal plugin (recomputed on this source)",
+                 "transform": "trailing-window fractal estimator of closes <= t (window in observed bars)", "unit": "dimensionless",
+                 "clock": "OBSERVED", "availability_time": "timestamp", "support_h": 1, "train_coverage": float(x[c].notna().mean()),
+                 "source_bytes": int(x[c].notna().sum()) * 8} for c in x.columns]
+        return x, meta, note
     if spec.get("manifest"):
         if tp.sha256_file(spec["manifest"]) != spec.get("manifest_sha256"):
             raise DriverError("FRACTAL_MANIFEST_DIGEST")
@@ -188,7 +214,7 @@ def fractal_candidates(bars: pd.DataFrame, spec: dict, lake_sha256: str):
     return x, meta, note
 
 
-def assemble_pool(bars: pd.DataFrame, cfg: dict):
+def assemble_pool(bars: pd.DataFrame, cfg: dict, closures=None):
     cand = cfg["candidates"]
     frames, meta, notes, gens = [], [], {}, {}
     if cand.get("inventory"):
@@ -198,12 +224,14 @@ def assemble_pool(bars: pd.DataFrame, cfg: dict):
         notes["inventory"] = {"columns": list(x.columns)}
         gens["inventory"] = fn
     if cand.get("price_pool", True):
-        x = pool.price_pool(bars)
+        clock = cand.get("price_pool_clock", "label")
+        cls = closures if cand.get("price_pool_closure_features") else None
+        x = pool.price_pool(bars, clock=clock, closures=cls)
         frames.append(x)
         meta += pool.pool_metadata(x)
-        gens["price_pool"] = pool.price_pool
+        gens["price_pool"] = (lambda b, _c=clock, _cl=cls: pool.price_pool(b, clock=_c, closures=_cl))
     if cand.get("fractal"):
-        x, m, n = fractal_candidates(bars, cand["fractal"], cfg["lake"]["sha256"])
+        x, m, n = fractal_candidates(bars, cand["fractal"], source_sha256(cfg))
         frames.append(x)
         meta += m
         notes["fractal"] = n
@@ -228,6 +256,34 @@ def inventory_record(meta: list[dict], X: pd.DataFrame, notes: dict, alias_group
             "units": {c: pool.window_unit(c) if not c.startswith(tuple(f + "_w" for f in FRACTAL_COLUMNS)) else "observed bars" for c in cols},
             "clock": BAR_CONVENTION, "clock_note": "calendar encodings (cal.*, hod_*, dow_*) encode the lake label clock; its UTC "
                                                    "mapping is under repair and no hand shift is applied", "notes": _redact(notes)}
+
+
+def source_sha256(cfg: dict) -> str:
+    return cfg["source"]["sha256"] if cfg.get("source") else cfg["lake"]["sha256"]
+
+
+def load_bars(cfg: dict, start=None, end=None):
+    """(bars, closures, source identity).  ``source.kind == "admitted"``: admitted UTC bar starts through the
+    clock lane's ``bar_source`` (pinned), closures from the admitted CLOSURE_INTERVALS.json.  Else the legacy lake."""
+    src = cfg.get("source")
+    if src and src.get("kind") == "admitted":
+        a, b = start or src["load"][0], end or src["load"][1]
+        bars = tp.load_admitted_bars(src, a, b)
+        closures = tp.load_closures(src)
+        ident = {"kind": "admitted", "sha256": src["sha256"], "admission_sha256": src["admission"]["sha256"],
+                 "closures_sha256": src["closures"]["sha256"], "bar_convention": "UTC_BAR_START",
+                 "availability": "UTC_BAR_START_PLUS_ONE_HOUR", "bar_source_sha256": src["bar_source_sha256"],
+                 "file": Path(src["path"]).name, "closures_file": Path(src["closures"]["path"]).name}
+        return bars, closures, ident
+    lake = cfg["lake"]
+    if tp.sha256_file(lake["path"]) != lake["sha256"]:
+        raise DriverError("LAKE_DIGEST: lake file differs from its pin")
+    a, b = start or lake["load"][0], end or lake["load"][1]
+    return tp.load_lake_bars(lake["path"], a, b), None, {"kind": "lake_label", "sha256": lake["sha256"], "bar_convention": "LAKE_LABEL"}
+
+
+TARGET_LEDGER = {"timing_pivot_k{k}": "t1", "timing_valley_k{k}": "t1", "timing_peak_k{k}": "t1",
+                 "timing_action_confirmed": "t2", "timing_expert_leg_remaining_pips": "t3"}
 
 
 # ----------------------------------------------------------------------------- screens and reports
@@ -263,6 +319,50 @@ def univariate_screen(X: pd.DataFrame, y, *, head: str, q: float = 0.1, min_supp
             else:
                 r, p = stats.spearmanr(x[m], y[m])
                 rec.update(statistic=float(r), p=float(p), test="spearman")
+        rep[col] = rec
+        pvals.append(rec["p"])
+        names.append(col)
+    for name, ok in zip(names, _bh(pvals, q)):
+        rep[name]["pass_fdr"] = bool(ok)
+        rep[name]["fdr_q"] = q
+    return rep
+
+
+def blocked_permutation_screen(X: pd.DataFrame, y, *, q: float = 0.1, n_perm: int = 4999, min_shift: int = 168,
+                               seed: int = 0, min_support: int = 100) -> dict:
+    """Dependence-aware univariate screen (plan audit v3, V3-05).  Rows are the eligible TRAIN origins in time
+    order.  Statistic: Kruskal-Wallis H across the label classes (rank-based; the tie correction depends only on
+    the feature, so it is constant under the null and omitted).  Null: the label sequence circularly shifted
+    against the feature by a uniform offset in [min_shift, n - min_shift] rows, which keeps the serial
+    dependence of BOTH series and breaks only their alignment.  p = (1 + #{H_null >= H_obs}) / (n_perm + 1);
+    resolution 1 / (n_perm + 1).  BH at ``q`` over the features with a defined statistic.  Effect size
+    epsilon^2 = H / (n - 1)."""
+    y = np.asarray(y, float)
+    rng = np.random.default_rng(seed)
+    rep, pvals, names = {}, [], []
+    for col in X.columns:
+        x = X[col].to_numpy(float)
+        m = np.isfinite(x) & np.isfinite(y)
+        rec = {"n": int(m.sum()), "p": np.nan, "H": np.nan, "epsilon2": np.nan, "pass_fdr": False,
+               "test": "kruskal_H_blocked_circular_shift_null", "n_perm": int(n_perm), "min_shift_rows": int(min_shift),
+               "p_resolution": 1.0 / (n_perm + 1)}
+        nn = int(m.sum())
+        if nn >= max(min_support, 4 * min_shift) and np.nanstd(x[m]) > 0:
+            from scipy.stats import rankdata
+            r = rankdata(x[m])
+            g = y[m].astype(np.int64)
+            k = int(g.max()) + 1
+            cnt = np.bincount(g, minlength=k).astype(float)
+            if (cnt > 0).sum() >= 2:
+                def H(gg):
+                    rs = np.bincount(gg, weights=r, minlength=k)
+                    c = np.bincount(gg, minlength=k).astype(float)
+                    ok = c > 0
+                    return 12.0 / (nn * (nn + 1)) * np.sum(rs[ok] ** 2 / c[ok]) - 3.0 * (nn + 1)
+                h0 = H(g)
+                shifts = rng.integers(min_shift, nn - min_shift + 1, size=n_perm)
+                exceed = sum(1 for sh in shifts if H(np.roll(g, int(sh))) >= h0)
+                rec.update(H=float(h0), epsilon2=float(h0 / (nn - 1)), p=float((1 + exceed) / (n_perm + 1)))
         rep[col] = rec
         pvals.append(rec["p"])
         names.append(col)
@@ -463,6 +563,7 @@ def read_ledger(cfg: dict) -> dict:
                          "2023H2 INNER_B": "evaluator: frozen scoring only",
                          "2024": "evaluator `reconfirm` after FROZEN.json; previously observed; no decision may change on it",
                          "2025+": "never read"},
+            "prior_runs_declared_in_config": cfg.get("read_ledger_extra", []),
             "freeze_rule": "the candidate subset is frozen in SELECTION_MANIFEST before the evaluator's first read of 2023; "
                            "the evaluator's choices are frozen in FROZEN.json before its read of 2024"}
 
@@ -484,10 +585,8 @@ def run(config_path, out, reuse_from=None) -> dict:
     prepared = out / "PREPARED.json"
     if prepared.exists() and json.loads(prepared.read_text())["config_sha256"] != config_sha:
         raise DriverError("CONFIG_CHANGED: use another output directory")
-    lake = cfg["lake"]
-    if tp.sha256_file(lake["path"]) != lake["sha256"]:
-        raise DriverError("LAKE_DIGEST: lake file differs from its pin")
-    bars = tp.load_lake_bars(lake["path"], lake["load"][0], lake["load"][1])
+    bars, closures, src_ident = load_bars(cfg)
+    lake = {"sha256": src_ident["sha256"]}
     zz = tp.load_zigzag_module(cfg["zigzag"]["module"], cfg["zigzag"]["sha256"])
     zp = cfg["zigzag"]["params"]
     params = zz.Params(depth=int(zp["depth"]), deviation_pips=float(zp["deviation_pips"]), backstep=int(zp["backstep"]))
@@ -495,7 +594,7 @@ def run(config_path, out, reuse_from=None) -> dict:
     conf_def = cfg["zigzag"].get("confirmation", "confirmation_bars")
     sp = cfg["splits"]
     cand = cfg["candidates"]
-    leaves = {"lake": lake["sha256"], "zigzag_module": cfg["zigzag"]["sha256"], "expert_params": _digest(zp), "k_bars": str(k),
+    leaves = {"lake": _digest({k_: v for k_, v in src_ident.items() if k_ not in ("file", "closures_file")}), "zigzag_module": cfg["zigzag"]["sha256"], "expert_params": _digest(zp), "k_bars": str(k),
               "target_semantics": tp.SEMANTICS if conf_def == "confirmation_bars" else f"{tp.SEMANTICS}+{conf_def}", "splits": _digest({"inner_a_end": INNER_A_END, **sp}),
               "inventory_generator": (cand.get("inventory") or {}).get("generator_sha256", "none"),
               "inventory_bundle": (cand.get("inventory") or {}).get("bundle_sha256", "none"),
@@ -518,12 +617,34 @@ def run(config_path, out, reuse_from=None) -> dict:
                "INNER_B_2023H2": [ia_end, sp["inner"][1]], "REOBSERVED_2024": sp["confirm"]}
     status = tp.status_table(ledger, periods)
     cut_pos = tp._cut_positions(bars.index, cuts)
-    fin_cheap = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=cut_pos, full=arrays, check_t2=False, confirmation=conf_def)
-    t2_cuts = [tp._cut_positions(bars.index, [c])[0] for c in (sp["train"][1], sp["inner"][1], (sp.get("folds") or [sp["train"][1]])[0])]
-    fin_t2 = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=sorted(set(t2_cuts)), full=arrays, check_t2=True,
-                               confirmation=conf_def)
-    finality = {"t1_t3_all_cuts": fin_cheap, "t1_t2_t3_with_confirmation_replay": fin_t2,
-                "all_final_rows_unchanged": bool(fin_cheap["all_final_rows_unchanged"] and fin_t2["all_final_rows_unchanged"])}
+    if cfg.get("finality_all_targets_all_cuts", conf_def != "confirmation_bars"):
+        fin_all = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=cut_pos, full=arrays, check_t2=True, confirmation=conf_def)
+        finality = {"t1_t2_t3_all_cuts": fin_all, "cuts_checked": len(cut_pos), "targets_checked": ["t1", "t2", "t3"],
+                    "all_final_rows_unchanged": bool(fin_all["all_final_rows_unchanged"])}
+    else:   # legacy (slow v1 confirmation replay): T2 only at three cuts; the block names say exactly what was checked
+        fin_cheap = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=cut_pos, full=arrays, check_t2=False, confirmation=conf_def)
+        t2_cuts = [tp._cut_positions(bars.index, [c])[0] for c in (sp["train"][1], sp["inner"][1], (sp.get("folds") or [sp["train"][1]])[0])]
+        fin_t2 = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=sorted(set(t2_cuts)), full=arrays, check_t2=True,
+                                   confirmation=conf_def)
+        finality = {"t1_only_all_cuts_t2_t3_skipped": fin_cheap, "t1_t2_t3_three_cuts": fin_t2,
+                    "all_final_rows_unchanged": bool(fin_cheap["all_final_rows_unchanged"] and fin_t2["all_final_rows_unchanged"])}
+    # ---- the ONE shared eligibility mask (business calendar + target-specific label support); applied to every
+    # target BEFORE any stage reads it, and handed to the evaluator with its digest
+    elig = None
+    if closures is not None:
+        from tools import timing_eligibility as EL
+        bc = cfg.get("business_calendar", {})
+        elig = EL.eligibility(bars.index, closures, k_bars=k, reopen_hours=float(bc.get("reopen_hours", 12)),
+                              preclose_hours=float(bc.get("preclose_hours", 12)),
+                              label_status={"t1": ledger["t1_status"].to_numpy(), "t2": ledger["t2_status"].to_numpy(),
+                                            "t3": ledger["t3_status"].to_numpy()})
+        for col in list(T.columns):
+            key = next((v for tk, v in TARGET_LEDGER.items() if tk.format(k=k) == col), None)
+            if key:
+                T.loc[~elig[f"{key}_eligible"].to_numpy(), col] = np.nan
+        elig_counts = {t_: EL.counts(elig, periods, f"{t_}_reason") for t_ in ("t1", "t2", "t3")}
+        elig_counts["business"] = EL.counts(elig, periods, "business_reason")
+        elig_digest = EL.digest(elig)
     # ---- pool (target-independent; reusable)
     reused_pool = False
     if plan["pool_features"] == "REUSE":
@@ -535,7 +656,7 @@ def run(config_path, out, reuse_from=None) -> dict:
         meta = meta["meta"]
         reused_pool = True
     else:
-        X, meta, notes, gens = assemble_pool(bars, cfg)
+        X, meta, notes, gens = assemble_pool(bars, cfg, closures)
     admitted = pool.availability_gate(meta)
     X = X[admitted]
     meta = [m for m in meta if m["feature_id"] in admitted]
@@ -548,6 +669,8 @@ def run(config_path, out, reuse_from=None) -> dict:
         shutil.copyfile(Path(reuse_from) / "data" / "pool_all.parquet", data / "pool_all.parquet")
         shutil.copyfile(Path(reuse_from) / "POOL_META.json", out / "POOL_META.json")
     ledger.to_parquet(out / "LABEL_LEDGER.parquet", index=False)
+    if elig is not None:
+        elig.to_parquet(out / "ELIGIBILITY.parquet", index=False)
     # ---- quality + perturbation (target-independent)
     tr0, tr1 = _utc(sp["train"][0]), _utc(sp["train"][1])
     train = (bars.index >= tr0) & (bars.index < tr1)
@@ -589,7 +712,14 @@ def run(config_path, out, reuse_from=None) -> dict:
     targets_doc = tp.targets_document(T, params=params, k_bars=k, lake_sha256=lake["sha256"], zigzag_sha256=cfg["zigzag"]["sha256"],
                                       confirmation=conf_def)
     targets_doc.update(status_by_period=status, finality=finality, ledger_sha256=man.sha256_file(out / "LABEL_LEDGER.parquet"),
-                       cuts=cuts, roles={t["target_id"]: t["role"] for t in targets})
+                       cuts=cuts, roles={t["target_id"]: t["role"] for t in targets}, source=src_ident)
+    if elig is not None:
+        targets_doc["eligibility"] = {"schema": "timing_selection.eligibility.v1", "digest": elig_digest,
+                                      "rules": {"reopen_hours": float(cfg.get("business_calendar", {}).get("reopen_hours", 12)),
+                                                "preclose_hours": float(cfg.get("business_calendar", {}).get("preclose_hours", 12)),
+                                                "k_window_inside_one_session": True, "label_support": "ledger status LABELLED"},
+                                      "counts_by_period_and_reason": elig_counts,
+                                      "note": "applied to every target before selection, causal stage and evaluation; inputs keep all historical bars"}
     _write_json(out / "TARGETS.json", targets_doc)
     _write_json(prepared, {"config_sha256": config_sha, "config": _redact(cfg), "manifest_sha256": manifest["manifest_sha256"],
                            "pool_notes": _redact(notes), "admitted": admitted, "train_rows": n})
@@ -633,7 +763,12 @@ def run(config_path, out, reuse_from=None) -> dict:
     primary = f"timing_pivot_k{k}"
     q = float(cfg.get("fdr_q", 0.1))
     screens = {t["target_id"]: univariate_screen(Xt, Tt[t["column"]].to_numpy(float), head=t["head"], q=q) for t in targets}
-    screen = screens[primary]
+    sc = cfg.get("screen", {"method": "kruskal_iid"})
+    if sc.get("method") == "blocked_circular_shift":
+        screen = blocked_permutation_screen(Xt, Tt[primary].to_numpy(float), q=q, n_perm=int(sc.get("n_perm", 4999)),
+                                            min_shift=int(sc.get("min_shift_rows", 168)), seed=int(sc.get("seed", 0)))
+    else:
+        screen = screens[primary]
     stability = fold_stability(Xt, Tt[primary].to_numpy(float), folds, head="classification", q=q) if folds else {}
     within_day = pool.within_day_variance(Xt.set_index(ts_train))
     rankings = {}
@@ -661,13 +796,19 @@ def run(config_path, out, reuse_from=None) -> dict:
     ev.mkdir(exist_ok=True)
     pd.concat([pd.DataFrame({"timestamp": bars.index}), X.reset_index(drop=True)], axis=1).to_parquet(ev / "features_all.parquet", index=False)
     T.reset_index(drop=True).to_parquet(ev / "targets_all.parquet", index=False)
+    if elig is not None:
+        elig.to_parquet(ev / "ELIGIBILITY.parquet", index=False)
     sets = {"timing_selected": selected}
     for name, cols in (cfg.get("comparison_sets") or {}).items():
         sets[name] = list(cols)
     missing = {n_: [c for c in cols if c not in X.columns] for n_, cols in sets.items()}
     if any(missing.values()):
         raise DriverError(f"COMPARISON_SET_COLUMNS_MISSING: {missing}")
-    _write_json(ev / "FEATURE_SETS.json", {"sets": sets, "features_sha256": man.sha256_file(ev / "features_all.parquet"),
+    _write_json(ev / "FEATURE_SETS.json", {"schema": "timing_eval_input.v2" if elig is not None else "timing_eval_input.v1",
+                                            "source": src_ident,
+                                            "eligibility": ({"file": "ELIGIBILITY.parquet", "digest": elig_digest, "column": "t1_eligible",
+                                                             "file_sha256": man.sha256_file(ev / "ELIGIBILITY.parquet")} if elig is not None else None),
+                                            "sets": sets, "features_sha256": man.sha256_file(ev / "features_all.parquet"),
                                             "targets_sha256": man.sha256_file(ev / "targets_all.parquet"), "k_bars": k,
                                             "splits": sp, "inner_a_end": INNER_A_END, "subset_sha256": frozen_subset["subset_sha256"],
                                             "expert": {"params": zp, "module_sha256": cfg["zigzag"]["sha256"], "confirmation": conf_def,
@@ -683,7 +824,8 @@ def run(config_path, out, reuse_from=None) -> dict:
               "targets": targets_doc, "worker": _redact(worker), "phase2": {"closure_sha256": p2["closure_sha256"]},
               "phase3": {"methods": json.loads((state / "PHASE_3_FILTER_COMPLETE.json").read_text())["methods"],
                          "candidates": len(candidates["candidates"])}, "readback": readback, "recipe": recipe,
-              "comparator_subsets_T2_T3": comparators, "univariate_screen": screens, "fold_stability": stability,
+              "comparator_subsets_T2_T3": comparators, "univariate_screen": screens, "screen_gate": {"method": sc.get("method"), "results": screen},
+              "fold_stability": stability,
               "within_day_variance": within_day, "redundancy": redundancy, "causal": causal, "dag_plan": plan,
               "wall_seconds": time.time() - t0, "test_read": False}
     _write_json(out / "REPORT.json", report)
@@ -719,7 +861,7 @@ def perturbation_suite(bars: pd.DataFrame, gens: dict, cfg: dict) -> dict:
     scaler, on a bounded window (the fractal store is checked through its owner module when configured)."""
     out = {}
     sub = bars.iloc[: min(len(bars), 6000)]
-    cut = len(sub) - 1500
+    cut = len(sub) - min(1500, len(sub) // 4)
     for name, fn in gens.items():
         out[name] = pool.perturbation_check(fn, sub, cut, seed=1)
     fr = (cfg["candidates"].get("fractal") or {})
@@ -768,10 +910,15 @@ def selection_manifest(cfg, manifest, targets, feat_cols, selected, recipe, with
         features.append({"name": f, "state": state, "reason_codes": reasons})
     order = [f for f in selected]
     cand = cfg["candidates"]
-    src = {"lake": cfg["lake"]["sha256"], "zigzag_module": cfg["zigzag"]["sha256"], "population_manifest": manifest["manifest_sha256"],
+    src = {("admitted_source" if cfg.get("source") else "lake"): source_sha256(cfg), "zigzag_module": cfg["zigzag"]["sha256"],
+           "population_manifest": manifest["manifest_sha256"],
            "features_train": manifest["data"]["features_sha256"], "targets_train": manifest["data"]["targets_sha256"],
            "config": man.digest(cfg), "target_identity": dag["targets_ledger"], "subset": frozen_subset["subset_sha256"]}
-    for key, val in (("fractal_store_manifest", (cand.get("fractal") or {}).get("manifest_sha256")),
+    if cfg.get("source"):
+        src.update(admission_receipt=cfg["source"]["admission"]["sha256"], closure_intervals=cfg["source"]["closures"]["sha256"],
+                   bar_source_module=cfg["source"]["bar_source_sha256"])
+    for key, val in (("fractal_plugin", (cand.get("fractal") or {}).get("module_sha256")),
+                     ("fractal_store_manifest", (cand.get("fractal") or {}).get("manifest_sha256")),
                      ("inventory_generator", (cand.get("inventory") or {}).get("generator_sha256")),
                      ("inventory_bundle_script", (cand.get("inventory") or {}).get("bundle_sha256"))):
         if val:
@@ -812,15 +959,14 @@ def causal_only(config_path, out) -> dict:
     k = int(cfg["zigzag"]["k_bars"])
     fx = pd.read_parquet(out / "data" / "features_train.parquet")
     tt = pd.read_parquet(out / "data" / "targets_train.parquet")
-    lake = cfg["lake"]
-    if tp.sha256_file(lake["path"]) != lake["sha256"]:
-        raise DriverError("LAKE_DIGEST: lake file differs from its pin")
-    bars = tp.load_lake_bars(lake["path"], cfg["splits"]["train"][0], cfg["splits"]["train"][1])
+    bars_all, _, _ = load_bars(cfg)
+    bars = bars_all.loc[(bars_all.index >= _utc(cfg["splits"]["train"][0])) & (bars_all.index < _utc(cfg["splits"]["train"][1]))]
     if len(bars) != len(fx):
         raise DriverError("TRAIN_GRID_MISMATCH")
     Xt, Tt = fx.drop(columns=["row_id", "timestamp"]), tt.drop(columns=["row_id", "timestamp"])
     report = json.loads((out / "REPORT.json").read_text())
-    screen_pass = {f for f, r in report["univariate_screen"][f"timing_pivot_k{k}"].items() if r["pass_fdr"]}
+    gate = (report.get("screen_gate") or {}).get("results") or report["univariate_screen"][f"timing_pivot_k{k}"]
+    screen_pass = {f for f, r in gate.items() if r["pass_fdr"]}
     causal = causal_stage(Xt, Tt, bars, cfg["causal"], k, sorted(screen_pass | set(report["recipe"]["selected"])), mixed=True)
     report["causal"] = causal
     _write_json(out / "CAUSAL_STAGE.json", causal)
@@ -911,11 +1057,19 @@ SNAPSHOT_FILES = ("SELECTION_MANIFEST.json", "MANIFEST.json", "TARGETS.json", "L
                   "eval/COMPUTE_LEDGER.json", "READ_LEDGER_ADDENDUM.json", "GATE_CHECK.json", "CLOCK_AND_COVERAGE_WITNESS.json", "SNAPSHOT.json")
 
 
-def snapshot(out, dests) -> dict:
-    """Copy the sealed artifacts to each destination with SHA256SUMS, re-hash every copy, and record each copy's
-    device id (a second copy on the same device is reported as such, never as an independent physical copy)."""
+def payload_files(out: Path) -> list:
+    """The FULL replay payload: every file under the run directory (feature/target matrices, scalers in the
+    develop records, saved models, prediction archives, ledgers, the phase-2/3 terminals and the metrics database)."""
     out = Path(out)
-    files = [f for f in SNAPSHOT_FILES if (out / f).exists()]
+    return sorted(str(p.relative_to(out)) for p in out.rglob("*") if p.is_file() and p.name not in ("SNAPSHOT.json",))
+
+
+def snapshot(out, dests, payload: str = "full") -> dict:
+    """Copy the run to each destination with SHA256SUMS, re-hash every copy, and record each copy's device id (a
+    second copy on the same device is reported as such, never as an independent physical copy).  ``payload``:
+    ``full`` (default; every file, see ``payload_files``) or ``metadata`` (the legacy sealed-artifact list)."""
+    out = Path(out)
+    files = payload_files(out) if payload == "full" else [f for f in SNAPSHOT_FILES if (out / f).exists()]
     sums = {f: tp.sha256_file(out / f) for f in files}
     copies = []
     for d in dests:
@@ -927,7 +1081,9 @@ def snapshot(out, dests) -> dict:
         bad = [f for f in files if tp.sha256_file(d / f) != sums[f]]
         copies.append({"dest": d.name, "device": os.stat(d).st_dev, "files": len(files), "verified": not bad, "mismatches": bad})
     devices = {c["device"] for c in copies} | {os.stat(out).st_dev}
-    doc = {"files": len(files), "sha256sums": sums, "copies": [{k: v for k, v in c.items() if k != "device"} for c in copies],
+    kinds = {"models": sum(f.endswith((".keras", ".pkl")) for f in files), "npz": sum(f.endswith(".npz") for f in files),
+             "parquet": sum(f.endswith(".parquet") for f in files), "databases": sum(f.endswith((".duckdb", ".sqlite")) for f in files)}
+    doc = {"payload": payload, "files": len(files), "kinds": kinds, "bytes": int(sum((out / f).stat().st_size for f in files)), "sha256sums": sums, "copies": [{k: v for k, v in c.items() if k != "device"} for c in copies],
            "distinct_devices_including_source": len(devices),
            "independent_physical_copy": False,
            "device_note": "device ids are filesystem ids on ONE host; partitions of one physical disk are not independent copies"}
@@ -1053,6 +1209,7 @@ def main(argv=None) -> int:
     sn = sub.add_parser("snapshot")
     sn.add_argument("--out", required=True)
     sn.add_argument("--dest", action="append", required=True)
+    sn.add_argument("--payload", choices=("full", "metadata"), default="full")
     args = ap.parse_args(argv)
     if args.verb == "run":
         rep = run(args.config, args.out, args.reuse_from)
@@ -1070,7 +1227,7 @@ def main(argv=None) -> int:
     elif args.verb == "publish":
         print(json.dumps(publish(args.out, args.db)))
     else:
-        print(json.dumps({k_: v for k_, v in snapshot(args.out, args.dest).items() if k_ != "sha256sums"}))
+        print(json.dumps({k_: v for k_, v in snapshot(args.out, args.dest, args.payload).items() if k_ != "sha256sums"}))
     return 0
 
 
