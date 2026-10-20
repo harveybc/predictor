@@ -22,9 +22,57 @@
    "at": "2026-10-20T19:58:42Z"
   },
   "causal": {
+   "state": "DONE",
+   "at": "2026-10-20T20:24:17Z"
+  },
+  "develop_timing_selected_m3": {
+   "state": "DONE",
+   "at": "2026-10-20T20:24:36Z"
+  },
+  "develop_timing_selected_m1_dmo_class": {
+   "state": "DONE",
+   "at": "2026-10-20T20:27:39Z"
+  },
+  "develop_timing_selected_m2_gru": {
+   "state": "DONE",
+   "at": "2026-10-20T20:31:44Z"
+  },
+  "develop_admitted_core_15_553fc047_m3": {
+   "state": "DONE",
+   "at": "2026-10-20T20:35:38Z"
+  },
+  "develop_admitted_core_15_553fc047_m1_dmo_class": {
+   "state": "DONE",
+   "at": "2026-10-20T20:38:20Z"
+  },
+  "develop_admitted_core_15_553fc047_m2_gru": {
+   "state": "DONE",
+   "at": "2026-10-20T20:41:00Z"
+  },
+  "develop_v3_six_on_admitted_clock_m3": {
+   "state": "DONE",
+   "at": "2026-10-20T20:43:06Z"
+  },
+  "develop_v3_six_on_admitted_clock_m1_dmo_class": {
+   "state": "DONE",
+   "at": "2026-10-20T20:47:06Z"
+  },
+  "develop_v3_six_on_admitted_clock_m2_gru": {
+   "state": "DONE",
+   "at": "2026-10-20T20:50:22Z"
+  },
+  "freeze": {
+   "state": "DONE",
+   "at": "2026-10-20T20:50:31Z"
+  },
+  "reconfirm": {
+   "state": "DONE",
+   "at": "2026-10-20T20:50:47Z"
+  },
+  "seal": {
    "state": "FAILED_rc1",
-   "at": "2026-10-20T20:19:33Z"
+   "at": "2026-10-20T20:50:50Z"
   }
  },
- "updated": "2026-10-20T20:19:33Z"
+ "updated": "2026-10-20T20:50:50Z"
 }
