@@ -461,6 +461,7 @@ def causal_stage(X: pd.DataFrame, T: pd.DataFrame, bars: pd.DataFrame, cfg: dict
     Xs = X[cols]
     primary = names["primary"] if names else f"timing_pivot_k{k}"
     indicators = names["indicators"] if names else [f"timing_valley_k{k}", f"timing_peak_k{k}"]
+    k = int(cfg.get("lag_window", k))        # v5: the causal lag/contrast window is NOT the label horizon (72 bars)
     out = {"pack": tpk.PACK_ID, "provider_sha256": tp.sha256_file(Path(tpk.__file__)), "history": hist,
            "evidence_label": tpk.EVIDENCE_LABEL, "lag0_mapping": tpk.LAG0_MAPPING, "interpreter": sys.version.split()[0],
            "hac_lag_screen": {}, "matched_control_contrast": {}, "mixed_ci": None}
