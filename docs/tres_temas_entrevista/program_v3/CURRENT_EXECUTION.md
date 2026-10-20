@@ -1,8 +1,26 @@
 # Ejecucion vigente
 
-Actualizado2026-10-19. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
+Actualizado2026-10-20. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
 Ninguna orden ni donante de las campanas predictivas retiradas puede despachar
 trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
+
+## Continuacion del20 de octubre
+
+[Capacidad y diagnosticos](RL_CAPACITY_DIAGNOSTICS_2026_10_20.md): las cuatro
+ablaciones cerraron sin mejorar la rentabilidad de VALIDATION del control.
+No se descartan familias completas ni se declara imposible el sobreentrenamiento.
+D0 termino:91 pares autenticados,5 informes trimestrales/bootstrap publicados
+con readback y segunda copia identica. Ningun checkpoint original se cambio.
+
+Secuencia nueva YA desplegada en5090: [8] -> [16] -> [16,16], sin regularizador,
+misma seleccion/ventana/seed/periodos/costes/negocio/early stopping. Unica
+diferencia cientifica comun verificada:net_arch. Runtime dad7294c,132 pruebas
+en el worker. A05:49UTC,[8] ya completo5000 transiciones y evalua su primer
+par; las otras dos esperan al predecesor. Timers de publicacion, sucesion,
+analisis final y copia fisica habilitados. No se pide nueva autorizacion entre
+estos tres ensayos ni se reactivan nuevos SAC temporales. TEST no participa.
+Presupuesto provisional6-9h a cap para los tres; se actualiza con pares medidos.
+Los cortes del19 siguientes son historia, no actividad simultanea actual.
 
 ## Continuacion del 19 de octubre
 

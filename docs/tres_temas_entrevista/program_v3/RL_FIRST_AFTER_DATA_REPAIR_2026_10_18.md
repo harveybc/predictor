@@ -6,6 +6,13 @@ to finish forecasting experiments and all representation studies before RL.
 
 ## 1. Execution Order
 
+Current RL2 refinement, owner authorized2026-10-20:
+[capacity and chronological diagnostics](RL_CAPACITY_DIAGNOSTICS_2026_10_20.md).
+Four critic-regularization contrasts are closed; fresh [8]/[16]/[16,16] SAC
+contrasts run sequentially against the existing [32,32] reference. Temporal
+fits remain paused and TEST is not consumed. This is part of RL2, not a new
+master milestone or a return to deferred forecasting.
+
 1. Recover observed data; resolve clocks, calendars, availability and actual
    monthly support. Admit the required raw and derived inventory to the lake.
 2. Recompute preprocessing and feature selection on the admitted population.
