@@ -164,3 +164,20 @@ the expert and the strategy rule (`strategy.executable`, `max_orders_per_day`, `
 `FEATURE_SETS.json`. Sealed evidence, the clock and coverage witness against the admitted root, the
 independent physical copy record and the v3 results audit request are in
 `docs/timing_selection/eurusd_h1_v3/`. Revision 2 is kept and marked `SUPERSEDED.json`.
+
+## 9. Revision-4 (admitted source, shared eligibility mask)
+
+Musashi's v3 decision was REVISE_BEFORE_BUSINESS_USE (scope RETROSPECTIVE_LAKE_PROXY_RESEARCH_ONLY). v4 is a
+new identity on the admitted UTC source, read through the clock lane's `bar_source`. It applies ONE
+eligibility mask (`tools/timing_eligibility.py`) to labels, selection, causal stage, fitting, early
+stopping, calibration, thresholds and scoring. It also adds:
+
+- a dependence-aware blocked circular-shift screen gating the recipe;
+- evaluator inputs bound by identity, refused before any model load on drift;
+- TRAIN-prior and calibration baselines;
+- full replay-payload snapshots on two machines.
+
+Config: `examples/config/timing_selection/eurusd_h1_timing_v4_admitted.json`. Result, identities and the
+finding → correction → test → result table: `docs/timing_selection/eurusd_h1_v4/RESULT.md`. The finite,
+resumable chain (tests gate → selection → causal → develop shards → freeze → reconfirm → seal) ran on the
+secondary worker, one capped job at a time.

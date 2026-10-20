@@ -1,0 +1,111 @@
+{
+ "frozen_at": "2026-10-20T01:07:14.516686+00:00",
+ "reads_so_far": [
+  "TRAIN_2020_2022"
+ ],
+ "recipe": {
+  "dropped_by_fdr_screen": [
+   "ATR",
+   "RAW_ELAPSED_HOURS",
+   "RAW_LOG_RANGE",
+   "box_counting_dimension_w48",
+   "cal.london_hod_cos",
+   "dow_cos",
+   "hod_cos",
+   "hurst_rs_w200",
+   "hurst_rs_w48",
+   "hurst_spectrum_width_w96",
+   "px.er_1",
+   "px.er_12",
+   "px.er_4",
+   "px.unexpected_gap_hours",
+   "variogram_hurst_w96"
+  ],
+  "k": 12,
+  "method": "MRMR",
+  "per_target": {
+   "timing_peak_k2": [
+    "RAW_ELAPSED_HOURS",
+    "RAW_LOG_RANGE",
+    "box_counting_dimension_w48",
+    "cal.utc_session_us",
+    "dow_cos",
+    "hurst_rs_w200",
+    "hurst_rs_w48",
+    "hurst_spectrum_width_w96",
+    "px.close_loc_2",
+    "px.er_1",
+    "px.er_12",
+    "px.unexpected_gap_hours"
+   ],
+   "timing_pivot_k2": [
+    "RAW_BAR_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "dow_cos",
+    "hod_cos",
+    "hurst_rs_w48",
+    "hurst_spectrum_width_w200",
+    "px.close_loc_2",
+    "px.er_1",
+    "px.er_12",
+    "px.er_4",
+    "px.unexpected_gap_hours",
+    "variogram_hurst_w96"
+   ],
+   "timing_valley_k2": [
+    "ATR",
+    "RAW_ELAPSED_HOURS",
+    "cal.london_hod_cos",
+    "dow_cos",
+    "hurst_rs_w48",
+    "hurst_spectrum_width_w200",
+    "px.close_loc_2",
+    "px.er_1",
+    "px.er_12",
+    "px.er_4",
+    "px.unexpected_gap_hours",
+    "variogram_hurst_w96"
+   ]
+  },
+  "pruned_redundant": [],
+  "selected": [
+   "RAW_BAR_LOG_RETURN",
+   "cal.utc_session_us",
+   "hurst_spectrum_width_w200",
+   "px.close_loc_2"
+  ],
+  "targets": [
+   "timing_pivot_k2",
+   "timing_valley_k2",
+   "timing_peak_k2"
+  ],
+  "union": [
+   "ATR",
+   "RAW_BAR_LOG_RETURN",
+   "RAW_ELAPSED_HOURS",
+   "RAW_LOG_RANGE",
+   "box_counting_dimension_w48",
+   "cal.london_hod_cos",
+   "cal.utc_session_us",
+   "dow_cos",
+   "hod_cos",
+   "hurst_rs_w200",
+   "hurst_rs_w48",
+   "hurst_spectrum_width_w200",
+   "hurst_spectrum_width_w96",
+   "px.close_loc_2",
+   "px.er_1",
+   "px.er_12",
+   "px.er_4",
+   "px.unexpected_gap_hours",
+   "variogram_hurst_w96"
+  ]
+ },
+ "selected": [
+  "RAW_BAR_LOG_RETURN",
+  "cal.utc_session_us",
+  "hurst_spectrum_width_w200",
+  "px.close_loc_2"
+ ],
+ "subset_sha256": "c41776f97e53bece2c21b22b66f23761860e31b6e1d07ead88e2a506ef42e909"
+}

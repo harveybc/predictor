@@ -865,8 +865,10 @@ def perturbation_suite(bars: pd.DataFrame, gens: dict, cfg: dict) -> dict:
     for name, fn in gens.items():
         out[name] = pool.perturbation_check(fn, sub, cut, seed=1)
     fr = (cfg["candidates"].get("fractal") or {})
-    if fr.get("owner_module"):
-        mod = _load_by_path("causal_fractal_features", fr["owner_module"], fr.get("owner_module_sha256"))
+    mod_path = fr.get("owner_module") or fr.get("compute_with_module")
+    mod_sha = fr.get("owner_module_sha256") or fr.get("module_sha256")
+    if mod_path:
+        mod = _load_by_path("causal_fractal_features", mod_path, mod_sha)
         small = bars.iloc[: 1800]
 
         def ffn(b):

@@ -1,0 +1,33 @@
+{
+ "all_match": true,
+ "db": "timing_selection.sqlite",
+ "inserted": {
+  "timing_selection_eval": 0,
+  "timing_selection_features": 0,
+  "timing_selection_manifest": 0
+ },
+ "readback": {
+  "timing_selection_eval": {
+   "count": 1892,
+   "expected": 1892,
+   "match": true
+  },
+  "timing_selection_features": {
+   "count": 93,
+   "expected": 93,
+   "match": true
+  },
+  "timing_selection_manifest": {
+   "count": 1,
+   "expected": 1,
+   "match": true
+  }
+ },
+ "run_id": "ca5d75c28b6da80e2c832546445aca989e44b6f37e9b57b91276b54b2e7e6163",
+ "local_sqlite_readback": "EXACT (count + sorted-row equality per table); second publication inserted 0 rows",
+ "central_warehouse_readback": {
+  "state": "NOT_REACHABLE",
+  "reason": "no warehouse endpoint or token is configured in this session's environment (no WAREHOUSE/DATA_GOV variables, no URL in the driver config)",
+  "next": "python tools/fs_phase23_warehouse.py ... or the ServiceWarehouse adapter with <WAREHOUSE_URL> and its token environment variable, then readback"
+ }
+}

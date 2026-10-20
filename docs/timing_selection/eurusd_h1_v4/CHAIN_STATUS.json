@@ -1,0 +1,86 @@
+{
+ "schema": "timing_v4.chain_status.v1",
+ "steps": {
+  "tests_predictor": {
+   "state": "DONE",
+   "at": "2026-10-20T01:01:04Z"
+  },
+  "tests_strategy": {
+   "state": "DONE",
+   "at": "2026-10-20T01:02:30Z"
+  },
+  "tests_causal": {
+   "state": "DONE",
+   "at": "2026-10-20T01:02:35Z"
+  },
+  "selection": {
+   "state": "DONE",
+   "at": "2026-10-20T01:07:16Z"
+  },
+  "causal": {
+   "state": "DONE",
+   "at": "2026-10-20T01:08:51Z"
+  },
+  "develop_timing_selected_m3": {
+   "state": "DONE",
+   "at": "2026-10-20T01:10:11Z"
+  },
+  "develop_timing_selected_m1_dmo_class": {
+   "state": "DONE",
+   "at": "2026-10-20T01:16:17Z"
+  },
+  "develop_timing_selected_m2_gru": {
+   "state": "DONE",
+   "at": "2026-10-20T01:24:07Z"
+  },
+  "develop_admitted_core_15_553fc047_m3": {
+   "state": "DONE",
+   "at": "2026-10-20T01:28:00Z"
+  },
+  "develop_admitted_core_15_553fc047_m1_dmo_class": {
+   "state": "DONE",
+   "at": "2026-10-20T01:32:35Z"
+  },
+  "develop_admitted_core_15_553fc047_m2_gru": {
+   "state": "DONE",
+   "at": "2026-10-20T01:39:31Z"
+  },
+  "develop_v3_six_on_admitted_clock_m3": {
+   "state": "DONE",
+   "at": "2026-10-20T01:41:36Z"
+  },
+  "develop_v3_six_on_admitted_clock_m1_dmo_class": {
+   "state": "DONE",
+   "at": "2026-10-20T01:48:39Z"
+  },
+  "develop_v3_six_on_admitted_clock_m2_gru": {
+   "state": "DONE",
+   "at": "2026-10-20T01:57:42Z"
+  },
+  "freeze": {
+   "state": "DONE",
+   "at": "2026-10-20T01:57:55Z"
+  },
+  "reconfirm": {
+   "state": "DONE",
+   "at": "2026-10-20T01:58:13Z"
+  },
+  "seal": {
+   "state": "DONE",
+   "at": "2026-10-20T01:58:16Z"
+  },
+  "attach": {
+   "state": "DONE",
+   "at": "2026-10-20T01:58:18Z"
+  },
+  "tables": {
+   "state": "DONE",
+   "at": "2026-10-20T01:58:21Z"
+  },
+  "chain": {
+   "state": "DONE",
+   "at": "2026-10-20T01:58:21Z"
+  }
+ },
+ "updated": "2026-10-20T01:58:21Z"
+}

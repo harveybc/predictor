@@ -1,0 +1,21 @@
+{
+ "cut_position": 1400,
+ "prefix": {
+  "cells_differing": 0,
+  "columns": []
+ },
+ "future_perturbation": {
+  "cells_differing": 0,
+  "columns": []
+ },
+ "passed": true,
+ "source": "admitted c80847bb (rows before 2025)",
+ "module_sha256": "4fd73f0ddc4fe621c67f856676a03e890790b88f10a8ee67b6f17337ec8b9ea4",
+ "module": "feature-eng app/plugins/causal_fractal.py @6c028aa",
+ "windows": [
+  48,
+  96,
+  200
+ ],
+ "bars": 1800
+}

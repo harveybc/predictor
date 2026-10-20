@@ -1,0 +1,10 @@
+{
+ "schema": "timing_selection.scope_note.v1",
+ "manifest_sha256": "b4da1012c53fd21003ec36f1d0c9f0e79354db1661444013168f86592fc2cced",
+ "decision": "REVISE_BEFORE_BUSINESS_USE",
+ "scope": "RETROSPECTIVE_LAKE_PROXY_RESEARCH_ONLY",
+ "decision_record": "predictor codex/timing-selection-v3-audit-20261019 @f342d0d5 docs/timing_selection/eurusd_h1_v3/musashi_audit/DECISION.json (record 3d4f734a)",
+ "successor": "docs/timing_selection/eurusd_h1_v4/ (admitted source, shared eligibility mask; new identity)",
+ "backup_repaired": "full replay payload (242 files, 450 MB: 90 models, 31 npz, 42 parquet, 1 database) copied to the secondary worker and verified there with sha256sum -c (ALL_OK); no fits",
+ "do_not_consume_as_business_input": true
+}

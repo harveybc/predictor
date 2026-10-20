@@ -1,0 +1,55 @@
+{
+ "schema": "timing_eval.compute_ledger.v1",
+ "host_roles": {
+  "selection, causal, m3, freeze, reconfirm, seal": "secondary worker CPU (one job at a time, crispdm-run <= 6G)",
+  "m1/m2 develop": "secondary worker RTX 4090 Laptop (one nvidia-smi read per step; waited 0 s each; 0 foreign processes)"
+ },
+ "environment": "one pinned venv: Python 3.12.13, TF 2.21.0 / Keras 3.15.1, numpy 1.26.4, pandas 2.2.2, scikit-learn 1.5.1, scipy 1.13.1, tigramite 5.2.7.0, statsmodels 0.14.2, pandas_ta 0.3.14b0 (copied from the local install, not on PyPI), setuptools 75.1.0",
+ "shards": {
+  "admitted_core_15_553fc047__m1_dmo_class": {
+   "fits": 18,
+   "fit_seconds_sum": 267.2,
+   "device": "GPU 4090"
+  },
+  "admitted_core_15_553fc047__m2_gru": {
+   "fits": 18,
+   "fit_seconds_sum": 409.7,
+   "device": "GPU 4090"
+  },
+  "admitted_core_15_553fc047__m3_hgb": {
+   "fits": 9,
+   "fit_seconds_sum": 208.1,
+   "device": "CPU"
+  },
+  "timing_selected__m1_dmo_class": {
+   "fits": 18,
+   "fit_seconds_sum": 359.8,
+   "device": "GPU 4090"
+  },
+  "timing_selected__m2_gru": {
+   "fits": 18,
+   "fit_seconds_sum": 463.3,
+   "device": "GPU 4090"
+  },
+  "timing_selected__m3_hgb": {
+   "fits": 9,
+   "fit_seconds_sum": 63.0,
+   "device": "CPU"
+  },
+  "v3_six_on_admitted_clock__m1_dmo_class": {
+   "fits": 18,
+   "fit_seconds_sum": 415.0,
+   "device": "GPU 4090"
+  },
+  "v3_six_on_admitted_clock__m2_gru": {
+   "fits": 18,
+   "fit_seconds_sum": 537.0,
+   "device": "GPU 4090"
+  },
+  "v3_six_on_admitted_clock__m3_hgb": {
+   "fits": 9,
+   "fit_seconds_sum": 103.4,
+   "device": "CPU"
+  }
+ }
+}

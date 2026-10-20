@@ -1,0 +1,204 @@
+{
+ "schema": "predictor.timing_selection.v1",
+ "population_id": "EURUSD_H1_TIMING_ADMITTED",
+ "zigzag": {
+  "module": "<HEURISTIC_STRATEGY_ROOT>/app/short_horizon/zigzag.py",
+  "sha256": "fc24c6f22aa4f7696548d1117b1d2cfad42a43eccd116f0bbcffe6a71df1624a",
+  "params": {
+   "depth": 3,
+   "deviation_pips": 40.7,
+   "backstep": 0
+  },
+  "k_bars": 2,
+  "confirmation": "confirmation_bars_fast",
+  "label": "ZigZag v2 (heuristic-strategy abbfaa6, NSGA-II, cap 4/day, FINAL.json A4_wide; demonstrations v2 38125b0b)"
+ },
+ "splits": {
+  "train": [
+   "2020-01-01",
+   "2023-01-01"
+  ],
+  "inner": [
+   "2023-01-01",
+   "2024-01-01"
+  ],
+  "confirm": [
+   "2024-01-01",
+   "2025-01-01"
+  ],
+  "folds": [
+   "2021-01-01",
+   "2022-01-01"
+  ],
+  "inner_a_end": "2023-07-01"
+ },
+ "candidates": {
+  "inventory": {
+   "bundle_script": "<FINANCIAL_DATA_ROOT>/_scripts/core_selection_bundle.py",
+   "bundle_sha256": "f7bf19f8b229099f80b8b9baf3a1cd2543d1538ef4fa16d2d4e282aa2a23c441",
+   "bundle_commit": "financial-data codex/data-curation-20261018 @41f5af170",
+   "generator_module": "<FEATURE_ENG_ROOT>/normalize_phase1b.py",
+   "generator_sha256": "17a33c4470a3fc4270e60f347240dae2d40fde023a27218961e0a4f3bba68067",
+   "generator_commit": "feature-eng @d081d0f",
+   "datetime_convention": "availability_instant"
+  },
+  "price_pool": true,
+  "fractal": {
+   "compute_with_module": "<FEATURE_ENG_ROOT>/app/plugins/causal_fractal.py",
+   "module_sha256": "4fd73f0ddc4fe621c67f856676a03e890790b88f10a8ee67b6f17337ec8b9ea4",
+   "module_commit": "feature-eng satoshi/causal-fractal-eurusd-20261019 @6c028aa app/plugins/causal_fractal.py",
+   "windows": [
+    48,
+    96,
+    200
+   ]
+  },
+  "price_pool_clock": "utc",
+  "price_pool_closure_features": true
+ },
+ "pairwise_params": {
+  "lags_hours": [
+   0,
+   1,
+   2,
+   6,
+   24
+  ],
+  "min_support": 100,
+  "dcor_max_rows": 1000
+ },
+ "filter": {
+  "seed": 6102026,
+  "k_grid": [
+   4,
+   8,
+   12,
+   16,
+   24
+  ],
+  "recipe": {
+   "method": "MRMR",
+   "k": 12,
+   "prune_abs_spearman": 0.9,
+   "require_fdr_pass": true,
+   "targets": [
+    "timing_pivot_k2",
+    "timing_valley_k2",
+    "timing_peak_k2"
+   ]
+  }
+ },
+ "fdr_q": 0.1,
+ "causal": {
+  "enabled": true,
+  "provider_src": "<CAUSAL_INFERENCE_ROOT>/provider/src",
+  "history": [
+   "px.logret_24",
+   "px.rv_24"
+  ],
+  "q": 0.1,
+  "event_quantile": 0.8,
+  "n_controls": 5,
+  "min_events": 20,
+  "n_boot": 400,
+  "seed": 0,
+  "negative_control_reference": "px.logret_2",
+  "workers": 4,
+  "pc_alpha": 0.05,
+  "alpha": 0.01
+ },
+ "comparison_sets": {
+  "admitted_core_15_553fc047": [
+   "HIGH",
+   "RAW_LOG_RANGE",
+   "RAW_CLOSE_LOG_RETURN",
+   "RAW_ELAPSED_HOURS",
+   "ATR",
+   "RSI",
+   "MACD_Histogram",
+   "ADX",
+   "DI_minus",
+   "Stochastic_D",
+   "WilliamsR",
+   "rolling_std_24",
+   "hod_sin",
+   "hod_cos",
+   "dow_cos"
+  ],
+  "v3_six_on_admitted_clock": [
+   "RAW_BAR_LOG_RETURN",
+   "RAW_ELAPSED_HOURS",
+   "cal.london_hod_sin",
+   "cal.london_hod_cos",
+   "px.atr_ratio_14_120",
+   "px.close_loc_2",
+   "variogram_hurst_w96"
+  ]
+ },
+ "n_shards": 4,
+ "phase3_workers": 1,
+ "seed": 6102026,
+ "adapter_revision": "heuristic-strategy app/short_horizon/{execution,zigzag,zigzag_opt,bar_source}.py (abbfaa6 + ce9a3dc merged), executable b+1, calendar from admitted closures",
+ "not_comparable": {
+  "manifest_19_2ff34fa2": "its feature matrix (INPUT.npz with daily macro / cross-asset columns) exists only in a private deployment directory and cannot be regenerated from the lake; no identical-row comparison is possible"
+ },
+ "strategy": {
+  "executable": true,
+  "max_orders_per_day": 4,
+  "k_tp": 2.0,
+  "note": "detector reversal rule TP 2 sigma / SL 2 sigma kept from v1/v2 to isolate the expert change"
+ },
+ "source": {
+  "kind": "admitted",
+  "path": "<ADMITTED_ROOT>/eurusd.parquet",
+  "sha256": "c80847bb149c7af1ad50e42301b5cd70608e6c37702ce8cc6a7b9eb70f36d2ca",
+  "admission": {
+   "path": "<ADMITTED_ROOT>/ADMISSION.json",
+   "sha256": "ee426b52b4c6ad77c9b48cfce2681c3197903222ed7ff890d8b30d2ffbb74b52"
+  },
+  "closures": {
+   "path": "<ADMITTED_ROOT>/CLOSURE_INTERVALS.json",
+   "sha256": "71078e8f9a95c4438405a9fa3dafdffdc0f44183bbf27ba828168c18065e8350"
+  },
+  "bar_source_module": "<HEURISTIC_STRATEGY_ROOT>/app/short_horizon/bar_source.py",
+  "bar_source_sha256": "fab22a4db4ef656f97dcab5f7ba9f8846910ef2dadfa2c9f0515d6de95555a2e",
+  "sibling_sha256": {
+   "clock_identity.py": "0bd000523da23f9c87fd7947b558ca1c55a16a5df47112aa754f2670080a1d2a",
+   "data.py": "28d50d2539a99bc0e18af63c49e17bd4b2b6e0245f3e6050bbf328d87836fe5d"
+  },
+  "adapter": "heuristic-strategy satoshi/clock-identity-20261019 @ce9a3dc (bar_source source=admitted)",
+  "load": [
+   "2020-01-01",
+   "2025-01-01"
+  ]
+ },
+ "business_calendar": {
+  "reopen_hours": 12,
+  "preclose_hours": 12,
+  "source": "admitted CLOSURE_INTERVALS.json",
+  "daily_cap_timing_lane": 4,
+  "note": "4/day is this timing lane's declared cap; the SAC campaign's 1/day is separate"
+ },
+ "screen": {
+  "method": "blocked_circular_shift",
+  "n_perm": 4999,
+  "min_shift_rows": 168,
+  "seed": 6102026
+ },
+ "finality_all_targets_all_cuts": true,
+ "comparison_notes": {
+  "v3_six_on_admitted_clock": "the v3 six recomputed on the admitted source; v3's cal.hod_cos was on the lake label clock (Europe/London wall - 5 h), represented here by the London-hour sin/cos pair, which spans that phase"
+ },
+ "read_ledger_extra": [
+  {
+   "actor": "this lane v3 (lake proxy, b4da1012)",
+   "periods": {
+    "2020-2022": "selection",
+    "2023": "evaluator choices / frozen score",
+    "2024": "reconfirmation"
+   },
+   "consequence": "2023 joint development and 2024 previously observed again; v4 is a NEW identity on another source"
+  }
+ ],
+ "_note": "Replace <...> placeholders; every sha256 is verified at load. No host name, address or private path belongs here."
+}
