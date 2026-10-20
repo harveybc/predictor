@@ -1,0 +1,103 @@
+{
+ "frozen_at": "2026-10-20T19:58:40.409909+00:00",
+ "reads_so_far": [
+  "TRAIN_2020_2022"
+ ],
+ "recipe": {
+  "dropped_by_fdr_screen": [
+   "CLOSE",
+   "RAW_ELAPSED_HOURS",
+   "Stochastic_D",
+   "hod_cos",
+   "hurst_rs_w48",
+   "hurst_rs_w96",
+   "hurst_spectrum_width_w48",
+   "px.close_loc_1",
+   "px.er_1",
+   "px.er_24",
+   "px.er_4",
+   "px.er_48",
+   "px.unexpected_gap_hours",
+   "variogram_hurst_w200"
+  ],
+  "k": 12,
+  "method": "MRMR",
+  "per_target": {
+   "timing_profit_h72": [
+    "CLOSE",
+    "RAW_ELAPSED_HOURS",
+    "Stochastic_D",
+    "hurst_rs_w48",
+    "hurst_rs_w96",
+    "px.close_loc_1",
+    "px.er_1",
+    "px.er_4",
+    "px.er_48",
+    "px.hours_since_session_open",
+    "px.unexpected_gap_hours",
+    "variogram_hurst_w200"
+   ],
+   "timing_profit_long_h72": [
+    "CLOSE",
+    "RAW_ELAPSED_HOURS",
+    "Stochastic_D",
+    "dow_cos",
+    "hod_cos",
+    "hurst_rs_w48",
+    "px.close_loc_1",
+    "px.er_1",
+    "px.er_4",
+    "px.er_48",
+    "px.unexpected_gap_hours",
+    "variogram_hurst_w200"
+   ],
+   "timing_profit_short_h72": [
+    "CLOSE",
+    "RAW_ELAPSED_HOURS",
+    "dow_cos",
+    "hod_cos",
+    "hurst_rs_w48",
+    "hurst_spectrum_width_w48",
+    "px.close_loc_1",
+    "px.er_1",
+    "px.er_24",
+    "px.er_4",
+    "px.unexpected_gap_hours",
+    "variogram_hurst_w200"
+   ]
+  },
+  "pruned_redundant": [
+   "dow_cos"
+  ],
+  "selected": [
+   "px.hours_since_session_open"
+  ],
+  "targets": [
+   "timing_profit_h72",
+   "timing_profit_long_h72",
+   "timing_profit_short_h72"
+  ],
+  "union": [
+   "CLOSE",
+   "RAW_ELAPSED_HOURS",
+   "Stochastic_D",
+   "dow_cos",
+   "hod_cos",
+   "hurst_rs_w48",
+   "hurst_rs_w96",
+   "hurst_spectrum_width_w48",
+   "px.close_loc_1",
+   "px.er_1",
+   "px.er_24",
+   "px.er_4",
+   "px.er_48",
+   "px.hours_since_session_open",
+   "px.unexpected_gap_hours",
+   "variogram_hurst_w200"
+  ]
+ },
+ "selected": [
+  "px.hours_since_session_open"
+ ],
+ "subset_sha256": "cb0dee5f132c784169cc64919b048c05797b1d263ff56d455bbabe6c8db659a1"
+}

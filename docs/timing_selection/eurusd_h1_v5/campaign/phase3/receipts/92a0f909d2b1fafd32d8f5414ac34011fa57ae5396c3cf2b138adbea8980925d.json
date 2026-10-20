@@ -1,0 +1,44 @@
+{
+ "tables": {
+  "feature_filter_rankings": {
+   "backend": "sqlite3",
+   "batch_rows": 2000,
+   "batches": [
+    {
+     "duplicates_ignored": 0,
+     "inserted": 799,
+     "receipt_sha256": "a85040806ba5097411dc225f55bbc54c14ee19100e229363717c41e7c36a3342",
+     "row_count": 799,
+     "rows_sha256": "74e61261dd3c4b2354f887382a02923868af0e088290c0bf4cc3c4bc963ce319"
+    }
+   ],
+   "duplicates_ignored": 0,
+   "inserted": 799,
+   "readback_count": 799,
+   "row_count": 799,
+   "rows_sha256": "74e61261dd3c4b2354f887382a02923868af0e088290c0bf4cc3c4bc963ce319",
+   "table": "feature_filter_rankings"
+  },
+  "feature_filter_subsets": {
+   "backend": "sqlite3",
+   "batch_rows": 2000,
+   "batches": [
+    {
+     "duplicates_ignored": 0,
+     "inserted": 49,
+     "receipt_sha256": "e9222cdc7766f55fefb0cf6215aac5493c42805dae9e54fa11647f200ca58bb9",
+     "row_count": 49,
+     "rows_sha256": "afaddbd457043576bc0c7bed3ef506566199dc84d3d1464d0bdfcef04b80ab47"
+    }
+   ],
+   "duplicates_ignored": 0,
+   "inserted": 49,
+   "readback_count": 49,
+   "row_count": 49,
+   "rows_sha256": "afaddbd457043576bc0c7bed3ef506566199dc84d3d1464d0bdfcef04b80ab47",
+   "table": "feature_filter_subsets"
+  }
+ },
+ "target_id": "timing_best_order_pnl_sigma_h72",
+ "unit_id": "92a0f909d2b1fafd32d8f5414ac34011fa57ae5396c3cf2b138adbea8980925d"
+}

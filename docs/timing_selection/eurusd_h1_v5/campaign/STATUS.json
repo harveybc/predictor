@@ -1,0 +1,55 @@
+{
+ "follower": {
+  "adopted": 4,
+  "already": 0,
+  "closure_error": null,
+  "foreign": 0,
+  "phase2_closed": true,
+  "phase3_closed": true,
+  "phase3_error": null,
+  "quarantined": 0,
+  "submit_errors": [],
+  "submitted": 4,
+  "warehouse_transport": null
+ },
+ "generated_at": "2026-10-20T19:58:08Z",
+ "generated_epoch": 1792526288.598092,
+ "phase": "PHASE_3_COMPLETE",
+ "populations": {
+  "EURUSD_H1_PROFIT_ADMITTED": {
+   "filter_v1": {
+    "active": 0,
+    "complete": 5,
+    "eta_seconds": 0.0,
+    "expected": 5,
+    "failed": 0
+   },
+   "pairwise_v1": {
+    "active": 0,
+    "by_host": {
+     "local": {
+      "active": 0,
+      "complete": 4,
+      "expected": 4,
+      "failed": 0,
+      "pending": 0
+     }
+    },
+    "complete": 4,
+    "complete_cost": 239387736.0,
+    "eta_seconds": 0.0,
+    "expected": 4,
+    "expected_cost": 239387736.0,
+    "failed": 0,
+    "failures": [],
+    "pairs_complete": 4278,
+    "pairs_expected": 4278,
+    "pending": 0,
+    "rate_cost_per_second": 1685446.6808994173,
+    "rate_units_per_hour": 101.38544526337643
+   },
+   "phase": "PHASE_3_COMPLETE"
+  }
+ },
+ "schema": "fs_phase23.status.v1"
+}

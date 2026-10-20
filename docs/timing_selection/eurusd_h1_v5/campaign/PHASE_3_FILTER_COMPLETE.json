@@ -1,0 +1,83 @@
+{
+ "admissible_features": 89,
+ "closed_at": 1792526288.5960758,
+ "closed_at_utc": "20261020T195808Z",
+ "closure_sha256": "7c802ac2bb64a52abdf486eef9ef497ffda4521ec9c4db0c6634075751274ee5",
+ "final_selection": false,
+ "generated_from_evidence": true,
+ "identity": "timing-selection:e2c14dffff74f2a9",
+ "k_grid": [
+  4,
+  8,
+  12,
+  16,
+  24,
+  32
+ ],
+ "methods": [
+  "SPEARMAN_CLUSTER",
+  "MRMR",
+  "JMI",
+  "MRMR_CAUSAL",
+  "JMI_CAUSAL",
+  "ALL_ADMISSIBLE",
+  "UNIVARIATE_MI",
+  "CAUSAL_SUPPORTED",
+  "RANDOM_K"
+ ],
+ "phase2_closure_sha256": "e9f4402ed177b37df9e3e5f785c18a109fdebd64869c1d9cd1589c643301c373",
+ "phase3_params_sha256": "5b2c14056c62ae0b73258b7ecd261d4612b78c248b4f35c17f4328faa34e0976",
+ "plan_sha256": "16faa366468d33544b98613e3572dcd8206981a85a3be986acbd607132cf0c66",
+ "population_id": "EURUSD_H1_PROFIT_ADMITTED",
+ "predictive_winner": null,
+ "row_counts": {
+  "feature_filter_rankings": 3995,
+  "feature_filter_subsets": 245
+ },
+ "schema": "fs_phase23.phase3_filter_complete.v1",
+ "state": "PHASE_3_FILTER_COMPLETE",
+ "table_sha256": {
+  "feature_filter_rankings": "ff1092d1db0a08fd59bda910e45788e9aa0813260a3b0ed188b6016dc568a935",
+  "feature_filter_subsets": "da46e23df16587b6aadb7c931ceeb141abc199d1aa7d5427e25a6717877c0f12"
+ },
+ "targets": 5,
+ "units": [
+  {
+   "target_id": "timing_profit_h72",
+   "unit_id": "ebebc1c820e4f44f6af33a14b313371e79be15abff6e7e8ef3f2f28fd24c9777",
+   "wall_seconds": 0.31728291511535645
+  },
+  {
+   "target_id": "timing_profit_long_h72",
+   "unit_id": "09a4a930e99b86753f337730520a02325beee45847ff3e6f76c68ff0af30a95d",
+   "wall_seconds": 0.31630396842956543
+  },
+  {
+   "target_id": "timing_profit_short_h72",
+   "unit_id": "d86cf557acff560cf7df76022e9859732c577fa6eeede3f0315737079541460a",
+   "wall_seconds": 0.31797361373901367
+  },
+  {
+   "target_id": "timing_long_order_wins_h72",
+   "unit_id": "4cc2b26f208cc086df2828b662451b62cb58670d4cffbad6d124670a7afa9f6d",
+   "wall_seconds": 0.31838035583496094
+  },
+  {
+   "target_id": "timing_best_order_pnl_sigma_h72",
+   "unit_id": "92a0f909d2b1fafd32d8f5414ac34011fa57ae5396c3cf2b138adbea8980925d",
+   "wall_seconds": 0.31041598320007324
+  }
+ ],
+ "uses_test_split": false,
+ "uses_validation_split": false,
+ "warehouse_reconcile": {
+  "feature_filter_rankings": {
+   "count": 3995,
+   "rows_sha256": "ff1092d1db0a08fd59bda910e45788e9aa0813260a3b0ed188b6016dc568a935"
+  },
+  "feature_filter_subsets": {
+   "count": 245,
+   "rows_sha256": "da46e23df16587b6aadb7c931ceeb141abc199d1aa7d5427e25a6717877c0f12"
+  }
+ }
+}

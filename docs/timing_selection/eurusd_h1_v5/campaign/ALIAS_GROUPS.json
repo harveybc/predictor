@@ -1,0 +1,86 @@
+[
+ {
+  "alias_group_id": "974027534b75a2ceb16b22fc79ae9d64e9403473a2e1ca601f7535f698982d5c",
+  "disposition": "ALIAS_GROUP",
+  "dropped_columns": [],
+  "evidence": [
+   {
+    "gate_state": "BYTE_IDENTICAL",
+    "left": "RAW_CLOSE_LOG_RETURN",
+    "right": "px.logret_1"
+   }
+  ],
+  "members": [
+   "RAW_CLOSE_LOG_RETURN",
+   "px.logret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_ADMITTED",
+  "representative": "RAW_CLOSE_LOG_RETURN",
+  "representative_rule": "clock OBSERVED, coverage desc, support_h asc, source_bytes asc, name",
+  "row_key": "f58380a32ff0313730befd5796048c59fd3406a12e0c514a86f018d84c559195",
+  "run_id": "timing-selection:e2c14dffff74f2a9"
+ },
+ {
+  "alias_group_id": "b0791648340c993fe19c331e3a976f52fc07e35fddeeb8de463eaee7fee632d5",
+  "disposition": "ALIAS_GROUP",
+  "dropped_columns": [],
+  "evidence": [
+   {
+    "gate_state": "BYTE_IDENTICAL",
+    "left": "RAW_LOG_RANGE",
+    "right": "px.range_1"
+   }
+  ],
+  "members": [
+   "RAW_LOG_RANGE",
+   "px.range_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_ADMITTED",
+  "representative": "RAW_LOG_RANGE",
+  "representative_rule": "clock OBSERVED, coverage desc, support_h asc, source_bytes asc, name",
+  "row_key": "152889e2e155b4e43ba704d006080379edfd497c4ea5c336cf3c3d1bf2653388",
+  "run_id": "timing-selection:e2c14dffff74f2a9"
+ },
+ {
+  "alias_group_id": "d9ee8ceec6ccbf60d926143c7b83fe6b887b63343187dac5661ff4f98a318c2e",
+  "disposition": "ALIAS_GROUP",
+  "dropped_columns": [],
+  "evidence": [
+   {
+    "gate_state": "BYTE_IDENTICAL",
+    "left": "RAW_BAR_LOG_RETURN",
+    "right": "px.bar_body"
+   }
+  ],
+  "members": [
+   "RAW_BAR_LOG_RETURN",
+   "px.bar_body"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_ADMITTED",
+  "representative": "RAW_BAR_LOG_RETURN",
+  "representative_rule": "clock OBSERVED, coverage desc, support_h asc, source_bytes asc, name",
+  "row_key": "7cebdd0e96fd10ca16b103f50c6928f609049926b918854fa9e98038fc60a0a9",
+  "run_id": "timing-selection:e2c14dffff74f2a9"
+ },
+ {
+  "alias_group_id": "e5a7658c65a3172bd6d43a83eb6145fcd4c1a0ca465bb740d9f667287ff84007",
+  "disposition": "ALIAS_GROUP",
+  "dropped_columns": [],
+  "evidence": [
+   {
+    "gate_state": "BYTE_IDENTICAL",
+    "left": "RAW_ELAPSED_HOURS",
+    "right": "px.elapsed_hours"
+   }
+  ],
+  "members": [
+   "RAW_ELAPSED_HOURS",
+   "px.elapsed_hours"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_ADMITTED",
+  "representative": "RAW_ELAPSED_HOURS",
+  "representative_rule": "clock OBSERVED, coverage desc, support_h asc, source_bytes asc, name",
+  "row_key": "b3c98417f35fe503014786471134ce107e7ac9b0de43fb488289e748ee253b96",
+  "run_id": "timing-selection:e2c14dffff74f2a9"
+ }
+]

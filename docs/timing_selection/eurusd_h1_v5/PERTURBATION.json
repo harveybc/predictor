@@ -1,0 +1,31 @@
+{
+ "all_passed": true,
+ "evaluator_train_only_scaler": {
+  "passed": true,
+  "rule": "mean/sd fitted on TRAIN identical rows only; later rows cannot move it"
+ },
+ "inventory": {
+  "cut_position": 4500,
+  "future_perturbation": {
+   "cells_differing": 0,
+   "columns": []
+  },
+  "passed": true,
+  "prefix": {
+   "cells_differing": 0,
+   "columns": []
+  }
+ },
+ "price_pool": {
+  "cut_position": 4500,
+  "future_perturbation": {
+   "cells_differing": 0,
+   "columns": []
+  },
+  "passed": true,
+  "prefix": {
+   "cells_differing": 0,
+   "columns": []
+  }
+ }
+}

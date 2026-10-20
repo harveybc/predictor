@@ -1,0 +1,44 @@
+{
+ "tables": {
+  "feature_filter_rankings": {
+   "backend": "sqlite3",
+   "batch_rows": 2000,
+   "batches": [
+    {
+     "duplicates_ignored": 0,
+     "inserted": 799,
+     "receipt_sha256": "860bc4cf2c810cdd0c9616ac3189471fc4a56af7d103a005eef2c1139aabf5b0",
+     "row_count": 799,
+     "rows_sha256": "77d293445dcb194a0a7299673a7f05dad2d2705de8c13d474638c1efd277e6d6"
+    }
+   ],
+   "duplicates_ignored": 0,
+   "inserted": 799,
+   "readback_count": 799,
+   "row_count": 799,
+   "rows_sha256": "77d293445dcb194a0a7299673a7f05dad2d2705de8c13d474638c1efd277e6d6",
+   "table": "feature_filter_rankings"
+  },
+  "feature_filter_subsets": {
+   "backend": "sqlite3",
+   "batch_rows": 2000,
+   "batches": [
+    {
+     "duplicates_ignored": 0,
+     "inserted": 49,
+     "receipt_sha256": "08de5bae2ed9751f1a3f93e06f56383c659fd7beb532f4dc1ac64f4fb97d2ed1",
+     "row_count": 49,
+     "rows_sha256": "dabb2ee72e4650c23954fda403320ae31648ccdff8e2f14c5996a27f499874f6"
+    }
+   ],
+   "duplicates_ignored": 0,
+   "inserted": 49,
+   "readback_count": 49,
+   "row_count": 49,
+   "rows_sha256": "dabb2ee72e4650c23954fda403320ae31648ccdff8e2f14c5996a27f499874f6",
+   "table": "feature_filter_subsets"
+  }
+ },
+ "target_id": "timing_profit_h72",
+ "unit_id": "ebebc1c820e4f44f6af33a14b313371e79be15abff6e7e8ef3f2f28fd24c9777"
+}

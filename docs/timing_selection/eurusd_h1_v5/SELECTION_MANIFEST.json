@@ -1,0 +1,816 @@
+{
+ "dataset_id": "EURUSD_H1_PROFIT_ADMITTED",
+ "features": [
+  {
+   "name": "OPEN",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "HIGH",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "LOW",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "CLOSE",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RAW_BAR_LOG_RETURN",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RAW_LOG_RANGE",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RAW_CLOSE_LOG_RETURN",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RAW_ELAPSED_HOURS",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "ATR",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RSI",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "MACD",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "MACD_Histogram",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "MACD_Signal",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "ADX",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "DI_plus",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "DI_minus",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "Stochastic_K",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "Stochastic_D",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "BB_Width",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "CCI",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "WilliamsR",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "ROC",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "ATR_ratio",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "BB_position",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "rolling_std_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "price_minus_ema",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hod_sin",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hod_cos",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "dow_sin",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "dow_cos",
+   "reason_codes": [
+    "REDUNDANT_WITH_SELECTED_REPRESENTATIVE"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_1",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_1",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_1",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_1",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_1",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_4",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_4",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_4",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_4",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_4",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_24",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_48",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.atr_14",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.atr_ratio_14_120",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_ratio_1_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.bar_body",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.utc_hod_sin",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.utc_hod_cos",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.utc_dow_sin",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1",
+    "CONSTANT_WITHIN_DAY"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.utc_dow_cos",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1",
+    "CONSTANT_WITHIN_DAY"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.utc_session_asia",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.utc_session_europe",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.utc_session_us",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.london_hod_sin",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.london_hod_cos",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.elapsed_hours",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.hours_since_session_open",
+   "reason_codes": [
+    "MRMR_K12_UNION_T1",
+    "FDR_PASS_T1",
+    "CLUSTER_REPRESENTATIVE"
+   ],
+   "state": "selected"
+  },
+  {
+   "name": "px.unexpected_gap_hours",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_rs_w48",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "variogram_hurst_w48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_spectrum_width_w48",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "box_counting_dimension_w48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_rs_w96",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "variogram_hurst_w96",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_spectrum_width_w96",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "box_counting_dimension_w96",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_rs_w200",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "variogram_hurst_w200",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_spectrum_width_w200",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "box_counting_dimension_w200",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  }
+ ],
+ "final_selection": false,
+ "independent_decision_record": {
+  "decider_role": "auditor",
+  "decision_id": "TIMING_PROXY_SELECTION:timing-selection:e2c14dffff74f2a9:decision",
+  "state": "PENDING"
+ },
+ "learning_paradigm": "expert-demonstration / hindsight-guided learning (not human-preference RLHF)",
+ "manifest_sha256": "84196d4e80a408d6705fa8f0bd5e5954017ee072e7ddb0333553f20d42c1d3b2",
+ "manifest_version": 1,
+ "predictive_validation": {
+  "evaluator": "heuristic-strategy tools/short_horizon_timing_eval.py",
+  "freeze_sha256": "092db31c14d74584cad595e7ad7afa04f3aa3ec18e837a9bc6086ecb155333c2",
+  "proxy_only": true,
+  "roles": {
+   "INNER_A_2023H1": "choices (joint development)",
+   "INNER_B_2023H2": "frozen score (joint development)",
+   "REOBSERVED_2024": "previously observed reconfirmation, never pristine",
+   "TRAIN_2020_2022": "fit"
+  },
+  "seal_sha256": "358b56bc8454cf64db857ca107459e9f09b0f52beafd0472eab6d5ff5cebfc68"
+ },
+ "producer": {
+  "lane": "SELECTION",
+  "role": "producer"
+ },
+ "proxy_only": true,
+ "rl_observation_contract": {
+  "feature_columns": [
+   "px.hours_since_session_open"
+  ],
+  "note": "column order only; scaling and window follow the consuming RL contract",
+  "schema": "gym_fx.observation_contract.v1"
+ },
+ "schema": "feature_selection.manifest.v1",
+ "scope": "usefulness for the pivot-classification proxy and its trivial reversal strategy only; NOT an RL-selected subset; a fixed-budget SAC comparison against the admitted-core 15 is a later, separately authorized integration",
+ "selected_features": [
+  "px.hours_since_session_open"
+ ],
+ "selection_name": "TIMING_PROXY_SELECTION",
+ "source_digests": {
+  "admission_receipt": "ee426b52b4c6ad77c9b48cfce2681c3197903222ed7ff890d8b30d2ffbb74b52",
+  "admitted_source": "c80847bb149c7af1ad50e42301b5cd70608e6c37702ce8cc6a7b9eb70f36d2ca",
+  "bar_source_module": "fab22a4db4ef656f97dcab5f7ba9f8846910ef2dadfa2c9f0515d6de95555a2e",
+  "closure_intervals": "71078e8f9a95c4438405a9fa3dafdffdc0f44183bbf27ba828168c18065e8350",
+  "config": "e2c14dffff74f2a976f46c3e3b6eed7bd038dc4073f462ede530b946291351d8",
+  "evaluator_seal": "358b56bc8454cf64db857ca107459e9f09b0f52beafd0472eab6d5ff5cebfc68",
+  "features_train": "99c5fbbe2bc944fd5c1386b0fdfd7e9fff1967e78c74c10d50415998923fdfeb",
+  "fractal_plugin": "4fd73f0ddc4fe621c67f856676a03e890790b88f10a8ee67b6f17337ec8b9ea4",
+  "inventory_bundle_script": "f7bf19f8b229099f80b8b9baf3a1cd2543d1538ef4fa16d2d4e282aa2a23c441",
+  "inventory_generator": "17a33c4470a3fc4270e60f347240dae2d40fde023a27218961e0a4f3bba68067",
+  "population_manifest": "547eec93850c8a653803ace8fabdec064d8be9990794ebdf1511968ffbedb82f",
+  "subset": "cb0dee5f132c784169cc64919b048c05797b1d263ff56d455bbabe6c8db659a1",
+  "target_identity": "3f2ebc2a6fc53ed6ea99af183caa307157e0f07c25efa017b512e207fb5a012d",
+  "targets_train": "939a38c553fc1f0f82651f92f4e15e5765f8fa54159bc50d1fd2b4aef42cdab8",
+  "zigzag_module": "fc24c6f22aa4f7696548d1117b1d2cfad42a43eccd116f0bbcffe6a71df1624a"
+ },
+ "split": {
+  "confirm": [
+   "2024-01-01",
+   "2025-01-01"
+  ],
+  "folds": [
+   "2021-01-01",
+   "2022-01-01"
+  ],
+  "inner": [
+   "2023-01-01",
+   "2024-01-01"
+  ],
+  "inner_a_end": "2023-07-01",
+  "roles": {
+   "2020-2022": "selection (TRAIN)",
+   "2023": "JOINT development (expert chosen with it)",
+   "2024": "PREVIOUSLY OBSERVED reconfirmation",
+   "2025+": "never read"
+  },
+  "train": [
+   "2020-01-01",
+   "2023-01-01"
+  ]
+ },
+ "status": "TIMING_PROXY_SELECTION_SEALED_PENDING_INDEPENDENT_DECISION",
+ "target_params": {
+  "confirmation": "confirmation_bars_fast",
+  "expert_kind": "HINDSIGHT_NON_CAUSAL_EXPERT",
+  "expert_label": "ZigZag v2 (heuristic-strategy abbfaa6, NSGA-II, cap 4/day, FINAL.json A4_wide; demonstrations v2 38125b0b)",
+  "family": "timing_profit",
+  "k_bars": 72,
+  "primary_column": "timing_profit_h72",
+  "semantics": "timing_targets.profit.v1",
+  "spec": {
+   "cost_sigma": 0.1,
+   "horizon_bars": 72,
+   "m_sl": 2.0,
+   "m_tp": 2.0,
+   "preclose_hours": 12.0
+  },
+  "zigzag": {
+   "backstep": 0,
+   "depth": 3,
+   "deviation_pips": 40.7
+  }
+ },
+ "targets": [
+  {
+   "family": "timing_profit",
+   "head": "classification",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    72
+   ],
+   "name": "timing_profit_h72",
+   "role": "PRIMARY_PROFITABLE_DIRECTION"
+  },
+  {
+   "family": "timing_profit",
+   "head": "classification",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    72
+   ],
+   "name": "timing_profit_long_h72",
+   "role": "PRIMARY_INDICATOR"
+  },
+  {
+   "family": "timing_profit",
+   "head": "classification",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    72
+   ],
+   "name": "timing_profit_short_h72",
+   "role": "PRIMARY_INDICATOR"
+  },
+  {
+   "family": "timing_profit",
+   "head": "classification",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    72
+   ],
+   "name": "timing_long_order_wins_h72",
+   "role": "DIRECTION_INDEPENDENT_COMPARATOR"
+  },
+  {
+   "family": "timing_profit",
+   "head": "regression",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    72
+   ],
+   "name": "timing_best_order_pnl_sigma_h72",
+   "role": "BEST_ORDER_NET_PNL_SIGMA"
+  }
+ ],
+ "test_read": false
+}
