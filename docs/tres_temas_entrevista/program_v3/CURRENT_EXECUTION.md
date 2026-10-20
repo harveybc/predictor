@@ -6,6 +6,19 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
+PRIORIDAD AUTORIZADA: [especialistas modulares controlados](RL_MODULAR_SPECIALISTS_2026_10_20.md).
+YA EJECUTANDO: 15 fits secuenciales en la GPU preferente,
+JOINT con abstencion, JOINT de capacidad comparable y FULL; cinco semillas.
+Controles de cierre fijo/BUY/SELL y arbitro reutilizan pesos. Sin aprobaciones
+intermedias. Ventanas/stride y otros contrastes quedan como siguientes disenos.
+Esta linea es imitacion BC+DAgger sobre el protocolo temporal de Satoshi;
+no se confunde con el SAC ni se comparan directamente sus Sharpes/costes.
+Runtime f6ddd53c, spec fb808aa8. Primera celda cerrada; segunda iniciada
+automaticamente. 43 pruebas locales y 43 en worker; smoke GPU con recarga
+exacta. Primeros8/8 reportes con readback y primera copia fisica verificada.
+Timers de worker/publicador/recolector activos. Sin bloqueos ni autorizaciones
+intermedias. Aun no hay conclusion del lote completo.
+
 ULTIMO CIERRE: [barrido de capacidad temporal](RL_TEMPORAL_CAPACITY_RESULT_2026_10_20.md).
 7/7 ensayos cerrados automaticamente,todos al primer intento;09:50:33 a
 18:07:38UTC,unas8h17min. Ninguno supera VALIDATION del minimo(-7.28%);
