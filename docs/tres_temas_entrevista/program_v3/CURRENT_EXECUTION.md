@@ -6,6 +6,16 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
+ULTIMO CIERRE: [resultado Conv1D presupuesto fijo](RL_FIXED_BUDGET_TEMPORAL_RESULT_2026_10_20.md).
+Termino08:36:51UTC,100000 pasos,4/4 controles,unos70min,sin reinicios.
+TRAIN-1454.77USD(-14.55%),VALIDATION-727.83USD(-7.28%);no rentable.
+VALIDATION:maxDD10.73%,203 operaciones,43.35%ganadoras,PF0.833,
+Sharpe diario no anualizado-0.06103.10/10 informes con readback,sin pendientes
+ni discrepancias,574 archivos verificados en segunda copia fisica. Corregido
+solo recolector que exigia SAC_FLAT para la rama temporal;60 pruebas pasan,
+ninguna metrica/peso alterado. No queda fit activo de esta identidad;TEST intacto.
+Los parrafos de arranque/progreso inferiores son cortes historicos.
+
 PRIORIDAD MAS RECIENTE: [Conv1D minima con presupuesto fijo](RL_FIXED_BUDGET_TEMPORAL_2026_10_20.md).
 YA RUNNING en5090 desde07:26:43UTC,10000/100000 transiciones verificadas en
 225.7434s. Misma seleccion15/ventana13/stride2/Conv1D2x4/heads[8],seed7,
