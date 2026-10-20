@@ -6,6 +6,17 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
+SECUENCIA VIGENTE YA DESPLEGADA: [capacidad temporal gradual automatica](RL_TEMPORAL_CAPACITY_SWEEP_2026_10_20.md).
+Mantiene ventana13/stride2,15 variables,100000 pasos y negocio;primero nucleo
+8/16,luego heads16/32,ramas4/8 y profundidad2,con sucesores elegidos por regla
+congelada de VALIDATION/brecha/drawdown.7 fits exploratorios y hasta4 de
+confirmacion con semillas compartidas17/29. Runtimeee35cb3b,specb7cca8ea;
+219 regresiones locales y35 en el worker pasan,admisionGPU16updates/recarga
+exacta. Primer TRAIN core8 iniciado09:50:37UTC,5000 pasos verificados en
+104.9758s. Worker/publicador/relevo y coleccion fisica automatizados con
+timers;sin nueva aprobacion entre ensayos. Inicio no equivale a resultado
+financiero;TEST intacto.
+
 ULTIMO CIERRE: [resultado Conv1D presupuesto fijo](RL_FIXED_BUDGET_TEMPORAL_RESULT_2026_10_20.md).
 Termino08:36:51UTC,100000 pasos,4/4 controles,unos70min,sin reinicios.
 TRAIN-1454.77USD(-14.55%),VALIDATION-727.83USD(-7.28%);no rentable.
