@@ -301,7 +301,10 @@ def family_of(cfg: dict):
     else:
         k = int(cfg["target"].get("horizon_bars", tpf.DEFAULT_SPEC["horizon_bars"]))
         names = {"primary": tpf.primary(k), "indicators": tpf.indicators(k), "comparators": tpf.comparators(k),
-                 "ledger": tpf.TARGET_LEDGER}
+                 "ledger": tpf.TARGET_LEDGER,
+                 # declared default: HAC lags / matched-control window / PCMCI tau_max = 2 observed bars (the v4
+                 # anticipatory window); the label horizon is a resolution bound, not a lag structure
+                 "lag_window": int(cfg["target"].get("lag_window", 2))}
     return FAMILIES[fam], k, dict(names, family=fam, spec=(tpf.spec_of(cfg.get("target")) if fam == "timing_profit" else None))
 
 
@@ -461,7 +464,7 @@ def causal_stage(X: pd.DataFrame, T: pd.DataFrame, bars: pd.DataFrame, cfg: dict
     Xs = X[cols]
     primary = names["primary"] if names else f"timing_pivot_k{k}"
     indicators = names["indicators"] if names else [f"timing_valley_k{k}", f"timing_peak_k{k}"]
-    k = int(cfg.get("lag_window", k))        # v5: the causal lag/contrast window is NOT the label horizon (72 bars)
+    k = int(names.get("lag_window", k)) if names else k   # v5: the lag/contrast window is NOT the 72-bar label horizon
     out = {"pack": tpk.PACK_ID, "provider_sha256": tp.sha256_file(Path(tpk.__file__)), "history": hist,
            "evidence_label": tpk.EVIDENCE_LABEL, "lag0_mapping": tpk.LAG0_MAPPING, "interpreter": sys.version.split()[0],
            "hac_lag_screen": {}, "matched_control_contrast": {}, "mixed_ci": None}
