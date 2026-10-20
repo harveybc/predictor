@@ -6,7 +6,22 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
-PRIORIDAD MAS RECIENTE: [Conv1D minima inmediata](RL_MINIMAL_TEMPORAL_2026_10_20.md).
+PRIORIDAD MAS RECIENTE: [Conv1D minima con presupuesto fijo](RL_FIXED_BUDGET_TEMPORAL_2026_10_20.md).
+YA RUNNING en5090 desde07:26:43UTC,10000/100000 transiciones verificadas en
+225.7434s. Misma seleccion15/ventana13/stride2/Conv1D2x4/heads[8],seed7,
+periodos,costes y negocio. Unico delta comun: monitor25000/50000/75000/100000,
+sin paciencia ni seleccion por metrica; final100000 despues del ultimo update.
+Runtimeec4855ce,contratofc9c0c53,144 pruebas locales y25 worker,GPU16updates
+con recarga exacta. Publicacion/readback,curvas y cierre/copia fisica en timers.
+Antes del primer par completo aun no hay resultado nuevo de VALIDATION.
+ETA provisional60-80min desde arranque; cuatro pares mas reporte final nativo.
+La red overlay caduco tras despachar: acceso y forwarding al warehouse
+recuperados por LAN con la misma clave SSH,health200. No hay bloqueo de este
+ensayo por permisos ni cambio cientifico causado por la reparacion de red.
+Los cortes inferiores son historia de las identidades anteriores,no procesos
+simultaneos: el temporal con ES se detuvo con5 pares preservados y espejados.
+
+Prioridad anterior: [Conv1D minima inmediata](RL_MINIMAL_TEMPORAL_2026_10_20.md).
 El propietario levanto la pausa temporal. El barrido Dense esta detenido:
 6 pares completos de[8] conservados como parciales,ningun resultado final
 de capacidad; sucesores/timers flat deshabilitados. Conv1D YA RUNNING en5090:

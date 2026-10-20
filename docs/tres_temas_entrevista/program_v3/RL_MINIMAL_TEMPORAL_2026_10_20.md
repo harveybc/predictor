@@ -1,5 +1,11 @@
 # Immediate Minimal Temporal SAC
 
+Superseded2026-10-20 by [fixed-budget execution](RL_FIXED_BUDGET_TEMPORAL_2026_10_20.md).
+The frequent-monitor run described below was stopped with five complete pairs
+retained and physically mirrored. Its scope is PARTIAL,not scientific closure.
+The new identity preserves architecture/data/business but changes monitoring
+and selects only the final100000 policy. Historical deployment facts follow.
+
 Owner2026-10-20 releases the temporal pause and prioritizes an immediate
 Conv1D contrast over the running flat capacity sweep. This is the current RL2
 task. The primary market representation must retain the time-series layout
