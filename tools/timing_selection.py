@@ -455,6 +455,9 @@ def causal_stage(X: pd.DataFrame, T: pd.DataFrame, bars: pd.DataFrame, cfg: dict
     from causal_inference_provider import fs_timing_pack as tpk  # noqa: E402
     hist = [h for h in cfg.get("history", ["px.logret_24", "px.rv_24"]) if h in X.columns]
     cols = [f for f in features if f in X.columns and f not in hist] + hist
+    ref = cfg.get("negative_control_reference", "px.logret_2")
+    if ref in X.columns and ref not in cols:            # the negative control is a control, not a candidate (v5: it
+        cols.insert(len(cols) - len(hist), ref)         # need not pass the screen; identical when it already did)
     Xs = X[cols]
     primary = names["primary"] if names else f"timing_pivot_k{k}"
     indicators = names["indicators"] if names else [f"timing_valley_k{k}", f"timing_peak_k{k}"]
