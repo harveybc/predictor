@@ -482,3 +482,98 @@ def test_admitted_source_end_to_end_applies_one_mask_to_every_target(tmp_path, h
     (tmp_path / "cfg2.json").write_text(json.dumps(cfg))
     with pytest.raises(Exception, match="ADMISSION_MISMATCH"):
         ts.run(tmp_path / "cfg2.json", tmp_path / "out2")
+
+
+# ----------------------------------------------------------------------------- v5: timing_profit family (owner 2026-10-20)
+def _write_zz_with_sigma(path: Path) -> str:
+    return _write_zz(path, extra=(
+        "import numpy as _np, pandas as _pd\n"
+        "def causal_sigma(bars, window=24, days=20):\n"
+        "    c = bars.CLOSE.to_numpy(float); r2 = _np.r_[0.0, _np.diff(c) ** 2]\n"
+        "    rv = _pd.Series(r2).rolling(window).sum().pow(0.5)\n"
+        "    return rv.rolling(days * window, min_periods=2 * window).mean().shift(1).to_numpy()\n"))
+
+
+def _profit_cfg(tmp_path, hs_root):
+    p, ap, cp, sha = _admitted_fixture(tmp_path, n_weeks=11)
+    zz = tmp_path / "zz.py"
+    zsha = _write_zz_with_sigma(zz)
+    bs = hs_root / "app/short_horizon/bar_source.py"
+    sib = {n: sha(hs_root / "app/short_horizon" / n) for n in ("clock_identity.py", "data.py")}
+    return {"schema": "predictor.timing_selection.v1", "population_id": "SYNTH_ADMITTED_PROFIT",
+            "source": {"kind": "admitted", "path": str(p), "sha256": sha(p), "admission": {"path": str(ap), "sha256": sha(ap)},
+                       "closures": {"path": str(cp), "sha256": sha(cp)}, "bar_source_module": str(bs), "bar_source_sha256": sha(bs),
+                       "sibling_sha256": sib, "load": ["2020-01-01", "2020-03-29"]},
+            "zigzag": {"module": str(zz), "sha256": zsha, "params": {"depth": 3, "deviation_pips": 36.3, "backstep": 2}, "k_bars": 2},
+            "target": {"family": "timing_profit", "horizon_bars": 24, "m_tp": 1.5, "m_sl": 1.5, "cost_sigma": 0.1},
+            "splits": {"train": ["2020-01-01", "2020-02-23"], "inner": ["2020-02-23", "2020-03-08"], "inner_a_end": "2020-03-01",
+                       "confirm": ["2020-03-08", "2020-03-29"], "folds": ["2020-01-26", "2020-02-09"]},
+            "business_calendar": {"reopen_hours": 12, "preclose_hours": 12, "eligibility_k_bars": 1},
+            "candidates": {"inventory": None, "price_pool": True, "price_pool_clock": "utc", "price_pool_closure_features": True, "fractal": None},
+            "screen": {"method": "blocked_circular_shift", "n_perm": 199, "min_shift_rows": 48, "seed": 1},
+            "pairwise_params": {"lags_hours": [0, 1, 2, 6], "min_support": 50, "dcor_max_rows": 128},
+            "filter": {"seed": 1, "k_grid": [4, 8], "recipe": {"method": "MRMR", "k": 8, "require_fdr_pass": False}},
+            "causal": {"enabled": False}, "comparison_sets": {"baseline_two": ["px.rv_24", "cal.utc_hod_sin"]}, "n_shards": 1, "seed": 1}
+
+
+def test_v5_profit_family_end_to_end_names_its_targets_and_keeps_the_shared_mask(tmp_path, hs_root):
+    ts = _cap("timing_selection")
+    cfg = _profit_cfg(tmp_path, hs_root)
+    (tmp_path / "cfg.json").write_text(json.dumps(cfg))
+    out = tmp_path / "out"
+    rep = ts.run(tmp_path / "cfg.json", out)
+    fs = json.loads((out / "eval_input/FEATURE_SETS.json").read_text())
+    assert fs["target_family"] == "timing_profit" and fs["target_column"] == "timing_profit_h24" and fs["k_bars"] == 24
+    assert fs["selection_targets"] == ["timing_profit_h24", "timing_profit_long_h24", "timing_profit_short_h24"]
+    T = pd.read_parquet(out / "eval_input/targets_all.parquet")
+    assert {"timing_profit_h24", "timing_long_order_wins_h24", "timing_best_order_pnl_sigma_h24"} <= set(T.columns)
+    y = T["timing_profit_h24"].to_numpy(float)
+    assert set(np.unique(y[np.isfinite(y)])) <= {0.0, 1.0, 2.0} and (y == 1).sum() > 0 and (y == 2).sum() > 0
+    el = pd.read_parquet(out / "ELIGIBILITY.parquet")
+    assert (~np.isfinite(y) | el["t1_eligible"].to_numpy(bool)).all()          # finite labels only on eligible origins
+    m = json.loads((out / "SELECTION_MANIFEST.json").read_text())
+    assert m["target_params"]["family"] == "timing_profit" and m["target_params"]["primary_column"] == "timing_profit_h24"
+    assert m["targets"][0]["role"] == "PRIMARY_PROFITABLE_DIRECTION" and m["test_read"] is False
+    assert rep["targets"]["finality"]["all_final_rows_unchanged"] is True
+    assert ts.gate_digest(m, "manifest_sha256") == m["manifest_sha256"]
+
+
+def test_v5_default_family_is_byte_identical_to_the_v4_driver(tmp_path, hs_root):
+    """The pivot path of the patched driver reproduces the frozen v4 driver's targets, mask and manifest identity."""
+    import importlib.util
+    ref = os.environ.get("TIMING_V4_DRIVER")
+    if not ref or not Path(ref).exists():
+        pytest.skip("TIMING_V4_DRIVER (frozen v4 timing_selection.py) not set")
+    spec = importlib.util.spec_from_file_location("tools.timing_selection_v4", ref)
+    v4 = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(v4)
+    ts = _cap("timing_selection")
+    p, ap, cp, sha = _admitted_fixture(tmp_path)
+    zz = tmp_path / "zz.py"
+    zsha = _write_zz(zz)
+    bs = hs_root / "app/short_horizon/bar_source.py"
+    sib = {n: sha(hs_root / "app/short_horizon" / n) for n in ("clock_identity.py", "data.py")}
+    cfg = {"schema": "predictor.timing_selection.v1", "population_id": "SYNTH_ADMITTED",
+           "source": {"kind": "admitted", "path": str(p), "sha256": sha(p), "admission": {"path": str(ap), "sha256": sha(ap)},
+                      "closures": {"path": str(cp), "sha256": sha(cp)}, "bar_source_module": str(bs), "bar_source_sha256": sha(bs),
+                      "sibling_sha256": sib, "load": ["2020-01-01", "2020-03-15"]},
+           "zigzag": {"module": str(zz), "sha256": zsha, "params": {"depth": 3, "deviation_pips": 36.3, "backstep": 2}, "k_bars": 2},
+           "splits": {"train": ["2020-01-01", "2020-02-09"], "inner": ["2020-02-09", "2020-02-23"], "inner_a_end": "2020-02-16",
+                      "confirm": ["2020-02-23", "2020-03-15"], "folds": ["2020-01-19", "2020-01-26"]},
+           "business_calendar": {"reopen_hours": 12, "preclose_hours": 12},
+           "candidates": {"inventory": None, "price_pool": True, "price_pool_clock": "utc", "price_pool_closure_features": True, "fractal": None},
+           "screen": {"method": "blocked_circular_shift", "n_perm": 99, "min_shift_rows": 48, "seed": 1},
+           "finality_all_targets_all_cuts": True,
+           "pairwise_params": {"lags_hours": [0, 1, 2, 6], "min_support": 50, "dcor_max_rows": 128},
+           "filter": {"seed": 1, "k_grid": [4, 8], "recipe": {"method": "MRMR", "k": 8, "require_fdr_pass": False}},
+           "causal": {"enabled": False}, "comparison_sets": {"baseline_two": ["px.rv_24", "cal.utc_hod_sin"]}, "n_shards": 1, "seed": 1}
+    (tmp_path / "cfg.json").write_text(json.dumps(cfg))
+    a, b = tmp_path / "new", tmp_path / "old"
+    ts.run(tmp_path / "cfg.json", a)
+    v4.run(tmp_path / "cfg.json", b)
+    for f in ("eval_input/targets_all.parquet", "ELIGIBILITY.parquet", "LABEL_LEDGER.parquet", "data/targets_train.parquet"):
+        assert (a / f).read_bytes() == (b / f).read_bytes(), f
+    ma, mb = (json.loads((d / "SELECTION_MANIFEST.json").read_text()) for d in (a, b))
+    assert ma["manifest_sha256"] == mb["manifest_sha256"] and ma["target_params"]["k_bars"] == 2
+    ra, rb = (json.loads((d / "REPORT.json").read_text()) for d in (a, b))
+    assert ra["identity"] == rb["identity"]

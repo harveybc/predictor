@@ -43,6 +43,7 @@ if str(ROOT) not in sys.path:
 
 from tools import fs_phase23_manifest as man  # noqa: E402
 from tools import timing_pivot_targets as tp  # noqa: E402
+from tools import timing_profit_targets as tpf  # noqa: E402
 from tools import timing_price_pool as pool  # noqa: E402
 
 SCHEMA = "predictor.timing_selection.v1"
@@ -284,6 +285,24 @@ def load_bars(cfg: dict, start=None, end=None):
 
 TARGET_LEDGER = {"timing_pivot_k{k}": "t1", "timing_valley_k{k}": "t1", "timing_peak_k{k}": "t1",
                  "timing_action_confirmed": "t2", "timing_expert_leg_remaining_pips": "t3"}
+FAMILIES = {"timing_pivot": tp, "timing_profit": tpf}
+
+
+def family_of(cfg: dict):
+    """(module, k, names) of the configured target family; the default ``timing_pivot`` reproduces v4 exactly.
+    ``timing_profit`` (owner decision 2026-10-20) takes k = target.horizon_bars and its own column names."""
+    fam = (cfg.get("target") or {}).get("family", "timing_pivot")
+    if fam not in FAMILIES:
+        raise DriverError(f"TARGET_FAMILY_UNKNOWN: {fam}")
+    if fam == "timing_pivot":
+        k = int(cfg["zigzag"]["k_bars"])
+        names = {"primary": f"timing_pivot_k{k}", "indicators": [f"timing_valley_k{k}", f"timing_peak_k{k}"],
+                 "comparators": ["timing_action_confirmed", "timing_expert_leg_remaining_pips"], "ledger": TARGET_LEDGER}
+    else:
+        k = int(cfg["target"].get("horizon_bars", tpf.DEFAULT_SPEC["horizon_bars"]))
+        names = {"primary": tpf.primary(k), "indicators": tpf.indicators(k), "comparators": tpf.comparators(k),
+                 "ledger": tpf.TARGET_LEDGER}
+    return FAMILIES[fam], k, dict(names, family=fam, spec=(tpf.spec_of(cfg.get("target")) if fam == "timing_profit" else None))
 
 
 # ----------------------------------------------------------------------------- screens and reports
@@ -423,7 +442,7 @@ def redundancy_report(X: pd.DataFrame, clusters: list[dict], selected: list[str]
 
 
 # ----------------------------------------------------------------------------- causal stage
-def causal_stage(X: pd.DataFrame, T: pd.DataFrame, bars: pd.DataFrame, cfg: dict, k: int, features: list[str], *,
+def causal_stage(X: pd.DataFrame, T: pd.DataFrame, bars: pd.DataFrame, cfg: dict, k: int, features: list[str], *, names: dict | None = None,
                  mixed: bool) -> dict:
     """Owned by causal-inference (``fs_timing_pack``, pack EURUSD_TIMING).  All results are labelled
     CONDITIONAL_PREDICTIVE_ASSOCIATION; NOT_IDENTIFIED / NO_LINK never rejects a feature.
@@ -437,11 +456,12 @@ def causal_stage(X: pd.DataFrame, T: pd.DataFrame, bars: pd.DataFrame, cfg: dict
     hist = [h for h in cfg.get("history", ["px.logret_24", "px.rv_24"]) if h in X.columns]
     cols = [f for f in features if f in X.columns and f not in hist] + hist
     Xs = X[cols]
-    primary = f"timing_pivot_k{k}"
+    primary = names["primary"] if names else f"timing_pivot_k{k}"
+    indicators = names["indicators"] if names else [f"timing_valley_k{k}", f"timing_peak_k{k}"]
     out = {"pack": tpk.PACK_ID, "provider_sha256": tp.sha256_file(Path(tpk.__file__)), "history": hist,
            "evidence_label": tpk.EVIDENCE_LABEL, "lag0_mapping": tpk.LAG0_MAPPING, "interpreter": sys.version.split()[0],
            "hac_lag_screen": {}, "matched_control_contrast": {}, "mixed_ci": None}
-    for t in (f"timing_valley_k{k}", f"timing_peak_k{k}"):
+    for t in indicators:
         out["hac_lag_screen"][t] = tpk.hac_lag_screen(Xs, T[t].to_numpy(float), k=k, history=hist, q=float(cfg.get("q", 0.1)))
     bars_ei = tpk.bars_table(bars.index, bars["CLOSE"].to_numpy(float), bars["HIGH"].to_numpy(float), bars["LOW"].to_numpy(float))
     piv = T[primary].to_numpy(float)
@@ -590,12 +610,13 @@ def run(config_path, out, reuse_from=None) -> dict:
     zz = tp.load_zigzag_module(cfg["zigzag"]["module"], cfg["zigzag"]["sha256"])
     zp = cfg["zigzag"]["params"]
     params = zz.Params(depth=int(zp["depth"]), deviation_pips=float(zp["deviation_pips"]), backstep=int(zp["backstep"]))
-    k = int(cfg["zigzag"]["k_bars"])
+    tp_, k, names = family_of(cfg)
     conf_def = cfg["zigzag"].get("confirmation", "confirmation_bars")
     sp = cfg["splits"]
     cand = cfg["candidates"]
+    fam_sem = tp_.SEMANTICS if names["family"] == "timing_pivot" else f"{tp_.SEMANTICS}:{_digest(names['spec'])}"
     leaves = {"lake": _digest({k_: v for k_, v in src_ident.items() if k_ not in ("file", "closures_file")}), "zigzag_module": cfg["zigzag"]["sha256"], "expert_params": _digest(zp), "k_bars": str(k),
-              "target_semantics": tp.SEMANTICS if conf_def == "confirmation_bars" else f"{tp.SEMANTICS}+{conf_def}", "splits": _digest({"inner_a_end": INNER_A_END, **sp}),
+              "target_semantics": (fam_sem if conf_def == "confirmation_bars" else f"{fam_sem}+{conf_def}"), "splits": _digest({"inner_a_end": INNER_A_END, **sp}),
               "inventory_generator": (cand.get("inventory") or {}).get("generator_sha256", "none"),
               "inventory_bundle": (cand.get("inventory") or {}).get("bundle_sha256", "none"),
               "fractal_store": (cand.get("fractal") or {}).get("manifest_sha256", "none"),
@@ -608,16 +629,24 @@ def run(config_path, out, reuse_from=None) -> dict:
     plan = plan_invalidation(prev, dag)
     # ---- targets with the support ledger (target-dependent)
     cuts = _cuts(sp)
-    arrays = tp.label_arrays(bars.HIGH.to_numpy(float), bars.LOW.to_numpy(float), bars.CLOSE.to_numpy(float), zz, params, k_bars=k,
-                             confirmation=conf_def)
-    T, ledger = tp.build_targets(bars, zz, params, k_bars=k, cuts=cuts, arrays=arrays, with_ledger=True, confirmation=conf_def)
+    if names["family"] == "timing_pivot":
+        arrays = tp.label_arrays(bars.HIGH.to_numpy(float), bars.LOW.to_numpy(float), bars.CLOSE.to_numpy(float), zz, params, k_bars=k,
+                                 confirmation=conf_def)
+        T, ledger = tp.build_targets(bars, zz, params, k_bars=k, cuts=cuts, arrays=arrays, with_ledger=True, confirmation=conf_def)
+    else:
+        arrays = tpf.arrays_from_bars(bars, zz, closures, k_bars=k, spec=names["spec"])
+        T, ledger = tpf.build_targets(bars, zz, params, k_bars=k, cuts=cuts, arrays=arrays, with_ledger=True)
     T.index = bars.index
     ia_end = sp.get("inner_a_end", INNER_A_END)
     periods = {"TRAIN_2020_2022": sp["train"], "INNER_A_2023H1": [sp["inner"][0], ia_end],
                "INNER_B_2023H2": [ia_end, sp["inner"][1]], "REOBSERVED_2024": sp["confirm"]}
-    status = tp.status_table(ledger, periods)
+    status = tp_.status_table(ledger, periods)
     cut_pos = tp._cut_positions(bars.index, cuts)
-    if cfg.get("finality_all_targets_all_cuts", conf_def != "confirmation_bars"):
+    if names["family"] == "timing_profit":
+        fin_all = tpf.finality_check(bars, zz, params, k_bars=k, cut_positions=cut_pos, full=arrays, closures=closures, spec=names["spec"])
+        finality = {"t1_t2_t3_all_cuts": fin_all, "cuts_checked": len(cut_pos), "targets_checked": ["t1", "t2", "t3"],
+                    "all_final_rows_unchanged": bool(fin_all["all_final_rows_unchanged"])}
+    elif cfg.get("finality_all_targets_all_cuts", conf_def != "confirmation_bars"):
         fin_all = tp.finality_check(bars, zz, params, k_bars=k, cut_positions=cut_pos, full=arrays, check_t2=True, confirmation=conf_def)
         finality = {"t1_t2_t3_all_cuts": fin_all, "cuts_checked": len(cut_pos), "targets_checked": ["t1", "t2", "t3"],
                     "all_final_rows_unchanged": bool(fin_all["all_final_rows_unchanged"])}
@@ -634,12 +663,12 @@ def run(config_path, out, reuse_from=None) -> dict:
     if closures is not None:
         from tools import timing_eligibility as EL
         bc = cfg.get("business_calendar", {})
-        elig = EL.eligibility(bars.index, closures, k_bars=k, reopen_hours=float(bc.get("reopen_hours", 12)),
+        elig = EL.eligibility(bars.index, closures, k_bars=int(bc.get("eligibility_k_bars", k)), reopen_hours=float(bc.get("reopen_hours", 12)),
                               preclose_hours=float(bc.get("preclose_hours", 12)),
                               label_status={"t1": ledger["t1_status"].to_numpy(), "t2": ledger["t2_status"].to_numpy(),
                                             "t3": ledger["t3_status"].to_numpy()})
         for col in list(T.columns):
-            key = next((v for tk, v in TARGET_LEDGER.items() if tk.format(k=k) == col), None)
+            key = next((v for tk, v in names["ledger"].items() if tk.format(k=k) == col), None)
             if key:
                 T.loc[~elig[f"{key}_eligible"].to_numpy(), col] = np.nan
         elig_counts = {t_: EL.counts(elig, periods, f"{t_}_reason") for t_ in ("t1", "t2", "t3")}
@@ -694,7 +723,7 @@ def run(config_path, out, reuse_from=None) -> dict:
     if not prepared.exists():
         fx.to_parquet(data / "features_train.parquet", index=False)
         tt.to_parquet(data / "targets_train.parquet", index=False)
-    targets = tp.manifest_targets(k)
+    targets = tp_.manifest_targets(k)
     for m in meta:
         m["train_coverage"] = float(Xt[m["feature_id"]].notna().mean())
     manifest = man.build_manifest(
@@ -709,7 +738,8 @@ def run(config_path, out, reuse_from=None) -> dict:
         folds=folds, causal_supported=[], contract_source="timing_pivot targets (timing_targets.v2) from the sealed ZigZag expert (labels only)",
         data_root=data)
     man.write_manifest(manifest, out / "MANIFEST.json")
-    targets_doc = tp.targets_document(T, params=params, k_bars=k, lake_sha256=lake["sha256"], zigzag_sha256=cfg["zigzag"]["sha256"],
+    targets_doc = tp_.targets_document(T, params=params, k_bars=k, lake_sha256=lake["sha256"], zigzag_sha256=cfg["zigzag"]["sha256"],
+                                      **({"spec": names["spec"]} if names["family"] == "timing_profit" else {}),
                                       confirmation=conf_def)
     targets_doc.update(status_by_period=status, finality=finality, ledger_sha256=man.sha256_file(out / "LABEL_LEDGER.parquet"),
                        cuts=cuts, roles={t["target_id"]: t["role"] for t in targets}, source=src_ident)
@@ -760,7 +790,7 @@ def run(config_path, out, reuse_from=None) -> dict:
     inventory = inventory_record(meta, Xt, notes, alias_groups)
     _write_json(out / "INVENTORY.json", inventory)
     # ---- timing-specific stages (TRAIN only)
-    primary = f"timing_pivot_k{k}"
+    primary = names["primary"]
     q = float(cfg.get("fdr_q", 0.1))
     screens = {t["target_id"]: univariate_screen(Xt, Tt[t["column"]].to_numpy(float), head=t["head"], q=q) for t in targets}
     sc = cfg.get("screen", {"method": "kruskal_iid"})
@@ -780,12 +810,12 @@ def run(config_path, out, reuse_from=None) -> dict:
                     rankings[r["feature_id"]] = float((r.get("terms") or {}).get("relevance") or r.get("score") or 0.0)
     screen_pass = {f for f, r in screen.items() if r["pass_fdr"]}
     rec_cfg = dict(cfg["filter"].get("recipe", {}))
-    rec_cfg.setdefault("targets", [primary, f"timing_valley_k{k}", f"timing_peak_k{k}"])
+    rec_cfg.setdefault("targets", [primary] + list(names["indicators"]))
     recipe = apply_recipe(candidates, clusters, rankings, rec_cfg, screen_pass)
     selected = recipe["selected"]
-    comparators = comparator_subsets(candidates, recipe["method"], recipe["k"], ["timing_action_confirmed", "timing_expert_leg_remaining_pips"])
+    comparators = comparator_subsets(candidates, recipe["method"], recipe["k"], list(names["comparators"]))
     redundancy = redundancy_report(Xt, clusters, selected)
-    causal = causal_stage(Xt, Tt, bars.loc[train], cfg["causal"], k, sorted(screen_pass | set(selected)), mixed=False) \
+    causal = causal_stage(Xt, Tt, bars.loc[train], cfg["causal"], k, sorted(screen_pass | set(selected)), names=names, mixed=False) \
         if cfg.get("causal", {}).get("enabled") else {"state": "NOT_ENABLED"}
     # ---- the candidate subset is FROZEN here, before any 2023 read by the evaluator
     frozen_subset = {"selected": selected, "recipe": recipe, "frozen_at": pd.Timestamp.utcnow().isoformat(), "reads_so_far": ["TRAIN_2020_2022"]}
@@ -810,6 +840,9 @@ def run(config_path, out, reuse_from=None) -> dict:
                                                              "file_sha256": man.sha256_file(ev / "ELIGIBILITY.parquet")} if elig is not None else None),
                                             "sets": sets, "features_sha256": man.sha256_file(ev / "features_all.parquet"),
                                             "targets_sha256": man.sha256_file(ev / "targets_all.parquet"), "k_bars": k,
+                                            **({"target_family": names["family"], "target_column": names["primary"],
+                                                "selection_targets": [primary] + list(names["indicators"]), "target_spec": names["spec"]}
+                                               if names["family"] != "timing_pivot" else {}),
                                             "splits": sp, "inner_a_end": INNER_A_END, "subset_sha256": frozen_subset["subset_sha256"],
                                             "expert": {"params": zp, "module_sha256": cfg["zigzag"]["sha256"], "confirmation": conf_def,
                                                        "label": cfg["zigzag"].get("label")},
@@ -894,6 +927,7 @@ def perturbation_suite(bars: pd.DataFrame, gens: dict, cfg: dict) -> dict:
 
 
 def selection_manifest(cfg, manifest, targets, feat_cols, selected, recipe, within_day, dag, frozen_subset) -> dict:
+    tp_, k, names = family_of(cfg)
     features = []
     for f in feat_cols:
         if f in selected:
@@ -935,7 +969,9 @@ def selection_manifest(cfg, manifest, targets, feat_cols, selected, recipe, with
                                            "state": "PENDING"},
            "targets": [{"name": t["target_id"], "horizons": [int(t["horizon_hours"])], "family": t["family"], "head": t["head"],
                         "role": t["role"], "horizon_unit": "observed market bars"} for t in targets],
-           "target_params": {"zigzag": cfg["zigzag"]["params"], "k_bars": cfg["zigzag"]["k_bars"], "semantics": tp.SEMANTICS,
+           "target_params": {"zigzag": cfg["zigzag"]["params"], "k_bars": k, "semantics": tp_.SEMANTICS,
+                             **({"family": names["family"], "primary_column": names["primary"], "spec": names["spec"]}
+                                if names["family"] != "timing_pivot" else {}),
                              "confirmation": cfg["zigzag"].get("confirmation", "confirmation_bars"), "expert_label": cfg["zigzag"].get("label"),
                              "expert_kind": "HINDSIGHT_NON_CAUSAL_EXPERT"},
            "split": {**cfg["splits"], "inner_a_end": INNER_A_END,
@@ -958,7 +994,7 @@ def causal_only(config_path, out) -> dict:
     prep = json.loads((out / "PREPARED.json").read_text())
     if prep["config_sha256"] != man.digest(cfg):
         raise DriverError("CONFIG_CHANGED: the causal stage must use the run's config")
-    k = int(cfg["zigzag"]["k_bars"])
+    _, k, names = family_of(cfg)
     fx = pd.read_parquet(out / "data" / "features_train.parquet")
     tt = pd.read_parquet(out / "data" / "targets_train.parquet")
     bars_all, _, _ = load_bars(cfg)
@@ -967,9 +1003,9 @@ def causal_only(config_path, out) -> dict:
         raise DriverError("TRAIN_GRID_MISMATCH")
     Xt, Tt = fx.drop(columns=["row_id", "timestamp"]), tt.drop(columns=["row_id", "timestamp"])
     report = json.loads((out / "REPORT.json").read_text())
-    gate = (report.get("screen_gate") or {}).get("results") or report["univariate_screen"][f"timing_pivot_k{k}"]
+    gate = (report.get("screen_gate") or {}).get("results") or report["univariate_screen"][names["primary"]]
     screen_pass = {f for f, r in gate.items() if r["pass_fdr"]}
-    causal = causal_stage(Xt, Tt, bars, cfg["causal"], k, sorted(screen_pass | set(report["recipe"]["selected"])), mixed=True)
+    causal = causal_stage(Xt, Tt, bars, cfg["causal"], k, sorted(screen_pass | set(report["recipe"]["selected"])), names=names, mixed=True)
     report["causal"] = causal
     _write_json(out / "CAUSAL_STAGE.json", causal)
     _write_json(out / "REPORT.json", report)
@@ -1108,7 +1144,7 @@ def tables(out) -> str:
     sel = json.loads((out / "SELECTION_MANIFEST.json").read_text())
     inv = json.loads((out / "INVENTORY.json").read_text())
     k = int(sel["target_params"]["k_bars"])
-    primary = f"timing_pivot_k{k}"
+    primary = sel["target_params"].get("primary_column") or f"timing_pivot_k{k}"
     tg = rep["targets"]
     parts = [f"# {SELECTION_NAME} tables ({sel['dataset_id']}, identity {rep['identity']})\n",
              f"Status `{sel['status']}`; manifest sha256 `{sel['manifest_sha256']}`; TRAIN rows {rep['train_rows']}; features {rep['features']} "
