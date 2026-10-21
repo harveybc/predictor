@@ -12,6 +12,11 @@ no se usa como promesa ni como condicion que bloquee el afinamiento actual.
 
 ## Orden operativo
 
+Adicion posterior del propietario: tras cerrar el primer lote, intercalar la
+[seleccion incremental de inputs](RL_INCREMENTAL_FEATURE_SUBSETS_2026_10_21.md)
+antes del punto2. Su tabla incluye las15 candidatas con prioridad provisional,
+grupos ciclicos y rescate de interacciones. No modifica el lote de ventana vivo.
+
 1. Ventanas9/11/15/17, stride2, frente al control13 autenticado. Si hay mejora
    bajo la regla congelada, probar los dos vecinos enteros del ganador. Luego
    confirmar finalista/control con semillas comunes17/29. Hasta10 fits nuevos,

@@ -9,6 +9,11 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 NUEVA PRIORIDAD: [afinamiento de ventana y componentes](RL_FINE_WINDOW_AND_COMPONENTS_2026_10_21.md).
 Objetivo: elegir la mejor base estatica para posterior reajuste periodico;
 profit positivo NO es requisito de esta etapa. Documentar cada resultado.
+NUEVA PRUEBA PLANIFICADA, no lanzada: [seleccion incremental de entradas](RL_INCREMENTAL_FEATURE_SUBSETS_2026_10_21.md)
+despues del grid fino y antes de extractores/componentes. Prioridad provisional
+de las15 variables, base pequena, adiciones/grupos, rescate y confirmacion.
+Calendario actual:hod_sin/hod_cos/dow_cos; pareja dow_sin como contraste separado.
+Revisar transformaciones por campo y procesamiento diferenciado; cola viva intacta.
 YA RUNNING ventana9/stride2 en5090:1000/100000 verificados en12.7458s;
 runtime6916e49a,spec9e13d797,contratoa7931e4e. Ventanas11/15/17 y vecinos/
 confirmaciones condicionales automaticos.170 regresiones locales,4 integraciones

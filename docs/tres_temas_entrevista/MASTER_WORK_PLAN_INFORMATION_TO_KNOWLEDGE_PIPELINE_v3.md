@@ -9,6 +9,12 @@ como evidencia historica ni gobiernan ningun despacho.
 ## 1. Autoridad vigente
 
 PRIORIDAD2026-10-21: [grid fino y optimizacion por componente](program_v3/RL_FINE_WINDOW_AND_COMPONENTS_2026_10_21.md).
+ADICION APROBADA: [subconjuntos incrementales de entradas](program_v3/RL_INCREMENTAL_FEATURE_SUBSETS_2026_10_21.md).
+Tras el grid activo, antes de ampliar extractores/componentes: base pequena,
+adiciones por importancia provisional, rescate acotado de interacciones y
+confirmacion frente a15. Revisar pares seno/coseno, relojes y transformaciones
+por variable; procesamiento/extraccion diferenciados como hipotesis posterior.
+No cambia inputs ni identidad de la cola vigente; reajuste sigue AL FINAL.
 Primero ventanas9/11/15/17, vecinos enteros condicionales y confirmacion con
 semillas comunes, stride2. Despues Dense por caracteristica frente a Conv1D
 con capacidad comparable, ramas/fusionador/nucleo/heads por separado y revision
