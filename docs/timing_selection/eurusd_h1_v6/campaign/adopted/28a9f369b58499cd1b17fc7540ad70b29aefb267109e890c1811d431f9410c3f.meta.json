@@ -1,0 +1,24 @@
+{
+ "code_sha256": "40846ccbc6e83afb5598f0a00e187660e47b0ee96d05828cc8eac073a55fe4b9",
+ "finished_at": 1792543120.2876291,
+ "host_id": "local",
+ "identity": "timing-selection:c483ca79a60c6e14",
+ "method": "pairwise_v1",
+ "pair_count": 2848,
+ "params_sha256": "a61a40685a7071ca592dc38b3132459ad6260f4607a1bb5d315984097a1a5ecf",
+ "peak_rss_bytes": 1244798976,
+ "plan_sha256": "9c5c6d20024fcdf8d3ea4b6fc29acd58ba6eb24162dfc0afcbb6b86da225eab8",
+ "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_ADMITTED",
+ "row_counts": {
+  "feature_pair_gate": 2848,
+  "feature_pair_metrics": 119616,
+  "feature_pair_stability": 39872
+ },
+ "rows_sha256": "a89be83fd3dc8b94905845b2a7338b7be88d45ee4161a16c35c8a6d43098c438",
+ "schema": "fs_phase23.pairwise_terminal.v1",
+ "shard_index": 3,
+ "started_at": 1792543031.7933416,
+ "terminal_sha256": "146364ed87d8cfd70bee21918f50a5631da8ec7bbf45fce21defb16793a951de",
+ "unit_id": "28a9f369b58499cd1b17fc7540ad70b29aefb267109e890c1811d431f9410c3f",
+ "wall_seconds": 88.49428749084473
+}

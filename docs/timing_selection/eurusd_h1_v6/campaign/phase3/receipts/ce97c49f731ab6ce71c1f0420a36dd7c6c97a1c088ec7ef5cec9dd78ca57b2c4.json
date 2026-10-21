@@ -1,0 +1,44 @@
+{
+ "tables": {
+  "feature_filter_rankings": {
+   "backend": "sqlite3",
+   "batch_rows": 2000,
+   "batches": [
+    {
+     "duplicates_ignored": 0,
+     "inserted": 1321,
+     "receipt_sha256": "7e60f067e79ddc046ae620c55d770eb8b5fd667f7928d238da8c8fb51cf7c9cc",
+     "row_count": 1321,
+     "rows_sha256": "1c445b1971edfe91e4268fe3c0d90d073bf4b00ec4fd4b600d1c06676690228c"
+    }
+   ],
+   "duplicates_ignored": 0,
+   "inserted": 1321,
+   "readback_count": 1321,
+   "row_count": 1321,
+   "rows_sha256": "1c445b1971edfe91e4268fe3c0d90d073bf4b00ec4fd4b600d1c06676690228c",
+   "table": "feature_filter_rankings"
+  },
+  "feature_filter_subsets": {
+   "backend": "sqlite3",
+   "batch_rows": 2000,
+   "batches": [
+    {
+     "duplicates_ignored": 0,
+     "inserted": 49,
+     "receipt_sha256": "449b3b8b7764a9bb6350f8d630e0e2ce6c7739e1e4d1fbc265138cc976452f45",
+     "row_count": 49,
+     "rows_sha256": "e7774bc7d9f196863b10708375e3e9b6ab9a5af9c49ec2ca46a3a56a4c25b64c"
+    }
+   ],
+   "duplicates_ignored": 0,
+   "inserted": 49,
+   "readback_count": 49,
+   "row_count": 49,
+   "rows_sha256": "e7774bc7d9f196863b10708375e3e9b6ab9a5af9c49ec2ca46a3a56a4c25b64c",
+   "table": "feature_filter_subsets"
+  }
+ },
+ "target_id": "timing_profit_h72",
+ "unit_id": "ce97c49f731ab6ce71c1f0420a36dd7c6c97a1c088ec7ef5cec9dd78ca57b2c4"
+}

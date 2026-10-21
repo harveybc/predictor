@@ -1,0 +1,184 @@
+{
+ "identities": {
+  "causal": "308b1e8b7b55daaa1445c56fcea44fd837b9b2f5f6d8d1dc4f617915b210d9a2",
+  "eval_inputs": "a1c740f10784e04b485e68c0f7ba5f81208f819d8973e41b27442fd499884e18",
+  "evaluator": "fdb9b8685af0fd838b836de5cbc7863682884bf00d369bd504f002dc19122011",
+  "finality_check": "138670c80e32c0800395ee6bda02914286bfba88ee1c463479b1d099ad44f0f9",
+  "fold_stability": "5bc50b8adcc6111002dd6363cb1a8525769222065dfbdc0ba5a267ac5087d491",
+  "perturbation_checks": "917b9893072d6f76d48a0414f9008e8563cb1b07f4773721f9fae8c1d7f61f6f",
+  "phase2_pairwise": "4277b2482685e6229af6f544271ba0b6425ae73a06b08e75ccfd90eafa0ef02f",
+  "phase3_filters": "5ff2ae7bdf92409227dd198180fff263243fc05dea8efa99e59a3f47d1a296a1",
+  "pool_features": "bb19769f5cd4e94d2735cede1784e702718bdb2f4d773ecfbc4e7d51d22df8c8",
+  "population_manifest": "e93f0f8bfeca73303e3a16aacdf50f6553d27db600f6461f1c8c4d971eb4f773",
+  "quality_profiles": "917b9893072d6f76d48a0414f9008e8563cb1b07f4773721f9fae8c1d7f61f6f",
+  "recipe": "67882a0aad46f6a59d5a8c55f103e82eba2a87aeb25d6bf90e316cef4ff94716",
+  "selection_manifest": "d13544a545b21a3fd446468c25bba6b9b254ce3a9c5f7b60dc7cd839681c462d",
+  "targets_ledger": "3f2ebc2a6fc53ed6ea99af183caa307157e0f07c25efa017b512e207fb5a012d",
+  "univariate_screen": "9657b45175b21c050ebb2d02a3e89c8df997f3343ccd3be61bec5a2b93da41ca",
+  "within_day_variance": "14224854f0fc29739c2d031fdeae3275a59a60b7f7ce52f0204bbba65facc039"
+ },
+ "leaves": {
+  "adapter_revision": "heuristic-strategy app/short_horizon/{execution,zigzag,zigzag_opt,bar_source}.py (abbfaa6 + ce9a3dc merged), executable b+1, calendar from admitted closures",
+  "candidates_config": "f273df1c3db8c743b8d40a23eaefd3146ee23d8d51304bb55593994c69b87ec2",
+  "causal_config": "addbb2e5e16fa083b717eed885727440e527922e9fe1511ada3132ab15f75061",
+  "comparison_sets": "ceb19827e133385f4d9e7c3babbe37c4df7080b393cdea1400dc872ddc278025",
+  "expert_params": "8470b0d94b764027a09e35baf93e326611017203835ee1d9bb3d9e3ffff53b05",
+  "filter_params": "088ad28ca4028ecb924083429375e9d608caea25ccaee4918c733fbdb5afdc19",
+  "fractal_store": "none",
+  "inventory_bundle": "f7bf19f8b229099f80b8b9baf3a1cd2543d1538ef4fa16d2d4e282aa2a23c441",
+  "inventory_generator": "17a33c4470a3fc4270e60f347240dae2d40fde023a27218961e0a4f3bba68067",
+  "k_bars": "72",
+  "lake": "933f26a3e861fd50f5d78e4c2bfbebfce0c1a7d49aa1068c1489d5066c9504cd",
+  "pairwise_params": "60c13518c45fee962cb85843b4b7ff8f409a07006ad6ea07f0324944d31eaf23",
+  "pool_code": "2b04d331844484729a84739d06625eb6e1205539ca5fbd29a6e3b7f2a41ab3d6",
+  "recipe_config": "9da474ea65dea0f636fb8f0e2c5f82a9910a5b418cfe8e0dc407e78f927ee334",
+  "splits": "ad8c154f743bbe23d4a4d75eabfb190e976b8640388645e2aa87923463519eaf",
+  "target_semantics": "timing_targets.profit.v1:7fac12b4e59da097ccaa300e3394bf8d6a4c7b60be634f71980cb0b66ce45ec1+confirmation_bars_fast",
+  "zigzag_module": "fc24c6f22aa4f7696548d1117b1d2cfad42a43eccd116f0bbcffe6a71df1624a"
+ },
+ "nodes": {
+  "causal": {
+   "inputs": [
+    "pool_features",
+    "targets_ledger",
+    "causal_config",
+    "recipe"
+   ],
+   "target_dependent": true
+  },
+  "eval_inputs": {
+   "inputs": [
+    "pool_features",
+    "targets_ledger",
+    "recipe",
+    "comparison_sets"
+   ],
+   "target_dependent": true
+  },
+  "evaluator": {
+   "inputs": [
+    "eval_inputs",
+    "adapter_revision"
+   ],
+   "target_dependent": true
+  },
+  "finality_check": {
+   "inputs": [
+    "targets_ledger"
+   ],
+   "target_dependent": true
+  },
+  "fold_stability": {
+   "inputs": [
+    "univariate_screen"
+   ],
+   "target_dependent": true
+  },
+  "perturbation_checks": {
+   "inputs": [
+    "pool_features"
+   ],
+   "target_dependent": false
+  },
+  "phase2_pairwise": {
+   "inputs": [
+    "population_manifest",
+    "pairwise_params"
+   ],
+   "note": "pair metrics are target-independent in CONTENT, but the pinned engine binds its run identity to the population manifest (which includes targets) and refuses foreign identities, so they are recomputed",
+   "target_dependent": true
+  },
+  "phase3_filters": {
+   "inputs": [
+    "phase2_pairwise",
+    "filter_params"
+   ],
+   "target_dependent": true
+  },
+  "pool_features": {
+   "inputs": [
+    "lake",
+    "inventory_generator",
+    "inventory_bundle",
+    "fractal_store",
+    "pool_code",
+    "candidates_config"
+   ],
+   "target_dependent": false
+  },
+  "population_manifest": {
+   "inputs": [
+    "pool_features",
+    "targets_ledger",
+    "splits"
+   ],
+   "target_dependent": true
+  },
+  "quality_profiles": {
+   "inputs": [
+    "pool_features"
+   ],
+   "target_dependent": false
+  },
+  "recipe": {
+   "inputs": [
+    "phase3_filters",
+    "univariate_screen",
+    "phase2_pairwise",
+    "recipe_config"
+   ],
+   "target_dependent": true
+  },
+  "selection_manifest": {
+   "inputs": [
+    "recipe",
+    "evaluator"
+   ],
+   "target_dependent": true
+  },
+  "targets_ledger": {
+   "inputs": [
+    "lake",
+    "zigzag_module",
+    "expert_params",
+    "k_bars",
+    "target_semantics",
+    "splits"
+   ],
+   "target_dependent": true
+  },
+  "univariate_screen": {
+   "inputs": [
+    "pool_features",
+    "targets_ledger"
+   ],
+   "target_dependent": true
+  },
+  "within_day_variance": {
+   "inputs": [
+    "pool_features",
+    "splits"
+   ],
+   "target_dependent": false
+  }
+ },
+ "plan": {
+  "causal": "RECOMPUTE",
+  "eval_inputs": "RECOMPUTE",
+  "evaluator": "RECOMPUTE",
+  "finality_check": "REUSE_ELIGIBLE",
+  "fold_stability": "RECOMPUTE",
+  "perturbation_checks": "RECOMPUTE",
+  "phase2_pairwise": "RECOMPUTE",
+  "phase3_filters": "RECOMPUTE",
+  "pool_features": "RECOMPUTE",
+  "population_manifest": "RECOMPUTE",
+  "quality_profiles": "RECOMPUTE",
+  "recipe": "RECOMPUTE",
+  "selection_manifest": "RECOMPUTE",
+  "targets_ledger": "REUSE_ELIGIBLE",
+  "univariate_screen": "RECOMPUTE",
+  "within_day_variance": "RECOMPUTE"
+ },
+ "reused": []
+}

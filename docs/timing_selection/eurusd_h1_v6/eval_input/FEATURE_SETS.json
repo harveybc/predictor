@@ -1,0 +1,109 @@
+{
+ "eligibility": {
+  "column": "t1_eligible",
+  "digest": "674b30225a687617e2c50add8ea8daa83276a94dc5c40b64430646da1c98c86e",
+  "file": "ELIGIBILITY.parquet",
+  "file_sha256": "9f451ab2400932e65e2ee37bd10e102fe883a28d7aaa7f4e87fa2721d9b71669"
+ },
+ "expert": {
+  "confirmation": "confirmation_bars_fast",
+  "label": "ZigZag v2 (heuristic-strategy abbfaa6, NSGA-II, cap 4/day, FINAL.json A4_wide; demonstrations v2 38125b0b)",
+  "module_sha256": "fc24c6f22aa4f7696548d1117b1d2cfad42a43eccd116f0bbcffe6a71df1624a",
+  "params": {
+   "backstep": 0,
+   "depth": 3,
+   "deviation_pips": 40.7
+  }
+ },
+ "features_sha256": "ac00298dee6b8593d85c6f6b6a99fea23a206dd0b246493280863366dc6e5fed",
+ "fractal_manifest_sha256": null,
+ "inner_a_end": "2023-07-01",
+ "k_bars": 72,
+ "schema": "timing_eval_input.v2",
+ "selection_targets": [
+  "timing_profit_h72",
+  "timing_profit_long_h72",
+  "timing_profit_short_h72"
+ ],
+ "sets": {
+  "admitted_core_15_553fc047": [
+   "HIGH",
+   "RAW_LOG_RANGE",
+   "RAW_CLOSE_LOG_RETURN",
+   "RAW_ELAPSED_HOURS",
+   "ATR",
+   "RSI",
+   "MACD_Histogram",
+   "ADX",
+   "DI_minus",
+   "Stochastic_D",
+   "WilliamsR",
+   "rolling_std_24",
+   "hod_sin",
+   "hod_cos",
+   "dow_cos"
+  ],
+  "timing_selected": [
+   "px.hours_since_session_open"
+  ],
+  "v3_six_on_admitted_clock": [
+   "RAW_BAR_LOG_RETURN",
+   "RAW_ELAPSED_HOURS",
+   "cal.london_hod_sin",
+   "cal.london_hod_cos",
+   "px.atr_ratio_14_120",
+   "px.close_loc_2",
+   "variogram_hurst_w96"
+  ],
+  "v5_selected_calendar_one": [
+   "px.hours_since_session_open"
+  ]
+ },
+ "source": {
+  "admission_sha256": "ee426b52b4c6ad77c9b48cfce2681c3197903222ed7ff890d8b30d2ffbb74b52",
+  "availability": "UTC_BAR_START_PLUS_ONE_HOUR",
+  "bar_convention": "UTC_BAR_START",
+  "bar_source_sha256": "fab22a4db4ef656f97dcab5f7ba9f8846910ef2dadfa2c9f0515d6de95555a2e",
+  "closures_file": "CLOSURE_INTERVALS.json",
+  "closures_sha256": "71078e8f9a95c4438405a9fa3dafdffdc0f44183bbf27ba828168c18065e8350",
+  "file": "eurusd.parquet",
+  "kind": "admitted",
+  "sha256": "c80847bb149c7af1ad50e42301b5cd70608e6c37702ce8cc6a7b9eb70f36d2ca"
+ },
+ "splits": {
+  "confirm": [
+   "2024-01-01",
+   "2025-01-01"
+  ],
+  "folds": [
+   "2021-01-01",
+   "2022-01-01"
+  ],
+  "inner": [
+   "2023-01-01",
+   "2024-01-01"
+  ],
+  "inner_a_end": "2023-07-01",
+  "train": [
+   "2020-01-01",
+   "2023-01-01"
+  ]
+ },
+ "strategy": {
+  "executable": true,
+  "k_tp": 2.0,
+  "max_orders_per_day": 4,
+  "note": "detector reversal rule TP 2 sigma / SL 2 sigma kept from v1/v2 to isolate the expert change"
+ },
+ "subset_sha256": "f84164aec45b5f0fae91ba46132a48b6167e880d8991e519de89c038a5f1479f",
+ "target_column": "timing_profit_h72",
+ "target_family": "timing_profit",
+ "target_spec": {
+  "cost_sigma": 0.1,
+  "horizon_bars": 72,
+  "m_sl": 2.0,
+  "m_tp": 2.0,
+  "preclose_hours": 12.0
+ },
+ "targets_sha256": "e0f2189dda842f39114cccb955ecedd080701a15ff240074e73441efe1be43bb"
+}

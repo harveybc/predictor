@@ -1,0 +1,1795 @@
+{
+ "shards": {
+  "admitted_core_15_553fc047__m1_dmo_class": {
+   "set": "admitted_core_15_553fc047",
+   "arm": "m1_dmo_class",
+   "cell": {
+    "dropout": 0.0,
+    "weight_decay": 0.0001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0_weight_decay0.0001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1535761055783238,
+     "mean_gap": 0.21863887507128563,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.1747508204042694,
+     "mean_gap": 0.25999743528570657,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1872770690133707,
+     "mean_gap": 0.33004091345290937,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.1895670020340554,
+     "mean_gap": 0.3157276406542531,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.2200926130301992,
+     "mean_gap": 0.4376703809742157,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.2266200538061394,
+     "mean_gap": 0.44943531969620326,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.6817928305074286,
+    "6102027": 4.362030930661027,
+    "6102028": 5.656854249492378
+   },
+   "threshold": 0.5,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -1.081111592794577,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": -0.44368520289598057,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -0.6081760532680369,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": -0.6697581557720155,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0_weight_decay0.0001__s6102026.keras",
+     "sha256": "741700ddd079725734b82d2f61cbfd770d214af5f5724047edf240a896a8cfc3"
+    },
+    "6102027": {
+     "file": "dropout0_weight_decay0.0001__s6102027.keras",
+     "sha256": "22b16ac1c5f0086c68f9c06f83bfbf5ec2c837d6c2f3bc8ab715620735713303"
+    },
+    "6102028": {
+     "file": "dropout0_weight_decay0.0001__s6102028.keras",
+     "sha256": "577a956607b591132e0da3d5d7c2d113bb672ec7a3786c2aeb1d5abef369b493"
+    }
+   },
+   "columns": [
+    "HIGH",
+    "RAW_LOG_RANGE",
+    "RAW_CLOSE_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "ATR",
+    "RSI",
+    "MACD_Histogram",
+    "ADX",
+    "DI_minus",
+    "Stochastic_D",
+    "WilliamsR",
+    "rolling_std_24",
+    "hod_sin",
+    "hod_cos",
+    "dow_cos"
+   ],
+   "scaler": {
+    "mean": [
+     1.1267905245746683,
+     0.0013821860434381854,
+     1.8381731574319285e-06,
+     1.0,
+     0.0015378878005693325,
+     49.85897852293266,
+     6.062023279105044e-06,
+     26.37202156645896,
+     20.556506712461342,
+     49.81388402129861,
+     -50.103497335505054,
+     0.0018722874578982714,
+     -0.0003815317450372294,
+     0.0007922436231764011,
+     -0.05728097201704208
+    ],
+    "sd": [
+     0.06839718656705017,
+     0.0010966600921887102,
+     0.0010543732046302786,
+     1.0,
+     0.0005929217420557501,
+     12.463581296870787,
+     0.0003658013713525483,
+     10.833808845849303,
+     7.232228402146247,
+     26.55985968419958,
+     29.53431823751376,
+     0.0011691020722067894,
+     0.7070295269572077,
+     0.707183480289432,
+     0.734545234807193
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "59f8fda8384e9a93a439ab6f29ae287e15e6f42e363db2fadc217705928fd863",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "01566adb1875d0c5e5e52126da7944a85a3311ba9f4ed9410dc4872980320fc7",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "admitted_core_15_553fc047__m2_gru": {
+   "set": "admitted_core_15_553fc047",
+   "arm": "m2_gru",
+   "cell": {
+    "dropout": 0.2,
+    "weight_decay": 0.001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0.2_weight_decay0.001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.0964329252576273,
+     "mean_gap": 0.15234092949703068,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0981054296690955,
+     "mean_gap": 0.15484822486271596,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1222959067905565,
+     "mean_gap": 0.17897002839980625,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.1226092151616651,
+     "mean_gap": 0.17967618361278656,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.1352796921887724,
+     "mean_gap": 0.23702130020318135,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.135531531194242,
+     "mean_gap": 0.23669719814810905,
+     "seeds": 3,
+     "primary": true
+    }
+   ],
+   "temperatures": {
+    "6102026": 2.3784142300054407,
+    "6102027": 1.6104903319492538,
+    "6102028": 3.668016172818684
+   },
+   "threshold": 0.7,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -0.9112134796898466,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": -1.3908605499194424,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -0.2369842769293773,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0.2_weight_decay0.001__s6102026.keras",
+     "sha256": "8fdede3da0b954cdf7a7363b660f7e4c6f895b1f40391531df452dae5b52d108"
+    },
+    "6102027": {
+     "file": "dropout0.2_weight_decay0.001__s6102027.keras",
+     "sha256": "6a6ad2b25bc0153487ff407387c3e09454022367840b04332ef0e74e25d7bcf9"
+    },
+    "6102028": {
+     "file": "dropout0.2_weight_decay0.001__s6102028.keras",
+     "sha256": "4dcc3a4ac1ff1e6f72c308e47c2f80f1553876968a16b11ff99a20375914a378"
+    }
+   },
+   "columns": [
+    "HIGH",
+    "RAW_LOG_RANGE",
+    "RAW_CLOSE_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "ATR",
+    "RSI",
+    "MACD_Histogram",
+    "ADX",
+    "DI_minus",
+    "Stochastic_D",
+    "WilliamsR",
+    "rolling_std_24",
+    "hod_sin",
+    "hod_cos",
+    "dow_cos"
+   ],
+   "scaler": {
+    "mean": [
+     1.1267905245746683,
+     0.0013821860434381854,
+     1.8381731574319285e-06,
+     1.0,
+     0.0015378878005693325,
+     49.85897852293266,
+     6.062023279105044e-06,
+     26.37202156645896,
+     20.556506712461342,
+     49.81388402129861,
+     -50.103497335505054,
+     0.0018722874578982714,
+     -0.0003815317450372294,
+     0.0007922436231764011,
+     -0.05728097201704208
+    ],
+    "sd": [
+     0.06839718656705017,
+     0.0010966600921887102,
+     0.0010543732046302786,
+     1.0,
+     0.0005929217420557501,
+     12.463581296870787,
+     0.0003658013713525483,
+     10.833808845849303,
+     7.232228402146247,
+     26.55985968419958,
+     29.53431823751376,
+     0.0011691020722067894,
+     0.7070295269572077,
+     0.707183480289432,
+     0.734545234807193
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "59f8fda8384e9a93a439ab6f29ae287e15e6f42e363db2fadc217705928fd863",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "a5cb5ca19805c9ee9f641c131a5cea9126e9a739a2d434886a8f1637124c6e98",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "admitted_core_15_553fc047__m3_hgb": {
+   "set": "admitted_core_15_553fc047",
+   "arm": "m3_hgb",
+   "cell": {
+    "l2_regularization": 0.0
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "l2_regularization0",
+    "primary": "l2_regularization0",
+    "replaced_primary": false
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "l2_regularization": 0.0
+     },
+     "cell_id": "l2_regularization0",
+     "mean_inner_a_loss": 1.248174252045734,
+     "mean_gap": 0.8073564913523694,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "l2_regularization": 10.0
+     },
+     "cell_id": "l2_regularization10",
+     "mean_inner_a_loss": 1.2497118384956853,
+     "mean_gap": 0.793283011408621,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "l2_regularization": 1.0
+     },
+     "cell_id": "l2_regularization1",
+     "mean_inner_a_loss": 1.252092060895221,
+     "mean_gap": 0.8106001943062496,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 2.0885475648548266,
+    "6102027": 2.0885475648548266,
+    "6102028": 2.0885475648548266
+   },
+   "threshold": 0.5,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -1.2637412794545053,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.9995705348626204,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.9805880707429441,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": -2.6226423583774663,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "l2_regularization0__s6102026.pkl",
+     "sha256": "e2d0bef6c6c8e6a2bf3d2c122b793cdf82e0411e162372ceb6d31010d51b311c"
+    },
+    "6102027": {
+     "file": "l2_regularization0__s6102027.pkl",
+     "sha256": "932e8b1377335e03499a604cafe6aca325c4a693cfefac7580fae522ea2595eb"
+    },
+    "6102028": {
+     "file": "l2_regularization0__s6102028.pkl",
+     "sha256": "b808a0bb6feb0aa74af07cd17039b666f79be8423f0264b17fe00276edbf500e"
+    }
+   },
+   "columns": [
+    "HIGH",
+    "RAW_LOG_RANGE",
+    "RAW_CLOSE_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "ATR",
+    "RSI",
+    "MACD_Histogram",
+    "ADX",
+    "DI_minus",
+    "Stochastic_D",
+    "WilliamsR",
+    "rolling_std_24",
+    "hod_sin",
+    "hod_cos",
+    "dow_cos"
+   ],
+   "scaler": {
+    "mean": [
+     1.1267905245746683,
+     0.0013821860434381854,
+     1.8381731574319285e-06,
+     1.0,
+     0.0015378878005693325,
+     49.85897852293266,
+     6.062023279105044e-06,
+     26.37202156645896,
+     20.556506712461342,
+     49.81388402129861,
+     -50.103497335505054,
+     0.0018722874578982714,
+     -0.0003815317450372294,
+     0.0007922436231764011,
+     -0.05728097201704208
+    ],
+    "sd": [
+     0.06839718656705017,
+     0.0010966600921887102,
+     0.0010543732046302786,
+     1.0,
+     0.0005929217420557501,
+     12.463581296870787,
+     0.0003658013713525483,
+     10.833808845849303,
+     7.232228402146247,
+     26.55985968419958,
+     29.53431823751376,
+     0.0011691020722067894,
+     0.7070295269572077,
+     0.707183480289432,
+     0.734545234807193
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "59f8fda8384e9a93a439ab6f29ae287e15e6f42e363db2fadc217705928fd863",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "0bf7ed1bf658ed814ebddd7d6b5320e662822aa38446eec39189073a6430d0b8",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "timing_selected__m1_dmo_class": {
+   "set": "timing_selected",
+   "arm": "m1_dmo_class",
+   "cell": {
+    "dropout": 0.2,
+    "weight_decay": 0.0001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0.2_weight_decay0.0001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0398986888719366,
+     "mean_gap": -0.01589888937099504,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0399342430937264,
+     "mean_gap": -0.015186309398904196,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.0400188276087763,
+     "mean_gap": -0.014638902995547523,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.040033095879913,
+     "mean_gap": -0.015296752252497159,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0402414351395515,
+     "mean_gap": -0.014889803622610906,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.040251219861619,
+     "mean_gap": -0.014984911962147537,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.1892071150027208,
+    "6102027": 0.8781260801866496,
+    "6102028": 1.1387886347566913
+   },
+   "threshold": 0.4,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": 0.8191359602912444,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0.2_weight_decay0.0001__s6102026.keras",
+     "sha256": "9118e29ca16da8d3ec373f8143b13a2b9a55eca910c69b48fb9908c4808526fb"
+    },
+    "6102027": {
+     "file": "dropout0.2_weight_decay0.0001__s6102027.keras",
+     "sha256": "fa50dd04b2b5805527e9df22d35f5d790a490ba564b19950cab527f676e54b68"
+    },
+    "6102028": {
+     "file": "dropout0.2_weight_decay0.0001__s6102028.keras",
+     "sha256": "ea425957f2cf7a3aece9e3a0d6b0f80e7e0e87acded66f5838a7b88c6b7d890f"
+    }
+   },
+   "columns": [
+    "px.hours_since_session_open"
+   ],
+   "scaler": {
+    "mean": [
+     58.33202808533621
+    ],
+    "sd": [
+     27.657968314878076
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "4a3e95e55a705be0124116998d2e2b68b9843dd138311d0a65e45c2b7831a766",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "df91536f3eb852a8f1af39b4577f938157fa6a9313fa3fb345da29a896143796",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "timing_selected__m2_gru": {
+   "set": "timing_selected",
+   "arm": "m2_gru",
+   "cell": {
+    "dropout": 0.0,
+    "weight_decay": 0.0001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0_weight_decay0.0001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.036429146450497,
+     "mean_gap": -0.022674003310629114,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.0364870017896577,
+     "mean_gap": -0.022616082690849026,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0371791298327002,
+     "mean_gap": -0.0221846843457425,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0372244125065027,
+     "mean_gap": -0.02248775733002654,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.0373910153914536,
+     "mean_gap": -0.02209931282989097,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.037510977256688,
+     "mean_gap": -0.022214162999477132,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.2968395546510094,
+    "6102027": 0.8781260801866496,
+    "6102028": 1.2418578120734838
+   },
+   "threshold": 0.4,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": 0.3851045602425129,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0_weight_decay0.0001__s6102026.keras",
+     "sha256": "7b7e06692a636076af809507733ebfa6e6ebe90dd019fa8eb80a241838765522"
+    },
+    "6102027": {
+     "file": "dropout0_weight_decay0.0001__s6102027.keras",
+     "sha256": "5d18a352934d04cba661b6bcd0923a535c3a7194b6bc1649eaebb550bf8ec554"
+    },
+    "6102028": {
+     "file": "dropout0_weight_decay0.0001__s6102028.keras",
+     "sha256": "27c4054562321b500c64ca9da39ba5c5fdb05fe7b12380263df3ac185c448d13"
+    }
+   },
+   "columns": [
+    "px.hours_since_session_open"
+   ],
+   "scaler": {
+    "mean": [
+     58.33202808533621
+    ],
+    "sd": [
+     27.657968314878076
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "4a3e95e55a705be0124116998d2e2b68b9843dd138311d0a65e45c2b7831a766",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "221e2193789a44dc3fec9da58400e5e1b567697ab26da9bc052353d204a8fbb5",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "timing_selected__m3_hgb": {
+   "set": "timing_selected",
+   "arm": "m3_hgb",
+   "cell": {
+    "l2_regularization": 0.0
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "l2_regularization0",
+    "primary": "l2_regularization0",
+    "replaced_primary": false
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "l2_regularization": 0.0
+     },
+     "cell_id": "l2_regularization0",
+     "mean_inner_a_loss": 1.0423556640604452,
+     "mean_gap": -0.00819127248251772,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "l2_regularization": 1.0
+     },
+     "cell_id": "l2_regularization1",
+     "mean_inner_a_loss": 1.042406415725351,
+     "mean_gap": -0.00820225282404774,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "l2_regularization": 10.0
+     },
+     "cell_id": "l2_regularization10",
+     "mean_inner_a_loss": 1.0437102043817623,
+     "mean_gap": -0.005542059109275854,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 0.9999999999999998,
+    "6102027": 0.9999999999999998,
+    "6102028": 0.9999999999999998
+   },
+   "threshold": 0.4,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": 0.5793997364509926,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "l2_regularization0__s6102026.pkl",
+     "sha256": "51a09f51ad1557926e5921954cb15b3467d313fe2fbaa3b86306ce3f076f67ce"
+    },
+    "6102027": {
+     "file": "l2_regularization0__s6102027.pkl",
+     "sha256": "1ab067b2edaa7df2d6933c03e2bcdf6d9da191eb97dee583a31d23e4306a040a"
+    },
+    "6102028": {
+     "file": "l2_regularization0__s6102028.pkl",
+     "sha256": "846df4f9c5b566fab91df1271f0429fa8a0685f93aca523906eea534897f7bea"
+    }
+   },
+   "columns": [
+    "px.hours_since_session_open"
+   ],
+   "scaler": {
+    "mean": [
+     58.33202808533621
+    ],
+    "sd": [
+     27.657968314878076
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "4a3e95e55a705be0124116998d2e2b68b9843dd138311d0a65e45c2b7831a766",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "6cc06b1a8a65532a54cf1c7dff76f8aef11f5cbb102bf0892794720b7ed4e196",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "v3_six_on_admitted_clock__m1_dmo_class": {
+   "set": "v3_six_on_admitted_clock",
+   "arm": "m1_dmo_class",
+   "cell": {
+    "dropout": 0.0,
+    "weight_decay": 0.001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0_weight_decay0.001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.1337808094708792,
+     "mean_gap": 0.1787421520749549,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1493074891269848,
+     "mean_gap": 0.2097864027399631,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1666430611075675,
+     "mean_gap": 0.2662063576017681,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.1789865563648678,
+     "mean_gap": 0.28998392587596,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.1894566310605477,
+     "mean_gap": 0.3476074427279337,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1968750009748244,
+     "mean_gap": 0.354770027399121,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.756252160373299,
+    "6102027": 2.3784142300054407,
+    "6102028": 3.9999999999999982
+   },
+   "threshold": 0.5,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -0.003666675790017089,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.9485800969620004,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -0.4561139823011809,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0_weight_decay0.001__s6102026.keras",
+     "sha256": "7bc9e0ac2bb0a82b0bee600e5c14fac148fe97ade40982c7b31cb8636bb96132"
+    },
+    "6102027": {
+     "file": "dropout0_weight_decay0.001__s6102027.keras",
+     "sha256": "514db3cfdf61b5431a476152ae7d75dfc3a19c63a98e4e56c5e114c56dd32bba"
+    },
+    "6102028": {
+     "file": "dropout0_weight_decay0.001__s6102028.keras",
+     "sha256": "7b22a4f9a12d9e391e5242669a1ddafa9b877d997b283af338778b85213d462e"
+    }
+   },
+   "columns": [
+    "RAW_BAR_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "cal.london_hod_sin",
+    "cal.london_hod_cos",
+    "px.atr_ratio_14_120",
+    "px.close_loc_2",
+    "variogram_hurst_w96"
+   ],
+   "scaler": {
+    "mean": [
+     1.7616626209773866e-06,
+     1.0,
+     -0.0005735791041196892,
+     0.0006665008944120966,
+     0.9986070363970685,
+     0.49932312905279913,
+     0.45568385035144
+    ],
+    "sd": [
+     0.0010543929710979264,
+     1.0,
+     0.7069609761673843,
+     0.7072520095128814,
+     0.27439096421957626,
+     0.2958862903820495,
+     0.10268111928106904
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "de5afed9b23ab9641216ecdf472d44c73dd8359431bc6b212bb60f3afc1dd007",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "c8eccae773f9b064334a33400bd090d7fedd50bacf77497640b2112bd7a939ef",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "v3_six_on_admitted_clock__m2_gru": {
+   "set": "v3_six_on_admitted_clock",
+   "arm": "m2_gru",
+   "cell": {
+    "dropout": 0.0,
+    "weight_decay": 0.001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0_weight_decay0.001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.1498826096379682,
+     "mean_gap": 0.13992066719385876,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1507671576285885,
+     "mean_gap": 0.14019169953127966,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1831465396301208,
+     "mean_gap": 0.26597657333220875,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.1839172831602571,
+     "mean_gap": 0.2643071186580542,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.194300563156225,
+     "mean_gap": 0.2737489961397527,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.2129090780537786,
+     "mean_gap": 0.31727341178526874,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 2.5936791093020184,
+    "6102027": 3.220980663898507,
+    "6102028": 3.9999999999999982
+   },
+   "threshold": 0.4,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": 0.23938660005869883,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0_weight_decay0.001__s6102026.keras",
+     "sha256": "415d7d0aa7d47aa9aa28dbbbaa4cd18784defdf57d6e820b2d46dd160e3866b1"
+    },
+    "6102027": {
+     "file": "dropout0_weight_decay0.001__s6102027.keras",
+     "sha256": "7854497d94ac59cef13b6df7e48eb1a09964124d69bf5bfa10445cf47d2c6318"
+    },
+    "6102028": {
+     "file": "dropout0_weight_decay0.001__s6102028.keras",
+     "sha256": "ca98a5508d77c28d69830eebd6e9cbeb4b79f048079b3c9381aef0ddbba1a426"
+    }
+   },
+   "columns": [
+    "RAW_BAR_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "cal.london_hod_sin",
+    "cal.london_hod_cos",
+    "px.atr_ratio_14_120",
+    "px.close_loc_2",
+    "variogram_hurst_w96"
+   ],
+   "scaler": {
+    "mean": [
+     1.7616626209773866e-06,
+     1.0,
+     -0.0005735791041196892,
+     0.0006665008944120966,
+     0.9986070363970685,
+     0.49932312905279913,
+     0.45568385035144
+    ],
+    "sd": [
+     0.0010543929710979264,
+     1.0,
+     0.7069609761673843,
+     0.7072520095128814,
+     0.27439096421957626,
+     0.2958862903820495,
+     0.10268111928106904
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "de5afed9b23ab9641216ecdf472d44c73dd8359431bc6b212bb60f3afc1dd007",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "9619a86d1fca8f123114aee2b8f41456b70127c652603297b8c078be12cd067d",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "v3_six_on_admitted_clock__m3_hgb": {
+   "set": "v3_six_on_admitted_clock",
+   "arm": "m3_hgb",
+   "cell": {
+    "l2_regularization": 10.0
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "l2_regularization10",
+    "primary": "l2_regularization0",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "l2_regularization": 10.0
+     },
+     "cell_id": "l2_regularization10",
+     "mean_inner_a_loss": 1.2695648137036328,
+     "mean_gap": 0.638675511063925,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "l2_regularization": 1.0
+     },
+     "cell_id": "l2_regularization1",
+     "mean_inner_a_loss": 1.2879100506006285,
+     "mean_gap": 0.6774936531866199,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "l2_regularization": 0.0
+     },
+     "cell_id": "l2_regularization0",
+     "mean_inner_a_loss": 1.2905683216853936,
+     "mean_gap": 0.6824141849608502,
+     "seeds": 3,
+     "primary": true
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.6817928305074286,
+    "6102027": 1.6817928305074286,
+    "6102028": 1.6817928305074286
+   },
+   "threshold": 0.5,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -2.2475319490132533,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.8983257172222286,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.22243698468766224,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "l2_regularization10__s6102026.pkl",
+     "sha256": "0ca56db4cf1a9a51f69e58a623531b08869529b92e96387b407446b330215b2d"
+    },
+    "6102027": {
+     "file": "l2_regularization10__s6102027.pkl",
+     "sha256": "b006168705ce46db3164123c54a41f3ba6e27af4eef1f7354eec29ddca89877a"
+    },
+    "6102028": {
+     "file": "l2_regularization10__s6102028.pkl",
+     "sha256": "4f895fb98914679fce85dde5f393f2f12ea776c599f57dd8af2dd974be6c193e"
+    }
+   },
+   "columns": [
+    "RAW_BAR_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "cal.london_hod_sin",
+    "cal.london_hod_cos",
+    "px.atr_ratio_14_120",
+    "px.close_loc_2",
+    "variogram_hurst_w96"
+   ],
+   "scaler": {
+    "mean": [
+     1.7616626209773866e-06,
+     1.0,
+     -0.0005735791041196892,
+     0.0006665008944120966,
+     0.9986070363970685,
+     0.49932312905279913,
+     0.45568385035144
+    ],
+    "sd": [
+     0.0010543929710979264,
+     1.0,
+     0.7069609761673843,
+     0.7072520095128814,
+     0.27439096421957626,
+     0.2958862903820495,
+     0.10268111928106904
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "de5afed9b23ab9641216ecdf472d44c73dd8359431bc6b212bb60f3afc1dd007",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "71bc73727ce34ebdfccef8f87a9a8438ba120a6708c7bc0be85a373608cc399e",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "v5_selected_calendar_one__m1_dmo_class": {
+   "set": "v5_selected_calendar_one",
+   "arm": "m1_dmo_class",
+   "cell": {
+    "dropout": 0.2,
+    "weight_decay": 0.0001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0.2_weight_decay0.0001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0398986888719366,
+     "mean_gap": -0.01589888937099504,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0399342430937264,
+     "mean_gap": -0.015186309398904196,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.0400188276087763,
+     "mean_gap": -0.014638902995547523,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.040033095879913,
+     "mean_gap": -0.015296752252497159,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0402414351395515,
+     "mean_gap": -0.014889803622610906,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.040251219861619,
+     "mean_gap": -0.014984911962147537,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.1892071150027208,
+    "6102027": 0.8781260801866496,
+    "6102028": 1.1387886347566913
+   },
+   "threshold": 0.4,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": 0.8191359602912444,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0.2_weight_decay0.0001__s6102026.keras",
+     "sha256": "6db9b37a04216deddbfe25ff49b345298ba829ce0bdd956adc19b208b2c8ebe3"
+    },
+    "6102027": {
+     "file": "dropout0.2_weight_decay0.0001__s6102027.keras",
+     "sha256": "050cd2fb93fb993011808ba68d64f6046138734dff840ee72d105f3d208d255c"
+    },
+    "6102028": {
+     "file": "dropout0.2_weight_decay0.0001__s6102028.keras",
+     "sha256": "30577b52ceddc771be2e5f8bc50ec70e7193d95526709a79851f13fca32b8e00"
+    }
+   },
+   "columns": [
+    "px.hours_since_session_open"
+   ],
+   "scaler": {
+    "mean": [
+     58.33202808533621
+    ],
+    "sd": [
+     27.657968314878076
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "4a3e95e55a705be0124116998d2e2b68b9843dd138311d0a65e45c2b7831a766",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "2d02eee5f36b9b6dc0036c6b93ea329bf3e7ced523b0aae5ee47e739c771b28d",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "v5_selected_calendar_one__m2_gru": {
+   "set": "v5_selected_calendar_one",
+   "arm": "m2_gru",
+   "cell": {
+    "dropout": 0.0,
+    "weight_decay": 0.0001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0_weight_decay0.0001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.036429146450497,
+     "mean_gap": -0.022674003310629114,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.0364870017896577,
+     "mean_gap": -0.022616082690849026,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0371791298327002,
+     "mean_gap": -0.0221846843457425,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0372244125065027,
+     "mean_gap": -0.02248775733002654,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.0373910153914536,
+     "mean_gap": -0.02209931282989097,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.037510977256688,
+     "mean_gap": -0.022214162999477132,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.2968395546510094,
+    "6102027": 0.8781260801866496,
+    "6102028": 1.2418578120734838
+   },
+   "threshold": 0.4,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": 0.3851045602425129,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0_weight_decay0.0001__s6102026.keras",
+     "sha256": "1b9f8c0632e10e234e72b46cecfc516f4ce7864a6dd168f030884ae9e34b4498"
+    },
+    "6102027": {
+     "file": "dropout0_weight_decay0.0001__s6102027.keras",
+     "sha256": "9c0f4fa4218e000fe89e484b71fea5495e03aacf62b9b367c9501e8a0a19aef1"
+    },
+    "6102028": {
+     "file": "dropout0_weight_decay0.0001__s6102028.keras",
+     "sha256": "4fddfe55610882a07e3962e943098bad364abb5c11e83fad4afe5e0fdcdf2b96"
+    }
+   },
+   "columns": [
+    "px.hours_since_session_open"
+   ],
+   "scaler": {
+    "mean": [
+     58.33202808533621
+    ],
+    "sd": [
+     27.657968314878076
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "4a3e95e55a705be0124116998d2e2b68b9843dd138311d0a65e45c2b7831a766",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "0b019de842e945ff4f5c50b270137a44829e3bd2f29fce8c736ab2e765f8795a",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  },
+  "v5_selected_calendar_one__m3_hgb": {
+   "set": "v5_selected_calendar_one",
+   "arm": "m3_hgb",
+   "cell": {
+    "l2_regularization": 0.0
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "l2_regularization0",
+    "primary": "l2_regularization0",
+    "replaced_primary": false
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "l2_regularization": 0.0
+     },
+     "cell_id": "l2_regularization0",
+     "mean_inner_a_loss": 1.0423556640604452,
+     "mean_gap": -0.00819127248251772,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "l2_regularization": 1.0
+     },
+     "cell_id": "l2_regularization1",
+     "mean_inner_a_loss": 1.042406415725351,
+     "mean_gap": -0.00820225282404774,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "l2_regularization": 10.0
+     },
+     "cell_id": "l2_regularization10",
+     "mean_inner_a_loss": 1.0437102043817623,
+     "mean_gap": -0.005542059109275854,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 0.9999999999999998,
+    "6102027": 0.9999999999999998,
+    "6102028": 0.9999999999999998
+   },
+   "threshold": 0.4,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": 0.5793997364509926,
+     "valid": false
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": 0.0,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "l2_regularization0__s6102026.pkl",
+     "sha256": "51a09f51ad1557926e5921954cb15b3467d313fe2fbaa3b86306ce3f076f67ce"
+    },
+    "6102027": {
+     "file": "l2_regularization0__s6102027.pkl",
+     "sha256": "1ab067b2edaa7df2d6933c03e2bcdf6d9da191eb97dee583a31d23e4306a040a"
+    },
+    "6102028": {
+     "file": "l2_regularization0__s6102028.pkl",
+     "sha256": "846df4f9c5b566fab91df1271f0429fa8a0685f93aca523906eea534897f7bea"
+    }
+   },
+   "columns": [
+    "px.hours_since_session_open"
+   ],
+   "scaler": {
+    "mean": [
+     58.33202808533621
+    ],
+    "sd": [
+     27.657968314878076
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "scaler_sha256": "4a3e95e55a705be0124116998d2e2b68b9843dd138311d0a65e45c2b7831a766",
+   "common_rows_sha256": "5563222037d0e8ba2db5f097223bddfa47784bdc139a842ba3582b7ea309db79",
+   "develop_sha256": "8212bad175a77e4dbe9f2120c421e2595faf1e1625eb4c806dd3b48bb80350c4",
+   "train_prior": [
+    0.07662705914123684,
+    0.459762354847421,
+    0.46361058601134214
+   ]
+  }
+ },
+ "input_identity": "42918e8c7bfe5efea82b1c2c125a6739da22fa7705d4b8813ce6d60422e398f2",
+ "eligibility_applied": true,
+ "stage": "freeze",
+ "expert": {
+  "params": {
+   "depth": 3,
+   "deviation_pips": 40.7,
+   "backstep": 0
+  },
+  "k_tp": 2.0,
+  "fill_path": "EXECUTABLE_B_PLUS_1",
+  "max_orders_per_day": 4
+ },
+ "thresholds_attempted": [
+  0.4,
+  0.5,
+  0.6,
+  0.7
+ ],
+ "periods_read": [
+  "TRAIN_2020_2022",
+  "INNER_A_2023H1",
+  "INNER_B_2023H2"
+ ],
+ "reads_2024": false,
+ "rules": {
+  "cell": "lowest mean INNER_A loss, ties by gap",
+  "threshold": "max mean INNER_A Sharpe over seeds among valid, else max",
+  "temperature": "per seed on INNER_A (log grid 0.25..8)"
+ },
+ "freeze_sha256": "389c2de5d267d97ad457bf145c3201c9c7f1d7c2957468ed9ed21b66c75a35e3"
+}

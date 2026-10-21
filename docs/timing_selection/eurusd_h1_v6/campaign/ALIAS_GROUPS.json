@@ -1,0 +1,86 @@
+[
+ {
+  "alias_group_id": "322787278ded9160ced100ff1d3a62c19fc48194da02e60f0ddc064be5010e66",
+  "disposition": "ALIAS_GROUP",
+  "dropped_columns": [],
+  "evidence": [
+   {
+    "gate_state": "BYTE_IDENTICAL",
+    "left": "RAW_LOG_RANGE",
+    "right": "px.range_1"
+   }
+  ],
+  "members": [
+   "RAW_LOG_RANGE",
+   "px.range_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_ADMITTED",
+  "representative": "RAW_LOG_RANGE",
+  "representative_rule": "clock OBSERVED, coverage desc, support_h asc, source_bytes asc, name",
+  "row_key": "076c5b59ccc5682b7f6ddad2970fc086d8b1ee0f4fa4bb64137a6fd81407b386",
+  "run_id": "timing-selection:c483ca79a60c6e14"
+ },
+ {
+  "alias_group_id": "67b8ab97f8738d769c8d0786bde20fac5a8dc8ba51aebc963e0780a226f3f2ae",
+  "disposition": "ALIAS_GROUP",
+  "dropped_columns": [],
+  "evidence": [
+   {
+    "gate_state": "BYTE_IDENTICAL",
+    "left": "RAW_CLOSE_LOG_RETURN",
+    "right": "px.logret_1"
+   }
+  ],
+  "members": [
+   "RAW_CLOSE_LOG_RETURN",
+   "px.logret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_ADMITTED",
+  "representative": "RAW_CLOSE_LOG_RETURN",
+  "representative_rule": "clock OBSERVED, coverage desc, support_h asc, source_bytes asc, name",
+  "row_key": "8cb78640f1356da0097033963206375ca6f849fbd10c633f7d9294df6b286c9d",
+  "run_id": "timing-selection:c483ca79a60c6e14"
+ },
+ {
+  "alias_group_id": "6a25cba1de8e6036affe0e2db8b41624442e39906a96edf934ed9717507675cd",
+  "disposition": "ALIAS_GROUP",
+  "dropped_columns": [],
+  "evidence": [
+   {
+    "gate_state": "BYTE_IDENTICAL",
+    "left": "RAW_ELAPSED_HOURS",
+    "right": "px.elapsed_hours"
+   }
+  ],
+  "members": [
+   "RAW_ELAPSED_HOURS",
+   "px.elapsed_hours"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_ADMITTED",
+  "representative": "RAW_ELAPSED_HOURS",
+  "representative_rule": "clock OBSERVED, coverage desc, support_h asc, source_bytes asc, name",
+  "row_key": "c4a0722fdc72854dbc55e2d09ebc2aa9ae35253ee8bb2566bfb3cc8ed132378d",
+  "run_id": "timing-selection:c483ca79a60c6e14"
+ },
+ {
+  "alias_group_id": "e34caf606833cba49201ae7cf3f79e181316bb2355ebe48d079da92cff0be58e",
+  "disposition": "ALIAS_GROUP",
+  "dropped_columns": [],
+  "evidence": [
+   {
+    "gate_state": "BYTE_IDENTICAL",
+    "left": "RAW_BAR_LOG_RETURN",
+    "right": "px.bar_body"
+   }
+  ],
+  "members": [
+   "RAW_BAR_LOG_RETURN",
+   "px.bar_body"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_ADMITTED",
+  "representative": "RAW_BAR_LOG_RETURN",
+  "representative_rule": "clock OBSERVED, coverage desc, support_h asc, source_bytes asc, name",
+  "row_key": "b290f59307138d77d5ba1eb328f4e1d11712f39ef9ef725cbe7f4d5237e03fca",
+  "run_id": "timing-selection:c483ca79a60c6e14"
+ }
+]

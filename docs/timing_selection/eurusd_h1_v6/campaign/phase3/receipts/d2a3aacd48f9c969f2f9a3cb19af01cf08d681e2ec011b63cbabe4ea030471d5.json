@@ -1,0 +1,44 @@
+{
+ "tables": {
+  "feature_filter_rankings": {
+   "backend": "sqlite3",
+   "batch_rows": 2000,
+   "batches": [
+    {
+     "duplicates_ignored": 0,
+     "inserted": 1321,
+     "receipt_sha256": "c0e49192e6b1f1b805119edd5c1ee14deaeb901acab5ef3a7b4514225692ce77",
+     "row_count": 1321,
+     "rows_sha256": "f8239fffa7e77901ad7e4ebbf96619d551532d2e8cfe5119fe0f202f69d0bb01"
+    }
+   ],
+   "duplicates_ignored": 0,
+   "inserted": 1321,
+   "readback_count": 1321,
+   "row_count": 1321,
+   "rows_sha256": "f8239fffa7e77901ad7e4ebbf96619d551532d2e8cfe5119fe0f202f69d0bb01",
+   "table": "feature_filter_rankings"
+  },
+  "feature_filter_subsets": {
+   "backend": "sqlite3",
+   "batch_rows": 2000,
+   "batches": [
+    {
+     "duplicates_ignored": 0,
+     "inserted": 49,
+     "receipt_sha256": "c3e0f578257166778cc0c45d3efed1f3151e601eb95b3c1361ac3e60e01b9b5b",
+     "row_count": 49,
+     "rows_sha256": "d835976f65ef82a414666265be6f2c94eebe8005289d14a9dd7e39c45173700e"
+    }
+   ],
+   "duplicates_ignored": 0,
+   "inserted": 49,
+   "readback_count": 49,
+   "row_count": 49,
+   "rows_sha256": "d835976f65ef82a414666265be6f2c94eebe8005289d14a9dd7e39c45173700e",
+   "table": "feature_filter_subsets"
+  }
+ },
+ "target_id": "timing_long_order_wins_h72",
+ "unit_id": "d2a3aacd48f9c969f2f9a3cb19af01cf08d681e2ec011b63cbabe4ea030471d5"
+}
