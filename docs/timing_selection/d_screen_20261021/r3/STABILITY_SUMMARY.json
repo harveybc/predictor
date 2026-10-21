@@ -1,0 +1,19 @@
+{
+ "survivors": 149,
+ "stable_all_years": 33,
+ "confirmed_2023": 14,
+ "by_label": {
+  "stable_all_years": {
+   "hit": 32,
+   "up": 1
+  },
+  "confirmed_2023": {
+   "hit": 14,
+   "up": 0
+  }
+ },
+ "rule": "BH survivors of ``screen`` must (1) keep the sign with |z| >= ``min_year_z`` in EACH TRAIN year (block\n    stability, Meinshausen & Buehlmann style with years as blocks), then (2) confirm on the whole of 2023 (joint\n    development) in the same stratum, or in the coarser parent stratum when the stratum has fewer than ``min_rows``\n    labelled rows: same sign and z >= 2. Each year / 2023 gets its own phase-breaking shift null.",
+ "min_year_z": 1.0,
+ "min_rows": 150,
+ "k": 1000
+}

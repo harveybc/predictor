@@ -1,0 +1,118 @@
+{
+ "direction_confirmed": [],
+ "activity_confirmed": [
+  {
+   "stratum": "all",
+   "feature": "ev.tokyo_fix.hours_since",
+   "lag": 8,
+   "smd": -0.12412399053573608,
+   "z": -4.013185977935791,
+   "Y2023_z": -3.913868826021758
+  },
+  {
+   "stratum": "all",
+   "feature": "ev.tokyo_fix.hours_to",
+   "lag": 8,
+   "smd": 0.12412399053573608,
+   "z": 4.013185977935791,
+   "Y2023_z": 3.913868826021758
+  },
+  {
+   "stratum": "pre_tokyo_fix_2h",
+   "feature": "cal.utc_dow_sin",
+   "lag": 24,
+   "smd": -1.001054048538208,
+   "z": -3.8556668758392334,
+   "Y2023_z": -2.5853162949105712
+  },
+  {
+   "stratum": "pre_tokyo_fix_2h",
+   "feature": "cal.utc_dow_cos",
+   "lag": 0,
+   "smd": 1.0016568899154663,
+   "z": 3.842289686203003,
+   "Y2023_z": 2.5979055539357754
+  },
+  {
+   "stratum": "pre_tokyo_fix_2h",
+   "feature": "dow_cos",
+   "lag": 0,
+   "smd": 0.8231639862060547,
+   "z": 3.791347026824951,
+   "Y2023_z": 2.4682951923036702
+  },
+  {
+   "stratum": "post_london_fix_2h",
+   "feature": "dly.dax.ret_5d",
+   "lag": 48,
+   "smd": -0.3733382225036621,
+   "z": -3.770812749862671,
+   "Y2023_z": -2.06105490294552
+  },
+  {
+   "stratum": "pre_tokyo_fix_2h",
+   "feature": "cal.utc_dow_cos",
+   "lag": 120,
+   "smd": 0.9720547199249268,
+   "z": 3.7640492916107178,
+   "Y2023_z": 2.51338977182916
+  },
+  {
+   "stratum": "pre_tokyo_fix_2h",
+   "feature": "cal.utc_dow_cos",
+   "lag": 1,
+   "smd": 0.9324808120727539,
+   "z": 3.759082317352295,
+   "Y2023_z": 2.4958406920037164
+  },
+  {
+   "stratum": "pre_tokyo_fix_2h",
+   "feature": "dow_cos",
+   "lag": 1,
+   "smd": 0.9324808120727539,
+   "z": 3.759082317352295,
+   "Y2023_z": 2.4958406920037164
+  },
+  {
+   "stratum": "pre_tokyo_fix_2h",
+   "feature": "dow_cos",
+   "lag": 120,
+   "smd": 0.8043173551559448,
+   "z": 3.7413742542266846,
+   "Y2023_z": 2.3647678491407413
+  },
+  {
+   "stratum": "post_london_fix_2h",
+   "feature": "dly.spx.ret_1d",
+   "lag": 48,
+   "smd": -0.29071518778800964,
+   "z": -3.7037181854248047,
+   "Y2023_z": -2.0683506540904557
+  },
+  {
+   "stratum": "pre_tokyo_fix_2h",
+   "feature": "px.hours_since_session_open",
+   "lag": 2,
+   "smd": -0.6657806634902954,
+   "z": -3.6918792724609375,
+   "Y2023_z": -2.2100431727854533
+  },
+  {
+   "stratum": "post_tokyo_fix_2h",
+   "feature": "dow_sin",
+   "lag": 48,
+   "smd": -0.9758016467094421,
+   "z": -3.655663013458252,
+   "Y2023_z": -2.2380207372682204
+  },
+  {
+   "stratum": "post_tokyo_fix_2h",
+   "feature": "cal.utc_dow_sin",
+   "lag": 48,
+   "smd": -0.9667842388153076,
+   "z": -3.6343865394592285,
+   "Y2023_z": -2.2631769839962343
+  }
+ ],
+ "decision": "NO_DIRECTION_SIGNAL -> activity features to the risk engine (phase D)"
+}
