@@ -20,6 +20,11 @@ SAC. Evaluar por separado capa probabilistica y uso de incertidumbre en las
 decisiones, con coste de muestreo registrado y negocio intacto.
 
 PRIORIDAD2026-10-21: [grid fino y optimizacion por componente](program_v3/RL_FINE_WINDOW_AND_COMPONENTS_2026_10_21.md).
+CONTINUACION APROBADA Y RUNNING: [vecinos12/14 y semillas compartidas](program_v3/RL_LOCAL_WINDOW_SHARED_SEEDS_2026_10_21.md).
+La repeticion fresca13 coincide exactamente con el control. Completar primero
+12/14 seed7 y luego13/12/14 con17/29, ocho fits obligatorios secuenciales,
+antes de subconjuntos. Corrige la omision de vecinos al ganar el control sin
+reescribir el grid anterior. No exigir mejora para ejecutar las confirmaciones.
 ADICION APROBADA: [subconjuntos incrementales de entradas](program_v3/RL_INCREMENTAL_FEATURE_SUBSETS_2026_10_21.md).
 Tras el grid activo, antes de ampliar extractores/componentes: base pequena,
 adiciones por importancia provisional, rescate acotado de interacciones y

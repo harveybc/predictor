@@ -6,6 +6,22 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del21 de octubre
 
+PRIORIDAD ACTUAL: completar vecinos12/14 y estabilidad en semillas compartidas.
+La repeticion fresca13 TERMINO: politica/trazas/metricas exactamente iguales,
+sin diferencias,10/10 publicaciones y copia independiente completa. TRAIN
+-14.547669%,VALIDATION-7.278253%,DD10.731872%,203 operaciones. No TEST.
+Nueva cola YA RUNNING:12/14 seed7, luego13/12/14 seed17 y13/12/14 seed29;
+ocho fits obligatorios, secuenciales5090, sin esperar promociones ni aprobaciones.
+Mismos datos/15 entradas/costos/negocio/100k/stride2/arquitectura, sin ES costoso.
+Semilla7 conserva su regla original; reportar aparte las tres comparaciones
+pareadas por vecino.63 regresiones,2 integraciones del motor nativo y26 pruebas
+en worker pasan. Ventana12/seed7:4000/100000 verificados en80.6848s;
+runtimed0f05548,spec2d3cd84c,contrato75a887f6. Prueba GPU16 updates/recarga
+exacta. Worker/publicador/recolector habilitados, control2/2 readback y primera
+copia fisica completa. ETA provisional lote~9-11h basada en4207s del control.
+Detalles: RL_LOCAL_WINDOW_SHARED_SEEDS_2026_10_21.md.
+Todos los cortes inferiores son historicos, no trabajo simultaneo.
+
 TRABAJO ACTUAL: [auditoria de comparabilidad y repeticion fresca de13](RL_WINDOW_COMPARABILITY_AUDIT_2026_10_21.md).
 2550 referencias y5 modelos verificados; sin diferencias cientificas inesperadas
 fuera de ventana/depth1 explicita. Cabezal,calentamiento e inicializacion del

@@ -2,7 +2,13 @@
 
 Solicitud del propietario: explicar la diferencia grande respecto al control13
 y verificar que las otras ventanas no hayan sufrido cambios ocultos.
-Estado: auditoria de artefactos terminada; repeticion fresca de13 EN CURSO.
+Estado actual: auditoria y repeticion fresca de13 TERMINADAS. Comparacion
+REPRODUCED_BITWISE_POLICY_AND_BUSINESS_TRACES, cero diferencias,100000 pasos,
+10/10 publicaciones y copia independiente completa. Politica y trazas de ambos
+splits exactamente iguales al control. TRAIN-14.547669%,VALIDATION-7.278253%,
+DD VALIDATION10.731872%,203 operaciones. Una semilla,no optimo demostrado.
+La continuacion aprobada es el nuevo estudio local12/13/14 con semillas7/17/29.
+Las secciones EN CURSO inferiores retienen el corte previo como historia.
 
 ## Verificado sobre los cinco cierres
 
