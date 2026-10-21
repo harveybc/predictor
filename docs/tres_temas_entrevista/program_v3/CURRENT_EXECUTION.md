@@ -1,10 +1,36 @@
 # Ejecucion vigente
 
-Actualizado2026-10-20. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
+Actualizado2026-10-21. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
 Ninguna orden ni donante de las campanas predictivas retiradas puede despachar
 trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
-## Continuacion del20 de octubre
+## Continuacion del21 de octubre
+
+ORDEN VIGENTE: [ventanas7/25, muestreo2](RL_WINDOW_SWEEP_2026_10_21.md).
+YA RUNNING en5090: ventana7/stride2,1000 transiciones verificadas inicialmente
+y35000/100000 en el recibo posterior. Runtime0286775c,spec6b407f7e,
+contratoe031cac4; actor870/criticos1254. Timer de ventana25 y confirmaciones
+condicionales, publicador y copia independiente habilitados.128 pruebas unitarias
+finales,77 seleccionadas con integracion y51 en worker. Un primer intento se
+retiro SIN FITS por recibo GPU de24.8h frente al limite24h; recibo renovado e
+identidad nueva, sin alterar parametros cientificos. Dos fits iniciales automaticos,
+sin ES costoso, mismo presupuesto100k/negocio/15 variables/periodos. Se registra
+la diferencia nativa de calentamiento13/25/49 y de parametros del cabezal.
+
+DEPENDENCIAS SATOSHI: credencialFXMacroData ya habilitada mediante EnvironmentFile
+privado;6/6 probes HTTP200. Worker corregido para paginas, clases y selectores
+reales;56/56 consultas200,354 anuncios2020-2024,0 calendario historico y0
+pronosticos ligados a eventos al corte2025-01-01. Credencial/ejecucion resueltas;
+NO se afirma calendario completo con consenso. Existe retorno privado para Satoshi.
+Feed EURUSD H1 de solo lectura READY con102 barras cerradas; timer120s, fuente
+Yahoo indicativa, recepcion real y sin ordenes ni precios bid/ask certificados.
+El arnes LLM sigue siendo del carril Satoshi; no se declara iniciado aqui.
+
+CIERRE DEL MUESTREO:2/2 nuevos fits cerrados al primer intento. Control13x2:
+TRAIN-14.55%,VALIDATION-7.28%,DD10.73%;13x1:-67.69%/-8.96%/17.68%;
+13x4:-58.18%/-26.08%/30.07%. Ninguna promocion; no confirmaciones adicionales.
+OLAP sin pendientes y3 corridas copiadas/control incluido. TEST cerrado.
+Los parrafos de arranque inferiores son historia, no entrenamientos activos.
 
 PRIORIDAD RATIFICADA: [SAC con presupuesto fijo y contexto temporal](RL_FIXED_CONTEXT_2026_10_20.md).
 No se reintroduce early stopping costoso en SAC. El lote BC/DAgger del monitor
