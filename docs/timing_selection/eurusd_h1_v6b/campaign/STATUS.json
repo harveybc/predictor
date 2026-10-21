@@ -1,0 +1,55 @@
+{
+ "follower": {
+  "adopted": 4,
+  "already": 0,
+  "closure_error": null,
+  "foreign": 0,
+  "phase2_closed": true,
+  "phase3_closed": true,
+  "phase3_error": null,
+  "quarantined": 0,
+  "submit_errors": [],
+  "submitted": 4,
+  "warehouse_transport": null
+ },
+ "generated_at": "2026-10-21T01:27:19Z",
+ "generated_epoch": 1792546039.270584,
+ "phase": "PHASE_3_COMPLETE",
+ "populations": {
+  "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED": {
+   "filter_v1": {
+    "active": 0,
+    "complete": 5,
+    "eta_seconds": 0.0,
+    "expected": 5,
+    "failed": 0
+   },
+   "pairwise_v1": {
+    "active": 0,
+    "by_host": {
+     "local": {
+      "active": 0,
+      "complete": 4,
+      "expected": 4,
+      "failed": 0,
+      "pending": 0
+     }
+    },
+    "complete": 4,
+    "complete_cost": 632805663.0,
+    "eta_seconds": 0.0,
+    "expected": 4,
+    "expected_cost": 632805663.0,
+    "failed": 0,
+    "failures": [],
+    "pairs_complete": 11325,
+    "pairs_expected": 11325,
+    "pending": 0,
+    "rate_cost_per_second": 1590265.510270458,
+    "rate_units_per_hour": 36.1877661450299
+   },
+   "phase": "PHASE_3_COMPLETE"
+  }
+ },
+ "schema": "fs_phase23.status.v1"
+}

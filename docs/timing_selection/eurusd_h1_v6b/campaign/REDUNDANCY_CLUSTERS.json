@@ -1,0 +1,1513 @@
+[
+ {
+  "cluster_id": "0302ebb0d416c5d5cf09784370e7a26de10af9c95e6697391ff030feeefde2b4",
+  "members": [
+   "px.rv_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.rv_4",
+  "row_key": "3163f7881fbe5948b143f21c821a874e7b99f59ebe2fedd71fe77315484be5a4",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "05c229a2c563730e4aecad2b544f81e279b8eb60dbb02be9e611774d05017a2a",
+  "members": [
+   "px.logret_12"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.logret_12",
+  "row_key": "d42928d5b8c0555da5350fda8ffdbaf61058aafdf7177dcbca5a8e4ab7862bbb",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "05c3739336cc65842e9c7deb829002acf82b4194c1c3e71ec3a5bd4ac4500c0c",
+  "members": [
+   "fx.audusd.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.audusd.ret_1",
+  "row_key": "ac1f8fc96b9f242a5efb376b75d831165e63a2e3085cf1273922a6a347603052",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "0dd065687cc1e34b5ffadeaaa6d68f3a8a183ee6c4d0468788da0f2a7125b166",
+  "members": [
+   "px.er_6"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.er_6",
+  "row_key": "59bce52e6bd6ff0a5ba845c809456b151a78c328e1daa04869ceecc638a39cb6",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "0fb960a3cebd8e56c53283a148220fe5fc33f40f38e74bfcf27be016ced8dc63",
+  "members": [
+   "px.rv_2"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.rv_2",
+  "row_key": "525d9939ad18da3146fae30bc0eca07a6de457e161593d861009ab30c8d18a3d",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "10c8039eda8bbaa0f370e6304342596b40dcad422ec721c73a562babecc2ecd2",
+  "members": [
+   "cal.utc_session_asia"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cal.utc_session_asia",
+  "row_key": "8604224878869679e75689872f45765d6bd1f47b70ec17f9363cda21af32cf80",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "122e582d32638f9169366cdc0120be3dd2c612d87f3c516b49779e3a9cdd4e03",
+  "members": [
+   "WilliamsR",
+   "px.close_loc_12"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.close_loc_12",
+  "row_key": "0f804d5cd11789661fdd9a19218afe5815c85c05e161b17da5a61fbb11a014d9",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "130f3528dd0bc4ba38a2b58b72d0820e8fcecba59dc4b2ac32e5b474e4d2a785",
+  "members": [
+   "px.er_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.er_24",
+  "row_key": "340dee87d4e1b20bdc906865544f4b09c5dcc7e7fb3cec581b086c40040f5f6d",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "139687c09c346c40fb316679db2afaf5112954ab0e6594a2b82d77b87490451f",
+  "members": [
+   "px.atr_ratio_14_120"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.atr_ratio_14_120",
+  "row_key": "f67511b5cce4f66ded4247b8ae3e471d3205fdf4846bcb6a0ee0c4d34c060d41",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "1478c9c3ed3b88ef7ec13b8267a3e48f943191a5c33f613b49b9186b61b092f1",
+  "members": [
+   "px.range_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.range_24",
+  "row_key": "d6dc1c14e66a0d878059d63bc1217db0109c5510cd3444749f266329c5c3cdf8",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "14cc6308bb93d6320e6096a44dc1a1e70aeff088dd14b3ef85952927c96e2f64",
+  "members": [
+   "fx.usd_strength.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usd_strength.ret_1",
+  "row_key": "10fdad010f14a0a0f0de369c5d7588b43e24597a661578edfdbd86d392683ae6",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "1b6852817331c2cbca1e1baca377796315206d706b1d7b6c3e71df275ed6b11a",
+  "members": [
+   "ADX"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "ADX",
+  "row_key": "4a2e777c7ae2301ae354845d2cc6a310870943470e58dea618c304ef17cd438f",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "1f3e67ae1efc2deffb3de525fe2f4f6780d050942e956895be7b3f91db1b2023",
+  "members": [
+   "px.er_2"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.er_2",
+  "row_key": "871fbacdaa294a886b8d8f04ac91f254209820f8da7d0b9948c38e84df63c18a",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "1fedeab864bcadbcd1f83e8e2612cae31656a34d37ad4bc0ce23089f3759236b",
+  "members": [
+   "fx.usdjpy.rv_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usdjpy.rv_24",
+  "row_key": "7b6ddc62355fe4d763d0a2ee65ae568200c3d6e5fa0feaf4b1590ef3b3150821",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "200b930af8064fefb5302a5564e1a3e7c00e13782b8d55d14e16b73fb9418a63",
+  "members": [
+   "hurst_spectrum_width_w200"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "hurst_spectrum_width_w200",
+  "row_key": "bd4ed8b8fbf70701cf7ca361f23407e20ac2a6827cc5822dc5f20811b8d76d82",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "24705439c82b43d731a47aa57d4e05e0e09809ed22100570dff2ca1d9b86e26d",
+  "members": [
+   "dly.us10y2y.chg_1d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us10y2y.chg_1d",
+  "row_key": "84f423c38cb4fdb7cc23ce8f9b02f92347b99df3c4de1ecd2a6ddc6cd18e92c6",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "25535d21d7b123169288b40824acd64c8f44d046147a11c01d60688d923bea78",
+  "members": [
+   "fx.gbpusd.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.gbpusd.ret_1",
+  "row_key": "65321ac6735d7142d3c92d47d3e06adc309d4016b0d64176b0468885ad22c37e",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "293f8c3a0cea36209442dcb3a7f9e57b8682fa04ed9999f126a6d92bea5864be",
+  "members": [
+   "dly.us2y.level"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us2y.level",
+  "row_key": "6e9ac1c972a16bd7f91d55454c2db240c4681d90656f641c7268197f68acb4d5",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "29d954825e9ed90deceb670defc985d588c101b32069981703ae0be053522677",
+  "members": [
+   "cal.london_hod_cos",
+   "cal.utc_hod_cos",
+   "hod_cos"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cal.london_hod_cos",
+  "row_key": "9855f50c420ff08a9b2a12a566695da54adfd5c9e024a74a322742063d35f7d8",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 3
+ },
+ {
+  "cluster_id": "2a079df4b513602fbd2c79cb329fdc343a7dff122b117dca2394415c1763d464",
+  "members": [
+   "fx.gbpusd.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.gbpusd.ret_4",
+  "row_key": "a6623fabac515884214f45d467ded36aa5de7ab5267c9956fc0001aa3dbcf80c",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "2a420dc31a8d705bf2e2d00fe7f13f48a9dd89070875ba6c441adff01100415b",
+  "members": [
+   "px.logret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.logret_4",
+  "row_key": "36e1a9f1f38dbe4dd9c1c60e9ed0552a63b22df922abd37fd573408dee1238e5",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "2d4bb46ff837e3a8ee79835474fb6430f0777852c5913cfb0128e713b445b721",
+  "members": [
+   "px.logret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.logret_24",
+  "row_key": "1e905d2702497de01c7e4af8d7a41d4b10f44e9c9021f3f767fc162b6b342532",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "30fafa576d467d316e2f14e286e35c2bc9c475e38efbf95c5d9edfd2835b8ad4",
+  "members": [
+   "dly.us2y.chg_1d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us2y.chg_1d",
+  "row_key": "b8aa90e22d8c7bb547b19916c6c8aeb4a2385b37ed625f3ed1782d3979d288da",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "34ed9df552852870e92acd7ed512589f57a3651a332cecce40a21925f090a24f",
+  "members": [
+   "fx.eurgbp.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eurgbp.ret_4",
+  "row_key": "870440d130143e1fcc45b1b1b84c10a9cc292c67bd755b8b45ef16ec3ecd3248",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "3587d5650289bc39a21b72e891516f770367f08fc624844e980dd8c2844da7fc",
+  "members": [
+   "dly.us10y2y.level"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us10y2y.level",
+  "row_key": "c028d4df1cccf97150a51f569d4c3e265e671404c511e84cf8eeaf3fb632cae9",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "3a519026a1d47663bbb28f92c881eecb2fe01a27547899d58493afdaea5ea2dc",
+  "members": [
+   "fx.usd_strength.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usd_strength.ret_4",
+  "row_key": "c7053484ab481956ab26af80f4a27e961fd3d7a9104eb9541fe0c5556192020a",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "3b488db8f07efd9ac15c1797502ea59248bd6d46cedc9963d54dcf5087f53197",
+  "members": [
+   "px.range_ratio_1_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.range_ratio_1_24",
+  "row_key": "653de2a58504522dd49a8d405a5ba4125d14a14ddd6d911d4ccfa53683fafd9d",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "3c8c36125f916ba92735291b72210041a4d2a4d6c629efbc067fbd0a24b2a66b",
+  "members": [
+   "dly.vix.level"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.vix.level",
+  "row_key": "bf00f76c61cc9a6c8f568b4ab200743303a101782c0b1e491ae2006213f6cf5b",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "3cadd84029271070269eed371695bb795de799fba1f236d53696e93b15675c5b",
+  "members": [
+   "DI_minus"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "DI_minus",
+  "row_key": "6b1d73622ae13287a1a308c376637e222ab5bb273645cb9f916ae9a5d872158c",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "3cfdd58686e24b7733ff7e6658d319a36b78ed5eabedf124371b254592c09104",
+  "members": [
+   "hurst_spectrum_width_w48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "hurst_spectrum_width_w48",
+  "row_key": "f64582e4120e148fb8d1968c9be2b3d73db8adc8b00b3f1ba31c0db07d06bfcb",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "44e8a1f7422cb78ed7c1733af05627e806e3bb330221facd29a562cbfa014803",
+  "members": [
+   "fx.gbpusd.rv_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.gbpusd.rv_24",
+  "row_key": "658475a0e4a4570d9e32eefc3feabc5ea3552dee8f93c4614a1d6c5b14330aef",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "4625bee27c2e54bcad2dfade7d18c51f473c7a0cdd9a08aa84d4f9bdc7c39f1a",
+  "members": [
+   "dly.spx.ret_5d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.spx.ret_5d",
+  "row_key": "4ace77283608f43083d9182ad3ed5bd41364a7ee9b9be9d855dfeebe6777214a",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "49042e83539b5a3966cd3c9c9f6b700125d617c275578e36e88ccc4d1329449f",
+  "members": [
+   "cal.utc_session_europe"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cal.utc_session_europe",
+  "row_key": "f8249c7861b1cfed1fe71b505946d86059ac845d96201762a697b358dc26a9e5",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "49aca07ec4dca0e91d19321ba10d70ab4f468d711559253f48c57afe75584736",
+  "members": [
+   "btc.rv_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "btc.rv_24",
+  "row_key": "e269a619bbb3a957981130c44669a0cd6506787839ec6a5a625596ab830b4e30",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "4d88d48c709441fccdf1217066737b275f055544aa61a373428eb411c39d571e",
+  "members": [
+   "px.range_48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.range_48",
+  "row_key": "2157f3ee007039c4ace552a1d6da25b08a4b7b7e75b3232ffe4e6801458a798a",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "4e34f9d2e21c045da10afde3b8b2a516004f09b0b3e78e2299536ec8e68ee150",
+  "members": [
+   "px.er_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.er_1",
+  "row_key": "73a2efee216a8ea6b266fb0b4afe562f591ddfa71a6a7caa904144988fc77634",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "4f823151302c6882a2ad6822ebe6015699af32c78654409e614c8a27c74ad258",
+  "members": [
+   "dly.vix.chg_1d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.vix.chg_1d",
+  "row_key": "481916c062de2f31a3475b3bfe15f878ca710d7ebb516f6008d57da9c18615bd",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "503eb99656020f6a142dba40564db91f426ad4e1b7bf41c547a04c0826b1507f",
+  "members": [
+   "px.range_2"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.range_2",
+  "row_key": "4dd5ae19c923a3f048ee0a7dccd3a18ae0995801b22d6871ea2d4c09222f8834",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "50e3df445ca329351d489c819f46fbc600e699b819278976575291060f1548df",
+  "members": [
+   "cot.eur.net_share"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cot.eur.net_share",
+  "row_key": "e9824f11accc431e14210e9de8a480f8043c573066f0cf52486502948cb9ea62",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "52b2f7dd73fa165fa6ddcc137223e8a4fba5bea291073ac67d9f47d3a79ae327",
+  "members": [
+   "fx.usdchf.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usdchf.ret_24",
+  "row_key": "5adfc63468644a971e50a3ef2fe87610b5314a514424ccc5e948792b24ab539c",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "52d5fa3bdce94549a8747c4b99bb2b34a2b208e842bc924fe31748a255ca5551",
+  "members": [
+   "dly.oil.ret_1d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.oil.ret_1d",
+  "row_key": "5bb5fd1a12a8e455eec7f3fb364a48dfa035b6c013df18d101615629a1ffc9b5",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "54212b8582e133eb06faa82477cdbdb8e92e7392b6b48840f9df2276f14ecc36",
+  "members": [
+   "BB_position",
+   "CCI"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "BB_position",
+  "row_key": "c21de775cba8f10a3c895a84252d2163263b856a4378929b9ff31746fa2a949d",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "56a8983b6481b27d93c600650ba215bacde4310c5b843d7a7d1df5476652b8ee",
+  "members": [
+   "dly.us10y.chg_5d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us10y.chg_5d",
+  "row_key": "0b329ddf45d1967ed2d8ebdee920ab07de67a0b442de61b6d0f53af8517136e3",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "61e87e9784ffdd3bb0a617cf82ace3cf3248019c70ce7c1b2456f00f794e0e81",
+  "members": [
+   "BB_Width",
+   "rolling_std_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "BB_Width",
+  "row_key": "088ba1f2d7df5e569f57c3be50ed67b76c83f3b3de9368e626f0a46ed9f13879",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "62bd882cd746f3391527a7ecd08515e18c231874bb95facbec81800d1daec9ae",
+  "members": [
+   "fx.eurgbp.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eurgbp.ret_24",
+  "row_key": "4bdaf2c0a2bc7db9731bcc4909bd03ed7f549d5d313e6045efb34badb36e23ac",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "62ceb268cd2eee47fa6df3eb21a670d02cc5ab6b64fa7d4743af8631932b7b66",
+  "members": [
+   "fx.eurjpy.rv_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eurjpy.rv_24",
+  "row_key": "e34e723c40ddc4cbbc09fce9842d59893a0cf89b4db4de3757c6b9348e9ec431",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "688d538ee1d307cb04f96959e343d050f8646bde6735840dd5ec9f07e0e81f2b",
+  "members": [
+   "hurst_spectrum_width_w96"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "hurst_spectrum_width_w96",
+  "row_key": "9646838583f711fe999620896ab2f3ff6b1f9b2cdb45a132c79fd9ee4833ea83",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "6cb88e1a90e50c00164de7d483789acdc0959bdce7465834ec199e87582843ec",
+  "members": [
+   "RAW_BAR_LOG_RETURN",
+   "RAW_CLOSE_LOG_RETURN"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "RAW_BAR_LOG_RETURN",
+  "row_key": "0da3c16c69fc26bbd4051dd4aedfbfb968b95a5d74531a5ed1ff2f98d2111e58",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "6eef014805791429f4df99b8b9ea96620b88e05e3c2d483993558aead7e14026",
+  "members": [
+   "px.range_4",
+   "px.range_6"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.range_4",
+  "row_key": "7575c6b19eec8a60b36f68a248695f2e2c4558622c20843200e06d52c12daa49",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "6f454b68f75aedaa660f03195728ba48f4f13caf969b40cb8289f366df62a219",
+  "members": [
+   "btc.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "btc.ret_4",
+  "row_key": "e4bae54cd3b290ebcf975879df389953bf49565073c9989835812722a62b780a",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "70acde9b0ed0ec33c902dea6c4c8c6d5bbd09f0ed2d3a95ffa5c01a2b0408390",
+  "members": [
+   "variogram_hurst_w96"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "variogram_hurst_w96",
+  "row_key": "5d3ee7c63288add59778f3a40cfcb97c05aca0b0a7d861e1258394b9d2ba3848",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "747d242153f4806a0b0afb099482aebd9ee0d7206e6caa767c2f0060416c5db7",
+  "members": [
+   "variogram_hurst_w48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "variogram_hurst_w48",
+  "row_key": "d3e8bdc7b526ff269df3868e49103b338fac201f51b441d7f6d8fb42bf170b95",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "7582e6c677f030eed41c611a59031b82b5995a39333ae594fa294862b999644d",
+  "members": [
+   "dly.dax.ret_5d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.dax.ret_5d",
+  "row_key": "ca0c81db342c1f4cd559c5278cd18fc3498dddcad434b2dbe450d7d00c57e9c0",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "7859f70ed70d9312586f191b36bff6af93771f2be0b4e741a4e8d6846c8b8928",
+  "members": [
+   "ATR",
+   "ATR_ratio",
+   "px.atr_14"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.atr_14",
+  "row_key": "b38d1daf19283464035c600075d331da6a6203801d2243939304af7217aeb28a",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 3
+ },
+ {
+  "cluster_id": "79a69c30722b8dd8b857166d95653561823bea604866097aee40263eaca03ce3",
+  "members": [
+   "px.logret_2"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.logret_2",
+  "row_key": "5b589818e22481608e24a62a2ddb4eafa51c7d20844aa5bd10718912fac87b98",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "7e165cc00314011c948d6193da207ab92a06adb655e6d78b2d2aede3dce5140c",
+  "members": [
+   "box_counting_dimension_w200"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "box_counting_dimension_w200",
+  "row_key": "a04d0329509df9b63941a8c05751631a6b6c6c5f802d11245d3d7454437deadc",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "7f278ad5cd9028b9ca0252af8f83b35260ce0112a5325ee29b4ab5e06693e6ff",
+  "members": [
+   "fx.audusd.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.audusd.ret_24",
+  "row_key": "d48650322b7f5bce26f5f3c6de101efa50195fbbabf0485a926170e13fb012aa",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "8051a965cb059cf396a30b7d2a080d817b177e2c55acb23823321212db329a6d",
+  "members": [
+   "fx.usdjpy.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usdjpy.ret_4",
+  "row_key": "fc33d6cf1622c34b803c5cb48d33bd1b3f6308147bc3e4583f36830d973a1a54",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "8533c83c31c30db6a93bb467cd0a4bd6d3b3895c2ecbcaba5abc4a3aa7f483d9",
+  "members": [
+   "px.er_12"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.er_12",
+  "row_key": "c86588821e25561f545cdfa484b668d38ea15af97531fa37091b69168bbeaab1",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "86689e1927444eefe3d6eafae10c3b0732bcf68afaac8d8a3774f5bf5f4368ee",
+  "members": [
+   "fx.usdchf.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usdchf.ret_1",
+  "row_key": "94399f2ede83acf88e14a3a155c50518918d566be319d3b8a819e710a2a986d5",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "87b636c714ac54059edd52f55030b9c9e29ee3e4072b7c685bae39b9230d980f",
+  "members": [
+   "fx.usdchf.rv_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usdchf.rv_24",
+  "row_key": "b6fec7f56bb6bac36c4cff2be4cbc967c2d25f3de0e6cd7070792692897e8aa2",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "89a0c720dce4f69759d22b5639422f2d5992fb53fb65ecfb81beb60331af357b",
+  "members": [
+   "px.er_48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.er_48",
+  "row_key": "f6277d0623832ec9fb25846f5859e1a7a24db38187d7f01b79ecec94ce8e5966",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "8ee58ff2da6bcdd610dd0dd4c142e47830111de36658c01c5e0683e800957ef3",
+  "members": [
+   "MACD",
+   "MACD_Signal"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "MACD",
+  "row_key": "5f23572b774d2689492119f0bb4a87a7c2064ce56e6cfe0e581fa8b710ceffa3",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "8eeb3a6c5e056ee19f0d4b9d939fb9fbdc0885a1b7dc3d6c316e903a01e253f8",
+  "members": [
+   "cal.utc_dow_cos",
+   "dow_cos",
+   "px.hours_since_session_open"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cal.utc_dow_cos",
+  "row_key": "79d1db14d10b1ad724b7f532d0a918a3f13c91a519219593138c7fd9ec925b3d",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 3
+ },
+ {
+  "cluster_id": "8fdff1ae7950418c0d981e9cce6efd0c11f474f99d8987d8bec832bd7b897752",
+  "members": [
+   "hurst_rs_w96"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "hurst_rs_w96",
+  "row_key": "50797e920817b85ec812019338999a58882bcd1acd0451653590a5d52037fb11",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "8fe5621f1eb5ce923692a15aa0133489c92f13aefaf905776a2622650b36586a",
+  "members": [
+   "cal.utc_session_us"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cal.utc_session_us",
+  "row_key": "6a842493fff08e98bb206d0958c233a98d1fef1d8e0ff9ad0170d12ff82d6df1",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "9051304202884968376773fb17bd6d4046096eb1dc2eaa3c7fed582bf2350deb",
+  "members": [
+   "fx.eurgbp.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eurgbp.ret_1",
+  "row_key": "534125227666047c9cef666abd73dbe83eb2a995ee25b960614b80959ea14306",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "94ff9cd59774c3f00e0cea3d58d565d9de0d2d38b885a2610d7b608b079527ff",
+  "members": [
+   "dly.gold.ret_5d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.gold.ret_5d",
+  "row_key": "f197b2f522ef699b3be27d5d822a23abeb4e90f24db2bbe1e167a5f00b2ed95d",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "950f3519f8105ab8ca4d758f99ca1a930ae7c4b1bd63429728f68f10b5b2dc44",
+  "members": [
+   "MACD_Histogram"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "MACD_Histogram",
+  "row_key": "1545768fb78f6237e29f05a9ad64fdf912435dfaf332df27aac6ece1026df971",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "9afd97bd227282f6bdf9be64e861a69891580c37cb48283166df127f29ff304e",
+  "members": [
+   "px.close_loc_48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.close_loc_48",
+  "row_key": "611fda4befbad67b4c03e0cf5a58428d2d4401569c16c7cf808e0a6f20ddfa11",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "9c009ca306bcc4aa4917eda0f2746e0e9f950e208d9c0152a0281effa2085990",
+  "members": [
+   "dly.spx.ret_1d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.spx.ret_1d",
+  "row_key": "ed932610cab793434cfa16d4902041caa829098785c2f30d638c5ebec8fa7b6f",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "9f26a713153ca0c90b3e2a89135adadfe04547e4820799b465e2eeb75f55ff9b",
+  "members": [
+   "box_counting_dimension_w96"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "box_counting_dimension_w96",
+  "row_key": "fe3a616e5976dc63987dff53ff5da59650ac0d78c0c820e38416c21cc306294c",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "a04581d89977627d3fe46f0eec51cdd0b5e2a7230f65ff76766e315a2b41ae74",
+  "members": [
+   "dly.dax.ret_1d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.dax.ret_1d",
+  "row_key": "911b7d22582afb45eef8ac280e0287397deaa69ec1262efe1424c3d940bd6cd4",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "a393149ff88e0d0d1e619cfc22a1173cc09592e9d42731de781bc38be395c84e",
+  "members": [
+   "cal.utc_dow_sin",
+   "dow_sin"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cal.utc_dow_sin",
+  "row_key": "fd9c8a8cb15dfced7c864fa546b683c4b6ba632fb626654b7a5825b86a5bfdc4",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "a4655146edad9b66a885042a2f4ce703f6d4a36d60705363c2abb2d682748396",
+  "members": [
+   "cal.london_hod_sin",
+   "cal.utc_hod_sin",
+   "hod_sin"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cal.london_hod_sin",
+  "row_key": "d6eb6da884b49e8642a8a148b4f76f5b052d930a7578e4f71610417dfd584f51",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 3
+ },
+ {
+  "cluster_id": "a4a687e2b8e04c9120048aec89566da1a548038f6a2511700472415798ca586e",
+  "members": [
+   "fx.usdjpy.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usdjpy.ret_24",
+  "row_key": "75f1e338e7688a4fe0c4b6447bc85c17bb7b97cf5d7a31793d614d4f2d39be78",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "a59170e5ba506745ad771f515edee4625f8ca522b7d90c7bdedf7e86a232ea1a",
+  "members": [
+   "px.close_loc_4",
+   "px.close_loc_6"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.close_loc_4",
+  "row_key": "377cc3fd36701db38d5c5524224d68286dabced43e8994ba1d0f240917b66f51",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "a6c60fee4e0cb702e6cdcbce16968ebdd50311fda9f893b821696f40da008f1b",
+  "members": [
+   "RAW_LOG_RANGE"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "RAW_LOG_RANGE",
+  "row_key": "0878a70e9032d8ad75182ab4fd92e274a9a39bc18780766e0f5749fcf943c544",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "aa682a9fc52b94fe9a7b0bba116249c777d254b28309ecc5c782359ecd6c81ab",
+  "members": [
+   "fx.eurjpy.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eurjpy.ret_1",
+  "row_key": "9cbc476f10e755d0ae551d6b96686a9913f2d063e33ca42f90ad475d62d206f3",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "ac21b2d4de04cb129a540a0ac287fbc95ea5efd08375dd18d44a223a6b390b16",
+  "members": [
+   "RSI",
+   "price_minus_ema",
+   "px.close_loc_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "price_minus_ema",
+  "row_key": "e8d9c18288e1b2211e9fc1ce7088e0a35b10b790bb04491ee5a75af968bd7648",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 3
+ },
+ {
+  "cluster_id": "af54b30d9be1e166724a380579bdd48aa038ffa2d1758730b4178ced4f379699",
+  "members": [
+   "cot.eur.net_long"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cot.eur.net_long",
+  "row_key": "68861bf0001a57049902037d4be466524ffd3bf1cd238abb431d79bf3474d3c0",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "af80aaa76f9a1e9019af43613da89cd70fa291f31a78a324e01ded546df4f0e8",
+  "members": [
+   "fx.eur_strength.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eur_strength.ret_24",
+  "row_key": "06bd8d049617495fa9d99eddc8b9069d80a2ad6ac8b7b83f9e0486bffd468df9",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "b0fbde4104992096197085254485d836f5f25a48cc81e60b568f8cf9dd86954b",
+  "members": [
+   "dly.us10y.chg_1d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us10y.chg_1d",
+  "row_key": "b564be7fdea1d58edb0b8088a5cf693a2777467834d8a2d64c0046bc96f8d3b4",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "b103528f80bc14bf6e18e7c04affb504d168ee5ecf7bcbeb45d6bf3e32408f06",
+  "members": [
+   "fx.usdchf.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usdchf.ret_4",
+  "row_key": "69c40a1e838e05103b4964d6a6031dea85afd0b5d5daf5c78c70bc42ecef7528",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "b4e1c4371469cedd6163a1b49c4820d24797224ec39360b28e09ec0da6665ff1",
+  "members": [
+   "hurst_rs_w48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "hurst_rs_w48",
+  "row_key": "3422639b17f0d2a7517a0411d00b2b6da48d6bbdcb1d09ba88b9341c0c7afe9d",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "b87ef943197b8a880c66ef90b1ba124c999da77487649845ec62399a693954e3",
+  "members": [
+   "px.rv_24",
+   "px.rv_48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.rv_24",
+  "row_key": "75a7555e9d43867687e32e5be3d5ed6681138f19e33475dab26a3bc8323d70de",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "b92206498d2501a6e0e4d2061c67ca228ebcf8c34e337d13ff7a4b2dcee13b81",
+  "members": [
+   "Stochastic_D",
+   "Stochastic_K"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "Stochastic_K",
+  "row_key": "00bcfc7b5d0b22821fa7f2bef6e2f7e88f9f20099520358299ac7cd2d8e1a85c",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 2
+ },
+ {
+  "cluster_id": "b9be844a6eb047648d0acb3e145c293e1cf446298de2fa6714efa5b66561142f",
+  "members": [
+   "ROC"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "ROC",
+  "row_key": "1128aad45c500bfad2401af4c0708e26ff515ae8d50f93f8df33acbc0bbfc486",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "be9c30d03e989230eef630de9cf8e96d3bb2747ad18dea78d51d2ae0931c216b",
+  "members": [
+   "dly.us10y.level"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us10y.level",
+  "row_key": "eb642aea9b20fbcb529a9f0a43d29283c5ccbd1b677280a7faa8f8e2d66c0190",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "be9cf1e564b92c28d03c7d81cab7dd833310c78f4a161c1d3665894ff06847e9",
+  "members": [
+   "px.close_loc_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.close_loc_1",
+  "row_key": "e0bb8363238e88842b6f66b4580fe799bbd96211124d578c511b49174fc77993",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "c19f8de94b43322cc458b319de5dc10e8602d81434f2f572209947276cc10888",
+  "members": [
+   "box_counting_dimension_w48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "box_counting_dimension_w48",
+  "row_key": "e75a473f65f6a0cf1891689e9202551bcd2f5a6ed57353d3c90f4369ebce48d7",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "c3aa948289299b0be8ed8e01037bb61af4876cb100154ff3c9562ed413036769",
+  "members": [
+   "px.rv_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.rv_1",
+  "row_key": "a5cb881a580df90b1739c3e40860ec495bf44886544fa0e21bdd8f635395c1b4",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "c3fab708162c3e02f9f41783b6abdf25da97acedf9f93e6950b5454d05317e9c",
+  "members": [
+   "dly.us10y2y.chg_5d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us10y2y.chg_5d",
+  "row_key": "b0bff3002933f891201f02777a0360c17d1790167f9aedbce742334778594ee1",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "c49817013ac307dd67a11f368cb82cc5102276318c5fd15381b2cffeb8db3373",
+  "members": [
+   "px.unexpected_gap_hours"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.unexpected_gap_hours",
+  "row_key": "873512a340436cf716cc9df7b20bcf9de09ed8eeeeb30428a33279d2395f3fa3",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "ca0eb31cf950439b6e3d5bde3d91f566b559750fd61834b3af062952c1fc9ca6",
+  "members": [
+   "fx.eur_strength.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eur_strength.ret_1",
+  "row_key": "f48327ffef962132cd4b3b7203a4c6847a28901ced667e0d4c43913c8cc0d0c4",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "cc31220dc1ad4366fd41a9fdb54ad8fafe4a4af8d50c47912381f36ce8caa128",
+  "members": [
+   "RAW_ELAPSED_HOURS"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "RAW_ELAPSED_HOURS",
+  "row_key": "be7db213dbf7b5dae8abfa9b32164841255d8d0b7af5d17750b312908627630b",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "cc692ba298d7587fafc0c27634878cee64599a2a3c8a4a47b7fe26e7a3a62fe9",
+  "members": [
+   "px.rv_12"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.rv_12",
+  "row_key": "f83e3c92471076601ee196c3bbe01fb6f0dc84d23309783ccb0043349bace45f",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "cca705adc71df93cd9a7fe9a2aa239134f02419174de30e58996f37244321403",
+  "members": [
+   "dly.oil.ret_5d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.oil.ret_5d",
+  "row_key": "f4ce0b35b67a2b9a1410fa164033d6732044c3a46d6c4e3aac660353a794abce",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "cd69af154d1e58253eafbcbbe06c37fc821fd7adb7b6f9cb83d92dc14dd948e3",
+  "members": [
+   "dly.us2y.chg_5d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.us2y.chg_5d",
+  "row_key": "86f9ca9f7d21b0c487cb44204cb28bd17af45cb8fdeacc80eade3db9bf72d868",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "cfb929bfb80564ccb20714c7432db24cb71f39f27ccfe9ab99141d7447f55fd1",
+  "members": [
+   "fx.eur_strength.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eur_strength.ret_4",
+  "row_key": "1e7147f3051f375c834049f195c51f9c2c9d9f995b7f0c042bee0f3b16a56444",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "d18c21128dd65ee089fadc4b879a3b8c7c65d4eeb73c3c3599c3634e92bd794b",
+  "members": [
+   "cot.eur.net_change"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cot.eur.net_change",
+  "row_key": "c7e03bb5fa97597dbf25f46180fedc192807a09c356550e97d74c7635a8ad167",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "d1a8c4689a9f27b9cbe5de6648a8864606e8545800f06bf6c05c98bd08f27d1b",
+  "members": [
+   "px.er_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.er_4",
+  "row_key": "f9a4edbb3ad27e391de00899140873765965abe97be26f47f7fb5c2b3ec7096b",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "d20b679c88e632b334195dc45bcc7be097e9155bc2613716e0719768c03c7196",
+  "members": [
+   "cot.eur.net_z156"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "cot.eur.net_z156",
+  "row_key": "6774e7d8fed97fc894db710c72711c56fb006c9a9b793ad8c1f67520b0ab3fa1",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "d24fce09a4a47583ec53e3d7d56aa23de0c79999284dd61662008b8e837e387e",
+  "members": [
+   "btc.taker_buy_share_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "btc.taker_buy_share_24",
+  "row_key": "e6668571083660906c56edc9902a4a723cf5825ed464b5e995d1c50ab614fbb8",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "d3e106c8e50b9fa7e807438b5e4ccd7d793c473a862ac9daa5d3486882f9eccc",
+  "members": [
+   "variogram_hurst_w200"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "variogram_hurst_w200",
+  "row_key": "287e3e3dec281e39032a4e51a6357cce0d62f99d01b126dd638d0373161488a1",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "d4c0d783b51574956d71f52fd85f51a1cccb0bd2e5183099a78415e0ad1014f9",
+  "members": [
+   "fx.usdjpy.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usdjpy.ret_1",
+  "row_key": "b2c5daf4ad79749cd1d8381889af783d52043943c78309306d08b644b24135cb",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "de138a5a4cc1437431d513daa9b467eee1622ec8da8287365949a5dd47df8b57",
+  "members": [
+   "fx.eurjpy.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eurjpy.ret_4",
+  "row_key": "78b9774f6814ff604ccc065f7eb3e52c460702a30735405c0176b14699986358",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "df8038908023b12463e5f1ec5aa869c56c75ece1a537768b5bce1451233467fa",
+  "members": [
+   "dly.gold.ret_1d"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "dly.gold.ret_1d",
+  "row_key": "65773f6ac6376603f4a538f70c6c1c15f751436b9fcbff4bba43eec7ded603ef",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "e0e72e70ad74e4ce5396d41783c6fc8b224ae6396d0a996c3d8088ffefa9297d",
+  "members": [
+   "CLOSE",
+   "HIGH",
+   "LOW",
+   "OPEN"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "CLOSE",
+  "row_key": "daa4200d25a7fa7017da88aa15ff362d9e31db5d41fa87416bdc05fba66166c1",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 4
+ },
+ {
+  "cluster_id": "e115cfaef2a16ff03ef5348df26d4abfec7af8f7904736ed9fd1016cdf898273",
+  "members": [
+   "btc.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "btc.ret_24",
+  "row_key": "8698aeb347347040f0490979472cf8ffbdb62f3d52681a179bbe82c6d23e3500",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "e1d7a148bb1b95d25772bb7c892e571b9b010c771f5bcf9c8421222ad00cf315",
+  "members": [
+   "px.logret_48"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.logret_48",
+  "row_key": "eada034f292682353fbb38e939550433d45a2cbaac5b441010d88ff964c68d8a",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "e55fe04d658b98f9bb8d8fcde934fdda048f657a19979a567b8b28d5ddec38e8",
+  "members": [
+   "DI_plus"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "DI_plus",
+  "row_key": "9c031b86d3979375458ed31b2df3b7eb3cba89218b3a82bed1002c1f6b27d3dd",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "e60004e7bc58dde2f84e4513f4bde44ea17c795e45d7e07c2387852507e40f79",
+  "members": [
+   "btc.ret_1"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "btc.ret_1",
+  "row_key": "c6ef1ad4b4ce81d0a69ea63bea866e3931b0e67a0d70bdabcd4adac9b6294ee0",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "e674da4531a88ab78873e8941ee001cd62ac4636a05420826b9fb7b2bfe7a09e",
+  "members": [
+   "fx.usd_strength.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.usd_strength.ret_24",
+  "row_key": "569df245285ee429d9ee4cbe537e560912be2a760ac248a761766885e6479fab",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "e9cd651bf914551360203d3d9c4b87541899b3ed15a6bb23ceadc6b48acc8b2a",
+  "members": [
+   "fx.eurjpy.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eurjpy.ret_24",
+  "row_key": "9a9f80b55c5b2731ed8db47688d0ff11650c40680295ec0f5a665cf2f5a38d36",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "ec0cd05e8e5344e7b1a6b45ddd53aa0bcaf94c4e6f48d8f8c58045978a740ed2",
+  "members": [
+   "fx.eurgbp.rv_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.eurgbp.rv_24",
+  "row_key": "78f938a358322e90e6bd5812c2e69d378183a92aaee686c7bc3ab38af0055711",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "efd2263eb40ab3b91a14106c0ca451c3045705f90b1c26134cbe58850d07f730",
+  "members": [
+   "px.close_loc_2"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.close_loc_2",
+  "row_key": "c2239cc176fd0007b982ebc2f99d87a6b1d04ff7c2de99498456fc1e55c0d5b6",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "efd7aa493de75e368dbf80dc71b48b89703178db02ec59247a7bb8654617e17c",
+  "members": [
+   "fx.gbpusd.ret_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.gbpusd.ret_24",
+  "row_key": "8673a4b295142b8211fb2efbef7008e1d050560c8bb36922cb0be35316697ad3",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "f2267dda501ead14004ae60d5525d8e80722bb886b0d70ab57803e3946132cfb",
+  "members": [
+   "px.logret_6"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.logret_6",
+  "row_key": "1dc2cc9ce563f6b7a7f969112e75711d49ec850c18c98b7af7acdcf7839d9634",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "f23b2dcc1fed515efed9811887bdb14d10d8395fe22eb22f4a9505b512f33249",
+  "members": [
+   "px.range_12"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.range_12",
+  "row_key": "12e1c806072f375ed5ba4b07affd4c7141628b24f7612d6c5beb5f3076874e24",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "f29e30310ced67abbe989f78f2f2808f1225a1c66f175ceed1ee9555b0d97a66",
+  "members": [
+   "fx.audusd.rv_24"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.audusd.rv_24",
+  "row_key": "26232e81d715bd8405469bf3913259ace3ce3abb30a3c2301b24a8f23317d953",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "f46067f3391c33e60a9d630418a41c45db02cc609b5f60a68d9fa2a6261fe424",
+  "members": [
+   "px.rv_6"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "px.rv_6",
+  "row_key": "972a55f88c1f339f175198f7d328c2b4895291c8d25ec1469be00900b77d64ed",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "f5a9dff9afb7c4c4ca5c106ec938998530983bdb1cd90e5102703c81e7d7a98e",
+  "members": [
+   "hurst_rs_w200"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "hurst_rs_w200",
+  "row_key": "087316382283d9613120272e14cabb6732637178749c0b2e173c26957098018e",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ },
+ {
+  "cluster_id": "f771d0805f85f98e43cc1150d1656150bc219f556e7395d1d2564460623d64e5",
+  "members": [
+   "fx.audusd.ret_4"
+  ],
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "representative": "fx.audusd.ret_4",
+  "row_key": "e98a5d81bf51713c75818100865366c54bacfd9fed231a92b4102bf5ba993293",
+  "rule": "average-linkage on 1-|spearman_TRAIN|, cut at |rho|>=0.9",
+  "run_id": "timing-selection:9d8aae907b3aa3c8",
+  "size": 1
+ }
+]

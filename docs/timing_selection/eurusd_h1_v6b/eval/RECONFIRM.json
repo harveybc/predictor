@@ -1,0 +1,12 @@
+{
+ "stage": "reconfirm",
+ "freeze_sha256": "7aefe9ed7a1424416d56eff5a630ed54660b3f6b237ce512faadf4f66aa384cc",
+ "rows": 4925,
+ "rows_lost_to_union_warmup": {
+  "admitted_core_15_553fc047": 0,
+  "timing_selected": 0,
+  "v3_six_on_admitted_clock": 0,
+  "v5_selected_calendar_one": 0
+ },
+ "decisions_changed": false
+}

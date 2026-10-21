@@ -1,0 +1,543 @@
+{
+ "admitted": [
+  "OPEN",
+  "HIGH",
+  "LOW",
+  "CLOSE",
+  "RAW_BAR_LOG_RETURN",
+  "RAW_LOG_RANGE",
+  "RAW_CLOSE_LOG_RETURN",
+  "RAW_ELAPSED_HOURS",
+  "ATR",
+  "RSI",
+  "MACD",
+  "MACD_Histogram",
+  "MACD_Signal",
+  "ADX",
+  "DI_plus",
+  "DI_minus",
+  "Stochastic_K",
+  "Stochastic_D",
+  "BB_Width",
+  "CCI",
+  "WilliamsR",
+  "ROC",
+  "ATR_ratio",
+  "BB_position",
+  "rolling_std_24",
+  "price_minus_ema",
+  "hod_sin",
+  "hod_cos",
+  "dow_sin",
+  "dow_cos",
+  "px.logret_1",
+  "px.range_1",
+  "px.close_loc_1",
+  "px.er_1",
+  "px.rv_1",
+  "px.logret_2",
+  "px.range_2",
+  "px.close_loc_2",
+  "px.er_2",
+  "px.rv_2",
+  "px.logret_4",
+  "px.range_4",
+  "px.close_loc_4",
+  "px.er_4",
+  "px.rv_4",
+  "px.logret_6",
+  "px.range_6",
+  "px.close_loc_6",
+  "px.er_6",
+  "px.rv_6",
+  "px.logret_12",
+  "px.range_12",
+  "px.close_loc_12",
+  "px.er_12",
+  "px.rv_12",
+  "px.logret_24",
+  "px.range_24",
+  "px.close_loc_24",
+  "px.er_24",
+  "px.rv_24",
+  "px.logret_48",
+  "px.range_48",
+  "px.close_loc_48",
+  "px.er_48",
+  "px.rv_48",
+  "px.atr_14",
+  "px.atr_ratio_14_120",
+  "px.range_ratio_1_24",
+  "px.bar_body",
+  "cal.utc_hod_sin",
+  "cal.utc_hod_cos",
+  "cal.utc_dow_sin",
+  "cal.utc_dow_cos",
+  "cal.utc_session_asia",
+  "cal.utc_session_europe",
+  "cal.utc_session_us",
+  "cal.london_hod_sin",
+  "cal.london_hod_cos",
+  "px.elapsed_hours",
+  "px.hours_since_session_open",
+  "px.unexpected_gap_hours",
+  "hurst_rs_w48",
+  "variogram_hurst_w48",
+  "hurst_spectrum_width_w48",
+  "box_counting_dimension_w48",
+  "hurst_rs_w96",
+  "variogram_hurst_w96",
+  "hurst_spectrum_width_w96",
+  "box_counting_dimension_w96",
+  "hurst_rs_w200",
+  "variogram_hurst_w200",
+  "hurst_spectrum_width_w200",
+  "box_counting_dimension_w200",
+  "fx.gbpusd.ret_1",
+  "fx.gbpusd.ret_4",
+  "fx.gbpusd.ret_24",
+  "fx.gbpusd.rv_24",
+  "fx.usdchf.ret_1",
+  "fx.usdchf.ret_4",
+  "fx.usdchf.ret_24",
+  "fx.usdchf.rv_24",
+  "fx.usdjpy.ret_1",
+  "fx.usdjpy.ret_4",
+  "fx.usdjpy.ret_24",
+  "fx.usdjpy.rv_24",
+  "fx.eurgbp.ret_1",
+  "fx.eurgbp.ret_4",
+  "fx.eurgbp.ret_24",
+  "fx.eurgbp.rv_24",
+  "fx.eurjpy.ret_1",
+  "fx.eurjpy.ret_4",
+  "fx.eurjpy.ret_24",
+  "fx.eurjpy.rv_24",
+  "fx.audusd.ret_1",
+  "fx.audusd.ret_4",
+  "fx.audusd.ret_24",
+  "fx.audusd.rv_24",
+  "fx.usd_strength.ret_1",
+  "fx.usd_strength.ret_4",
+  "fx.usd_strength.ret_24",
+  "fx.eur_strength.ret_1",
+  "fx.eur_strength.ret_4",
+  "fx.eur_strength.ret_24",
+  "btc.ret_1",
+  "btc.ret_4",
+  "btc.ret_24",
+  "btc.rv_24",
+  "btc.taker_buy_share_24",
+  "dly.us2y.level",
+  "dly.us2y.chg_1d",
+  "dly.us2y.chg_5d",
+  "dly.us10y.level",
+  "dly.us10y.chg_1d",
+  "dly.us10y.chg_5d",
+  "dly.us10y2y.level",
+  "dly.us10y2y.chg_1d",
+  "dly.us10y2y.chg_5d",
+  "dly.vix.level",
+  "dly.vix.chg_1d",
+  "dly.spx.ret_1d",
+  "dly.spx.ret_5d",
+  "dly.dax.ret_1d",
+  "dly.dax.ret_5d",
+  "dly.gold.ret_1d",
+  "dly.gold.ret_5d",
+  "dly.oil.ret_1d",
+  "dly.oil.ret_5d",
+  "cot.eur.net_long",
+  "cot.eur.net_change",
+  "cot.eur.net_share",
+  "cot.eur.net_z156"
+ ],
+ "config": {
+  "adapter_revision": "{execution,zigzag,zigzag_opt,bar_source}.py (abbfaa6 + ce9a3dc merged), executable b+1, calendar from admitted closures",
+  "business_calendar": {
+   "daily_cap_timing_lane": 4,
+   "eligibility_k_bars": 1,
+   "note": "eligibility window k=1: the fill bar must be inside the session; the order's own resolution is in the label support ledger",
+   "preclose_hours": 12,
+   "reopen_hours": 12,
+   "source": "admitted CLOSURE_INTERVALS.json"
+  },
+  "candidates": {
+   "external": [
+    {
+     "commit": "cross-asset-h1-20261020 @fc104c6 (r2: exact grid join, interval-safe gate)",
+     "file": "cross_asset_eurusd_h1_2020_2024.parquet",
+     "manifest": "MANIFEST.json",
+     "manifest_sha256": "74a4e1043ed4beb4c5b6f330ee5feeda052a8a2149e1894e3f05de71622fc3a5",
+     "name": "cross_asset_h1",
+     "sha256": "bb7f345522276bb2e7f2775b671148321922b2ec0bb10fd03e339ec531dc2034"
+    }
+   ],
+   "fractal": {
+    "compute_with_module": "causal_fractal.py",
+    "module_commit": "causal_fractal.py",
+    "module_sha256": "4fd73f0ddc4fe621c67f856676a03e890790b88f10a8ee67b6f17337ec8b9ea4",
+    "windows": [
+     48,
+     96,
+     200
+    ]
+   },
+   "inventory": {
+    "bundle_commit": "data-curation-20261018 @41f5af170",
+    "bundle_script": "core_selection_bundle.py",
+    "bundle_sha256": "f7bf19f8b229099f80b8b9baf3a1cd2543d1538ef4fa16d2d4e282aa2a23c441",
+    "datetime_convention": "availability_instant",
+    "generator_commit": "feature-eng @d081d0f",
+    "generator_module": "normalize_phase1b.py",
+    "generator_sha256": "17a33c4470a3fc4270e60f347240dae2d40fde023a27218961e0a4f3bba68067"
+   },
+   "price_pool": true,
+   "price_pool_clock": "utc",
+   "price_pool_closure_features": true
+  },
+  "causal": {
+   "alpha": 0.01,
+   "enabled": true,
+   "event_quantile": 0.8,
+   "history": [
+    "px.logret_24",
+    "px.rv_24"
+   ],
+   "min_events": 20,
+   "n_boot": 400,
+   "n_controls": 5,
+   "negative_control_reference": "px.logret_2",
+   "pc_alpha": 0.05,
+   "provider_src": "src",
+   "q": 0.1,
+   "seed": 0,
+   "workers": 4
+  },
+  "comparison_notes": {
+   "v3_six_on_admitted_clock": "cos pair, which spans that phase"
+  },
+  "comparison_sets": {
+   "admitted_core_15_553fc047": [
+    "HIGH",
+    "RAW_LOG_RANGE",
+    "RAW_CLOSE_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "ATR",
+    "RSI",
+    "MACD_Histogram",
+    "ADX",
+    "DI_minus",
+    "Stochastic_D",
+    "WilliamsR",
+    "rolling_std_24",
+    "hod_sin",
+    "hod_cos",
+    "dow_cos"
+   ],
+   "v3_six_on_admitted_clock": [
+    "RAW_BAR_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "cal.london_hod_sin",
+    "cal.london_hod_cos",
+    "px.atr_ratio_14_120",
+    "px.close_loc_2",
+    "variogram_hurst_w96"
+   ],
+   "v5_selected_calendar_one": [
+    "px.hours_since_session_open"
+   ]
+  },
+  "fdr_q": 0.1,
+  "filter": {
+   "k_grid": [
+    4,
+    8,
+    12,
+    16,
+    24
+   ],
+   "recipe": {
+    "k": 12,
+    "method": "MRMR",
+    "prune_abs_spearman": 0.9,
+    "require_fdr_pass": true,
+    "targets": [
+     "timing_profit_h72",
+     "timing_profit_long_h72",
+     "timing_profit_short_h72"
+    ]
+   },
+   "seed": 6102026
+  },
+  "finality_all_targets_all_cuts": true,
+  "n_shards": 4,
+  "not_comparable": {
+   "manifest_19_2ff34fa2": " cross-asset columns) exists only in a private deployment directory and cannot be regenerated from the lake; no identical-row comparison is possible"
+  },
+  "pairwise_params": {
+   "dcor_max_rows": 1000,
+   "lags_hours": [
+    0,
+    1,
+    2,
+    6,
+    24
+   ],
+   "min_support": 100
+  },
+  "phase3_workers": 1,
+  "population_id": "EURUSD_H1_PROFIT_CROSS_ASSET_R2_ADMITTED",
+  "read_ledger_extra": [
+   {
+    "actor": "this lane v3 (lake proxy, b4da1012)",
+    "consequence": "2023 joint development and 2024 previously observed again; v4 is a NEW identity on another source",
+    "periods": {
+     "2020-2022": "selection",
+     "2023": " frozen score",
+     "2024": "reconfirmation"
+    }
+   },
+   {
+    "actor": "this lane v4 (pivot target, admitted source)",
+    "consequence": "2023 and 2024 observed again under a NEW target family; v5 is a new identity",
+    "periods": {
+     "2020-2022": "selection",
+     "2023": " frozen score",
+     "2024": "single read"
+    }
+   },
+   {
+    "actor": "this lane v5 (profit target, 93-feature pool)",
+    "consequence": "2023 and 2024 observed again with a larger pool; v6 is a new identity",
+    "periods": {
+     "2020-2022": "selection",
+     "2023": " frozen score",
+     "2024": "single read"
+    }
+   }
+  ],
+  "reuse_from": "v4_run",
+  "schema": "predictor.timing_selection.v1",
+  "screen": {
+   "method": "blocked_circular_shift",
+   "min_shift_rows": 168,
+   "n_perm": 4999,
+   "seed": 6102026
+  },
+  "seed": 6102026,
+  "source": {
+   "adapter": "clock-identity-20261019 @ce9a3dc (bar_source source=admitted)",
+   "admission": {
+    "path": "ADMISSION.json",
+    "sha256": "ee426b52b4c6ad77c9b48cfce2681c3197903222ed7ff890d8b30d2ffbb74b52"
+   },
+   "bar_source_module": "bar_source.py",
+   "bar_source_sha256": "fab22a4db4ef656f97dcab5f7ba9f8846910ef2dadfa2c9f0515d6de95555a2e",
+   "closures": {
+    "path": "CLOSURE_INTERVALS.json",
+    "sha256": "71078e8f9a95c4438405a9fa3dafdffdc0f44183bbf27ba828168c18065e8350"
+   },
+   "kind": "admitted",
+   "load": [
+    "2020-01-01",
+    "2025-01-01"
+   ],
+   "path": "eurusd.parquet",
+   "sha256": "c80847bb149c7af1ad50e42301b5cd70608e6c37702ce8cc6a7b9eb70f36d2ca",
+   "sibling_sha256": {
+    "clock_identity.py": "0bd000523da23f9c87fd7947b558ca1c55a16a5df47112aa754f2670080a1d2a",
+    "data.py": "28d50d2539a99bc0e18af63c49e17bd4b2b6e0245f3e6050bbf328d87836fe5d"
+   }
+  },
+  "splits": {
+   "confirm": [
+    "2024-01-01",
+    "2025-01-01"
+   ],
+   "folds": [
+    "2021-01-01",
+    "2022-01-01"
+   ],
+   "inner": [
+    "2023-01-01",
+    "2024-01-01"
+   ],
+   "inner_a_end": "2023-07-01",
+   "train": [
+    "2020-01-01",
+    "2023-01-01"
+   ]
+  },
+  "strategy": {
+   "executable": true,
+   "k_tp": 2.0,
+   "max_orders_per_day": 4,
+   "note": "v2 to isolate the expert change"
+  },
+  "target": {
+   "cost_sigma": 0.1,
+   "family": "timing_profit",
+   "horizon_bars": 72,
+   "m_sl": 2.0,
+   "m_tp": 2.0,
+   "note": " 2 sigma rule, executable fill, forced flat at closures)",
+   "preclose_hours": 12.0
+  },
+  "zigzag": {
+   "confirmation": "confirmation_bars_fast",
+   "k_bars": 2,
+   "label": "day, FINAL.json A4_wide; demonstrations v2 38125b0b)",
+   "module": "zigzag.py",
+   "params": {
+    "backstep": 0,
+    "depth": 3,
+    "deviation_pips": 40.7
+   },
+   "sha256": "fc24c6f22aa4f7696548d1117b1d2cfad42a43eccd116f0bbcffe6a71df1624a"
+  }
+ },
+ "config_sha256": "9d8aae907b3aa3c834a989d1aeebb49e507b83d313f802f33f33248841b80e94",
+ "manifest_sha256": "cc590d1dd4bd929bad4bc3403994c675ad2ae30e8abd9436fc2eb0fe3131b9d6",
+ "pool_notes": {
+  "external": [
+   {
+    "clock_gate": {
+     "median_corr_lag0": 1.0,
+     "passed": true,
+     "share_best_lag0": 1.0,
+     "weeks": 262
+    },
+    "columns": [
+     "fx.gbpusd.ret_1",
+     "fx.gbpusd.ret_4",
+     "fx.gbpusd.ret_24",
+     "fx.gbpusd.rv_24",
+     "fx.usdchf.ret_1",
+     "fx.usdchf.ret_4",
+     "fx.usdchf.ret_24",
+     "fx.usdchf.rv_24",
+     "fx.usdjpy.ret_1",
+     "fx.usdjpy.ret_4",
+     "fx.usdjpy.ret_24",
+     "fx.usdjpy.rv_24",
+     "fx.eurgbp.ret_1",
+     "fx.eurgbp.ret_4",
+     "fx.eurgbp.ret_24",
+     "fx.eurgbp.rv_24",
+     "fx.eurjpy.ret_1",
+     "fx.eurjpy.ret_4",
+     "fx.eurjpy.ret_24",
+     "fx.eurjpy.rv_24",
+     "fx.audusd.ret_1",
+     "fx.audusd.ret_4",
+     "fx.audusd.ret_24",
+     "fx.audusd.rv_24",
+     "fx.usd_strength.ret_1",
+     "fx.usd_strength.ret_4",
+     "fx.usd_strength.ret_24",
+     "fx.eur_strength.ret_1",
+     "fx.eur_strength.ret_4",
+     "fx.eur_strength.ret_24",
+     "btc.ret_1",
+     "btc.ret_4",
+     "btc.ret_24",
+     "btc.rv_24",
+     "btc.taker_buy_share_24",
+     "dly.us2y.level",
+     "dly.us2y.chg_1d",
+     "dly.us2y.chg_5d",
+     "dly.us10y.level",
+     "dly.us10y.chg_1d",
+     "dly.us10y.chg_5d",
+     "dly.us10y2y.level",
+     "dly.us10y2y.chg_1d",
+     "dly.us10y2y.chg_5d",
+     "dly.vix.level",
+     "dly.vix.chg_1d",
+     "dly.spx.ret_1d",
+     "dly.spx.ret_5d",
+     "dly.dax.ret_1d",
+     "dly.dax.ret_5d",
+     "dly.gold.ret_1d",
+     "dly.gold.ret_5d",
+     "dly.oil.ret_1d",
+     "dly.oil.ret_5d",
+     "cot.eur.net_long",
+     "cot.eur.net_change",
+     "cot.eur.net_share",
+     "cot.eur.net_z156"
+    ],
+    "excluded": {
+     "FRED DTWEX* / macro composites": "computed indices with revisions; not point-in-time",
+     "STLFSI4": "revised series; point-in-time leak already audited (I6N)",
+     "economic calendar 2020-2024 with consensus": "not available point-in-time (Investing.com export forbidden by its terms; FXMacroData only from 2024-12)"
+    },
+    "file_sha256": "bb7f345522276bb2e7f2775b671148321922b2ec0bb10fd03e339ec531dc2034",
+    "future_perturbation": [
+     {
+      "cells_changed_after": 1226694,
+      "cells_changed_at_or_before": 0,
+      "cut": "2021-06-15 13:00:00+00:00",
+      "rows_at_or_before": 9032
+     },
+     {
+      "cells_changed_after": 611584,
+      "cells_changed_at_or_before": 0,
+      "cut": "2023-03-01 08:00:00+00:00",
+      "rows_at_or_before": 19707
+     }
+    ],
+    "manifest_sha256": "74a4e1043ed4beb4c5b6f330ee5feeda052a8a2149e1894e3f05de71622fc3a5",
+    "name": "cross_asset_h1",
+    "plugin": "cross_asset_h1"
+   }
+  ],
+  "fractal": {
+   "input": "closes of the configured bar source (observed bars; windows in observed bars)",
+   "module_commit": "causal_fractal.py",
+   "module_sha256": "4fd73f0ddc4fe621c67f856676a03e890790b88f10a8ee67b6f17337ec8b9ea4",
+   "source": "computed_with_owner_plugin",
+   "windows_bars": [
+    48,
+    96,
+    200
+   ]
+  },
+  "inventory": {
+   "columns": [
+    "OPEN",
+    "HIGH",
+    "LOW",
+    "CLOSE",
+    "RAW_BAR_LOG_RETURN",
+    "RAW_LOG_RANGE",
+    "RAW_CLOSE_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "ATR",
+    "RSI",
+    "MACD",
+    "MACD_Histogram",
+    "MACD_Signal",
+    "ADX",
+    "DI_plus",
+    "DI_minus",
+    "Stochastic_K",
+    "Stochastic_D",
+    "BB_Width",
+    "CCI",
+    "WilliamsR",
+    "ROC",
+    "ATR_ratio",
+    "BB_position",
+    "rolling_std_24",
+    "price_minus_ema",
+    "hod_sin",
+    "hod_cos",
+    "dow_sin",
+    "dow_cos"
+   ]
+  }
+ },
+ "train_rows": 18698
+}
