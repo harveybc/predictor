@@ -13,16 +13,19 @@ generalizacion de SAC. Su sucesor es un contraste de stride1/4 con13 instantes
 frente al control stride2,100000 transiciones y arquitectura fija. Dos fits
 iniciales y hasta cuatro confirmaciones condicionales, con relevo automatico
 en la GPU preferente. Desplegado runtime9aa461dd,specfaab4d09; worker/publicacion
-y colector independiente habilitados. Primer tick WAIT_PREDECESSOR, lote previo
-8/10 sin fallos; no se afirma un fit SAC antes de verlo arrancar realmente.
+y colector independiente habilitados. RELEVO REAL VERIFICADO: lote previo10/10
+sin fallos; SAC stride1 ya entrenando,1000/100000 transiciones en12.4763s,
+01:20:37UTC del21. Ventana13x15,actor1062/criticos1638 parametros; ES false,
+final100k y cuatro controles. Contratoeaeb5fd4; despues stride4 automatico.
 
-LOTE ACOTADO YA EJECUTANDO: [alerta HistData y contraste del monitor](HISTDATA_AND_MONITOR_FOLLOWUP_2026_10_20.md).
+LOTE ACOTADO YA CERRADO: [alerta HistData y contraste del monitor](HISTDATA_AND_MONITOR_FOLLOWUP_2026_10_20.md).
 2023H1:2436 barras compartidas,0 diferenciasOHLC,675 huecos del candidato;
 la correlacion baja provenia de comparar retornos con duraciones distintas.
 Raiz admitida/targets/seleccion intactos. Diez FULL fits secuenciales: promedio
 original frente al promedio mas penalizacion de brecha. Cinco semillas comunes,
-runtime d41d588e,spec30bfbe92; primer fit iniciado; GPU smoke y paridad exacta
-verificados. Timers worker/publicacion/copia habilitados; TEST cerrado.
+runtime d41d588e,spec30bfbe92;10/10 celdas cerradas sin fallos. Cierre cientifico
+verificado antes del relevo; publicacion/copia siguen en sus timers. No se
+atribuye la generalizacion de SAC a este contraste BC/DAgger; TEST cerrado.
 
 CIERRE MAS RECIENTE: [especialistas controlados: resultado completo](RL_MODULAR_SPECIALISTS_RESULT_2026_10_20.md).
 15/15 al primer intento,29m15s,fin21:00:58UTC.160/160 reportes con readback,

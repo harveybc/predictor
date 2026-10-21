@@ -47,3 +47,10 @@ Timers de worker/publicacion y colector independiente habilitados. Primer tick:
 8/10, sin fallos, y se mantiene intacto. No se afirma que SAC haya arrancado
 antes de su relevo real. Regresiones: 125 con integracion nativa, 120 CPU con
 sondas de muestreo (conjuntos solapados), 16 contextuales finales y 35 en worker.
+
+Relevo automatico comprobado: el lote previo cerro10/10 sin fallos. Primer SAC
+stride1 ya entrenando a01:20:37UTC del21:1000/100000 transiciones en12.4763s,
+15 variables,13 instantes,actor1062/criticos1638 parametros. Contrato
+`eaeb5fd40805100db8343bbca8ecf16203fce5d6f7fdfbec39e73382519c8112`.
+Admision GPU y recarga exacta verificadas; ES=false, final100000. Recibo
+`LAUNCH_VERIFIED.json` retenido. No hay resultado financiero nuevo en este corte.
