@@ -1,0 +1,114 @@
+{
+ "tests_train": 42704,
+ "q": 0.1,
+ "pass_bh": 142,
+ "confirmed_inner_a": 4,
+ "by_label": {
+  "hit": 113,
+  "up": 29
+ },
+ "by_family_label": [
+  {
+   "label": "hit",
+   "family": "cal",
+   "n": 14
+  },
+  {
+   "label": "hit",
+   "family": "dly",
+   "n": 46
+  },
+  {
+   "label": "hit",
+   "family": "ev",
+   "n": 6
+  },
+  {
+   "label": "hit",
+   "family": "fx",
+   "n": 3
+  },
+  {
+   "label": "hit",
+   "family": "inventory",
+   "n": 13
+  },
+  {
+   "label": "hit",
+   "family": "px",
+   "n": 31
+  },
+  {
+   "label": "up",
+   "family": "dly",
+   "n": 5
+  },
+  {
+   "label": "up",
+   "family": "fx",
+   "n": 4
+  },
+  {
+   "label": "up",
+   "family": "inventory",
+   "n": 2
+  },
+  {
+   "label": "up",
+   "family": "px",
+   "n": 18
+  }
+ ],
+ "strata": [
+  "all",
+  "lowvol_asia",
+  "lowvol_europe",
+  "lowvol_us",
+  "lowvol_late",
+  "midvol_asia",
+  "midvol_europe",
+  "midvol_us",
+  "midvol_late",
+  "highvol_asia",
+  "highvol_europe",
+  "highvol_us",
+  "highvol_late",
+  "pre_london_fix_2h",
+  "post_london_fix_2h",
+  "pre_tokyo_fix_2h",
+  "post_tokyo_fix_2h"
+ ],
+ "lags": [
+  0,
+  1,
+  2,
+  4,
+  8,
+  24,
+  48,
+  120
+ ],
+ "k_null": 1000,
+ "k_null_confirm": 500,
+ "device": "cuda",
+ "rv24_train_terciles": [
+  0.0033359937426497045,
+  0.005020907320169568
+ ],
+ "input_counts": {
+  "TRAIN": {
+   "rows": 18698,
+   "hit_rows": 14823,
+   "hit_rate": 0.31316197800715107,
+   "up_rows": 4642,
+   "up_rate": 0.5122791900043084
+  },
+  "INNER_A": {
+   "rows": 3111,
+   "hit_rows": 2487,
+   "hit_rate": 0.31363088057901084,
+   "up_rows": 780,
+   "up_rate": 0.6012820512820513
+  }
+ }
+}
