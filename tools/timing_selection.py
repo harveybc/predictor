@@ -215,6 +215,41 @@ def fractal_candidates(bars: pd.DataFrame, spec: dict, lake_sha256: str):
     return x, meta, note
 
 
+def external_candidates(bars: pd.DataFrame, spec: dict, source_sha: str):
+    """A precomputed candidate store on the SAME admitted UTC hourly grid (v6: feature-eng ``cross_asset_h1``).
+    Pinned file and manifest; the manifest must name this run's admitted source; no TEST row; values are joined by
+    exact bar start and carry the store's own availability rules (verified by its builder: clock gate and a
+    real-data future perturbation, both recorded here)."""
+    if tp.sha256_file(spec["file"]) != spec["sha256"]:
+        raise DriverError(f"EXTERNAL_STORE_DIGEST: {spec.get('name')}")
+    if tp.sha256_file(spec["manifest"]) != spec["manifest_sha256"]:
+        raise DriverError(f"EXTERNAL_MANIFEST_DIGEST: {spec.get('name')}")
+    fm = json.loads(Path(spec["manifest"]).read_text())
+    if fm.get("source_sha256") != source_sha or fm.get("file_sha256") != spec["sha256"]:
+        raise DriverError("EXTERNAL_STORE_IDENTITY: the store is not built on this run's admitted grid / file")
+    if not all(c["cells_changed_at_or_before"] == 0 for c in fm.get("future_perturbation", [])) or not fm.get("future_perturbation"):
+        raise DriverError("EXTERNAL_STORE_PERTURBATION: the builder's future-perturbation evidence is missing or failed")
+    raw = pd.read_parquet(spec["file"])
+    idx = pd.DatetimeIndex(pd.to_datetime(raw["timestamp"]))
+    idx = idx.tz_localize("UTC") if idx.tz is None else idx.tz_convert("UTC")
+    if len(idx) and idx.max() >= tp.TEST_START:
+        raise DriverError("TEST_ROWS_FORBIDDEN: external store reaches TEST rows")
+    x = raw.drop(columns=["timestamp"]).set_index(idx)
+    if x.index.duplicated().any():
+        raise DriverError("EXTERNAL_DUPLICATE_TIMESTAMPS")
+    x = x.reindex(bars.index)
+    fmeta = {m["feature_id"]: m for m in fm["features"]}
+    meta = [{"feature_id": c, "family": fmeta[c]["family"], "source": f"external store {spec.get('name')} ({fm.get('plugin')})",
+             "transform": fmeta[c]["transform"], "unit": fmeta[c].get("unit", ""), "clock": "UTC",
+             "availability_time": fmeta[c]["availability_time"], "availability_rule": fmeta[c].get("availability_rule"),
+             "support_h": 1, "train_coverage": float(x[c].notna().mean()), "source_bytes": int(x[c].notna().sum()) * 8}
+            for c in x.columns]
+    note = {"name": spec.get("name"), "file_sha256": spec["sha256"], "manifest_sha256": spec["manifest_sha256"],
+            "plugin": fm.get("plugin"), "clock_gate": {k: fm["clock_gate"].get(k) for k in ("weeks", "share_best_lag0", "median_corr_lag0", "passed")},
+            "future_perturbation": fm.get("future_perturbation"), "excluded": fm.get("excluded"), "columns": list(x.columns)}
+    return x, meta, note
+
+
 def assemble_pool(bars: pd.DataFrame, cfg: dict, closures=None):
     cand = cfg["candidates"]
     frames, meta, notes, gens = [], [], {}, {}
@@ -236,6 +271,11 @@ def assemble_pool(bars: pd.DataFrame, cfg: dict, closures=None):
         frames.append(x)
         meta += m
         notes["fractal"] = n
+    for spec in cand.get("external") or []:
+        x, m, n = external_candidates(bars, spec, source_sha256(cfg))
+        frames.append(x)
+        meta += m
+        notes.setdefault("external", []).append(n)
     if not frames:
         raise DriverError("EMPTY_POOL: no candidate source declared")
     X = pd.concat(frames, axis=1)
@@ -247,7 +287,8 @@ def assemble_pool(bars: pd.DataFrame, cfg: dict, closures=None):
 def inventory_record(meta: list[dict], X: pd.DataFrame, notes: dict, alias_groups: dict | None = None) -> dict:
     fam = {}
     for m in meta:
-        src = "inventory" if m["source"].startswith("inventory") else ("fractal" if m["family"] == "fractal" else "price_pool")
+        src = "inventory" if m["source"].startswith("inventory") else ("fractal" if m["family"] == "fractal" else
+                                                                        ("external" if m["source"].startswith("external") else "price_pool"))
         fam.setdefault(src, []).append(m["feature_id"])
     cols = list(X.columns)
     return {"ordered_columns": cols, "count": len(cols), "counts_by_source": {k: len(v) for k, v in fam.items()},

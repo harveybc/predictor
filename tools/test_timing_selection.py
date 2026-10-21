@@ -577,3 +577,41 @@ def test_v5_default_family_is_byte_identical_to_the_v4_driver(tmp_path, hs_root)
     assert ma["manifest_sha256"] == mb["manifest_sha256"] and ma["target_params"]["k_bars"] == 2
     ra, rb = (json.loads((d / "REPORT.json").read_text()) for d in (a, b))
     assert ra["identity"] == rb["identity"]
+
+
+# ----------------------------------------------------------------------------- v6: external candidate store
+def _external_store(tmp_path, adm_path, sha, bars_index, bad_source=False):
+    rng = np.random.default_rng(9)
+    st = pd.DataFrame({"timestamp": bars_index, "ext.noise": rng.normal(size=len(bars_index)),
+                       "ext.lagged_ret": np.r_[np.nan, np.diff(np.arange(len(bars_index)) % 7)]})
+    f = tmp_path / "store.parquet"
+    st.to_parquet(f, index=False)
+    man = {"plugin": "cross_asset_h1", "source_sha256": ("0" * 64) if bad_source else sha(adm_path), "file_sha256": sha(f),
+           "features": [{"feature_id": c, "family": "cross_asset_test", "availability_time": "timestamp",
+                         "availability_rule": "test", "transform": "trailing"} for c in ("ext.noise", "ext.lagged_ret")],
+           "future_perturbation": [{"cut": "x", "cells_changed_at_or_before": 0, "cells_changed_after": 5}],
+           "clock_gate": {"weeks": 1, "share_best_lag0": 1.0, "median_corr_lag0": 1.0, "passed": True}}
+    m = tmp_path / "MANIFEST.json"
+    m.write_text(json.dumps(man))
+    return {"name": "test_store", "file": str(f), "sha256": sha(f), "manifest": str(m), "manifest_sha256": sha(m)}
+
+
+def test_v6_external_store_joins_on_the_admitted_grid_and_refuses_a_foreign_one(tmp_path, hs_root):
+    ts = _cap("timing_selection")
+    cfg = _profit_cfg(tmp_path, hs_root)
+    bars, _, _ = ts.load_bars(cfg)
+    sha = lambda f: hashlib.sha256(Path(f).read_bytes()).hexdigest()  # noqa: E731
+    cfg["candidates"]["external"] = [_external_store(tmp_path, cfg["source"]["path"], sha, bars.index)]
+    (tmp_path / "cfg.json").write_text(json.dumps(cfg))
+    out = tmp_path / "out"
+    ts.run(tmp_path / "cfg.json", out)
+    pool_cols = pd.read_parquet(out / "data" / "pool_all.parquet").columns
+    assert {"ext.noise", "ext.lagged_ret"} <= set(pool_cols)
+    inv = json.loads((out / "INVENTORY.json").read_text())
+    assert "external" in inv["count_reconciliation"]
+    bad = tmp_path / "bad"
+    bad.mkdir()
+    cfg2 = dict(cfg, candidates=dict(cfg["candidates"], external=[_external_store(bad, cfg["source"]["path"], sha, bars.index, bad_source=True)]))
+    (bad / "cfg.json").write_text(json.dumps(cfg2))
+    with pytest.raises(ts.DriverError, match="EXTERNAL_STORE_IDENTITY"):
+        ts.run(bad / "cfg.json", bad / "out")
