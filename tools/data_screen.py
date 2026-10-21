@@ -209,7 +209,8 @@ def screen(a):
             conf.append(bool(np.sign(v.smd) == np.sign(r.smd) and abs(v.z) >= 2 and np.sign(v.z) == np.sign(r.z)))
         else:
             conf.append(False)
-    tr.loc[tr.pass_bh, "confirmed_inner_a"] = conf
+    tr["confirmed_inner_a"] = pd.Series([None] * len(tr), dtype=object)
+    tr.loc[tr.pass_bh, "confirmed_inner_a"] = pd.Series(conf, index=tr.index[tr.pass_bh], dtype=object)
     R.to_parquet(out / "SCREEN_ALL.parquet", index=False)
     tr.to_parquet(out / "SCREEN_TRAIN_BH.parquet", index=False)
     fam = lambda f: f.split(".")[0] if "." in f else "inventory"  # noqa: E731
