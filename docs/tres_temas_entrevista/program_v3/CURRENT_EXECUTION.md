@@ -6,6 +6,15 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del21 de octubre
 
+TRABAJO ACTUAL: [auditoria de comparabilidad y repeticion fresca de13](RL_WINDOW_COMPARABILITY_AUDIT_2026_10_21.md).
+2550 referencias y5 modelos verificados; sin diferencias cientificas inesperadas
+fuera de ventana/depth1 explicita. Cabezal,calentamiento e inicializacion del
+critico cambian con la ventana:13 no es un optimo demostrado con una semilla.
+La inicializacion13 anterior/actual coincide bitwise. Repeticion13 YA RUNNING
+en5090,runtime6916e49a,contratof2437f30,3000/100000 verificados; publicacion,
+comparacion exacta al cierre y copia independientes. El grid anterior esta
+cerrado; la afirmacion inferior de GPU libre corresponde a aquel cierre.
+
 CIERRE ACTUAL: [grid fino de ventana](RL_FINE_WINDOW_RESULT_2026_10_21.md),4/4
 sin fallos. VALIDATION9=-31.76%,11=-34.47%,13control=-7.28%,15=-26.53%,17=-19.70%.
 Se conserva13; vecinos/confirmaciones no activados por la regla predeclarada.
