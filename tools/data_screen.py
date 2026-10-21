@@ -18,7 +18,8 @@ after the Tokyo 09:55 fix.
 
 Statistic per (label, stratum, feature, lag): difference of the mean normal score of the feature (rank-Gauss inside
 the stratum, NaN -> 0) between label 1 and label 0 rows (a standardized mean difference). Null: the label series
-circularly shifted against the features by K offsets in [168, n - 168] TRAIN rows (keeps both serial structures),
+circularly shifted against the features by K offsets in [168, n - 168] TRAIN rows that break the daily and weekly
+phase (keeps both serial structures; see phase_breaking_offsets),
 restricted to the same stratum; z against the null mean / sd; two-sided normal p (the null's sd is estimated from the
 shifts; declared approximation that allows p-values below 1/K); BH at q over every test. A survivor is CONFIRMED when
 the same statistic on INNER_A has the same sign and its own shift-null z >= 2.
@@ -128,6 +129,19 @@ def normal_scores(x: np.ndarray) -> np.ndarray:
     return out
 
 
+def phase_breaking_offsets(rng, n: int, K: int) -> np.ndarray:
+    """Circular-shift offsets in [168, n - 168] rows that do NOT realign the daily or the weekly phase: offset mod 24
+    in [4, 20] and offset mod 120 (5 trading days of observed bars) in [12, 108]. Offsets near a multiple of a day or a
+    week would keep clock-driven association in the null and blind the test to calendar / event-clock features
+    (correction declared 2026-10-21 after the first run, before any re-read)."""
+    out = []
+    while len(out) < K:
+        o = int(rng.integers(168, n - 168))
+        if 4 <= o % 24 <= 20 and 12 <= o % 120 <= 108:
+            out.append(o)
+    return np.asarray(out)
+
+
 def screen(a):
     import torch
     from scipy.stats import norm
@@ -147,7 +161,7 @@ def screen(a):
     for pname, K in (("TRAIN", a.k), ("INNER_A", a.k_confirm)):
         sel = np.flatnonzero(period == pname)
         n = len(sel)
-        offs = rng.integers(168, n - 168, K)
+        offs = phase_breaking_offsets(rng, n, K)
         masks, terc = strata_masks(df.iloc[sel].reset_index(drop=True), np.ones(n, bool)) if pname == "TRAIN" else (None, None)
         if pname == "TRAIN":
             train_masks, train_terc = masks, terc
