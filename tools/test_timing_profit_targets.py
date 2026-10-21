@@ -94,3 +94,18 @@ def test_manifest_identity_and_ledger_mapping():
     i2 = tpf.target_identity(k_bars=72, zigzag_sha256="a", lake_sha256="b", spec={"m_tp": 2.5})
     assert i1 != i2 and i1 == tpf.target_identity(k_bars=72, zigzag_sha256="a", lake_sha256="b", spec={"m_tp": 2.0, "cost_sigma": 0.1})
     assert {k.format(k=72): v for k, v in tpf.TARGET_LEDGER.items()}["timing_best_order_pnl_sigma_h72"] == "t3"
+
+
+def test_barrier_outcomes_split_label():
+    c = np.full(40, 1.0)
+    c[12:15] = [1.003, 1.005, 1.006]                                  # upper first for origins before 12
+    c[25:28] = [0.997, 0.995, 0.994]                                  # lower first later
+    b = _bars(c)
+    sig = np.full(40, 0.002)
+    sig[:5] = np.nan
+    flat = np.full(40, 40)
+    out, res = tpf.barrier_outcomes(b.OPEN, b.HIGH, b.LOW, b.CLOSE, sig, flat, horizon_bars=10, m=2.0)
+    assert out[2] == -1                                               # no sigma at t+1
+    assert out[8] == tpf.OUTCOME_UPPER and res[8] == 13
+    assert out[20] == tpf.OUTCOME_LOWER
+    assert out[15] == tpf.OUTCOME_TIMEOUT                             # bars 16..25 never reach +/- 0.004

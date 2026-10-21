@@ -289,3 +289,38 @@ def finality_check(bars: pd.DataFrame, zz, params, *, k_bars: int, cut_positions
         out.append(rec)
     ok = all(rec[mode][tg]["changed_among_final"] == 0 for rec in out for mode in ("truncation", "future_perturbation") for tg in rec[mode])
     return {"rule": SEMANTICS, "cuts": out, "all_final_rows_unchanged": bool(ok)}
+
+
+# ----------------------------------------------------------------------------- D5: split label (2026-10-21, additive)
+OUTCOME_TIMEOUT, OUTCOME_UPPER, OUTCOME_LOWER, OUTCOME_BOTH, OUTCOME_CENSORED = 0, 1, 2, 3, -1
+
+
+def barrier_outcomes(open_, high, low, close, sigma, flat_bar, *, horizon_bars: int, m: float = 2.0):
+    """Symmetric barriers around the executable fill open(t+1): upper = fill + m*sigma(t+1), lower = fill - m*sigma.
+    Per origin t: (outcome, resolution_bar). outcome 1 = upper touched first, 2 = lower first, 3 = both in the same
+    bar (order unknown inside the bar), 0 = neither before min(t + H, forced flat) (timeout), -1 = not labellable
+    (no causal sigma, fill after the forced flat, or unresolved inside the data). Labels for D5:
+      barrier_hit       = outcome in {1, 2, 3}  vs  0                (volatility / activity part)
+      upper_first|hit   = 1 if outcome == 1, 0 if outcome == 2, NaN otherwise   (direction part)"""
+    open_, high, low, close, sigma = (np.asarray(x, float) for x in (open_, high, low, close, sigma))
+    flat_bar = np.asarray(flat_bar, np.int64)
+    n = len(close)
+    out = np.full(n, OUTCOME_CENSORED, np.int64)
+    res = np.full(n, -1, np.int64)
+    for t in range(n - 1):
+        s = sigma[t + 1]
+        end = min(t + int(horizon_bars), int(flat_bar[t]))
+        if not np.isfinite(s) or s <= 0 or end < t + 1:
+            continue
+        up, lo = open_[t + 1] + m * s, open_[t + 1] - m * s
+        k = t + 1
+        while k <= end and k < n:
+            hu, hl = high[k] >= up, low[k] <= lo
+            if hu or hl:
+                out[t], res[t] = (OUTCOME_BOTH if (hu and hl) else (OUTCOME_UPPER if hu else OUTCOME_LOWER)), k
+                break
+            k += 1
+        else:
+            if end < n:
+                out[t], res[t] = OUTCOME_TIMEOUT, end
+    return out, res
