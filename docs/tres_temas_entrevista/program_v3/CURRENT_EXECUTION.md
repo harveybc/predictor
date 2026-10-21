@@ -6,6 +6,14 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del21 de octubre
 
+CIERRE ACTUAL: [grid fino de ventana](RL_FINE_WINDOW_RESULT_2026_10_21.md),4/4
+sin fallos. VALIDATION9=-31.76%,11=-34.47%,13control=-7.28%,15=-26.53%,17=-19.70%.
+Se conserva13; vecinos/confirmaciones no activados por la regla predeclarada.
+OLAP sin pendientes,10/10 informes de sufijo readback,5/5 copias independientes.
+No hay entrenamiento activo de esta cola; ETA finalizado. Seleccion incremental
+es el siguiente diseno, aun sin driver/configs desplegados. Los cortes RUNNING
+inferiores son historicos y no describen el estado actual.
+
 NUEVA PRIORIDAD: [afinamiento de ventana y componentes](RL_FINE_WINDOW_AND_COMPONENTS_2026_10_21.md).
 Objetivo: elegir la mejor base estatica para posterior reajuste periodico;
 profit positivo NO es requisito de esta etapa. Documentar cada resultado.

@@ -1,5 +1,9 @@
 # Afinamiento local y optimizacion por componente
 
+Estado mas reciente: [lote de ventana cerrado4/4](RL_FINE_WINDOW_RESULT_2026_10_21.md),
+control13 retenido. No hay fits activos ni vecinos/confirmaciones activados;
+OLAP y5 copias completos. Los parrafos de despliegue inferiores son historia.
+
 Orden del propietario2026-10-21: continuar con un grid fino de ventana; despues
 optimizar cada componente por separado y comprobar interacciones. El reajuste
 semanal queda al final por coste, no desaparece del programa.
