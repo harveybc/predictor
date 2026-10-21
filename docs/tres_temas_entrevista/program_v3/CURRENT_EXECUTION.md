@@ -6,6 +6,14 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
+CIERRE MAS RECIENTE: [especialistas controlados: resultado completo](RL_MODULAR_SPECIALISTS_RESULT_2026_10_20.md).
+15/15 al primer intento,29m15s,fin21:00:58UTC.160/160 reportes con readback,
+15 copias fisicas verificadas,sin fallos ni bloqueos. FULL: TRAIN+23.15%,
+VALIDATION2024-7.41%,Sharpe-1.048,DD11.86%; pierde en5/5semillas.
+JOINT16:-6.74% en2024;JOINTmatched:-6.78%. Cierre fijo FULL:-5.51%,
+pero mayorDD15.99%. No ventaja rentable confirmada. No quedan fits activos
+de este lote y TEST no se uso. Los parrafos de arranque siguientes son historia.
+
 PRIORIDAD AUTORIZADA: [especialistas modulares controlados](RL_MODULAR_SPECIALISTS_2026_10_20.md).
 YA EJECUTANDO: 15 fits secuenciales en la GPU preferente,
 JOINT con abstencion, JOINT de capacidad comparable y FULL; cinco semillas.
