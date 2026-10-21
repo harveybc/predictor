@@ -6,7 +6,17 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
-PRIORIDAD NUEVA YA EJECUTANDO: [alerta HistData y contraste del monitor](HISTDATA_AND_MONITOR_FOLLOWUP_2026_10_20.md).
+PRIORIDAD RATIFICADA: [SAC con presupuesto fijo y contexto temporal](RL_FIXED_CONTEXT_2026_10_20.md).
+No se reintroduce early stopping costoso en SAC. El lote BC/DAgger del monitor
+termina sus diez celdas sin ampliacion; no demuestra la causa del fallo de
+generalizacion de SAC. Su sucesor es un contraste de stride1/4 con13 instantes
+frente al control stride2,100000 transiciones y arquitectura fija. Dos fits
+iniciales y hasta cuatro confirmaciones condicionales, con relevo automatico
+en la GPU preferente. Desplegado runtime9aa461dd,specfaab4d09; worker/publicacion
+y colector independiente habilitados. Primer tick WAIT_PREDECESSOR, lote previo
+8/10 sin fallos; no se afirma un fit SAC antes de verlo arrancar realmente.
+
+LOTE ACOTADO YA EJECUTANDO: [alerta HistData y contraste del monitor](HISTDATA_AND_MONITOR_FOLLOWUP_2026_10_20.md).
 2023H1:2436 barras compartidas,0 diferenciasOHLC,675 huecos del candidato;
 la correlacion baja provenia de comparar retornos con duraciones distintas.
 Raiz admitida/targets/seleccion intactos. Diez FULL fits secuenciales: promedio
