@@ -6,6 +6,14 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del20 de octubre
 
+PRIORIDAD NUEVA YA EJECUTANDO: [alerta HistData y contraste del monitor](HISTDATA_AND_MONITOR_FOLLOWUP_2026_10_20.md).
+2023H1:2436 barras compartidas,0 diferenciasOHLC,675 huecos del candidato;
+la correlacion baja provenia de comparar retornos con duraciones distintas.
+Raiz admitida/targets/seleccion intactos. Diez FULL fits secuenciales: promedio
+original frente al promedio mas penalizacion de brecha. Cinco semillas comunes,
+runtime d41d588e,spec30bfbe92; primer fit iniciado; GPU smoke y paridad exacta
+verificados. Timers worker/publicacion/copia habilitados; TEST cerrado.
+
 CIERRE MAS RECIENTE: [especialistas controlados: resultado completo](RL_MODULAR_SPECIALISTS_RESULT_2026_10_20.md).
 15/15 al primer intento,29m15s,fin21:00:58UTC.160/160 reportes con readback,
 15 copias fisicas verificadas,sin fallos ni bloqueos. FULL: TRAIN+23.15%,
