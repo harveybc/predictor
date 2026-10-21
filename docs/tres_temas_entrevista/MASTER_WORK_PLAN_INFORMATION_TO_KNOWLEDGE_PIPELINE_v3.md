@@ -8,6 +8,17 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+PRECISION DEL PROPIETARIO2026-10-21: investigar sin sesgo optimista ni pesimista.
+Un contraste negativo acota esa configuracion, datos y protocolo; no demuestra
+que una familia ni el problema esten agotados. El propietario decide terminar
+o redirigir el programa. Cada lote finito cierra segun su diseno, sin convertir
+ese cierre en abandono de la investigacion. Documentar todos los resultados,
+separar observacion/interpretacion/hipotesis y proponer las siguientes pruebas.
+Reservar la linea bayesiana/incertidumbre motivada por la tesis: el carril de
+Satoshi prepara su contraste, sin duplicarlo ni incorporarlo silenciosamente a
+SAC. Evaluar por separado capa probabilistica y uso de incertidumbre en las
+decisiones, con coste de muestreo registrado y negocio intacto.
+
 PRIORIDAD2026-10-21: [grid fino y optimizacion por componente](program_v3/RL_FINE_WINDOW_AND_COMPONENTS_2026_10_21.md).
 ADICION APROBADA: [subconjuntos incrementales de entradas](program_v3/RL_INCREMENTAL_FEATURE_SUBSETS_2026_10_21.md).
 Tras el grid activo, antes de ampliar extractores/componentes: base pequena,

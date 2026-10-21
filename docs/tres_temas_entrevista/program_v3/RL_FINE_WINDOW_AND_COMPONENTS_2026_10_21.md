@@ -4,6 +4,14 @@ Orden del propietario2026-10-21: continuar con un grid fino de ventana; despues
 optimizar cada componente por separado y comprobar interacciones. El reajuste
 semanal queda al final por coste, no desaparece del programa.
 
+Postura ratificada: resultados locales no son un veredicto sobre todo SAC/RL
+ni motivo para abandonar el programa; su continuidad la decide el propietario.
+Cada resultado orienta hipotesis y experimentos siguientes, sin sesgo de signo.
+Linea futura anotada: capa bayesiana y uso de incertidumbre, coordinada con el
+carril de Satoshi. Contrastar por separado arquitectura probabilistica y regla
+que consume incertidumbre; misma base, costes/negocio, semillas y coste de
+inferencia declarado. No modifica el barrido activo ni supone resultados RL.
+
 Precision del propietario: esta etapa elige la mejor BASE ESTATICA para probar
 despues el reajuste periodico, por desempeno, riesgo y generalizacion. No exige
 profit positivo para continuar. Se documentan todos los resultados, con
