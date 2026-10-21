@@ -6,6 +6,21 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del21 de octubre
 
+NUEVA PRIORIDAD: [afinamiento de ventana y componentes](RL_FINE_WINDOW_AND_COMPONENTS_2026_10_21.md).
+Objetivo: elegir la mejor base estatica para posterior reajuste periodico;
+profit positivo NO es requisito de esta etapa. Documentar cada resultado.
+YA RUNNING ventana9/stride2 en5090:1000/100000 verificados en12.7458s;
+runtime6916e49a,spec9e13d797,contratoa7931e4e. Ventanas11/15/17 y vecinos/
+confirmaciones condicionales automaticos.170 regresiones locales,4 integraciones
+del motor nativo y48 pruebas en worker pasan. OLAP de sufijo del control2/2
+readback,primera copia fisica verificada; tres timers habilitados.
+El grid grueso7/13/25 ya termino2/2 sin mejora: VALIDATION-18.03%/-7.28%/-22.39%,
+copias3/3. Se prepara9/11/15/17, vecinos condicionales y semillas17/29,
+secuencial5090,100k fijas, sin ES costoso. Despues contraste de extractores y
+componentes independientes con revision de interacciones; reajuste semanal AL
+FINAL. No se presupone superioridad de Dense a partir de ensayos no pareados.
+Los estados RUNNING inferiores son cortes historicos, no trabajos simultaneos.
+
 ORDEN VIGENTE: [ventanas7/25, muestreo2](RL_WINDOW_SWEEP_2026_10_21.md).
 YA RUNNING en5090: ventana7/stride2,1000 transiciones verificadas inicialmente
 y35000/100000 en el recibo posterior. Runtime0286775c,spec6b407f7e,

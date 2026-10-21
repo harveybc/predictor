@@ -1,10 +1,24 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-19. Este documento contiene solo el plan vigente.
+Actualizado: 2026-10-21. Las prioridades mas recientes prevalecen sobre los
+cortes operativos anteriores; el estado generado y CURRENT_EXECUTION indican
+que esta ejecutandose, no los parrafos de arranque historicos.
 Los resultados afectados por datos defectuosos se eliminan, no se conservan
 como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
+
+PRIORIDAD2026-10-21: [grid fino y optimizacion por componente](program_v3/RL_FINE_WINDOW_AND_COMPONENTS_2026_10_21.md).
+Primero ventanas9/11/15/17, vecinos enteros condicionales y confirmacion con
+semillas comunes, stride2. Despues Dense por caracteristica frente a Conv1D
+con capacidad comparable, ramas/fusionador/nucleo/heads por separado y revision
+de interacciones. No asumir que crecer todos los componentes ayuda ni que los
+optimos individuales son conjuntamente optimos. Reajuste trimestral/mensual/
+semanal AL FINAL. Se conservan inputs admitidos15, negocio y costes; TEST cerrado.
+SAC usa100000 transiciones fijas, cuatro checkpoints diagnosticos y sin ES
+costoso. Esto reemplaza la pausa temporal y el ES frecuente del19 de octubre
+en los parrafos siguientes; NO reanuda ni modifica aquellas identidades.
+La evidencia gruesa7/13/25 no demuestra que13 sea el optimo local o global.
 
 Ampliacion2026-10-19: diagnosticar la generalizacion por causa y evidencia,
 aprovechando primero los checkpoints y trazas existentes sin reentrenar.

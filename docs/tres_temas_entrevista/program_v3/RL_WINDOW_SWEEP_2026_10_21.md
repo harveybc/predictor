@@ -1,5 +1,10 @@
 # Barrido de ventana SAC con muestreo cada2 barras
 
+CIERRE:2/2 fits al primer intento, sin promocion ni replicas condicionales.
+VALIDATION:7=-18.0325%,13=-7.2783%,25=-22.3894%; DD25.4049%/10.7319%/22.3894%.
+Copias independientes3/3 incluyendo el control,0 pendientes. Los cortes de
+arranque inferiores son historia. Sigue el grid fino, no otro reajuste aun.
+
 Orden vigente: ejecutar secuencialmente ventanas7 y25, conservando stride2 y
 reutilizando el control autenticado de13. Mismas15 variables, normalizador,
 arquitectura minima, costes, negocio y100000 transiciones. TRAIN2020-2023,
