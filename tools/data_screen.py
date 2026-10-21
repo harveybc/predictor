@@ -66,6 +66,17 @@ def prepare(a):
     if len(pool) != len(bars):
         raise SystemExit("POOL_GRID_MISMATCH")
     pool.index = bars.index
+    if a.extra_store:
+        man = json.loads((Path(a.extra_store).parent / "MANIFEST.json").read_text())
+        if tp.sha256_file(a.extra_store) != man["file_sha256"] or man["source_sha256"] != cfg["source"]["sha256"]:
+            raise SystemExit("EXTRA_STORE_IDENTITY")
+        if not all(c["cells_changed_at_or_before"] == 0 for c in man["future_perturbation"]):
+            raise SystemExit("EXTRA_STORE_PERTURBATION")
+        ex = pd.read_parquet(a.extra_store)
+        ex.index = pd.DatetimeIndex(pd.to_datetime(ex.pop("timestamp"))).tz_convert("UTC")
+        ex = ex.reindex(bars.index)
+        pool = pool.drop(columns=[c for c in ex.columns if c in pool.columns])     # the newer store replaces
+        pool = pd.concat([pool, ex], axis=1)
     el = pd.read_parquet(run / "ELIGIBILITY.parquet")
     if len(el) != len(bars):
         raise SystemExit("ELIGIBILITY_GRID_MISMATCH")
@@ -247,6 +258,114 @@ def screen(a):
     print(json.dumps({k: summary[k] for k in ("tests_train", "pass_bh", "confirmed_inner_a", "by_label")}))
 
 
+# ----------------------------------------------------------------------------- stability + 2023 confirmation
+YEARS = {"Y2020": ("2020-01-01", "2021-01-01"), "Y2021": ("2021-01-01", "2022-01-01"), "Y2022": ("2022-01-01", "2023-01-01")}
+
+
+def _stat_z_block(x_block, y_block, mask, offs):
+    """SMD of the stratum's normal scores between y == 1 and y == 0 rows, z against the block's label circularly
+    shifted over the WHOLE block (phase-breaking offsets) and then restricted to the same stratum rows."""
+    rows = np.flatnonzero(mask)
+    if len(rows) < 50:
+        return np.nan, 0.0, 0
+    xs = normal_scores(x_block[rows][:, None])[:, 0]
+    n = len(y_block)
+    idx = (rows[:, None] + np.r_[0, offs][None, :]) % n
+    Y = y_block[idx]
+    A1, A0 = (Y == 1).astype(float), (Y == 0).astype(float)
+    st = (xs @ A1) / np.maximum(A1.sum(0), 1) - (xs @ A0) / np.maximum(A0.sum(0), 1)
+    sd = st[1:].std()
+    nlab = int(np.isfinite(y_block[rows]).sum())
+    return float(st[0]), (float((st[0] - st[1:].mean()) / sd) if sd > 0 else 0.0), nlab
+
+
+def stability(a):
+    """BH survivors of ``screen`` must (1) keep the sign with |z| >= ``min_year_z`` in EACH TRAIN year (block
+    stability, Meinshausen & Buehlmann style with years as blocks), then (2) confirm on the whole of 2023 (joint
+    development) in the same stratum, or in the coarser parent stratum when the stratum has fewer than ``min_rows``
+    labelled rows: same sign and z >= 2. Each year / 2023 gets its own phase-breaking shift null."""
+    inp, out = Path(a.inp), Path(a.out)
+    df = pd.read_parquet(inp / "screen_input.parquet")
+    tr = pd.read_parquet(Path(a.screen) / "SCREEN_TRAIN_BH.parquet")
+    surv = tr[tr.pass_bh].copy()
+    ts = pd.DatetimeIndex(df["timestamp"])
+    rng = np.random.default_rng(a.seed)
+    train_sel = np.flatnonzero((ts >= _utc("2020-01-01")) & (ts < _utc("2023-01-01")))
+    _, terc = strata_masks(df.iloc[train_sel].reset_index(drop=True), np.ones(len(train_sel), bool))
+    q1, q2 = terc["rv24_train_terciles"]
+
+    def masks_for(sub):
+        rv = sub["px.rv_24"].to_numpy(float)
+        tv = np.where(np.isnan(rv), -1, np.where(rv <= q1, 0, np.where(rv <= q2, 1, 2)))
+        m = {"all": np.ones(len(sub), bool)}
+        for t, tn in enumerate(("lowvol", "midvol", "highvol")):
+            m[tn] = tv == t
+            for s_ in SESSIONS:
+                m[f"{tn}_{s_}"] = (tv == t) & (sub["session"].to_numpy() == s_)
+        for s_ in SESSIONS:
+            m[s_] = sub["session"].to_numpy() == s_
+        m["pre_london_fix_2h"] = sub["ev.london_fix.hours_to"].to_numpy(float) <= 2
+        m["post_london_fix_2h"] = sub["ev.london_fix.hours_since"].to_numpy(float) <= 2
+        m["pre_tokyo_fix_2h"] = sub["ev.tokyo_fix.hours_to"].to_numpy(float) <= 2
+        m["post_tokyo_fix_2h"] = sub["ev.tokyo_fix.hours_since"].to_numpy(float) <= 2
+        return m
+
+    def parent(sname):
+        if sname.count("_") == 1 and sname.split("_")[0].endswith("vol"):
+            return sname.split("_")[0]                      # e.g. lowvol_us -> lowvol
+        return "all"
+
+    blocks = dict(YEARS)
+    blocks["Y2023"] = ("2023-01-01", "2024-01-01")
+    cache = {}
+    for b, (s0, s1) in blocks.items():
+        sel = np.flatnonzero((ts >= _utc(s0)) & (ts < _utc(s1)))
+        sub = df.iloc[sel].reset_index(drop=True)
+        cache[b] = (sel, sub, masks_for(sub), phase_breaking_offsets(rng, len(sel), a.k))
+    X = {}
+    recs = []
+    for _, r in surv.iterrows():
+        rec = {k: r[k] for k in ("label", "stratum", "feature", "lag", "smd", "z", "p")}
+        col = df[r.feature].to_numpy(float)
+        xl = np.r_[np.full(int(r.lag), np.nan), col[:-int(r.lag)]] if r.lag else col
+        y_all = df[f"label_{r.label}"].to_numpy(float)
+        ok_years = True
+        for b in YEARS:
+            sel, sub, m, offs = cache[b]
+            smd, z, nl = _stat_z_block(xl[sel], y_all[sel], m[r.stratum], offs)
+            rec[f"{b}_smd"], rec[f"{b}_z"], rec[f"{b}_n"] = smd, z, nl
+            ok_years &= bool(nl >= 100 and np.isfinite(smd) and np.sign(smd) == np.sign(r.smd) and abs(z) >= a.min_year_z
+                             and np.sign(z) == np.sign(r.z))
+        rec["stable_all_years"] = ok_years
+        sel, sub, m, offs = cache["Y2023"]
+        st = r.stratum
+        if np.isfinite(y_all[sel][m[st]]).sum() < a.min_rows:
+            st = parent(st)
+        smd, z, nl = _stat_z_block(xl[sel], y_all[sel], m[st], offs)
+        rec.update(confirm_stratum=st, Y2023_smd=smd, Y2023_z=z, Y2023_n=nl,
+                   confirmed_2023=bool(ok_years and nl >= a.min_rows and np.isfinite(smd) and np.sign(smd) == np.sign(r.smd)
+                                       and np.sign(z) == np.sign(r.z) and abs(z) >= 2))
+        recs.append(rec)
+    R = pd.DataFrame(recs)
+    out.mkdir(parents=True, exist_ok=True)
+    R.to_parquet(out / "STABILITY.parquet", index=False)
+    summ = {"survivors": int(len(R)), "stable_all_years": int(R.stable_all_years.sum()) if len(R) else 0,
+            "confirmed_2023": int(R.confirmed_2023.sum()) if len(R) else 0,
+            "by_label": R.groupby("label")[["stable_all_years", "confirmed_2023"]].sum().astype(int).to_dict() if len(R) else {},
+            "rule": stability.__doc__, "min_year_z": a.min_year_z, "min_rows": a.min_rows, "k": a.k}
+    (out / "STABILITY_SUMMARY.json").write_text(json.dumps(summ, indent=1, default=str))
+    keep = R[R.stable_all_years].sort_values("p") if len(R) else R
+    L = ["# D-screen stability (years as blocks) and 2023 confirmation", "",
+         f"Survivors {summ['survivors']}; stable in 2020, 2021 and 2022: **{summ['stable_all_years']}**; confirmed on 2023: "
+         f"**{summ['confirmed_2023']}**.", "",
+         "| label | stratum | feature | lag | SMD | z2020 | z2021 | z2022 | 2023 stratum | z2023 | confirmed |", "|---|---|---|---|---|---|---|---|---|---|---|"]
+    for _, r in keep.iterrows():
+        L.append(f"| {r.label} | {r.stratum} | {r.feature} | {r.lag} | {r.smd:+.3f} | {r.Y2020_z:+.2f} | {r.Y2021_z:+.2f} | {r.Y2022_z:+.2f} | "
+                 f"{r.confirm_stratum} | {r.Y2023_z:+.2f} | {r.confirmed_2023} |")
+    (out / "STABILITY_SUMMARY.md").write_text("\n".join(L) + "\n")
+    print(json.dumps({k: summ[k] for k in ("survivors", "stable_all_years", "confirmed_2023", "by_label")}))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sp = ap.add_subparsers(dest="verb", required=True)
@@ -254,6 +373,7 @@ def main():
     p1.add_argument("--config", required=True)
     p1.add_argument("--run", required=True)
     p1.add_argument("--out", required=True)
+    p1.add_argument("--extra-store", default="", help="cross-asset store parquet (MANIFEST.json beside it); replaces same-name columns")
     p2 = sp.add_parser("screen")
     p2.add_argument("--inp", required=True)
     p2.add_argument("--out", required=True)
@@ -262,8 +382,16 @@ def main():
     p2.add_argument("--q", type=float, default=0.1)
     p2.add_argument("--seed", type=int, default=20261021)
     p2.add_argument("--cpu", action="store_true")
+    p3 = sp.add_parser("stability")
+    p3.add_argument("--inp", required=True)
+    p3.add_argument("--screen", required=True)
+    p3.add_argument("--out", required=True)
+    p3.add_argument("--k", type=int, default=1000)
+    p3.add_argument("--min-year-z", type=float, default=1.0)
+    p3.add_argument("--min-rows", type=int, default=150)
+    p3.add_argument("--seed", type=int, default=20261022)
     a = ap.parse_args()
-    {"prepare": prepare, "screen": screen}[a.verb](a)
+    {"prepare": prepare, "screen": screen, "stability": stability}[a.verb](a)
 
 
 if __name__ == "__main__":
