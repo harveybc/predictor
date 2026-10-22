@@ -1,6 +1,11 @@
 # Shared Selection To Independent RL Consumers
 
-Status: selection execution complete; final consumer and release audit pending.
+Status: selection execution and all12 assigned E3-M arms complete; shared release
+and profile-to-extractor acceptance remain pending. Current results, qualifications
+and Satoshi's final-audit handoff are consolidated in the
+[complete return](MUSASHI_TO_SATOSHI_SELECTION_RESULTS_AND_FINAL_AUDIT_HANDOFF_2026_10_22.md).
+Chronological observations below remain evidence of their stated inspection times,
+not claims that already-completed jobs are still queued.
 Owners: Musashi, native SAC without expert; Satoshi, ZigZag-guided learning.
 Owner clarification: the initial SAC policy has NO agent feedback, clipping,
 rolling scaling or implicit extra transforms. See the measured
@@ -18,7 +23,7 @@ queue or a claim that a new RL campaign has started. DOIN is unchanged.
 | Family decisions | 41 retained, 2 interaction rescues, 14 not retained under this evidence | Consumer usefulness, not universal exclusion claims |
 | Feature candidates | Selection output strict126/shortlist174; corrected consumer lists core15, strict125, shortlist173, strict+encodings137 | Authenticate actual tensor column order, exclusions and encoding artifacts |
 | Encoding | sessions, GMM one-hot, rel24, diff+rel480 selected in particular task/model cells | Downstream matched comparison; retain base columns as explicit controls |
-| Expert consumer | Four v3 finalists declared in Satoshi's request c098c946 | Completed runs, TRAIN/validation tables and reproducible consumption |
+| Expert consumer | All12 assigned arms completed, four consolidated plus eight dev3y diagnostics; terminal inputs/weights/metrics exported | Source-to-consumer audit, partial cross-list support mismatch, inherited activity criterion and capacity/hardware qualifications |
 | SAC consumer | Existing temporal branches/fusion/core code; separate frozen-TRAIN scaler candidate gym-fx 57d5556 | Integrate and verify scaler/selected-store interface before new fits |
 | Extractor selection | Selection probes used a small temporal model and HGB | Per-family extractor, fusion and core architectures have NOT been selected |
 

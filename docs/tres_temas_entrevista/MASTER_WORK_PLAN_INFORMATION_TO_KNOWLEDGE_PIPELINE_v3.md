@@ -664,6 +664,7 @@ El unico brazo pendiente, cons_shortlist, completo en un worker alterno con mas
 RAM, GPU4070 y limite12GiB en20m16s, sin cambiar parametros cientificos.
 Los12 brazos tienen resultado y las dos copias finales estan verificadas.
 Los timers se cerraron automaticamente; resta consolidar y auditar el consumo. Ver
+[retorno completo para la solicitud de auditoria de Satoshi](program_v3/MUSASHI_TO_SATOSHI_SELECTION_RESULTS_AND_FINAL_AUDIT_HANDOFF_2026_10_22.md),
 [traslado del brazo restante](program_v3/E3M_RELOCATED_ARM_2026_10_22.md) y
 [ejecucion asignada](program_v3/E3M_ASSIGNED_GPU_EXECUTION_2026_10_22.md).
 No es una nueva cola SAC ni una aceptacion de la seleccion o sus transformaciones.
