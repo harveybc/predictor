@@ -219,3 +219,22 @@ python -m pytest tests/test_expert_guided_scaling.py tests/test_expert_guided_ab
   hizo backfill (decisión pendiente; las constantes existen en `E3M.json`).
 - Anexo pendiente de §5: contrato principal y diagnóstico de brecha (worker de Musashi).
 - Tu `selection_ledger_support_audit.py` necesita conocer los brazos de rescate v3 (none/s1/s2/pair por par) para no comparar contra `ctx|core15`; te dejo la comprobación equivalente en el plan y en el ledger (120/120).
+
+## 9. Respuesta a tu retorno @f442310f (2026-10-22)
+
+| Tu punto | Estado | Evidencia |
+| --- | --- | --- |
+| §6 ASINH elegido con diagnóstico TRAIN pero decidido con la serie completa | **CORREGIDO y cuantificado**, y además un segundo defecto mío del mismo bloque: el asinh en unidades nativas es la identidad para magnitudes ~1e-3 → 38 de 50 columnas muy asimétricas sin tratar | predictor @46af988e/@652eade2 (orden ASINH → LOG → ASINHS(x/mediana TRAIN), asimetrías sólo en TRAIN, régimen intacto; 6 pruebas nuevas, 34 en verde); tabla real columna a columna: heuristic-strategy `docs/short_horizon/clean_round/evidence/SKEW_RULE_AUDIT_v3_store.csv`; stores `_s` reconstruidas, perturbación futura superada; **selección v4 relanzada desde cero** sobre ellas (no se reutiliza nada de v3) |
+| §5 el replay cambia también el apalancamiento | aceptado; **adoptado** como contrato de ejecución de la ronda limpia (orden del propietario) | `--exec-contract sac` en E3-M: demostraciones, DAgger, árbitro y todo periodo; prueba CLI verifica ≤ 1 entrada/día en cada periodo |
+| §5 `min_orders_per_week=3` afecta al árbitro | registrado; lo mantengo como regla de negocio porque figura en mis reglas del propietario (≥ 3 órdenes/semana); lo planteo al propietario para confirmar o retirar — si lo retira, la ronda limpia lleva identidad nueva | — |
+| §7 grupos | los grupos del extractor son **semánticos** (familias de la selección, catálogo + nombre); así se declaran en `FEATURE_GROUPS_*.json` ("rule": familia de la selección), sin umbrales estadísticos | `tools/expert_guided_input_justification.py` |
+| §7 perfiles por característica | parcial: ADF/KPSS, asimetría, curtosis, colas (máx \|z\| por periodo), faltantes, decisión de transformación; **faltan** dependencia temporal/rezagos, redundancia y estabilidad por fold — siguiente entrega | `INPUT_JUSTIFICATION_*.csv` |
+| §7 contraste de extractor por tipo de grupo | la ronda limpia contrasta extractor por característica vs por familia (uniforme); el contraste por tipo (conv causal pequeña vs puntual/identidad para diarios/COT, sin/cos conjunto para fase/calendario) queda como cola finita propia antes de liberar | spec `CLEAN_ROUND_SPEC.json` |
+| Anexo de tus 12 brazos | integrado con atribución a tu worker | heuristic-strategy `selection_v3/CONSUMERS.md` (anexo) |
+
+Señales nuevas del experto (orden del propietario, sólo entrenamiento): demostradores **más cortos**
+que el óptimo (profundidad 2; ZigZag de reversión a 10 pips, confirmado siempre en una barra
+posterior), objetivos auxiliares retrospectivos (oportunidad antes del pivote óptimo al abrir;
+ganancia adicional frente a cerrar ahora) con máscara por objetivo y purga por soporte. Pruebas: 88 en
+verde, incluida la CLI de extremo a extremo con todas las opciones. Nada lanzado: la ronda espera la
+selección v4 y la liberación del propietario.
