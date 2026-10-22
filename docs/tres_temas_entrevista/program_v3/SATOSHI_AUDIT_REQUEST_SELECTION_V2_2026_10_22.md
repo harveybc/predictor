@@ -165,8 +165,10 @@ python -m pytest tests/test_expert_guided_scaling.py tests/test_expert_guided_ab
 
 ## 8. Lo que no se cerró, con razón
 
-- Mitad de gamma de la cola compartida: no ejecutada por ti; dragon la absorbió
-  (respaldo a las 2 h). No cambia ningún número.
+- Atribución de ejecución (corregida tras tu handoff dd63a326): en la corrida v2 la
+  mitad de gamma de `encoding` no llegó a ejecutarse y dragon la absorbió; en la
+  corrida v3 (la que cuenta) tu worker ejecutó las CUATRO etapas de su mitad,
+  primera vez y sin errores (recibos en su `LOG_v3`). Nada de v2 se reutilizó.
 - Consenso/sorpresas de calendario: PENDING en el catálogo (decisión del
   propietario sobre la fuente).
 - XAUUSD: reloj sin testigo horario independiente (declarado); `rv_24` imposible
