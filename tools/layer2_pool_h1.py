@@ -536,7 +536,7 @@ def main(argv=None):
     for c in X.columns:
         x = X[c].to_numpy(float)
         d = diagnostics(x[train])
-        dec, why, y = decide(c, x, d)
+        dec, why, y = decide(c, x, d, train=train)
         table.append({"feature": c, "family": colmeta[c]["family"], **d, "decision": dec, "reason": why})
         if y is not None:
             extra[f"{c}@{dec.lower()}"] = y

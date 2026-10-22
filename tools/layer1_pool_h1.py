@@ -80,7 +80,8 @@ def diagnostics(x: np.ndarray) -> dict:
         return d | {"adf_p": None, "kpss_p": None, "skew": None, "kurtosis": None}
     from scipy.stats import kurtosis, skew
     d.update(min=float(x.min()), max=float(x.max()), mean=float(x.mean()), std=float(x.std()), skew=float(skew(x)),
-             kurtosis=float(kurtosis(x)), zero_share=float(np.mean(x == 0)))
+             kurtosis=float(kurtosis(x)), zero_share=float(np.mean(x == 0)),
+             median_pos=float(np.median(x[x > 0])) if (x > 0).any() else None)
     try:
         from statsmodels.tsa.stattools import adfuller, kpss
         xs = x[-20000:] if len(x) > 20000 else x
@@ -93,20 +94,50 @@ def diagnostics(x: np.ndarray) -> dict:
     return d
 
 
-def decide(name: str, x: np.ndarray, d: dict) -> tuple[str, str, np.ndarray | None]:
-    """(decision, reason, transformed values or None)."""
-    if name in BOUNDED or name.startswith(("cal.", "ev.", "hod_", "dow_")):
-        return "NONE", "bounded or calendar encoding", None
+def decide(name: str, x: np.ndarray, d: dict, train=None) -> tuple[str, str, np.ndarray | None]:
+    """(decision, reason, transformed values or None). ``d`` = diagnostics of the TRAIN rows; ``train`` = the TRAIN mask
+    over ``x`` (every candidate's skew is measured on TRAIN only; without a mask the whole series is used, legacy).
+
+    Skew rule (rev 2026-10-22, scale-aware): for a non-negative variable with |skew| > 2 on TRAIN, the first candidate
+    that at least halves |skew| on TRAIN is applied, in this declared order:
+      ASINH   asinh(x)            the original rule; kept wherever it already works (e.g. candle geometry in pips)
+      LOG     log(x)              when x > 0 on every TRAIN row (scale-free); if a later row is <= 0 the candidate is
+                                  rejected (domain check only, recorded) and the next one is tried
+      ASINHS  asinh(x / s)        s = TRAIN median of the positive values (frozen constant); defined for zeros
+    The original rule applied asinh in native units only, which is the identity for magnitudes ~1e-3 (ranges,
+    realized volatilities, spectral energies): those variables stayed skewed although a transform halves their skew.
+    Bounded variables, calendar encodings and regime probabilities / entropies are never transformed."""
+    if name in BOUNDED or name.startswith(("cal.", "ev.", "hod_", "dow_", "rg.")):
+        return "NONE", "bounded, calendar encoding or regime probability/entropy", None
     if d.get("adf_p") is not None and d["adf_p"] > 0.05 and d.get("kpss_p") is not None and d["kpss_p"] < 0.05:
         return "DIFF", f"non-stationary level (ADF p={d['adf_p']:.3f}, KPSS p={d['kpss_p']:.3f})", np.r_[np.nan, np.diff(x)]
     sk = d.get("skew")
-    if sk is not None and abs(sk) > 2 and np.nanmin(x) >= 0:
+    if sk is not None and abs(sk) > 2 and d.get("min") is not None and d["min"] >= 0:
         from scipy.stats import skew
-        y = np.arcsinh(x)
-        ok = np.isfinite(y)
-        if abs(skew(y[ok])) < 0.5 * abs(sk):
-            return "ASINH", f"positive and skewed (skew {sk:.2f} -> {skew(y[ok]):.2f})", y
-        return "NONE", f"skewed (skew {sk:.2f}) but asinh does not halve it", None
+        tr = np.ones(len(x), bool) if train is None else np.asarray(train, bool)
+        notes = []
+        cands = [("ASINH", lambda v: np.arcsinh(v), "asinh(x)")]
+        if d["min"] > 0:
+            cands.append(("LOG", lambda v: np.log(v), "log(x)"))
+        s_ = d.get("median_pos")
+        if s_:
+            cands.append(("ASINHS", lambda v, s_=s_: np.arcsinh(v / s_), f"asinh(x / {s_:.6g}) with the TRAIN median of positive values"))
+        for dec, fn, desc in cands:
+            with np.errstate(divide="ignore", invalid="ignore"):
+                y = fn(x)
+            src_ok = np.isfinite(x)
+            bad_out = int((src_ok & ~np.isfinite(y)).sum())
+            if bad_out:
+                notes.append(f"{dec} rejected: {bad_out} finite rows outside its domain")
+                continue
+            ys = y[tr & np.isfinite(y)]
+            sk2 = float(skew(ys))
+            if abs(sk2) < 0.5 * abs(sk):
+                if dec == "ASINHS":
+                    d["transform_scale"] = s_
+                return dec, f"positive and skewed (TRAIN skew {sk:.2f} -> {sk2:.2f} with {desc})" + (f"; {'; '.join(notes)}" if notes else ""), y
+            notes.append(f"{dec} {sk:.2f}->{sk2:.2f} does not halve it")
+        return "NONE", f"skewed (TRAIN skew {sk:.2f}) but no candidate halves it: {'; '.join(notes)}", None
     return "NONE", "stationary, not strongly skewed", None
 
 
@@ -152,7 +183,7 @@ def main():
     for c in X.columns:
         x = X[c].to_numpy(float)
         d = diagnostics(x[train])
-        dec, why, y = decide(c, x, d)
+        dec, why, y = decide(c, x, d, train=np.asarray(train))
         table.append({"feature": c, "group": groups[c], **d, "decision": dec, "reason": why})
         if y is not None:
             extra[f"{c}@{dec.lower()}"] = y

@@ -219,7 +219,7 @@ def rows_cross_asset_r4(d: Path, producer: Path | None):
         st = column_stats(df[c])
         x = df[c].to_numpy(float)
         dg = diagnostics(x[train])
-        dec, why, _ = decide(c, x, dg)
+        dec, why, _ = decide(c, x, dg, train=train)
         met = {k: dg.get(k) for k in ("adf_p", "kpss_p", "skew", "kurtosis")} | {"reason": why, "note": "computed by the catalog on TRAIN with the layer-1 rules; the transformed companion is not materialised in the r4 store"}
         out.append({"feature_id": f"r4:{c}", "store": "cross_asset_r4", "column": c, "source": "cross-asset r4 store (feature-eng cross_asset_h1)", "parent": m.get("family", "cross_asset"),
                     "family": "cross_asset", "component": c, "algorithm": m.get("transform", "see r4 manifest"), "proxy_of": None,
