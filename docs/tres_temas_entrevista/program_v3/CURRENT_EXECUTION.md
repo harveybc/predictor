@@ -6,6 +6,17 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del21 de octubre
 
+CAMBIO DE PRIORIDAD DEL PROPIETARIO: datos/ingenieria/seleccion antes de seguir
+afinando ventanas. Los siguientes despachos del grid local de Musashi estan
+detenidos y deshabilitados; el fit12 ya iniciado termino sin interrupcion,
+10/10 informes readback y copia independiente completa. El resto del lote NO
+se ejecuta. No se anuncia otra GPU
+libre sin comprobarla. Entrega preventiva para Satoshi:
+SATOSHI_SELECTION_CORRECTIONS_AND_AUDIT_BRIEF_2026_10_21.md. Exige catalogo
+completo, contrastes original/componentes, escalado fijo TRAIN-only efectivo,
+seleccion multivariada sin veto univariado, ablacion de estado y consumo real.
+Auditoria final pendiente de la solicitud con revision exacta de Satoshi.
+
 AUDITORIA NUEVA SOLO LECTURA: RL_PREPROCESSING_AUDIT_2026_10_21.md.
 Rolling256 activo y heredado de gym-fx, conservado por Musashi. Afecta las15
 entradas incluyendo ciclos; clipping10 implicito confirmado (247 celdas en

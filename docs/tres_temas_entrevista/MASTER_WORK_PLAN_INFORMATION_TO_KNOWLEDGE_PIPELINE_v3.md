@@ -8,6 +8,16 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+PRIORIDAD CORREGIDA POR EL PROPIETARIO2026-10-21: completar datos, ingenieria y
+seleccion del pool acordado antes de seguir afinando modelos/ventanas. El grid
+local de Musashi queda sin nuevos despachos; el primer fit12 termino y se
+conservo con publicacion/copia. El resto NO esta corriendo. Guia entregable a
+Satoshi: [correcciones y auditoria de seleccion](program_v3/SATOSHI_SELECTION_CORRECTIONS_AND_AUDIT_BRIEF_2026_10_21.md).
+Exigir contraste original/componentes/subgrupos/combinacion, escala fija por
+feature ajustada solo TRAIN, catalogo completo y consumo real en el modelo;
+no veto universal univariado. La auditoria final se realiza sobre la solicitud
+y commit exactos de Satoshi. Los estados RUNNING inferiores son cortes previos.
+
 PRECISION DEL PROPIETARIO2026-10-21: investigar sin sesgo optimista ni pesimista.
 Un contraste negativo acota esa configuracion, datos y protocolo; no demuestra
 que una familia ni el problema esten agotados. El propietario decide terminar
