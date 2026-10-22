@@ -10,6 +10,24 @@ import collect_expert_package as collector
 from collect_expert_package import digest, identity, validate_mirror
 
 
+def test_explicit_local_source_needs_no_ssh_and_requires_absolute_path():
+    assert collector.source_location("local", "/worker/package") == "/worker/package/"
+    assert collector.source_location("worker", "/worker/package") == "worker:/worker/package/"
+    with pytest.raises(ValueError):
+        collector.source_location("local", "relative")
+    with pytest.raises(ValueError):
+        collector.source_location("bad host", "/worker")
+
+
+def test_remote_replica_requires_readback_not_just_successful_copy(tmp_path, monkeypatch):
+    monkeypatch.setattr(collector.subprocess, "run", lambda *a, **k: None)
+    monkeypatch.setattr(collector.subprocess, "check_output", lambda *a, **k: '{"count": 0}')
+    with pytest.raises(ValueError, match="REPLICA_MISMATCH"):
+        collector.replicate(tmp_path, "worker", "/replica", "/verifier", {"count": 1})
+    monkeypatch.setattr(collector.subprocess, "check_output", lambda *a, **k: '{"count": 1, "closed": false}')
+    assert collector.replicate(tmp_path, "worker", "/replica", "/verifier", {"count": 1, "closed": False})["verified"]
+
+
 def example(tmp_path):
     (tmp_path / "ops").mkdir()
     c = {"root": "/worker/package", "pins": {}}

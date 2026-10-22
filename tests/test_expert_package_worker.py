@@ -79,6 +79,41 @@ def test_large_gpu_is_not_assumed_to_be_index_zero():
         w.choose_gpu("0, RTX 5090, GPU-a\n1, RTX 5090, GPU-b")
 
 
+def test_relocated_worker_requires_explicit_gpu_model():
+    w = module()
+    devices = "0, RTX 4090 Laptop GPU, GPU-other\n1, RTX 5090, GPU-original\n"
+    assert w.choose_gpu(devices) == "GPU-original"
+    assert w.choose_gpu(devices, model="4090") == "GPU-other"
+    with pytest.raises(ValueError):
+        w.choose_gpu(devices, model="4070")
+    with pytest.raises(ValueError):
+        w.choose_gpu(devices, model="")
+    with pytest.raises(ValueError):
+        w.choose_gpu(devices + "2, RTX 4090, GPU-duplicate\n", model="4090")
+
+
+def test_gpu_desktop_exception_is_exact_and_memory_bounded(monkeypatch):
+    w = module()
+    c = {"gpu_uuid": "GPU-test", "gpu_background_processes": {
+        "123": {"cmdline_sha256": "desktop", "start_ticks": "77", "max_memory_mib": 32}}}
+    monkeypatch.setattr(w, "process_identity", lambda pid: {"cmdline_sha256": "desktop", "start_ticks": "77"})
+    monkeypatch.setattr(w.subprocess, "check_output", lambda *a, **k: "123, 6\n")
+    assert w.ready_gpu(c)
+    monkeypatch.setattr(w.subprocess, "check_output", lambda *a, **k: "123, 33\n")
+    assert not w.ready_gpu(c)
+    monkeypatch.setattr(w.subprocess, "check_output", lambda *a, **k: "124, 6\n")
+    assert not w.ready_gpu(c)
+    monkeypatch.setattr(w.subprocess, "check_output", lambda *a, **k: "123, 6\n")
+    monkeypatch.setattr(w, "process_identity", lambda pid: {"cmdline_sha256": "desktop", "start_ticks": "78"})
+    assert not w.ready_gpu(c)
+
+
+def test_gpu_without_explicit_background_exception_remains_exclusive(monkeypatch):
+    w = module()
+    monkeypatch.setattr(w.subprocess, "check_output", lambda *a, **k: "123, 6\n")
+    assert not w.ready_gpu({"gpu_uuid": "GPU-test"})
+
+
 def test_pin_change_is_not_a_retryable_resource_problem(tmp_path):
     w = module()
     p = tmp_path / "input"

@@ -83,11 +83,13 @@ def planned_jobs(cfg):
     return [known[n] for n in selected]
 
 
-def choose_gpu(text):
+def choose_gpu(text, model="5090"):
+    if not model or not model.strip():
+        raise ValueError("GPU_MODEL_REQUIRED")
     rows = list(csv.reader(text.splitlines()))
-    choices = [r[2].strip() for r in rows if len(r) == 3 and "5090" in r[1]]
+    choices = [r[2].strip() for r in rows if len(r) == 3 and model in r[1]]
     if len(choices) != 1:
-        raise ValueError("GPU_5090_MISSING_OR_AMBIGUOUS")
+        raise ValueError("GPU_" + model + "_MISSING_OR_AMBIGUOUS")
     return choices[0]
 
 
@@ -260,10 +262,31 @@ def publish_status(cfg, states, state=None, **fields):
     atomic(Path(cfg["root"]) / "ops/STATUS.json", value)
 
 
+def process_identity(pid):
+    proc = Path("/proc") / str(pid)
+    return {"cmdline_sha256": digest(proc / "cmdline"),
+            "start_ticks": (proc / "stat").read_text().rsplit(")", 1)[1].split()[19]}
+
+
 def ready_gpu(cfg):
     output = subprocess.check_output(["nvidia-smi", "-i", cfg["gpu_uuid"],
-        "--query-compute-apps=pid", "--format=csv,noheader,nounits"], text=True, timeout=15)
-    return not any(line.strip().isdigit() for line in output.splitlines())
+        "--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits"], text=True, timeout=15)
+    for row in csv.reader(output.splitlines()):
+        if not row:
+            continue
+        if len(row) != 2 or not row[0].strip().isdigit():
+            return False
+        pid = row[0].strip()
+        allowed = cfg.get("gpu_background_processes", {}).get(pid)
+        if not allowed:
+            return False
+        try:
+            if (process_identity(pid) != {k: allowed[k] for k in ("cmdline_sha256", "start_ticks")}
+                    or not 0 <= float(row[1]) <= allowed["max_memory_mib"]):
+                return False
+        except (OSError, ValueError, KeyError):
+            return False
+    return True
 
 
 def run(cfg):
@@ -371,12 +394,14 @@ def run(cfg):
                 time.sleep(60)
 
 
-def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_unit=None, recovery_source=None):
+def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_unit=None, recovery_source=None,
+               gpu_model="5090", gpu_background_processes=None):
     root = Path(root).resolve()
     if digest(root / "hs_code_final.tar.gz") != ARCHIVE:
         raise ValueError("ARCHIVE_IDENTITY_CHANGED")
     verify_archive_code(root)
-    gpu = choose_gpu(subprocess.check_output(["nvidia-smi", "--query-gpu=index,name,uuid", "--format=csv,noheader"], text=True))
+    gpu = choose_gpu(subprocess.check_output(["nvidia-smi", "--query-gpu=index,name,uuid", "--format=csv,noheader"], text=True),
+                     model=gpu_model)
     paths = [root / "hs_code_final.tar.gz", root / "gamma_queue_musashi.sh", Path(__file__).resolve()]
     for name in ("code/app", "code/tools", "data", "in"):
         paths.extend(p for p in (root / name).rglob("*") if p.is_file() and "__pycache__" not in p.parts
@@ -388,6 +413,8 @@ def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_uni
            "min_disk_bytes": 8 * 1024**3, "timer_unit": timer_unit or "musashi-e3m-assigned-20261022.timer",
            "pins": {str(p): digest(p) for p in paths}}
     cfg["runtime_versions"] = runtime_versions(cfg["python"])
+    if gpu_background_processes:
+        cfg["gpu_background_processes"] = gpu_background_processes
     if only_jobs is not None:
         cfg["only_jobs"] = only_jobs
     if recovery_source:

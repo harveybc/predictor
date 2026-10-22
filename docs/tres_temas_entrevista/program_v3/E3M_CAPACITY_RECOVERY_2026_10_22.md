@@ -74,3 +74,7 @@ launched by this status read and no reliable remaining ETA is established.
 
 This remains the assigned ZigZag-guided development package, not native SAC,
 not TEST and not scientific acceptance of the shared feature release.
+
+The owner subsequently authorized another worker. The single remaining arm is
+now admitted on the alternate GPU with a separate identity and larger host-memory
+envelope; see `E3M_RELOCATED_ARM_2026_10_22.md`. Original failures are not rewritten.
