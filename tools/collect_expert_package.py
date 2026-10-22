@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -10,6 +11,19 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from expert_package_worker import atomic, digest, identity, read
+
+
+def require_storage(destination, mount):
+    mount, destination = Path(mount).resolve(), Path(destination).resolve()
+    if not os.path.ismount(mount):
+        raise ValueError("STORAGE_MOUNT_REQUIRED")
+    if not destination.is_relative_to(mount) or destination == mount:
+        raise ValueError("STORAGE_DESTINATION_OUTSIDE_MOUNT")
+    state = os.statvfs(mount)
+    if state.f_flag & os.ST_RDONLY:
+        raise ValueError("STORAGE_READ_ONLY")
+    if state.f_bavail * state.f_frsize < 1024**3:
+        raise ValueError("STORAGE_FREE_SPACE")
 
 
 def validate_mirror(root):
@@ -45,11 +59,13 @@ def main():
     p.add_argument("--host", required=True)
     p.add_argument("--remote-root", required=True)
     p.add_argument("--destination", required=True)
+    p.add_argument("--storage-mount", required=True)
     p.add_argument("--timer-unit", default="")
     a = p.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", a.host):
         raise ValueError("INVALID_SSH_ALIAS")
     target = Path(a.destination)
+    require_storage(target, a.storage_mount)
     target.mkdir(parents=True, exist_ok=True)
     cmd = ["rsync", "-a", "--checksum", "--timeout=60", "-e", "ssh -o BatchMode=yes -o ConnectTimeout=10"]
     for exclude in ("/code", "/data", "/hs_code_final.tar.gz", "/expert_package_worker.py", "/ops/LOCK"):

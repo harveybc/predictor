@@ -42,7 +42,7 @@ agent polling loop. Timers own continuation and artifact collection.
 ## Verification And Deployment
 
 S14_RELEASE_OPERATION, RUNNING (not complete). PRE16 tests failed because the
-worker did not exist. POST59 focused tests passed:26 worker/collector/recovery tests and
+worker did not exist. POST63 focused tests passed:30 worker/collector/recovery tests and
 33 existing shared-queue regressions. They cover synthetic completion, missing
 seeds/checkpoints/support, altered receipts, runtime drift, bounded failed arms,
 whole-loop closure and adoption after an interrupted completed fit. There was
@@ -96,7 +96,10 @@ Paths below are relative to the existing private package root:
 
 The independent collector timer `musashi-e3m-collector-20261022.timer` runs every
 five minutes on the coordinator and after boot. Bulk copies go to the configured
-external experiment-log volume, not home. It checks every sealed terminal file
+external experiment-log volume, not home.
+The collector refuses an absent/read-only volume, a destination escaping that
+mount or less than1GiB free; it never creates a fallback tree on the root disk.
+It checks every sealed terminal file
 hash and the final consumer-export digest before writing MIRROR_CLOSE. Initial
 collection succeeded, with zero sealed jobs yet. Both timers disable themselves
 on their respective terminal closure. No agent polling loop is required.
