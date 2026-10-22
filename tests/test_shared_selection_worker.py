@@ -177,3 +177,54 @@ def test_tick_dispatches_only_one_admitted_unit(tmp_path, monkeypatch, active):
         assert dispatched[0][dispatched[0].index("-m") + 1] == "3G"
         assert "--collect" in dispatched[0]
         assert "run-stage" in dispatched[0]
+
+
+def v3_config(tmp_path):
+    return {"root": str(tmp_path), "code_subdir": "code_v3", "output_subdir": "out_v3",
+            "ops_subdir": "musashi_ops_v3", "base_log": "LOG_v3", "stage_log": "LOG_v3",
+            "run_log": "psel_v3.log", "stages": ["base", "contrast", "encoding", "rescue"],
+            "python": "/python", "base_keys": ["b0", "b1"], "unit_prefix": "musashi-psel3",
+            "timer_unit": "musashi-psel-v3-20261022.timer"}
+
+
+def test_v3_namespace_keeps_v2_outputs_separate(tmp_path):
+    cfg = v3_config(tmp_path)
+    assert worker.ops_dir(cfg).name == "musashi_ops_v3"
+    assert worker.science_command(cfg, "base")[-1].endswith("/out_v3")
+    assert worker.is_science_process(["python", "tools/pool_selection_v2.py", "run", "--out", str(tmp_path / "out_v3")], str(tmp_path), "out_v3")
+
+
+def test_v3_base_can_start_without_any_old_markers(tmp_path):
+    assert worker.barrier(v3_config(tmp_path), "base")[0] == "READY"
+
+
+def test_v3_encoding_and_rescue_wait_for_all_prior_stages(tmp_path):
+    cfg = v3_config(tmp_path)
+    (tmp_path / "out_v3").mkdir()
+    (tmp_path / "musashi_ops_v3").mkdir()
+    (tmp_path / "LOG_v3").write_text("t base shard 0/2 start\nt base shard 0/2 DONE\n")
+    (tmp_path / "musashi_ops_v3/contrast_KEYS.json").write_text(json.dumps({"all_keys": ["c"]}))
+    p = tmp_path / "out_v3/LEDGER.jsonl"
+    rows = [{"key": k, "val_loss": 1} for k in ["b0", "b1"]]
+    p.write_text(''.join(json.dumps(r)+'\n' for r in rows))
+    assert worker.barrier(cfg, "encoding")[0] == "WAIT_CONTRAST_MERGE"
+    rows.append({"key": "c", "val_loss": 1})
+    p.write_text(''.join(json.dumps(r)+'\n' for r in rows))
+    assert worker.barrier(cfg, "encoding")[0] == "READY"
+    (tmp_path / "musashi_ops_v3/encoding_KEYS.json").write_text(json.dumps({"all_keys": ["e"]}))
+    assert worker.barrier(cfg, "rescue")[0] == "WAIT_ENCODING_MERGE"
+
+
+def test_peer_fallback_claim_does_not_trigger_duplicate_work(monkeypatch):
+    cfg = {"root": "/root", "peer_ssh": ["ssh", "peer"], "stage_log": "LOG_v3"}
+    monkeypatch.setattr(worker.subprocess, "check_output", lambda *a, **kw: "t encoding shard 0/2 start\n")
+    assert worker.peer_has_claim(cfg, "encoding")
+    assert not worker.peer_has_claim(cfg, "contrast")
+
+
+def test_peer_read_failure_is_not_misreported_as_free(monkeypatch):
+    def failed(*a, **kw):
+        raise TimeoutError("peer unavailable")
+    monkeypatch.setattr(worker.subprocess, "check_output", failed)
+    with pytest.raises(TimeoutError):
+        worker.peer_has_claim({"root": "/root", "peer_ssh": ["ssh", "peer"]}, "base")

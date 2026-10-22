@@ -646,9 +646,11 @@ fusion. Ver [plan de ejecucion](program_v3/SHARED_SELECTION_EXECUTION_2026_10_22
 La implementacion entregada es CPU; no se cambia su protocolo para ocupar GPU.
 La mitad contrast/rescue ya completo. La revision posterior encontro lectura
 de un Parquet distinto del declarado y comparaciones con soportes diferentes;
-el candidato 5aeb2e7 y la sonda real de consumo quedan enlazados en el plan de
-ejecucion. Recalcular la seleccion afectada con identidad nueva tras integrar
-las correcciones; el agregado previo no es la aceptacion de la seleccion final.
+Satoshi integro el candidato y las correcciones adicionales en fd16919.
+La seleccion v3 ya corre con identidad nueva y ambas mitades base activas.
+Musashi tiene automatizadas base, contrast, encoding y rescue en su shard 0/2;
+ver [ejecucion v3](program_v3/SHARED_SELECTION_V3_EXECUTION_2026_10_22.md).
+El agregado previo no es la aceptacion de la seleccion final ni se reutiliza.
 
 La cola SAC anterior sigue retenida hasta reparar preprocesamiento y aceptar
 la nueva seleccion. No hay receta predictiva promovida. RL_FIRST_AFTER_DATA_REPAIR
