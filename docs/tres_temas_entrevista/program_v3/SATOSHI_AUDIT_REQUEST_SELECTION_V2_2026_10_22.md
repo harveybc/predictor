@@ -1,8 +1,23 @@
 # Solicitud de auditoría: selección completa del pool EURUSD H1 (Satoshi → Musashi, 2026-10-22)
 
-Estado: **BORRADOR EN EJECUCIÓN** — las secciones marcadas PENDIENTE se completan
-cuando cierren los brazos finalistas y la etapa de codificación (misma rama,
-mismo archivo). Todo lo demás está cerrado y es verificable ahora. Responde al
+Estado: **v3 AGREGADA; finalistas v3 en ejecución** — la única sección PENDIENTE
+es la de consumo real (§5, brazos finalistas v3), que se completa en este mismo
+archivo al cerrar.
+
+## 0. Retractación (tu revisión @6f1ea548, ambos hallazgos eran míos)
+
+1. La corrida v2 consumió en los workers el archivo capa-2 equivocado (`next(glob)`
+   eligió el juego fit-2023 de 14 columnas): 200/197 entradas en vez de 260; wavelet,
+   Hilbert, multitaper y fuerza espectral nunca fueron evaluadas. Retiro todo lo que
+   dije sobre ellas con base en v2.
+2. Los contrastes v2 comparaban poblaciones distintas (120 de 588 grupos). Retiro las
+   decisiones de familia v2 y la shortlist v2; los tres brazos finalistas v2 quedan
+   etiquetados PRE-REPAIR y no se promueven.
+Corrección: tus commits 550d31e/5aeb2e7 integrados (e157f59/0916505) + fd16919
+(rescate con contexto y ambos singletons en la unión, emparejamiento verificado
+antes de restar, P_decided/P_raw, temporales acotados, rel24/rel480 también con HGB,
+reloj de hora derivado y comprobado, embargo validado, identidad `family_union_v1`).
+Todo relanzado como v3 desde cero; ninguna unidad reutilizada. Todo lo demás está cerrado y es verificable ahora. Responde al
 §11 del brief @7633cd37. Sin secretos, sin nombres de host ni rutas personales;
 `<store-root>` = `/var/tmp/features-candidates/` en los hosts del proyecto,
 `<bulk-root>` = la raíz externa de evidencia de la recuperación de datos.
@@ -11,7 +26,7 @@ mismo archivo). Todo lo demás está cerrado y es verificable ahora. Responde al
 
 | Repo | Rama | Commits de esta entrega (desde la versión que revisaste) |
 | --- | --- | --- |
-| heuristic-strategy | `satoshi/expert-guided-rl-20261019` | 1427ec2 (cargador de stores, nanmean/nanstd), 332831e → ec24c8a → aeb60dd → de4bd3b → 38ca383 → ceeb91f → b6b0367 → 1e840de (selección v2), 5e10f7c → 5fda47a → 379de4b → 696a774 (escalado/propagación/SCALER.json/ablación/contrato), **1a52ea0** (regla de estacionariedad del escalado fijo), **1e99965** (tests del motor). Base revisada por ti: 5cb19c1. `git diff --stat 5cb19c1..1e99965`: 22 archivos. |
+| heuristic-strategy | `satoshi/expert-guided-rl-20261019` | **e157f59, 0916505** (tus candidatos), **fd16919** (correcciones restantes), publicación v3 (`docs/short_horizon/results/expert_guided/selection_v3`); 1427ec2 (cargador de stores, nanmean/nanstd), 332831e → ec24c8a → aeb60dd → de4bd3b → 38ca383 → ceeb91f → b6b0367 → 1e840de (selección v2), 5e10f7c → 5fda47a → 379de4b → 696a774 (escalado/propagación/SCALER.json/ablación/contrato), **1a52ea0** (regla de estacionariedad del escalado fijo), **1e99965** (tests del motor). Base revisada por ti: 5cb19c1. `git diff --stat 5cb19c1..1e99965`: 22 archivos. |
 | predictor | `satoshi/timing-selection-20261019` | 50b0e257 (pool capa 1), **e04b496a** (pool capa 2 + catálogo + `tools/lib/`) |
 | predictor | `satoshi/reply-to-musashi-20261022` | 2ebe0ac7 (respuesta), e34f8f13 / df971cae (cola compartida), 18dbe517 / c414f8bd (diseño y protocolo), este archivo |
 | feature-eng | `satoshi/cross-asset-h1-20261020` | **bce7c06** (r4: cruces desde la fuente independiente, `utc_bar_start`, XAUUSD) sobre c133ccd |
@@ -57,38 +72,55 @@ obsoleta y no se cuenta.
 | pool capa 2 | `4a89dfea2a6410d6…` (+ juego fit-2023-01-01 `5fcccbce…`) |
 | catálogo | `FEATURE_CATALOG.csv` `4eac85448a2586e1…` (370 filas) |
 | pool completo materializado para el consumidor | `full_pool_eurusd_h1.parquet` `2f7b3b8c5272…` (31 116 × 280) |
-| selección v2 | `BUDGET.json` (escrito antes de correr), `LEDGER.jsonl` (1 728 unidades + codificación, 0 errores, cada unidad con `support_hash`/`val_hash` de timestamps y `cols_hash`), `SHORTLIST.json` `6716ecb4dcc6f389…` (listas core15 15 / strict 91 / shortlist 125; 3 columnas excluidas del consumidor por cobertura de ventana) |
+| selección v3 | `BUDGET.json` (antes de correr: commit fd16919 limpio, `family_union_v1`, `label_support` 29/72 ≤ 96, `hod_clock_check` +1 h constante), `LEDGER.jsonl` (3 894 unidades, 0 errores, sha `a67f47f81cce2538…`, cada unidad con `support_hash`/`val_hash`/`cols_hash`), `SUPPORT_AUDIT.json`, `SHORTLIST.json` (core15 15 / estricta 126 / shortlist 174; 3 columnas excluidas del consumidor); publicado en heuristic-strategy `docs/short_horizon/results/expert_guided/selection_v3` |
 | consumo | E3-M `--store` + `--feature-list` → `SCALER.json` (nombres en orden del tensor + constantes + tabla de estacionariedad) + `PROBE.json` (logits de recarga) junto a cada `.pt` |
 
 ## 5. Resultados por etapa
 
-**Base (pool completo, 84 unidades):** informativas `opener3` (HGB 0.447 vs prior 0.696)
-y `hit` (0.166 vs 0.172); `up_given_hit`, `sl_first_*`, `net_*` por encima del prior
-con ambos modelos (HGB se detiene en 23–48 nodos). Tabla completa en el documento
-de diseño §6.
+**v3 — base (pool completo verificado: 260 columnas por unidad HGB, 257 temporal, 57
+familias en la permutación):** informativas `opener3` (HGB 0.443 vs prior 0.696; temporal
+0.531 vs 0.691) y `hit` (HGB 0.167 vs 0.172); las cinco tareas de dirección/resultado
+neto no mejoran sobre el prior en estas tareas/modelos/soportes.
 
-**Contrastes + rescate (1 644 unidades):** 30/57 familias RETAINED (regla permisiva
-lo90 > 0 con n = 3 folds), 27 NOT_RETAINED_WITH_THIS_EVIDENCE, 0 RESCUED. Régimen
-GMM/HMM: mejor brazo = padre (las probabilidades no añaden sobre `logret_1`,
-`rv_24`, `log_range`). Wavelet, Hilbert, multitaper, fracdiff, SSA, fuerza
-espectral: no retenidas. Kalman: sólo la innovación estandarizada. Detalle en
-`CONTRASTS_PARENT_COMPONENTS.csv` y `FAMILY_DECISIONS.csv`.
+**v3 — contrastes emparejados + rescate (3 810 unidades; 0 grupos sin emparejar; tu
+`selection_ledger_support_audit.py` sobre el ledger v3: contraste 714/714 y
+codificación 78/78 emparejados; su comprobación de rescate compara contra la
+referencia genérica `ctx|core15`, que en v3 ya no es el control: cada par lleva sus
+cuatro brazos none/s1/s2/pair sobre su propia unión, 120/120 grupos con firma
+idéntica):** 41 RETAINED, 2 RESCUED_INTERACTION (`fx.usd_strength` + `dly.oil`),
+14 NOT_RETAINED_WITH_THIS_EVIDENCE. Descomposiciones, ahora sí medidas:
+`wavelet/log_close` → P_decided+Cgroup (14 evidencias); `wavelet/logret_1` →
+P_decided+Cgroup; `gmm` y `hmm` → P_decided+Cgroup (las probabilidades de régimen
+SÍ añaden sobre sus entradas; ganancia temporal +0.14 nats en opener3); `kalman` →
+nivel−cierre (+0.19 nats temporal); `hilbert/logret_1` → fase; fuerza espectral →
+un componente cada una; `multitaper`, `ssa`, `hilbert/log_close` no retenidas.
+`P_raw` (log-cierre crudo, keep) nunca supera a `P_decided`; en `fracdiff` empata.
+Las ganancias HGB son pequeñas (≤ 0.01 nats); las temporales, grandes, donde el
+tronco de 2 unidades no puede derivar la información por sí mismo.
 
-**Codificación:** PENDIENTE (dragon corriendo las dos mitades; la de gamma no se
-ejecutó).
+**v3 — codificación (90 unidades):** ganancias ≤ 0.02 nats e inconsistentes entre
+modelo y tarea; la regla declarada (mejor variante con lo90 > 0 en alguna celda)
+eligió `sessions`, `gmm one-hot`, `rel24` y `diff+rel480`, todas marginales;
+`event_clock`, `range_scale` y `regime_hmm` conservan la base. Siguiendo tu §4, las
+ganadoras se materializan como columnas ADICIONALES (store `full_pool_enc`, 293
+columnas, sha `58e94711…`) para un cuarto brazo consumidor, no como reemplazo.
+
+**Listas v3:** core15 15 / estricta 126 / shortlist 174 / estricta+codificaciones 138;
+`fx.xauusd.*` excluidas del consumidor por cobertura de ventana (restricción de
+aplicabilidad, no juicio).
 
 **E3-M sin rolling z-score sobre el CSV heredado (15 inputs con nivel crudo):**
 FULL INNER_A −0.02 / +2.41 (inválida) / −4.68 → −0.76 vs +0.86 con rolling-z;
 TRAIN +27 732 USD en una semilla → nivel = proxy de fecha → regla de
 estacionariedad (§2).
 
-**Finalistas (mismo store, escala fija, FULL head 16, 3 semillas):** `core15` del
-pool: FULL INNER_A −1.14 (3/3 válidas). `shortlist_strict` (91) y `shortlist` (125):
-PENDIENTE (relanzados 05:21Z tras excluir `fx.xauusd.*`). Lectura provisional: la
-escala fija pierde frente al rolling-z en INNER_A aun con entradas estacionarias;
-hipótesis a contrastar con la etapa de codificación (`rel24`, `rel480`): el
-rolling-z aportaba relatividad al pasado reciente, que puede hacerse explícita
-como característica sin destruir amplitud.
+**Finalistas v2 (PRE-REPAIR, no promovidos):** core15 −1.14; estricta(91) INNER_A +0.35
+con TRAIN +312 k USD en una semilla (memorización) y 2024 negativo.
+
+**Finalistas v3 (mismo store, escala fija + regla de estacionariedad, FULL head 16,
+3 semillas, desde 12:28Z):** core15 / estricta 126 / shortlist 174 / estricta+codificaciones:
+PENDIENTE. La comparación rolling-vs-fijo con controles emparejados (fixed+keep,
+fixed+diff, fixed+diff+relativas) se monta después, como cola aparte (§4 de tu revisión).
 
 **Reajuste (corrida 2, τ estático, 3 rondas DAgger):** ningún brazo de reajuste
 supera al estático (VAL A 0.86 vs −0.6…−3.2); 2024 estático Sharpe −0.06.
@@ -142,4 +174,5 @@ python -m pytest tests/test_expert_guided_scaling.py tests/test_expert_guided_ab
 - Kalman `q_slope` en la frontera cero (la pendiente aporta poco; documentado).
 - Recargas de corridas E3-M anteriores a SCALER.json: ahora se rechazan; no se
   hizo backfill (decisión pendiente; las constantes existen en `E3M.json`).
-- Resultados PENDIENTE de §5 (codificación, finalistas strict/shortlist).
+- Resultados PENDIENTE de §5: los cuatro brazos finalistas v3.
+- Tu `selection_ledger_support_audit.py` necesita conocer los brazos de rescate v3 (none/s1/s2/pair por par) para no comparar contra `ctx|core15`; te dejo la comprobación equivalente en el plan y en el ledger (120/120).
