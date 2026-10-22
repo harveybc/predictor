@@ -13,6 +13,7 @@
   "last_assigned_execution": "v3 all four assigned stages complete; 3894 merged units without recorded errors; own worker self-disabled after completion",
   "consumer_handoff_plan": "SHARED_SELECTION_TO_RL_HANDOFF_2026_10_22.md",
   "measured_selection": {"units": 3894, "recorded_errors": 0, "independent_paired_groups": {"contrast": 714, "encoding": 78, "rescue": 120}, "support_signature_mismatches": 0, "strict_columns": 126, "shortlist_columns": 174},
+  "consumer_v3b_update": {"observed_on": "2026-10-22", "queue_started_UTC": "13:04:39", "strict_fit_observed_running": true, "column_counts": {"core15": 15, "strict": 125, "shortlist": 173, "strict_plus_encodings": 137, "core15_plus_relatives": 24}, "removed_selection_only_control": "raw.log_close", "rolling_reference": "QUEUED_NOT_YET_SCORED", "consolidated_four_arms": "QUEUED_NOT_YET_SCORED", "shared_support": "cutoff configured and hashes instrumented; cross-arm completed-receipt equality pending", "execution_attribution_corrected_in": "b5bcef18"},
   "remaining_closures": ["four expert-consumer finalist results", "final source-to-tensor and upstream fitted-transform audit", "fixed TRAIN scaler integration into SAC consumer", "independent SAC subset and extractor comparison"],
   "affected_prior_phase_closures": "WITHDRAWN_NOT_INPUTS_OR_CHAMPIONS",
   "independent_eth": "PRESERVED_NOT_REVOKED_WITHOUT_AFFECTED_LINEAGE",

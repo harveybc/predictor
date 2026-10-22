@@ -12,7 +12,7 @@ queue or a claim that a new RL campaign has started. DOIN is unchanged.
 | v3 selection execution | 3,894 units, no recorded errors; full input pool consumed | Final source-to-consumer audit, not a new selection rerun by default |
 | Paired comparisons | Independent check: contrast 714, encoding 78, rescue 120 multi-arm groups, no support/seed/fold mismatches | Preserve the pair-specific rescue controls in the audit tool |
 | Family decisions | 41 retained, 2 interaction rescues, 14 not retained under this evidence | Consumer usefulness, not universal exclusion claims |
-| Feature candidates | core15, strict 126, shortlist 174; strict plus encodings 138 reported by Satoshi | Authenticate actual tensor column order, exclusions and encoding artifacts |
+| Feature candidates | Selection output strict126/shortlist174; corrected consumer lists core15, strict125, shortlist173, strict+encodings137 | Authenticate actual tensor column order, exclusions and encoding artifacts |
 | Encoding | sessions, GMM one-hot, rel24, diff+rel480 selected in particular task/model cells | Downstream matched comparison; retain base columns as explicit controls |
 | Expert consumer | Four v3 finalists declared in Satoshi's request c098c946 | Completed runs, TRAIN/validation tables and reproducible consumption |
 | SAC consumer | Existing temporal branches/fusion/core code; separate frozen-TRAIN scaler candidate gym-fx 57d5556 | Integrate and verify scaler/selected-store interface before new fits |
@@ -23,9 +23,36 @@ The larger engineered/encoding matrices and catalog are different populations.
 Report requested, generated, eligible and consumed counts separately; do not
 equate a catalog entry with an input actually evaluated by a model.
 
-The shared worker receipts demonstrate Musashi's v3 shard ran all four stages;
-the audit request's statement that this half was not executed needs correction.
-This affects execution attribution, not the measured selection numbers.
+The shared worker receipts demonstrate Musashi's v3 shard ran all four stages.
+Satoshi corrected the audit request attribution in b5bcef18. This affects
+execution attribution, not the measured selection numbers.
+
+### Consumer Update, Observed 2026-10-22 After 13:04 UTC
+
+Read-only inspection confirms the sequential v3b driver and the strict-list
+fit are active. The lists actually installed for the consumer contain core15,
+strict125, shortlist173, strict+encodings137 and core15+relatives24. None contains
+raw.log_close. That column was a synthetic selection control, absent from the
+consumer store; it is not silently synthesized or substituted. Preserve the
+original selection counts and the corrected consumer counts as separate fields.
+
+The script queues the remaining development finalists, four matched scaling
+arms, then four consolidated-contract finalists. All four scaling commands
+carry eligible-from2020-02-01; the CLI propagates it to the loader, which records
+per-period support hashes. This verifies configuration and hash instrumentation,
+NOT completed equality of supports: cutoff equality alone cannot exclude later
+NaNs, different windows, labels or missing encoded rows. Check completed receipts
+before computing paired deltas; if mismatched, refit on explicit common support.
+
+Rolling-z versus fixed+keep is the scale-policy-only contrast. Fixed+diff changes
+the input transform; fixed+diff+relative columns also changes feature count and
+model capacity. Keep these as distinct contrasts, not four one-variable copies.
+
+The log confirms earlier large-list attempts failed before this corrected queue;
+their failure is not a scientific score. Driver completion markers alone cannot
+establish success: an older queue logged DONE after failures. The final consumer
+table must enumerate successful, failed and missing arms and authenticate each
+terminal artifact. Do not modify the peer's active driver from this handoff.
 
 ## 2. One Shared Input Release, Two Learning Decisions
 
@@ -63,11 +90,11 @@ proper fit cutoffs: include prefix/future perturbation and fold-fit evidence.
 1. Finish the four already queued v3 consumer arms, without a duplicate launch.
    Export features requested versus consumed, tensor order, support hashes,
    scaler/encoding artifacts, seeds and native TRAIN/validation metrics.
-2. Add an explicitly matched rolling reference if the experiment claims to
-   explain rolling versus fixed. The three proposed fixed arms isolate keep,
-   differencing and explicit relativity, not the rolling effect by themselves.
-   Freeze shared support before fitting; no reuse of the old unmatched score.
-3. Label dev3y/internal-2023 comparisons separately from the principal 4-year
+2. The explicitly matched rolling reference is now queued alongside fixed+keep,
+   fixed+diff and fixed+diff+relatives. Verify shared support from final receipts,
+   not the shared cutoff alone; no reuse of the old unmatched score.
+3. The four consolidated arms are now queued separately. Label dev3y/internal-2023
+   comparisons separately from the principal 4-year
    TRAIN + next-year VALIDATION + next-year TEST contract. No quiet substitution
    of one experiment's years for another's; TEST is not used for selection.
 4. Produce the final audit request with completed consumer evidence. Recompute
