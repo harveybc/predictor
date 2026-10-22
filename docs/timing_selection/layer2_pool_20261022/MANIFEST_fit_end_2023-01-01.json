@@ -1,0 +1,569 @@
+{
+ "schema": "layer2_pool_h1.v1",
+ "producer": "tools/layer2_pool_h1.py",
+ "source_sha256": "c80847bb149c7af1ad50e42301b5cd70608e6c37702ce8cc6a7b9eb70f36d2ca",
+ "rows": 31116,
+ "rows_in_source": 37309,
+ "rows_dropped_test": 6193,
+ "test_start_closed": "2025-01-01 00:00:00+00:00",
+ "test_read": false,
+ "span": [
+  "2020-01-02 00:00:00+00:00",
+  "2024-12-31 20:00:00+00:00"
+ ],
+ "grid": "UTC bar start; decision at bar start + 1 h; weekend closures are consecutive bars",
+ "fit_period": {
+  "start": "2020-01-01 00:00:00+00:00",
+  "end_exclusive": "2023-01-01 00:00:00+00:00",
+  "rows": 18698,
+  "applies_to": [
+   "kalman",
+   "gmm",
+   "hmm",
+   "fracdiff"
+  ]
+ },
+ "diagnostics_period": {
+  "start": "2020-01-01 00:00:00+00:00",
+  "end_exclusive": "2023-01-01",
+  "rows": 18698
+ },
+ "families": [
+  "kalman",
+  "gmm",
+  "hmm",
+  "fracdiff"
+ ],
+ "family_counts": {
+  "kalman": 4,
+  "gmm": 4,
+  "hmm": 5,
+  "fracdiff": 1
+ },
+ "cross_asset_input": null,
+ "features": [
+  "kf.lc.level_minus_close",
+  "kf.lc.slope",
+  "kf.lc.innovation",
+  "kf.lc.innovation_std",
+  "rg.gmm.p0",
+  "rg.gmm.p1",
+  "rg.gmm.p2",
+  "rg.gmm.entropy",
+  "rg.hmm.p0",
+  "rg.hmm.p1",
+  "rg.hmm.p2",
+  "rg.hmm.entropy",
+  "rg.hmm.surprise",
+  "fd.lc.d0.4"
+ ],
+ "columns": {
+  "kf.lc.level_minus_close": {
+   "component": "filtered_level_minus_observation",
+   "unit": "log price",
+   "parent": "log_close",
+   "algorithm": "KALMAN_LOCAL_LINEAR_TREND_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 100,
+   "family": "kalman"
+  },
+  "kf.lc.slope": {
+   "component": "filtered_slope",
+   "unit": "log price per bar",
+   "parent": "log_close",
+   "algorithm": "KALMAN_LOCAL_LINEAR_TREND_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 100,
+   "family": "kalman"
+  },
+  "kf.lc.innovation": {
+   "component": "innovation",
+   "unit": "log price",
+   "parent": "log_close",
+   "algorithm": "KALMAN_LOCAL_LINEAR_TREND_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 100,
+   "family": "kalman"
+  },
+  "kf.lc.innovation_std": {
+   "component": "standardised_innovation",
+   "unit": "dimensionless (innovation / sqrt of its predicted variance)",
+   "parent": "log_close",
+   "algorithm": "KALMAN_LOCAL_LINEAR_TREND_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 100,
+   "family": "kalman"
+  },
+  "rg.gmm.p0": {
+   "component": "posterior_state_0_(vol_rank_0)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_MIXTURE_DIAG_K3_ROWWISE_POSTERIOR",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "gmm"
+  },
+  "rg.gmm.p1": {
+   "component": "posterior_state_1_(vol_rank_1)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_MIXTURE_DIAG_K3_ROWWISE_POSTERIOR",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "gmm"
+  },
+  "rg.gmm.p2": {
+   "component": "posterior_state_2_(vol_rank_2)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_MIXTURE_DIAG_K3_ROWWISE_POSTERIOR",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "gmm"
+  },
+  "rg.gmm.entropy": {
+   "component": "posterior_entropy",
+   "unit": "nats [0, log k]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_MIXTURE_DIAG_K3_ROWWISE_POSTERIOR",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "gmm"
+  },
+  "rg.hmm.p0": {
+   "component": "filtered_state_0_(vol_rank_0)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "rg.hmm.p1": {
+   "component": "filtered_state_1_(vol_rank_1)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "rg.hmm.p2": {
+   "component": "filtered_state_2_(vol_rank_2)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "rg.hmm.entropy": {
+   "component": "filtered_posterior_entropy",
+   "unit": "nats [0, log k]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "rg.hmm.surprise": {
+   "component": "one_step_predictive_surprise",
+   "unit": "nats (-log p(x_t | x_<t) under the frozen HMM, standardised inputs)",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "fd.lc.d0.4": {
+   "parent": "log_close",
+   "component": "fracdiff_d0.4_w256",
+   "unit": "log price (fractionally differenced, fixed-width weights)",
+   "algorithm": "FRACTIONAL_DIFFERENCE_FIXED_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "fracdiff"
+  }
+ },
+ "family_meta": {
+  "kalman": {
+   "params": {
+    "q_level": 1.0808626497355067e-06,
+    "q_slope": 9.270177619681418e-15,
+    "r": 3.012928225721459e-08,
+    "negloglik": -100857.07559809003,
+    "iterations": 139,
+    "boundary_hits": [
+     "q_slope"
+    ],
+    "boundary_note": "a parameter below 1e-6 x max(q_level, r) is at the zero boundary of the likelihood: with q_slope ~ 0 the local linear trend degenerates to a local level with a drift that converges to a constant, so the slope output carries little information",
+    "function_evaluations": 257,
+    "converged": true,
+    "burn_in": 100,
+    "fit_rows": 18698,
+    "init_var_diff": 1.1377119916153617e-06,
+    "method": "Nelder-Mead on log(q_level, q_slope, r), exact innovation likelihood"
+   },
+   "note": "filter only (no smoother); first bar initialises the state; the first burn_in bars are a diffuse warm-up (values emitted, flagged as warmup)"
+  },
+  "gmm": {
+   "params": {
+    "inputs": [
+     "logret_1",
+     "rv_24",
+     "log_range"
+    ],
+    "mu": [
+     -2.2928418294788763e-06,
+     0.004675110490764843,
+     0.0013905185896602096
+    ],
+    "sd": [
+     0.0010666822929645547,
+     0.002334563698685121,
+     0.0011043427759958478
+    ],
+    "weights": [
+     0.4863929893888266,
+     0.42194856751035614,
+     0.09165844310081724
+    ],
+    "means": [
+     [
+      0.005484311319778349,
+      -0.5376771514618975,
+      -0.6041005007761733
+     ],
+     [
+      -0.004521871768813571,
+      0.2703105244791686,
+      0.23619487691856747
+     ],
+     [
+      -0.008286560807215087,
+      1.608856243351905,
+      2.1183881367171353
+     ]
+    ],
+    "variances": [
+     [
+      0.11499119018499694,
+      0.19906431578533348,
+      0.06877648407304035
+     ],
+     [
+      0.8253068699096661,
+      0.7058389690074353,
+      0.28431001836000513
+     ],
+     [
+      6.500257569032305,
+      2.1455078190424266,
+      2.555336842032908
+     ]
+    ],
+    "converged": true,
+    "n_iter": 22,
+    "lower_bound": -3.1652156537266545,
+    "fit_rows": 18674,
+    "config": {
+     "k": 3,
+     "covariance_type": "diag",
+     "n_init": 5,
+     "max_iter": 500,
+     "reg_covar": 1e-06,
+     "random_state": 0
+    },
+    "state_rv24_mean_raw": [
+     0.003419868931349476,
+     0.0053061676285864464,
+     0.008431087872897116
+    ]
+   },
+   "note": "posterior of the row at t alone; no temporal smoothing; states ordered by increasing fitted rv_24 mean"
+  },
+  "hmm": {
+   "params": {
+    "k": 3,
+    "dims": 3,
+    "means": [
+     [
+      -0.0018580421299388946,
+      -0.7829771599263903,
+      -0.4657220027538152
+     ],
+     [
+      0.010091622636571602,
+      0.04305608351497247,
+      -0.09997759472401406
+     ],
+     [
+      -0.013476347487776819,
+      1.4000612365712999,
+      1.0439639576482669
+     ]
+    ],
+    "variances": [
+     [
+      0.26164937952987666,
+      0.05374680569394991,
+      0.1886891386511603
+     ],
+     [
+      0.5408416011875268,
+      0.10634066384203017,
+      0.3373157460481227
+     ],
+     [
+      3.160326379804672,
+      1.1661492864418757,
+      2.1255879788545036
+     ]
+    ],
+    "transmat": [
+     [
+      0.9789265163823033,
+      0.005176202944996141,
+      0.015897280672700548
+     ],
+     [
+      0.018030570151512746,
+      0.9471424699176021,
+      0.03482695993088508
+     ],
+     [
+      0.009314078847071612,
+      0.07914044184020251,
+      0.9115454793127259
+     ]
+    ],
+    "startprob": [
+     4.1881706376095995e-69,
+     1.0,
+     7.509355636932097e-41
+    ],
+    "loglik": -50374.10213835107,
+    "iterations": 15,
+    "converged": true,
+    "order_dim": 1,
+    "fit_rows": 18674,
+    "var_floor": 1e-06,
+    "max_iter": 100,
+    "tol": 1e-05,
+    "inputs": [
+     "logret_1",
+     "rv_24",
+     "log_range"
+    ],
+    "mu": [
+     -2.2928418294788763e-06,
+     0.004675110490764843,
+     0.0013905185896602096
+    ],
+    "sd": [
+     0.0010666822929645547,
+     0.002334563698685121,
+     0.0011043427759958478
+    ],
+    "config": {
+     "k": 3,
+     "max_iter": 100,
+     "tol": 1e-05,
+     "var_floor": 1e-06
+    },
+    "state_rv24_mean_raw": [
+     0.002847200436301118,
+     0.004775627660346453,
+     0.007943642629600402
+    ],
+    "fit_note": "EM on the fit-period rows with finite inputs treated as one sequence (rows with a NaN input dropped from the fit sequence only)"
+   },
+   "note": "causal forward filter P(s_t | x_1..x_t); never forward-backward; NaN-input rows predict through the transition matrix and emit NaN"
+  },
+  "fracdiff": {
+   "params": {
+    "d": 0.4,
+    "window": 256,
+    "adf_table": [
+     {
+      "d": 0.1,
+      "adf_stat": -1.3330026895739322,
+      "adf_p": 0.6139415970499345,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.10521499492029296
+     },
+     {
+      "d": 0.2,
+      "adf_stat": -1.8571921107036964,
+      "adf_p": 0.3524593115595441,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.1001114491281116
+     },
+     {
+      "d": 0.3,
+      "adf_stat": -2.6730075354684133,
+      "adf_p": 0.07882674025197739,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.07008407919491333
+     },
+     {
+      "d": 0.4,
+      "adf_stat": -3.9745209920364424,
+      "adf_p": 0.0015499630848329305,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.04254919277948913
+     },
+     {
+      "d": 0.5,
+      "adf_stat": -6.076246042347385,
+      "adf_p": 1.1197947532342212e-07,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.02343329892150315
+     },
+     {
+      "d": 0.6,
+      "adf_stat": -9.376893718464654,
+      "adf_p": 7.127418964623298e-16,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.011827293975131355
+     },
+     {
+      "d": 0.7,
+      "adf_stat": -13.998680549731315,
+      "adf_p": 3.89754293173519e-26,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.0054051467948458155
+     },
+     {
+      "d": 0.8,
+      "adf_stat": -19.09852289215952,
+      "adf_p": 0.0,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.0021342037670699977
+     },
+     {
+      "d": 0.9,
+      "adf_stat": -23.368415764267006,
+      "adf_p": 0.0,
+      "nobs": 18418,
+      "crit_5pct": -2.861696940493096,
+      "weights_abs_sum_dropped": 0.0006164096387044638
+     }
+    ],
+    "rule": "smallest d in the grid with ADF p < 0.05 on the fit period (maxlag 24, no autolag)",
+    "config": {
+     "window": 256,
+     "d_grid": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9
+     ],
+     "adf_alpha": 0.05,
+     "adf_maxlag": 24
+    }
+   }
+  }
+ },
+ "parents": {
+  "log_close": "log(BidClose)",
+  "logret_1": "diff(log_close)",
+  "log_range": "log(BidHigh/BidLow)",
+  "hl_pips": "(BidHigh-BidLow)/1e-4",
+  "rv_24": "sqrt(rolling 24-bar sum of logret_1^2), min 24 bars",
+  "usd_strength_ret": "fx.usd_strength.ret_1 from the cross-asset r4 store (as is)",
+  "eur_strength_ret": "fx.eur_strength.ret_1 from the cross-asset r4 store (as is)"
+ },
+ "decisions": {
+  "kf.lc.level_minus_close": "NONE",
+  "kf.lc.slope": "NONE",
+  "kf.lc.innovation": "NONE",
+  "kf.lc.innovation_std": "NONE",
+  "rg.gmm.p0": "NONE",
+  "rg.gmm.p1": "NONE",
+  "rg.gmm.p2": "NONE",
+  "rg.gmm.entropy": "NONE",
+  "rg.hmm.p0": "NONE",
+  "rg.hmm.p1": "NONE",
+  "rg.hmm.p2": "NONE",
+  "rg.hmm.entropy": "NONE",
+  "rg.hmm.surprise": "NONE",
+  "fd.lc.d0.4": "NONE"
+ },
+ "decision_counts": {
+  "NONE": 14
+ },
+ "future_perturbation": {
+  "kalman": {
+   "columns": 4,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 7996,
+   "positive_control_columns_changed_at_cut": 4,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "gmm": {
+   "columns": 4,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 7987,
+   "positive_control_columns_changed_at_cut": 4,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "hmm": {
+   "columns": 5,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 9995,
+   "positive_control_columns_changed_at_cut": 5,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "fracdiff": {
+   "columns": 1,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 1999,
+   "positive_control_columns_changed_at_cut": 1,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  }
+ },
+ "file": "layer2_pool_eurusd_h1_fit_end_2023-01-01.parquet",
+ "file_sha256": "5fcccbce31adaa5980ed50c9668888531e81ab640639816ff53a4786ef91f14d",
+ "defects_absent": [
+  "wavelet is PyWavelets wavedec on a trailing window (not a moving-average proxy)",
+  "no interpolate/ffill anywhere: incomplete or non-finite windows emit NaN",
+  "window sizes are declared constants, never derived from len(dataset)",
+  "regime models are fitted on the fit period only and the HMM uses the forward filter (no forward-backward / predict_proba over the sequence)",
+  "no TEST row (>= test_start_closed) is read into any artifact"
+ ],
+ "scaling_note": "no scaling in the store; the model loader standardizes every feature with TRAIN-only mean/std"
+}

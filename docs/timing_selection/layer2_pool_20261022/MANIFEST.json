@@ -1,0 +1,1436 @@
+{
+ "schema": "layer2_pool_h1.v1",
+ "producer": "tools/layer2_pool_h1.py",
+ "source_sha256": "c80847bb149c7af1ad50e42301b5cd70608e6c37702ce8cc6a7b9eb70f36d2ca",
+ "rows": 31116,
+ "rows_in_source": 37309,
+ "rows_dropped_test": 6193,
+ "test_start_closed": "2025-01-01 00:00:00+00:00",
+ "test_read": false,
+ "span": [
+  "2020-01-02 00:00:00+00:00",
+  "2024-12-31 20:00:00+00:00"
+ ],
+ "grid": "UTC bar start; decision at bar start + 1 h; weekend closures are consecutive bars",
+ "fit_period": {
+  "start": "2020-01-01 00:00:00+00:00",
+  "end_exclusive": "2024-01-01 00:00:00+00:00",
+  "rows": 24895,
+  "applies_to": [
+   "kalman",
+   "gmm",
+   "hmm",
+   "fracdiff"
+  ]
+ },
+ "diagnostics_period": {
+  "start": "2020-01-01 00:00:00+00:00",
+  "end_exclusive": "2023-01-01",
+  "rows": 18698
+ },
+ "families": [
+  "wavelet",
+  "hilbert",
+  "multitaper",
+  "strength",
+  "kalman",
+  "gmm",
+  "hmm",
+  "fracdiff"
+ ],
+ "family_counts": {
+  "wavelet": 18,
+  "hilbert": 8,
+  "multitaper": 7,
+  "strength": 26,
+  "kalman": 4,
+  "gmm": 4,
+  "hmm": 5,
+  "fracdiff": 1
+ },
+ "cross_asset_input": {
+  "file": "cross_asset_eurusd_h1_2020_2024.parquet",
+  "sha256": "9d59b20c845acd4545a519070a4281d2efca21b4bbbc5dc32c9f85cfe958c8cf",
+  "columns": [
+   "fx.usd_strength.ret_1",
+   "fx.eur_strength.ret_1"
+  ],
+  "finite_share": {
+   "fx.usd_strength.ret_1": 0.9998393109654197,
+   "fx.eur_strength.ret_1": 0.9999035865792518
+  }
+ },
+ "features": [
+  "wv.lc.A4",
+  "wv.lc.D4",
+  "wv.lc.D3",
+  "wv.lc.D2",
+  "wv.lc.D1",
+  "wv.lc.energy_D4",
+  "wv.lc.energy_D3",
+  "wv.lc.energy_D2",
+  "wv.lc.energy_D1",
+  "wv.r1.A4",
+  "wv.r1.D4",
+  "wv.r1.D3",
+  "wv.r1.D2",
+  "wv.r1.D1",
+  "wv.r1.energy_D4",
+  "wv.r1.energy_D3",
+  "wv.r1.energy_D2",
+  "wv.r1.energy_D1",
+  "hb.r1.amplitude",
+  "hb.r1.phase_cos",
+  "hb.r1.phase_sin",
+  "hb.r1.inst_freq",
+  "hb.lc_detr.amplitude",
+  "hb.lc_detr.phase_cos",
+  "hb.lc_detr.phase_sin",
+  "hb.lc_detr.inst_freq",
+  "mt.r1.power_gt48h",
+  "mt.r1.power_12_48h",
+  "mt.r1.power_4_12h",
+  "mt.r1.power_lt4h",
+  "mt.r1.spectral_entropy",
+  "mt.r1.dominant_period_bars",
+  "mt.r1.total_power",
+  "wv.usd.A4",
+  "wv.usd.D4",
+  "wv.usd.D3",
+  "wv.usd.D2",
+  "wv.usd.D1",
+  "wv.usd.energy_D4",
+  "wv.usd.energy_D3",
+  "wv.usd.energy_D2",
+  "wv.usd.energy_D1",
+  "hb.usd.amplitude",
+  "hb.usd.phase_cos",
+  "hb.usd.phase_sin",
+  "hb.usd.inst_freq",
+  "wv.eur.A4",
+  "wv.eur.D4",
+  "wv.eur.D3",
+  "wv.eur.D2",
+  "wv.eur.D1",
+  "wv.eur.energy_D4",
+  "wv.eur.energy_D3",
+  "wv.eur.energy_D2",
+  "wv.eur.energy_D1",
+  "hb.eur.amplitude",
+  "hb.eur.phase_cos",
+  "hb.eur.phase_sin",
+  "hb.eur.inst_freq",
+  "kf.lc.level_minus_close",
+  "kf.lc.slope",
+  "kf.lc.innovation",
+  "kf.lc.innovation_std",
+  "rg.gmm.p0",
+  "rg.gmm.p1",
+  "rg.gmm.p2",
+  "rg.gmm.entropy",
+  "rg.hmm.p0",
+  "rg.hmm.p1",
+  "rg.hmm.p2",
+  "rg.hmm.entropy",
+  "rg.hmm.surprise",
+  "fd.lc.d0.3",
+  "wv.lc.A4@diff",
+  "wv.lc.energy_D1@diff",
+  "wv.r1.energy_D1@diff",
+  "mt.r1.dominant_period_bars@asinh",
+  "wv.eur.energy_D1@diff",
+  "fd.lc.d0.3@diff"
+ ],
+ "columns": {
+  "wv.lc.A4": {
+   "parent": "log_close",
+   "component": "A4",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.lc.D4": {
+   "parent": "log_close",
+   "component": "D4",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.lc.D3": {
+   "parent": "log_close",
+   "component": "D3",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.lc.D2": {
+   "parent": "log_close",
+   "component": "D2",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.lc.D1": {
+   "parent": "log_close",
+   "component": "D1",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.lc.energy_D4": {
+   "parent": "log_close",
+   "component": "energy_D4",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.lc.energy_D3": {
+   "parent": "log_close",
+   "component": "energy_D3",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.lc.energy_D2": {
+   "parent": "log_close",
+   "component": "energy_D2",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.lc.energy_D1": {
+   "parent": "log_close",
+   "component": "energy_D1",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.A4": {
+   "parent": "logret_1",
+   "component": "A4",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.D4": {
+   "parent": "logret_1",
+   "component": "D4",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.D3": {
+   "parent": "logret_1",
+   "component": "D3",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.D2": {
+   "parent": "logret_1",
+   "component": "D2",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.D1": {
+   "parent": "logret_1",
+   "component": "D1",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.energy_D4": {
+   "parent": "logret_1",
+   "component": "energy_D4",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.energy_D3": {
+   "parent": "logret_1",
+   "component": "energy_D3",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.energy_D2": {
+   "parent": "logret_1",
+   "component": "energy_D2",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "wv.r1.energy_D1": {
+   "parent": "logret_1",
+   "component": "energy_D1",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet"
+  },
+  "hb.r1.amplitude": {
+   "parent": "logret_1",
+   "component": "amplitude",
+   "unit": "parent units (envelope of the demeaned/detrended window at its last sample)",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "hilbert"
+  },
+  "hb.r1.phase_cos": {
+   "parent": "logret_1",
+   "component": "phase_cos",
+   "unit": "dimensionless [-1, 1]",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "hilbert"
+  },
+  "hb.r1.phase_sin": {
+   "parent": "logret_1",
+   "component": "phase_sin",
+   "unit": "dimensionless [-1, 1]",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "hilbert"
+  },
+  "hb.r1.inst_freq": {
+   "parent": "logret_1",
+   "component": "inst_freq",
+   "unit": "cycles per bar (difference of the unwrapped phase at the last two samples)",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "hilbert"
+  },
+  "hb.lc_detr.amplitude": {
+   "parent": "log_close",
+   "component": "amplitude",
+   "unit": "parent units (envelope of the demeaned/detrended window at its last sample)",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_OLS_DETRENDED",
+   "family": "hilbert"
+  },
+  "hb.lc_detr.phase_cos": {
+   "parent": "log_close",
+   "component": "phase_cos",
+   "unit": "dimensionless [-1, 1]",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_OLS_DETRENDED",
+   "family": "hilbert"
+  },
+  "hb.lc_detr.phase_sin": {
+   "parent": "log_close",
+   "component": "phase_sin",
+   "unit": "dimensionless [-1, 1]",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_OLS_DETRENDED",
+   "family": "hilbert"
+  },
+  "hb.lc_detr.inst_freq": {
+   "parent": "log_close",
+   "component": "inst_freq",
+   "unit": "cycles per bar (difference of the unwrapped phase at the last two samples)",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_OLS_DETRENDED",
+   "family": "hilbert"
+  },
+  "mt.r1.power_gt48h": {
+   "parent": "logret_1",
+   "component": "band_power_gt48h",
+   "unit": "variance of logret_1 (one-sided multitaper PSD summed over the band, cycles/bar)",
+   "algorithm": "MULTITAPER_DPSS_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "band_cycles_per_bar": [
+    0.0,
+    0.020833333333333332
+   ],
+   "family": "multitaper"
+  },
+  "mt.r1.power_12_48h": {
+   "parent": "logret_1",
+   "component": "band_power_12_48h",
+   "unit": "variance of logret_1 (one-sided multitaper PSD summed over the band, cycles/bar)",
+   "algorithm": "MULTITAPER_DPSS_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "band_cycles_per_bar": [
+    0.020833333333333332,
+    0.08333333333333333
+   ],
+   "family": "multitaper"
+  },
+  "mt.r1.power_4_12h": {
+   "parent": "logret_1",
+   "component": "band_power_4_12h",
+   "unit": "variance of logret_1 (one-sided multitaper PSD summed over the band, cycles/bar)",
+   "algorithm": "MULTITAPER_DPSS_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "band_cycles_per_bar": [
+    0.08333333333333333,
+    0.25
+   ],
+   "family": "multitaper"
+  },
+  "mt.r1.power_lt4h": {
+   "parent": "logret_1",
+   "component": "band_power_lt4h",
+   "unit": "variance of logret_1 (one-sided multitaper PSD summed over the band, cycles/bar)",
+   "algorithm": "MULTITAPER_DPSS_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "band_cycles_per_bar": [
+    0.25,
+    0.5
+   ],
+   "family": "multitaper"
+  },
+  "mt.r1.spectral_entropy": {
+   "parent": "logret_1",
+   "component": "spectral_entropy",
+   "unit": "dimensionless [0, 1] (Shannon entropy of the normalised PSD, DC excluded, / log(#bins))",
+   "algorithm": "MULTITAPER_DPSS_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "multitaper"
+  },
+  "mt.r1.dominant_period_bars": {
+   "parent": "logret_1",
+   "component": "dominant_period",
+   "unit": "bars (1 / argmax-frequency, DC excluded; bounded by [2, 256])",
+   "algorithm": "MULTITAPER_DPSS_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "multitaper"
+  },
+  "mt.r1.total_power": {
+   "parent": "logret_1",
+   "component": "total_power",
+   "unit": "variance of logret_1 (sum of the PSD over all non-zero frequencies)",
+   "algorithm": "MULTITAPER_DPSS_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "multitaper"
+  },
+  "wv.usd.A4": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "A4",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.usd.D4": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "D4",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.usd.D3": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "D3",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.usd.D2": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "D2",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.usd.D1": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "D1",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.usd.energy_D4": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "energy_D4",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.usd.energy_D3": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "energy_D3",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.usd.energy_D2": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "energy_D2",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.usd.energy_D1": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "energy_D1",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "hb.usd.amplitude": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "amplitude",
+   "unit": "log-return units (envelope of the demeaned window at its last sample)",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "strength"
+  },
+  "hb.usd.phase_cos": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "phase_cos",
+   "unit": "dimensionless [-1, 1]",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "strength"
+  },
+  "hb.usd.phase_sin": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "phase_sin",
+   "unit": "dimensionless [-1, 1]",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "strength"
+  },
+  "hb.usd.inst_freq": {
+   "parent": "fx.usd_strength.ret_1",
+   "component": "inst_freq",
+   "unit": "cycles per bar (difference of the unwrapped phase at the last two samples)",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "strength"
+  },
+  "wv.eur.A4": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "A4",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.eur.D4": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "D4",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.eur.D3": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "D3",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.eur.D2": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "D2",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.eur.D1": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "D1",
+   "unit": "input units scaled by the wavelet's analysis filter (log-return units)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.eur.energy_D4": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "energy_D4",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.eur.energy_D3": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "energy_D3",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.eur.energy_D2": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "energy_D2",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "wv.eur.energy_D1": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "energy_D1",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength"
+  },
+  "hb.eur.amplitude": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "amplitude",
+   "unit": "log-return units (envelope of the demeaned window at its last sample)",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "strength"
+  },
+  "hb.eur.phase_cos": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "phase_cos",
+   "unit": "dimensionless [-1, 1]",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "strength"
+  },
+  "hb.eur.phase_sin": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "phase_sin",
+   "unit": "dimensionless [-1, 1]",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "strength"
+  },
+  "hb.eur.inst_freq": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "inst_freq",
+   "unit": "cycles per bar (difference of the unwrapped phase at the last two samples)",
+   "proxy_of": null,
+   "warmup_bars": 127,
+   "algorithm": "HILBERT_FFT_TRAILING_WINDOW_DEMEANED",
+   "family": "strength"
+  },
+  "kf.lc.level_minus_close": {
+   "component": "filtered_level_minus_observation",
+   "unit": "log price",
+   "parent": "log_close",
+   "algorithm": "KALMAN_LOCAL_LINEAR_TREND_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 100,
+   "family": "kalman"
+  },
+  "kf.lc.slope": {
+   "component": "filtered_slope",
+   "unit": "log price per bar",
+   "parent": "log_close",
+   "algorithm": "KALMAN_LOCAL_LINEAR_TREND_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 100,
+   "family": "kalman"
+  },
+  "kf.lc.innovation": {
+   "component": "innovation",
+   "unit": "log price",
+   "parent": "log_close",
+   "algorithm": "KALMAN_LOCAL_LINEAR_TREND_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 100,
+   "family": "kalman"
+  },
+  "kf.lc.innovation_std": {
+   "component": "standardised_innovation",
+   "unit": "dimensionless (innovation / sqrt of its predicted variance)",
+   "parent": "log_close",
+   "algorithm": "KALMAN_LOCAL_LINEAR_TREND_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 100,
+   "family": "kalman"
+  },
+  "rg.gmm.p0": {
+   "component": "posterior_state_0_(vol_rank_0)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_MIXTURE_DIAG_K3_ROWWISE_POSTERIOR",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "gmm"
+  },
+  "rg.gmm.p1": {
+   "component": "posterior_state_1_(vol_rank_1)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_MIXTURE_DIAG_K3_ROWWISE_POSTERIOR",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "gmm"
+  },
+  "rg.gmm.p2": {
+   "component": "posterior_state_2_(vol_rank_2)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_MIXTURE_DIAG_K3_ROWWISE_POSTERIOR",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "gmm"
+  },
+  "rg.gmm.entropy": {
+   "component": "posterior_entropy",
+   "unit": "nats [0, log k]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_MIXTURE_DIAG_K3_ROWWISE_POSTERIOR",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "gmm"
+  },
+  "rg.hmm.p0": {
+   "component": "filtered_state_0_(vol_rank_0)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "rg.hmm.p1": {
+   "component": "filtered_state_1_(vol_rank_1)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "rg.hmm.p2": {
+   "component": "filtered_state_2_(vol_rank_2)",
+   "unit": "probability [0, 1]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "rg.hmm.entropy": {
+   "component": "filtered_posterior_entropy",
+   "unit": "nats [0, log k]",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "rg.hmm.surprise": {
+   "component": "one_step_predictive_surprise",
+   "unit": "nats (-log p(x_t | x_<t) under the frozen HMM, standardised inputs)",
+   "parent": "logret_1+rv_24+log_range",
+   "algorithm": "GAUSSIAN_HMM_DIAG_K3_FORWARD_FILTER",
+   "proxy_of": null,
+   "warmup_bars": 24,
+   "family": "hmm"
+  },
+  "fd.lc.d0.3": {
+   "parent": "log_close",
+   "component": "fracdiff_d0.3_w256",
+   "unit": "log price (fractionally differenced, fixed-width weights)",
+   "algorithm": "FRACTIONAL_DIFFERENCE_FIXED_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "fracdiff"
+  },
+  "wv.lc.A4@diff": {
+   "parent": "log_close",
+   "component": "A4",
+   "unit": "input units scaled by the wavelet's analysis filter (price units for close)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet",
+   "derived_from": "wv.lc.A4"
+  },
+  "wv.lc.energy_D1@diff": {
+   "parent": "log_close",
+   "component": "energy_D1",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet",
+   "derived_from": "wv.lc.energy_D1"
+  },
+  "wv.r1.energy_D1@diff": {
+   "parent": "logret_1",
+   "component": "energy_D1",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "wavelet",
+   "derived_from": "wv.r1.energy_D1"
+  },
+  "mt.r1.dominant_period_bars@asinh": {
+   "parent": "logret_1",
+   "component": "dominant_period",
+   "unit": "bars (1 / argmax-frequency, DC excluded; bounded by [2, 256])",
+   "algorithm": "MULTITAPER_DPSS_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "multitaper",
+   "derived_from": "mt.r1.dominant_period_bars"
+  },
+  "wv.eur.energy_D1@diff": {
+   "parent": "fx.eur_strength.ret_1",
+   "component": "energy_D1",
+   "unit": "squared input units (mean of squared detail coefficients in the window)",
+   "algorithm": "DWT_DB4_TRAILING_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "strength",
+   "derived_from": "wv.eur.energy_D1"
+  },
+  "fd.lc.d0.3@diff": {
+   "parent": "log_close",
+   "component": "fracdiff_d0.3_w256",
+   "unit": "log price (fractionally differenced, fixed-width weights)",
+   "algorithm": "FRACTIONAL_DIFFERENCE_FIXED_WINDOW",
+   "proxy_of": null,
+   "warmup_bars": 255,
+   "family": "fracdiff",
+   "derived_from": "fd.lc.d0.3"
+  }
+ },
+ "family_meta": {
+  "wavelet": {
+   "config": {
+    "wavelet": "db4",
+    "window": 256,
+    "level": 4,
+    "mode": "symmetric"
+   },
+   "library": "pywt 1.8.0",
+   "emission": "right-edge coefficient of each band at t",
+   "past_only": "each value uses rows [t-window+1, t] only; NaN inside the window -> NaN"
+  },
+  "hilbert": {
+   "config": {
+    "window": 128
+   },
+   "edge_effect": "scipy.signal.hilbert computes the analytic signal by FFT, which treats the W-bar window as periodic; the last sample therefore sees the wrap-around jump between x[t] and x[t-W+1] (Gibbs-type ringing). Demeaning (logret_1) and OLS detrending (log_close) within the window reduce the jump; it is not removed and no taper is applied, so the amplitude/phase at the right edge are biased relative to an infinite-record analytic signal. The value at t depends on the window [t-W+1, t] only, so appending rows after t never changes it (tested).",
+   "library": "scipy.signal.hilbert"
+  },
+  "multitaper": {
+   "config": {
+    "window": 256,
+    "NW": 3.5,
+    "K": 5,
+    "bands": {
+     "gt48h": [
+      0.0,
+      0.020833333333333332
+     ],
+     "12_48h": [
+      0.020833333333333332,
+      0.08333333333333333
+     ],
+     "4_12h": [
+      0.08333333333333333,
+      0.25
+     ],
+     "lt4h": [
+      0.25,
+      0.5
+     ]
+    }
+   },
+   "library": "scipy.signal.windows.dpss + numpy.fft.rfft",
+   "frequency_unit": "cycles per bar (bar = 1 h on the admitted grid)",
+   "window_treatment": "demeaned, no zero padding, K tapers averaged with equal weights"
+  },
+  "strength": {
+   "config": {
+    "wavelet": {
+     "wavelet": "db4",
+     "window": 256,
+     "level": 4,
+     "mode": "symmetric"
+    },
+    "hilbert": {
+     "window": 128
+    },
+    "inputs": {
+     "usd": "fx.usd_strength.ret_1",
+     "eur": "fx.eur_strength.ret_1"
+    }
+   },
+   "status": "GENERATED for usd, eur",
+   "library": "pywt + scipy.signal.hilbert",
+   "input_rule": "strength returns used directly (never cumulated, never filled); a missing source bar voids only the windows containing it",
+   "edge_effect": "same as the hilbert family (FFT analytic signal on the demeaned window; right-edge wrap-around bias; causal by construction)"
+  },
+  "kalman": {
+   "params": {
+    "q_level": 1.045273050660741e-06,
+    "q_slope": 2.1556426484968197e-24,
+    "r": 2.1311434638144307e-08,
+    "negloglik": -135052.7692204022,
+    "iterations": 224,
+    "boundary_hits": [
+     "q_slope"
+    ],
+    "boundary_note": "a parameter below 1e-6 x max(q_level, r) is at the zero boundary of the likelihood: with q_slope ~ 0 the local linear trend degenerates to a local level with a drift that converges to a constant, so the slope output carries little information",
+    "function_evaluations": 449,
+    "converged": true,
+    "burn_in": 100,
+    "fit_rows": 24895,
+    "init_var_diff": 1.0855320366000707e-06,
+    "method": "Nelder-Mead on log(q_level, q_slope, r), exact innovation likelihood"
+   },
+   "note": "filter only (no smoother); first bar initialises the state; the first burn_in bars are a diffuse warm-up (values emitted, flagged as warmup)"
+  },
+  "gmm": {
+   "params": {
+    "inputs": [
+     "logret_1",
+     "rv_24",
+     "log_range"
+    ],
+    "mu": [
+     -4.702935813977668e-07,
+     0.004614200625914262,
+     0.00135748214685255
+    ],
+    "sd": [
+     0.0010419009456660144,
+     0.0021821941286120695,
+     0.0010670463845284359
+    ],
+    "weights": [
+     0.5116451562900889,
+     0.4069863629459991,
+     0.08136848076391189
+    ],
+    "means": [
+     [
+      0.0037716575294703836,
+      -0.4780766942690736,
+      -0.581829013259737
+     ],
+     [
+      4.9277963594412124e-05,
+      0.28028146805833837,
+      0.2830892507699257
+     ],
+     [
+      -0.02396266646507226,
+      1.6042439092659506,
+      2.2425948002258442
+     ]
+    ],
+    "variances": [
+     [
+      0.12480716961311385,
+      0.23811069478548402,
+      0.07595271933346118
+     ],
+     [
+      0.8979298708021456,
+      0.8012227978737906,
+      0.3031312026559816
+     ],
+     [
+      7.013093972637353,
+      2.381316434648224,
+      2.737283522233323
+     ]
+    ],
+    "converged": true,
+    "n_iter": 21,
+    "lower_bound": -3.210189750226644,
+    "fit_rows": 24871,
+    "config": {
+     "k": 3,
+     "covariance_type": "diag",
+     "n_init": 5,
+     "max_iter": 500,
+     "reg_covar": 1e-06,
+     "random_state": 0
+    },
+    "state_rv24_mean_raw": [
+     0.003570944470654022,
+     0.00522582919986994,
+     0.008114972265576094
+    ]
+   },
+   "note": "posterior of the row at t alone; no temporal smoothing; states ordered by increasing fitted rv_24 mean"
+  },
+  "hmm": {
+   "params": {
+    "k": 3,
+    "dims": 3,
+    "means": [
+     [
+      -0.0016873991875076277,
+      -0.7853503507157354,
+      -0.4302476482132065
+     ],
+     [
+      0.013644548762938958,
+      0.044402927097719,
+      -0.14931294038809576
+     ],
+     [
+      -0.020873078291081617,
+      1.3597826627024105,
+      1.0498859572777788
+     ]
+    ],
+    "variances": [
+     [
+      0.28472719672467867,
+      0.05871047340940636,
+      0.20950011494556872
+     ],
+     [
+      0.49300648550327414,
+      0.10897965358230596,
+      0.3166078227383156
+     ],
+     [
+      3.199071815473628,
+      1.3064153969976025,
+      2.167042432534596
+     ]
+    ],
+    "transmat": [
+     [
+      0.9749872241245531,
+      0.0024880438566493085,
+      0.022524732018797653
+     ],
+     [
+      0.018488170229735243,
+      0.9417783224045293,
+      0.03973350736573555
+     ],
+     [
+      0.013326479068729637,
+      0.09768179333364661,
+      0.8889917275976238
+     ]
+    ],
+    "startprob": [
+     6.444694427204372e-82,
+     1.0,
+     1.3900873668500614e-44
+    ],
+    "loglik": -68999.28664547452,
+    "iterations": 17,
+    "converged": true,
+    "order_dim": 1,
+    "fit_rows": 24871,
+    "var_floor": 1e-06,
+    "max_iter": 100,
+    "tol": 1e-05,
+    "inputs": [
+     "logret_1",
+     "rv_24",
+     "log_range"
+    ],
+    "mu": [
+     -4.702935813977668e-07,
+     0.004614200625914262,
+     0.00135748214685255
+    ],
+    "sd": [
+     0.0010419009456660144,
+     0.0021821941286120695,
+     0.0010670463845284359
+    ],
+    "config": {
+     "k": 3,
+     "max_iter": 100,
+     "tol": 1e-05,
+     "var_floor": 1e-06
+    },
+    "state_rv24_mean_raw": [
+     0.0029004137016789546,
+     0.004711096432720094,
+     0.007581510368651949
+    ],
+    "fit_note": "EM on the fit-period rows with finite inputs treated as one sequence (rows with a NaN input dropped from the fit sequence only)"
+   },
+   "note": "causal forward filter P(s_t | x_1..x_t); never forward-backward; NaN-input rows predict through the transition matrix and emit NaN"
+  },
+  "fracdiff": {
+   "params": {
+    "d": 0.3,
+    "window": 256,
+    "adf_table": [
+     {
+      "d": 0.1,
+      "adf_stat": -1.7943817710860974,
+      "adf_p": 0.3832545342721058,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.10521499492029296
+     },
+     {
+      "d": 0.2,
+      "adf_stat": -2.431571919735309,
+      "adf_p": 0.13302299307027055,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.1001114491281116
+     },
+     {
+      "d": 0.3,
+      "adf_stat": -3.4488700452549415,
+      "adf_p": 0.009401517346263686,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.07008407919491333
+     },
+     {
+      "d": 0.4,
+      "adf_stat": -5.088068233799864,
+      "adf_p": 1.4814496615646583e-05,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.04254919277948913
+     },
+     {
+      "d": 0.5,
+      "adf_stat": -7.723220879138925,
+      "adf_p": 1.1774599503984486e-11,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.02343329892150315
+     },
+     {
+      "d": 0.6,
+      "adf_stat": -11.776742406579741,
+      "adf_p": 1.0580528948990878e-21,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.011827293975131355
+     },
+     {
+      "d": 0.7,
+      "adf_stat": -17.226562509283493,
+      "adf_p": 6.231292017364177e-30,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.0054051467948458155
+     },
+     {
+      "d": 0.8,
+      "adf_stat": -22.927995854519867,
+      "adf_p": 0.0,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.0021342037670699977
+     },
+     {
+      "d": 0.9,
+      "adf_stat": -27.526216431617524,
+      "adf_p": 0.0,
+      "nobs": 24615,
+      "crit_5pct": -2.8616574272628488,
+      "weights_abs_sum_dropped": 0.0006164096387044638
+     }
+    ],
+    "rule": "smallest d in the grid with ADF p < 0.05 on the fit period (maxlag 24, no autolag)",
+    "config": {
+     "window": 256,
+     "d_grid": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9
+     ],
+     "adf_alpha": 0.05,
+     "adf_maxlag": 24
+    }
+   }
+  }
+ },
+ "parents": {
+  "log_close": "log(BidClose)",
+  "logret_1": "diff(log_close)",
+  "log_range": "log(BidHigh/BidLow)",
+  "hl_pips": "(BidHigh-BidLow)/1e-4",
+  "rv_24": "sqrt(rolling 24-bar sum of logret_1^2), min 24 bars",
+  "usd_strength_ret": "fx.usd_strength.ret_1 from the cross-asset r4 store (as is)",
+  "eur_strength_ret": "fx.eur_strength.ret_1 from the cross-asset r4 store (as is)"
+ },
+ "decisions": {
+  "wv.lc.A4": "DIFF",
+  "wv.lc.D4": "NONE",
+  "wv.lc.D3": "NONE",
+  "wv.lc.D2": "NONE",
+  "wv.lc.D1": "NONE",
+  "wv.lc.energy_D4": "NONE",
+  "wv.lc.energy_D3": "NONE",
+  "wv.lc.energy_D2": "NONE",
+  "wv.lc.energy_D1": "DIFF",
+  "wv.r1.A4": "NONE",
+  "wv.r1.D4": "NONE",
+  "wv.r1.D3": "NONE",
+  "wv.r1.D2": "NONE",
+  "wv.r1.D1": "NONE",
+  "wv.r1.energy_D4": "NONE",
+  "wv.r1.energy_D3": "NONE",
+  "wv.r1.energy_D2": "NONE",
+  "wv.r1.energy_D1": "DIFF",
+  "hb.r1.amplitude": "NONE",
+  "hb.r1.phase_cos": "NONE",
+  "hb.r1.phase_sin": "NONE",
+  "hb.r1.inst_freq": "NONE",
+  "hb.lc_detr.amplitude": "NONE",
+  "hb.lc_detr.phase_cos": "NONE",
+  "hb.lc_detr.phase_sin": "NONE",
+  "hb.lc_detr.inst_freq": "NONE",
+  "mt.r1.power_gt48h": "NONE",
+  "mt.r1.power_12_48h": "NONE",
+  "mt.r1.power_4_12h": "NONE",
+  "mt.r1.power_lt4h": "NONE",
+  "mt.r1.spectral_entropy": "NONE",
+  "mt.r1.dominant_period_bars": "ASINH",
+  "mt.r1.total_power": "NONE",
+  "wv.usd.A4": "NONE",
+  "wv.usd.D4": "NONE",
+  "wv.usd.D3": "NONE",
+  "wv.usd.D2": "NONE",
+  "wv.usd.D1": "NONE",
+  "wv.usd.energy_D4": "NONE",
+  "wv.usd.energy_D3": "NONE",
+  "wv.usd.energy_D2": "NONE",
+  "wv.usd.energy_D1": "NONE",
+  "hb.usd.amplitude": "NONE",
+  "hb.usd.phase_cos": "NONE",
+  "hb.usd.phase_sin": "NONE",
+  "hb.usd.inst_freq": "NONE",
+  "wv.eur.A4": "NONE",
+  "wv.eur.D4": "NONE",
+  "wv.eur.D3": "NONE",
+  "wv.eur.D2": "NONE",
+  "wv.eur.D1": "NONE",
+  "wv.eur.energy_D4": "NONE",
+  "wv.eur.energy_D3": "NONE",
+  "wv.eur.energy_D2": "NONE",
+  "wv.eur.energy_D1": "DIFF",
+  "hb.eur.amplitude": "NONE",
+  "hb.eur.phase_cos": "NONE",
+  "hb.eur.phase_sin": "NONE",
+  "hb.eur.inst_freq": "NONE",
+  "kf.lc.level_minus_close": "NONE",
+  "kf.lc.slope": "NONE",
+  "kf.lc.innovation": "NONE",
+  "kf.lc.innovation_std": "NONE",
+  "rg.gmm.p0": "NONE",
+  "rg.gmm.p1": "NONE",
+  "rg.gmm.p2": "NONE",
+  "rg.gmm.entropy": "NONE",
+  "rg.hmm.p0": "NONE",
+  "rg.hmm.p1": "NONE",
+  "rg.hmm.p2": "NONE",
+  "rg.hmm.entropy": "NONE",
+  "rg.hmm.surprise": "NONE",
+  "fd.lc.d0.3": "DIFF"
+ },
+ "decision_counts": {
+  "NONE": 67,
+  "DIFF": 5,
+  "ASINH": 1
+ },
+ "future_perturbation": {
+  "wavelet": {
+   "columns": 18,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 35520,
+   "positive_control_columns_changed_at_cut": 18,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "hilbert": {
+   "columns": 8,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 15991,
+   "positive_control_columns_changed_at_cut": 8,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "multitaper": {
+   "columns": 7,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 13878,
+   "positive_control_columns_changed_at_cut": 6,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "strength": {
+   "columns": 26,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 51766,
+   "positive_control_columns_changed_at_cut": 26,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "kalman": {
+   "columns": 4,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 7995,
+   "positive_control_columns_changed_at_cut": 4,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "gmm": {
+   "columns": 4,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 7987,
+   "positive_control_columns_changed_at_cut": 4,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "hmm": {
+   "columns": 5,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 9994,
+   "positive_control_columns_changed_at_cut": 5,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  },
+  "fracdiff": {
+   "columns": 1,
+   "rows_at_or_before_cut": 4001,
+   "bit_identical_at_or_before_cut": true,
+   "max_abs_diff_at_or_before_cut": 0.0,
+   "cells_changed_after_cut": 1999,
+   "positive_control_columns_changed_at_cut": 1,
+   "positive_control_passed": true,
+   "passed": true,
+   "appended_rows": 500,
+   "prefix_rows": 6000
+  }
+ },
+ "file": "layer2_pool_eurusd_h1.parquet",
+ "file_sha256": "4a89dfea2a6410d6d09fa66482c17031953e9a3e12600b5d3b7a4490d6ea4831",
+ "defects_absent": [
+  "wavelet is PyWavelets wavedec on a trailing window (not a moving-average proxy)",
+  "no interpolate/ffill anywhere: incomplete or non-finite windows emit NaN",
+  "window sizes are declared constants, never derived from len(dataset)",
+  "regime models are fitted on the fit period only and the HMM uses the forward filter (no forward-backward / predict_proba over the sequence)",
+  "no TEST row (>= test_start_closed) is read into any artifact"
+ ],
+ "scaling_note": "no scaling in the store; the model loader standardizes every feature with TRAIN-only mean/std"
+}
