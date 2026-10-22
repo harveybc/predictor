@@ -39,11 +39,13 @@ en la etapa `contrast`.
    ```bash
    cd /var/tmp/psel-v2-20261022 && setsid nohup bash psel_remote.sh contrast 0/2 > nohup_contrast.log 2>&1 < /dev/null & disown
    ```
-3. Igual para `rescue` tras la fusión de `contrast`:
+3. Igual para `rescue` tras la fusión de `contrast`, y para la etapa nueva `encoding` (misma información en distintas codificaciones; se lanza después del primer agregado, cuando el ledger fusionado vuelva a actualizarse; el código `code/` ya está actualizado en tu host con esa etapa):
 
    ```bash
    cd /var/tmp/psel-v2-20261022 && setsid nohup bash psel_remote.sh rescue 0/2 > nohup_rescue.log 2>&1 < /dev/null & disown
+   cd /var/tmp/psel-v2-20261022 && setsid nohup bash psel_remote.sh encoding 0/2 > nohup_encoding.log 2>&1 < /dev/null & disown
    ```
+   Si tu mitad de `encoding` no ha empezado 2 h después de que arranque la mía, mi driver la toma también en dragon (sin duplicar: las unidades hechas se saltan).
 4. El agregado (`aggregate`) lo corro yo sobre el ledger fusionado y publico
    RANKING / CONTRASTS_PARENT_COMPONENTS / FAMILY_DECISIONS / SHORTLIST.
 
@@ -69,6 +71,7 @@ sin rellenar, sin leer 2025: el código lo impone.
   familias con padre declarado: none / P / Cj / subgrupos / Cgroup / P+Cgroup, mismas
   filas (hash de timestamps), 3 folds.
 - `rescue`: 20 pares de familias no retenidas, contexto core15.
+- `encoding`: por familia de codificación (hora del día, régimen GMM/HMM, reloj de eventos, escala de rango, nivel de precio): variantes con la misma información, mismas filas; estructurales con ambos modelos, monótonas sólo con el temporal (un árbol es invariante a ellas).
 
 Nada de esto certifica utilidad en trading: el consumo real se prueba después con
 los subconjuntos finalistas en E3-M FULL (escala fija TRAIN, ablación de estado).
