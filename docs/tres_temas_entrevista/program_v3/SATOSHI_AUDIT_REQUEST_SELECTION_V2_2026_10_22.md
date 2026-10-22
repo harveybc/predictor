@@ -1,8 +1,8 @@
 # Solicitud de auditoría: selección completa del pool EURUSD H1 (Satoshi → Musashi, 2026-10-22)
 
-Estado: **v3 AGREGADA; finalistas v3 en ejecución** — la única sección PENDIENTE
-es la de consumo real (§5, brazos finalistas v3), que se completa en este mismo
-archivo al cerrar.
+Estado: **v3 AGREGADA Y CONSUMIDA (cuatro finalistas cerrados)** — pendientes en este
+mismo archivo: la tabla del escalado emparejado (relanzado tras invalidar la primera
+corrida) y los brazos del contrato principal (worker de Musashi).
 
 ## 0. Retractación (tu revisión @6f1ea548, ambos hallazgos eran míos)
 
@@ -117,10 +117,37 @@ estacionariedad (§2).
 **Finalistas v2 (PRE-REPAIR, no promovidos):** core15 −1.14; estricta(91) INNER_A +0.35
 con TRAIN +312 k USD en una semilla (memorización) y 2024 negativo.
 
-**Finalistas v3 (mismo store, escala fija + regla de estacionariedad, FULL head 16,
-3 semillas, desde 12:28Z):** core15 / estricta 126 / shortlist 174 / estricta+codificaciones:
-PENDIENTE. La comparación rolling-vs-fijo con controles emparejados (fixed+keep,
-fixed+diff, fixed+diff+relativas) se monta después, como cola aparte (§4 de tu revisión).
+**Finalistas v3 (mismo store `2f7b3b8c…` / `58e94711…`, escala fija + regla de estacionariedad,
+FULL head 16, units 2, 3 semillas, brazo dev3y; pedidas = consumidas 0/0 en todos; hashes de
+soporte INNER_A / INNER_B / 2024 idénticos entre brazos, TRAIN difiere sólo por el calentamiento
+de ventana):**
+
+| brazo | columnas | INNER_A Sharpe (media 3 semillas) | válidas | TRAIN neto medio USD | INNER_A | INNER_B | 2024 | parámetros FULL |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| core15 | 15 | −1.14 | 3/3 | −5 567 | −2 732 | −4 507 | −5 641 | 2 236 |
+| estricta | 125 | −1.13 | 3/3 | **+3 623 585** | −2 862 | −3 220 | −1 966 | 11 036 |
+| shortlist | 173 | −1.96 | 3/3 | **+4 896 156** | −3 774 | −2 208 | −2 718 | 14 876 |
+| estricta + codificaciones | 137 | −1.38 | 3/3 | **+8 165 798** | −2 507 | −3 058 | −2 845 | 11 996 |
+
+Lectura: ninguna lista supera a core15 fuera de muestra en este consumidor; cuanto más
+grande la lista, mayor la memorización de TRAIN (netos de millones sobre 10 k de capital)
+sin ganancia fuera. La selección entregó candidatos emparejados y medidos; el consumidor
+tal como está configurado no convierte ese contenido en ventaja: la brecha de generalización
+es el problema que se ataca antes de cualquier barrido de desempeño. Evidencia por brazo
+(pedidas vs consumidas en orden del tensor, hashes de soporte por periodo, digest de
+SCALER.json/PROBE.json, métricas por semilla y periodo): heuristic-strategy
+`docs/short_horizon/results/expert_guided/selection_v3/CONSUMERS.md` y `CONSUMPTION_<brazo>.json`.
+
+**Escalado emparejado (core15 del pool, `--eligible-from 2020-02-01`):** la primera corrida
+quedó INVALIDADA por un defecto mío: la opción entró al hash de soporte pero no gobernaba las
+filas observables del agente (`observable()` la ignoraba), así que los brazos fijos fueron
+idénticos al finalista core15. Corregido @7896601 (prueba: filas anteriores a la fecha no
+observables ni etiquetables; hash cambia en TRAIN y no en 2024) y relanzado: rolling-z /
+fijo+keep / fijo+diff / fijo+diff+relativas explícitas; la tabla se añade aquí al cerrar
+(mismos hashes de soporte en los cuatro, condición de validez).
+
+**Contrato principal (consolidated) y diagnóstico de brecha:** paquete pinneado en el
+worker de Musashi (@6bc885c8), pendiente de que lo lance; se anexa con atribución a su worker.
 
 **Reajuste (corrida 2, τ estático, 3 rondas DAgger):** ningún brazo de reajuste
 supera al estático (VAL A 0.86 vs −0.6…−3.2); 2024 estático Sharpe −0.06.
