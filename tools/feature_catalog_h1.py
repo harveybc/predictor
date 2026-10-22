@@ -122,6 +122,12 @@ def diag_fields(diag: pd.DataFrame | None, col: str) -> tuple[str, dict, dict]:
     return dec, met, stats
 
 
+COMPANION_ALGO = {"diff": "first difference of the base column (layer-1 decision rule DIFF)",
+                  "asinh": "asinh of the base column (layer-1 decision rule ASINH)",
+                  "log": "natural log of the base column (layer-1 decision rule LOG, TRAIN strictly positive)",
+                  "asinhs": "asinh of the base column over its frozen TRAIN median of positive values (layer-1 decision rule ASINHS)"}
+
+
 def rows_layer1(d: Path, producer: Path, cross_asset_repair: bool, r3_meta: dict, r4_present: bool = False):
     df, man, diag = load_store(d, "layer1_pool_eurusd_h1.parquet", "MANIFEST.json", "FEATURE_DIAGNOSTICS.csv")
     psha = sha(producer)
@@ -149,7 +155,7 @@ def rows_layer1(d: Path, producer: Path, cross_asset_repair: bool, r3_meta: dict
             params |= {"L": 120, "K": 24, "rank": 3}
         if "@" in c:
             t = c.split("@")[1]
-            parent, algo = base, {"diff": "first difference of the base column (layer-1 decision DIFF)", "asinh": "asinh of the base column (layer-1 decision ASINH)"}[t]
+            parent, algo = base, COMPANION_ALGO[t]
         dec, met, stats = diag_fields(diag, c)
         st = column_stats(df[c])
         out.append({"feature_id": f"l1:{c}", "store": "layer1_pool", "column": c, "source": src, "parent": parent, "family": grp,
@@ -189,7 +195,7 @@ def rows_layer2(d: Path, producer: Path, suffix: str, store_name: str):
         comp = cm["component"]
         if "@" in c:
             t = c.split("@")[1]
-            parent, algo, comp = base, {"diff": "first difference of the base column (layer-1 decision rule DIFF)", "asinh": "asinh of the base column (layer-1 decision rule ASINH)"}[t], f"{t} companion"
+            parent, algo, comp = base, COMPANION_ALGO[t], f"{t} companion"
         dec, met, stats = diag_fields(diag, c)
         st = column_stats(df[c])
         pert = (man.get("future_perturbation") or {}).get(fam)
