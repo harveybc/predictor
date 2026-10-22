@@ -54,5 +54,23 @@ scientific Python child was observed. The initial headroom wait ended without
 changing the request/reserve or stopping another process. No recovery arm has
 completed yet; the35-50min estimate remains provisional from this start.
 
+## Recovery Closure, Subsequent Status Read
+
+Recovery closed with1 completed and1 pressure-stopped result. The encoded strict
+arm completed in930.3177s and its terminal hashes/closure were verified on the
+second disk. Its three-seed mean native Sharpe is TRAIN5.04953, INNER_A0.09837,
+OBS_2024-2.89194; this is development, not native SAC or TEST. No promotion.
+
+The173-column cons_shortlist arm again had a retained
+PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND, not a wall-limit failure. Its recorded
+tree peak was4715843584 bytes under a5045747712-byte cap. There is no native
+scientific child running now; the5090 is idle. Across both closed batches,
+11 unique arms have complete mirrored results and1 still lacks a completed fit.
+Do not report this as12 successful results or keep the old ETA as active.
+
+The remaining task is a resource/working-set repair without reducing the
+declared feature list, window, seeds or training budget. No further fit was
+launched by this status read and no reliable remaining ETA is established.
+
 This remains the assigned ZigZag-guided development package, not native SAC,
 not TEST and not scientific acceptance of the shared feature release.
