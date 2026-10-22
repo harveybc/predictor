@@ -6,6 +6,15 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Continuacion del21 de octubre
 
+AUDITORIA NUEVA SOLO LECTURA: RL_PREPROCESSING_AUDIT_2026_10_21.md.
+Rolling256 activo y heredado de gym-fx, conservado por Musashi. Afecta las15
+entradas incluyendo ciclos; clipping10 implicito confirmado (247 celdas en
+ventanas diagnosticas de VALIDATION,245 de horas transcurridas).12 testigos
+exactos/futuro sin efecto, sin entrenamientos ni TEST. No prueba que cause las
+perdidas. Propuestos contrastes de escalado fijo TRAIN-only/ciclos/clipping,
+aun sin implementar o encolar. Cola vigente intacta; sus resultados son
+condicionales al escalado actual, no a un preprocessing demostrado optimo.
+
 PRIORIDAD ACTUAL: completar vecinos12/14 y estabilidad en semillas compartidas.
 La repeticion fresca13 TERMINO: politica/trazas/metricas exactamente iguales,
 sin diferencias,10/10 publicaciones y copia independiente completa. TRAIN
