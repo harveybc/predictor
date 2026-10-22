@@ -49,5 +49,10 @@ time for this new resource envelope. There is no reliable overall ETA while
 resource admission is waiting, and no claim that increasing the cap guarantees
 these larger arms finish. Further failures retain their true terminal causes.
 
+Subsequent start check: the first recovery arm was admitted and its native
+scientific Python child was observed. The initial headroom wait ended without
+changing the request/reserve or stopping another process. No recovery arm has
+completed yet; the35-50min estimate remains provisional from this start.
+
 This remains the assigned ZigZag-guided development package, not native SAC,
 not TEST and not scientific acceptance of the shared feature release.
