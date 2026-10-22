@@ -1,0 +1,8 @@
+[Unit]
+Description=Assigned shared feature-selection shard dispatcher
+
+[Service]
+Type=oneshot
+ExecStart=%h/anaconda3/envs/trading-stack/bin/python %h/.local/libexec/shared_selection_worker.py tick --config %h/.config/shared-selection-20261022.json
+TimeoutStartSec=300
+Environment=CUDA_VISIBLE_DEVICES=

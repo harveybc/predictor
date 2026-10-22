@@ -639,12 +639,18 @@ después de recomputación independiente y recibo por contenido.
 
 ## 16. Estado actual
 
-DATA_INTEGRITY_HOLD. Recuperacion real de cotizaciones y limpieza en curso.
-No hay receta predictiva promovida ni modelo entrenandose. RL_FIRST_AFTER_DATA_REPAIR
-es la prioridad siguiente; predictores y NEAT diferidos. Rehacer las
-metricas y la seleccion sobre el inventario admitido; no reutilizar cierres
-ni porcentajes de los resultados eliminados. La existencia de nuevas descargas
-o de este plan no equivale a haber completado la curacion del lake.
+Actualizacion 2026-10-22: seleccion provisional compartida en ejecucion, por
+orden del propietario. Satoshi conserva base, shard 1/2, fusiones y agregado;
+Musashi automatiza contrast y rescue shard 0/2 despues de sus barreras de
+fusion. Ver [plan de ejecucion](program_v3/SHARED_SELECTION_EXECUTION_2026_10_22.md).
+La implementacion entregada es CPU; no se cambia su protocolo para ocupar GPU.
+
+La cola SAC anterior sigue retenida hasta reparar preprocesamiento y aceptar
+la nueva seleccion. No hay receta predictiva promovida. RL_FIRST_AFTER_DATA_REPAIR
+sigue como prioridad de consumo; predictores y NEAT diferidos. No reutilizar
+cierres ni porcentajes de resultados eliminados. Esta autorizacion operativa
+no certifica la curacion del lake ni la seleccion final: ambas conservan sus
+requisitos de evidencia y auditoria.
 
 ## 17. Posprograma: feature-selector desde M5PHET
 
