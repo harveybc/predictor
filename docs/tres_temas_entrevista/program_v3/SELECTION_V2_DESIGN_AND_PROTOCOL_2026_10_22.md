@@ -68,7 +68,7 @@ codificación que maximiza la información útil que llega al modelo.
 | Cíclica (hora, día) | `sin/cos`; sesiones binarias | one-hot 24; sólo sesiones |
 | Régimen (GMM/HMM) | probabilidades de pertenencia ordenadas por volatilidad + entropía (+ sorpresa HMM) | one-hot duro del `argmax` |
 | Fase (Hilbert) | `cos/sin` de la fase | — (el ángulo crudo rompe la continuidad; no se contrasta) |
-| Niveles no estacionarios | diferencia (decidido por ADF/KPSS) | diferencia + nivel relativo a 480 barras |
+| Niveles no estacionarios | diferencia (decidido por ADF/KPSS); desde heuristic-strategy @`stationarity rule` el cargador con escala fija mide cada entrada en TRAIN y diferencia (o rechaza, `--nonstationary refuse`) los niveles antes de ajustar constantes, con la tabla ADF/KPSS en SCALER.json | diferencia + nivel relativo a 480 barras |
 | Magnitudes de cola pesada | `asinh` sólo si redujo la asimetría medida | `log1p`; ratio a la media móvil de 24 barras |
 | Reloj de eventos | horas desde / horas hasta, lineales | decaimiento `exp(−h/4)`; ventana ±2 h |
 | Escala final de todo | z-score con constantes de TRAIN (amplitud preservada) | — |
@@ -144,6 +144,20 @@ y la actividad sí tienen señal. Familias dominantes para `opener3`: `inv.raw`
 (retornos y rango crudos), `px.close_loc`, velas; para `hit`: `act.p_hit`,
 `cot.eur`. Los contrastes y la etapa de codificación corren sobre estas dos
 tareas; las otras cinco siguen en el ledger como NOT_INFORMATIVE_WITH_THIS_POOL.
+
+## 6b. Resultado del E3-M sin rolling z-score sobre el CSV heredado (cerrado 03:39Z)
+
+FULL head 16, escala fija TRAIN, 15 inputs heredados (incluye el NIVEL crudo `HIGH`):
+INNER_A Sharpe por semilla −0.02 / +2.41 (inválida: 1.7 órdenes/semana) / −4.68, media −0.76
+frente a +0.86 (+1.00/+0.42/+1.17) con rolling-z; TRAIN neto +27 732 USD en una semilla
+(vs −4 317 con rolling). Diagnóstico: con constantes fijas un nivel de precio es un proxy
+de fecha; el rolling-z lo escondía. Corrección estructural: el cargador con escala fija
+mide la estacionariedad de cada entrada en TRAIN (ADF/KPSS, la regla del catálogo) y
+diferencia los niveles antes de ajustar constantes, registrando la decisión en
+SCALER.json (`stationarity`); E3-M `--nonstationary {diff,refuse,keep}`, por defecto
+`diff`. La prueba de integración CLI → tensor → SCALER.json → recarga verifica que
+`HIGH` sale como `HIGH@diff`. Los brazos finalistas ya consumían el pool (niveles
+decididos por el catálogo), así que son la comparación limpia.
 
 ## 7. Consumo real y cierre
 
