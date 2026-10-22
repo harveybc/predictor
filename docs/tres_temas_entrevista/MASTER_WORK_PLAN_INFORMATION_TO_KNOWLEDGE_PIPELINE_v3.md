@@ -647,10 +647,16 @@ La implementacion entregada es CPU; no se cambia su protocolo para ocupar GPU.
 La mitad contrast/rescue ya completo. La revision posterior encontro lectura
 de un Parquet distinto del declarado y comparaciones con soportes diferentes;
 Satoshi integro el candidato y las correcciones adicionales en fd16919.
-La seleccion v3 ya corre con identidad nueva y ambas mitades base activas.
-Musashi tiene automatizadas base, contrast, encoding y rescue en su shard 0/2;
+La seleccion v3 completo 3894 unidades, sin errores registrados; las firmas de
+soporte coinciden en los grupos contrast/encoding/rescue comprobados de forma
+independiente. Musashi completo base, contrast, encoding y rescue en su shard 0/2;
 ver [ejecucion v3](program_v3/SHARED_SELECTION_V3_EXECUTION_2026_10_22.md).
-El agregado previo no es la aceptacion de la seleccion final ni se reutiliza.
+El agregado v3 no sustituye los finalistas consumidores ni la auditoria final.
+El agregado v2 retirado no se reutiliza. La codificacion no certifica una
+arquitectura de extractor. El siguiente orden y reparto quedan en el
+[contrato comun hacia RL](program_v3/SHARED_SELECTION_TO_RL_HANDOFF_2026_10_22.md):
+datos/codificaciones compartidos, decision de subconjunto y arquitectura propia
+por consumidor; SAC sin experto y aprendizaje guiado por ZigZag separados.
 
 La cola SAC anterior sigue retenida hasta reparar preprocesamiento y aceptar
 la nueva seleccion. No hay receta predictiva promovida. RL_FIRST_AFTER_DATA_REPAIR

@@ -1,7 +1,7 @@
 {
   "schema": "feature_selection_method_state.v1",
   "updated_on": "2026-10-22",
-  "current_stage": "SELECTION_V3_REPAIRED_EXECUTION_PENDING_RESULTS_AUDIT",
+  "current_stage": "SELECTION_V3_AGGREGATED_PENDING_CONSUMER_AND_RELEASE_AUDIT",
   "data_admission_complete": false,
   "feature_selection_complete": false,
   "scientific_training_authorized": false,
@@ -10,7 +10,10 @@
   "operations_plan": "SHARED_SELECTION_V3_EXECUTION_2026_10_22.md",
   "targeted_review": "MUSASHI_REVIEW_OF_SATOSHI_SELECTION_UPDATE_2026_10_22.md",
   "candidate_repair": "Integrated by Satoshi in heuristic-strategy fd16919, with rescue controls and paired guards; v3 freshly launched, final results audit pending",
-  "last_assigned_execution": "v3 base shard 0/2 running; persistent timer handles base, contrast, encoding, rescue against verified merged-stage barriers",
+  "last_assigned_execution": "v3 all four assigned stages complete; 3894 merged units without recorded errors; own worker self-disabled after completion",
+  "consumer_handoff_plan": "SHARED_SELECTION_TO_RL_HANDOFF_2026_10_22.md",
+  "measured_selection": {"units": 3894, "recorded_errors": 0, "independent_paired_groups": {"contrast": 714, "encoding": 78, "rescue": 120}, "support_signature_mismatches": 0, "strict_columns": 126, "shortlist_columns": 174},
+  "remaining_closures": ["four expert-consumer finalist results", "final source-to-tensor and upstream fitted-transform audit", "fixed TRAIN scaler integration into SAC consumer", "independent SAC subset and extractor comparison"],
   "affected_prior_phase_closures": "WITHDRAWN_NOT_INPUTS_OR_CHAMPIONS",
   "independent_eth": "PRESERVED_NOT_REVOKED_WITHOUT_AFFECTED_LINEAGE",
   "required_stages": [
