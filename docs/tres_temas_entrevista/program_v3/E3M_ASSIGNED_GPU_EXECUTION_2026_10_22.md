@@ -78,6 +78,13 @@ compute PID on the other GPU, no worker restarts. This is live training evidence
 not a completed E3M measurement. Host available RAM was about6.6GB after start;
 worker disk had about75GB free before launch. No memory/kernel settings changed.
 
+Before handoff, cons_core15 completed in730.7 measured scientific seconds. The
+worker validated all three seeds,12 checkpoints, scaler/probe/support and sealed
+its result, then automatically launched cons_shortlist_strict. Observed status:
+1 done,0 failed,11 remaining (including the active second arm), no service
+restarts. Thus real inter-arm continuation is verified, not only a shell launch.
+The remaining11 have not completed and no total ETA is inferred from one subset.
+
 ## Unattended Outputs And Handoff
 
 Paths below are relative to the existing private package root:
