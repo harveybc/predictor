@@ -229,3 +229,25 @@ def test_recovery_timer_targets_one_service_without_parallel_dispatch():
     assert "OnBootSec=" in timer and "OnUnitInactiveSec=" in timer
     assert "Restart=on-failure" in service
     assert "MemoryMax=256M" in service  # admission launches the science in its own 4GiB scope
+
+
+def test_recovery_scope_contains_only_requested_failed_arms():
+    w = module()
+    names = ["cons_shortlist", "cons_shortlist_strict_enc"]
+    selected = w.planned_jobs({"only_jobs": names})
+    assert [j["name"] for j in selected] == names
+    closed = w.closure({n: {"state": "DONE"} for n in names}, selected)
+    assert closed == {"state": "COMPLETE", "done": 2, "failed": 0, "pending": 0, "total": 2}
+    with pytest.raises(ValueError):
+        w.planned_jobs({"only_jobs": ["made-up"]})
+
+
+def test_scientific_recovery_scope_does_not_change_model_flags(tmp_path):
+    w = module()
+    c = cfg(tmp_path)
+    selected = w.planned_jobs({"only_jobs": ["cons_shortlist"]})[0]
+    previous = w.command(c, selected)
+    c["memory"] = "4812M"
+    current = w.command(c, selected)
+    index = previous.index("-m") + 1
+    assert previous[:index] == current[:index] and previous[index + 1:] == current[index + 1:]

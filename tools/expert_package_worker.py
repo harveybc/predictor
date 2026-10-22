@@ -72,6 +72,17 @@ def jobs():
     return result
 
 
+def planned_jobs(cfg):
+    all_jobs = jobs()
+    selected = cfg.get("only_jobs")
+    if selected is None:
+        return all_jobs
+    known = {j["name"]: j for j in all_jobs}
+    if not selected or len(selected) != len(set(selected)) or any(n not in known for n in selected):
+        raise ValueError("INVALID_JOB_SUBSET")
+    return [known[n] for n in selected]
+
+
 def choose_gpu(text):
     rows = list(csv.reader(text.splitlines()))
     choices = [r[2].strip() for r in rows if len(r) == 3 and "5090" in r[1]]
@@ -232,16 +243,17 @@ def resource_refusal(rc, log, output):
             and (not Path(output).exists() or not any(Path(output).iterdir())))
 
 
-def closure(states):
-    done = sum(states.get(j["name"], {}).get("state") == "DONE" for j in jobs())
-    failed = sum(states.get(j["name"], {}).get("state") == "FAILED" for j in jobs())
-    pending = len(jobs()) - done - failed
+def closure(states, selected=None):
+    selected = jobs() if selected is None else selected
+    done = sum(states.get(j["name"], {}).get("state") == "DONE" for j in selected)
+    failed = sum(states.get(j["name"], {}).get("state") == "FAILED" for j in selected)
+    pending = len(selected) - done - failed
     return {"state": "RUNNING" if pending else ("COMPLETE" if not failed else "COMPLETE_WITH_FAILURES"),
-            "done": done, "failed": failed, "pending": pending, "total": len(jobs())}
+            "done": done, "failed": failed, "pending": pending, "total": len(selected)}
 
 
 def publish_status(cfg, states, state=None, **fields):
-    value = {**closure(states), "updated": time.time(), "config_sha256": identity(cfg),
+    value = {**closure(states, planned_jobs(cfg)), "updated": time.time(), "config_sha256": identity(cfg),
              "jobs": states, "gpu_uuid": cfg["gpu_uuid"], "memory": cfg["memory"], **fields}
     if state:
         value["state"] = state
@@ -274,7 +286,8 @@ def run(cfg):
                 publish_status(cfg, states, "WAIT_EXISTING_CHILD", child_pids=active)
                 time.sleep(30)
                 continue
-            remaining = [j for j in jobs() if states.get(j["name"], {}).get("state") != "FAILED"]
+            selected = planned_jobs(cfg)
+            remaining = [j for j in selected if states.get(j["name"], {}).get("state") != "FAILED"]
             job = None
             for candidate in remaining:
                 receipt = adopt(cfg, candidate)
@@ -285,10 +298,10 @@ def run(cfg):
                     break
             atomic(ops / "JOBS.json", states)
             if job is None:
-                receipts = [adopt(cfg, j) for j in jobs() if states[j["name"]]["state"] == "DONE"]
+                receipts = [adopt(cfg, j) for j in selected if states[j["name"]]["state"] == "DONE"]
                 atomic(root / "CONSUMERS.json", {"config_sha256": identity(cfg), "results": receipts,
                       "dispositions": states, "no_ranking_or_promotion": True})
-                closed = {**closure(states), "closed": time.time(), "config_sha256": identity(cfg),
+                closed = {**closure(states, selected), "closed": time.time(), "config_sha256": identity(cfg),
                           "consumer_sha256": digest(root / "CONSUMERS.json")}
                 atomic(ops / "CLOSE.json", closed)
                 publish_status(cfg, states)
@@ -358,7 +371,7 @@ def run(cfg):
                 time.sleep(60)
 
 
-def initialize(root, python, launcher):
+def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_unit=None, recovery_source=None):
     root = Path(root).resolve()
     if digest(root / "hs_code_final.tar.gz") != ARCHIVE:
         raise ValueError("ARCHIVE_IDENTITY_CHANGED")
@@ -368,13 +381,18 @@ def initialize(root, python, launcher):
     for name in ("code/app", "code/tools", "data", "in"):
         paths.extend(p for p in (root / name).rglob("*") if p.is_file() and "__pycache__" not in p.parts
                      and (name in ("data", "in") or p.suffix == ".py"))
+    paths.extend(p for p in root.glob("*.py") if p.is_file())
     cfg = {"root": str(root), "python": str(Path(python).expanduser().resolve()),
-           "launcher": str(Path(launcher).expanduser().resolve()), "memory": "4G", "gpu_uuid": gpu,
+           "launcher": str(Path(launcher).expanduser().resolve()), "memory": memory, "gpu_uuid": gpu,
            "seeds": [20261019, 20261020, 20261021], "max_entered_attempts": 2,
-           "min_disk_bytes": 8 * 1024**3, "timer_unit": "musashi-e3m-assigned-20261022.timer",
+           "min_disk_bytes": 8 * 1024**3, "timer_unit": timer_unit or "musashi-e3m-assigned-20261022.timer",
            "pins": {str(p): digest(p) for p in paths}}
     cfg["runtime_versions"] = runtime_versions(cfg["python"])
-    for j in jobs():
+    if only_jobs is not None:
+        cfg["only_jobs"] = only_jobs
+    if recovery_source:
+        cfg["recovery_source"] = recovery_source
+    for j in planned_jobs(cfg):
         features = read(root / "in" / j["list"])["features"]
         if "raw.log_close" in features or len(features) != len(set(features)):
             raise ValueError("INVALID_FEATURE_LIST")
@@ -384,7 +402,7 @@ def initialize(root, python, launcher):
         raise ValueError("EXISTING_CONFIG_DIFFERS")
     atomic(config_path, cfg)
     config_path.chmod(0o600)
-    atomic(root / "ops/PLAN.json", {"config_sha256": identity(cfg), "jobs": jobs(), "no_ranking": True})
+    atomic(root / "ops/PLAN.json", {"config_sha256": identity(cfg), "jobs": planned_jobs(cfg), "no_ranking": True})
     return cfg
 
 
