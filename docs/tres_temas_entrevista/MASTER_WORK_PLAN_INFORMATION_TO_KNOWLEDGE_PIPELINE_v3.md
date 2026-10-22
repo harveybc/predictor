@@ -657,6 +657,11 @@ arquitectura de extractor. El siguiente orden y reparto quedan en el
 [contrato comun hacia RL](program_v3/SHARED_SELECTION_TO_RL_HANDOFF_2026_10_22.md):
 datos/codificaciones compartidos, decision de subconjunto y arquitectura propia
 por consumidor; SAC sin experto y aprendizaje guiado por ZigZag separados.
+Por orden nueva del propietario, el paquete E3-M pinneado31d90f7 ya corre en
+el worker libre:4 contratos consolidados y8 diagnosticos de brecha, secuenciales
+en la5090 con recuperacion y espejo automaticos. Ver
+[ejecucion asignada](program_v3/E3M_ASSIGNED_GPU_EXECUTION_2026_10_22.md).
+No es una nueva cola SAC ni una aceptacion de la seleccion o sus transformaciones.
 
 La cola SAC anterior sigue retenida hasta reparar preprocesamiento y aceptar
 la nueva seleccion. No hay receta predictiva promovida. RL_FIRST_AFTER_DATA_REPAIR

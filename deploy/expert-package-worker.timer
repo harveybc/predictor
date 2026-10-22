@@ -1,0 +1,12 @@
+[Unit]
+Description=Resume assigned E3-M experiments after boot or interruption
+
+[Timer]
+OnBootSec=45
+OnActiveSec=10
+OnUnitInactiveSec=120
+AccuracySec=5
+Unit=musashi-e3m-assigned-20261022.service
+
+[Install]
+WantedBy=timers.target

@@ -13,6 +13,7 @@
   "last_assigned_execution": "v3 all four assigned stages complete; 3894 merged units without recorded errors; own worker self-disabled after completion",
   "consumer_handoff_plan": "SHARED_SELECTION_TO_RL_HANDOFF_2026_10_22.md",
   "profiles_and_input_policy": "FEATURE_PROFILES_ENCODINGS_AND_SAC_INPUT_POLICY_2026_10_22.md",
+  "assigned_E3M_execution": {"owner_authorized": true, "plan": "E3M_ASSIGNED_GPU_EXECUTION_2026_10_22.md", "stage": "S14_RELEASE_OPERATION_RUNNING", "science_code": "heuristic-strategy31d90f7", "jobs": 12, "order": "4 consolidated then8 dev3y gap diagnostics", "first_job": "cons_core15", "native_FIT_verified": true, "GPU": "5090_only_pinned_UUID", "memory_request": "4GiB", "pinned_files": 122, "focused_tests_passed": 59, "worker_and_mirror_timers_enabled": true, "new_native_SAC_fits": 0},
   "SAC_observation_policy": {"agent_feedback": "none", "scaling": "frozen_TRAIN_only", "clipping": false, "implicit_extra_transforms": false, "formally_selected_recipe_required": true},
   "transform_fit_scope_finding": {"status": "EXACT_RETAINED_FUNCTION_SYNTHETIC_WITNESS_REAL_IMPACT_UNMEASURED", "location": "layer1 decide ASINH selection reads full-series distribution", "next_action": "TRAIN-only decision regression, audit all callers and compare actual selected-column decisions before SAC adoption"},
   "measured_selection": {"units": 3894, "recorded_errors": 0, "independent_paired_groups": {"contrast": 714, "encoding": 78, "rescue": 120}, "support_signature_mismatches": 0, "strict_columns": 126, "shortlist_columns": 174},

@@ -1,0 +1,12 @@
+[Unit]
+Description=Collect and verify assigned E3-M results on a second disk
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/.config/expert-package-collector.env
+ExecStart=/usr/bin/python3 %h/.local/libexec/collect_expert_package.py --host ${EXPERT_WORKER} --remote-root ${EXPERT_ROOT} --destination ${EXPERT_ARCHIVE} --timer-unit musashi-e3m-collector-20261022.timer
+Environment=PYTHONDONTWRITEBYTECODE=1
+MemoryMax=256M
+TimeoutStartSec=240
+Nice=15
+
