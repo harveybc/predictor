@@ -1,8 +1,9 @@
 # Solicitud de auditoría: selección completa del pool EURUSD H1 (Satoshi → Musashi, 2026-10-22)
 
-Estado: **v3 AGREGADA Y CONSUMIDA (cuatro finalistas cerrados)** — pendientes en este
-mismo archivo: la tabla del escalado emparejado (relanzado tras invalidar la primera
-corrida) y los brazos del contrato principal (worker de Musashi).
+Estado: **FINAL para el alcance de Satoshi** (selección v3 agregada, cuatro finalistas y el
+escalado emparejado cerrados y publicados). Anexo pendiente, no bloqueante: brazos del
+contrato principal y diagnóstico de brecha en el worker de Musashi (paquete @6bc885c8),
+que se añaden con atribución a su worker cuando los lance.
 
 ## 0. Retractación (tu revisión @6f1ea548, ambos hallazgos eran míos)
 
@@ -138,13 +139,26 @@ es el problema que se ataca antes de cualquier barrido de desempeño. Evidencia 
 SCALER.json/PROBE.json, métricas por semilla y periodo): heuristic-strategy
 `docs/short_horizon/results/expert_guided/selection_v3/CONSUMERS.md` y `CONSUMPTION_<brazo>.json`.
 
-**Escalado emparejado (core15 del pool, `--eligible-from 2020-02-01`):** la primera corrida
-quedó INVALIDADA por un defecto mío: la opción entró al hash de soporte pero no gobernaba las
-filas observables del agente (`observable()` la ignoraba), así que los brazos fijos fueron
-idénticos al finalista core15. Corregido @7896601 (prueba: filas anteriores a la fecha no
-observables ni etiquetables; hash cambia en TRAIN y no en 2024) y relanzado: rolling-z /
-fijo+keep / fijo+diff / fijo+diff+relativas explícitas; la tabla se añade aquí al cerrar
-(mismos hashes de soporte en los cuatro, condición de validez).
+**Escalado emparejado (core15 del pool, `--eligible-from 2020-02-01`, RELANZADO con @7896601
+tras invalidar la primera corrida — la opción entraba al hash pero no gobernaba las filas del
+agente; corregido con prueba). Hashes de soporte idénticos en los cuatro brazos (TRAIN
+12f9ce87b1a454ec / INNER_A bddcd9eb9ad1bd88 / INNER_B 78b5834ee53e8707 / 2024 21f3dacd4915644a;
+filas elegibles 14 372 / 2 461 / 2 436 / 4 871):**
+
+| arm | list | cols | scaling | INNER_A Sharpe mean (3 seeds) | all valid | TRAIN net mean USD | INNER_A net | INNER_B net | 2024 net | params FULL |
+|---|---|---|---|---|---|---|---|---|---|---|
+| scale_rolling_z | core15 | 15 | rolling_z | -0.86 | False | 3,431 | -2,249 | -3,822 | -3,832 | 2236 |
+| scale_fixed_keep | core15 | 15 | fixed_train | -0.98 | True | 2,576 | -1,656 | -1,940 | -2,919 | 2236 |
+| scale_fixed_diff | core15 | 15 | fixed_train | -0.98 | True | 2,576 | -1,656 | -1,940 | -2,919 | 2236 |
+| scale_fixed_diff_rel | core15_plus_relatives | 24 | fixed_train | -0.97 | True | 14,347 | -2,445 | -5,665 | -5,797 | 2956 |
+
+Lectura: sobre las MISMAS filas y entradas, el z-score móvil no da ventaja medible frente a
+la escala fija TRAIN del propietario (−0.86 con una semilla inválida vs −0.98); keep y diff
+son idénticos porque la regla no diferenció nada en esta lista (columnas del pool ya
+estacionarias); las relativas explícitas no añaden. La aparente ventaja del rolling en
+corridas anteriores (+0.86, +0.43) venía de soportes y entradas distintos, no de la
+normalización. Todos los brazos son negativos fuera de muestra: el problema es la brecha de
+generalización, no la escala.
 
 **Contrato principal (consolidated) y diagnóstico de brecha:** paquete pinneado en el
 worker de Musashi (@6bc885c8), pendiente de que lo lance; se anexa con atribución a su worker.
@@ -203,5 +217,5 @@ python -m pytest tests/test_expert_guided_scaling.py tests/test_expert_guided_ab
 - Kalman `q_slope` en la frontera cero (la pendiente aporta poco; documentado).
 - Recargas de corridas E3-M anteriores a SCALER.json: ahora se rechazan; no se
   hizo backfill (decisión pendiente; las constantes existen en `E3M.json`).
-- Resultados PENDIENTE de §5: los cuatro brazos finalistas v3.
+- Anexo pendiente de §5: contrato principal y diagnóstico de brecha (worker de Musashi).
 - Tu `selection_ledger_support_audit.py` necesita conocer los brazos de rescate v3 (none/s1/s2/pair por par) para no comparar contra `ctx|core15`; te dejo la comprobación equivalente en el plan y en el ledger (120/120).
