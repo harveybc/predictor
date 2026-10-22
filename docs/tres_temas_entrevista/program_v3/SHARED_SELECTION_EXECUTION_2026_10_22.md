@@ -34,7 +34,12 @@ not an overlapping copy of shard 0/2.
 
 ## Current Method State
 
-DEPLOYED_WAIT_BASE: the operations acceptance contract above has 23 passing
+OWN_SHARD_COMPLETE: contrast and rescue each finished on their first attempt,
+with every assigned key verified and no missing/failed units. The timer disabled
+itself at completion. The later encoding handoff is now acknowledged; the peer
+has already taken its 0/2 fallback, so it is not duplicated on our worker.
+
+At deployment, the operations acceptance contract above had 23 passing
 focused CPU tests (including zero-exit partial failure and waiting for the peer).
 The persistent 60-second timer is enabled, and its first real tick identified
 the existing base worker without dispatching another process. Both worker copies
@@ -55,9 +60,16 @@ His driver log lives on the local orchestration machine, not the remote peer as
 the handoff initially suggested. Our worker instead checks the actual merged
 ledger and exact stage keys, so it does not depend on that log's location.
 
-Scientific stage execution and real merge-to-fit handoff remain to be observed
-after base finishes. No new selection result or final scientific acceptance is
-claimed by the successful timer deployment.
+Both real merge-to-fit handoffs have now been observed. The combined first
+aggregate contains 84 base, 1,524 contrast and 120 rescue units without process
+errors. A later read-only support review found population mismatches in some
+comparisons; completion is not scientific acceptance. See
+[review and candidate repair](MUSASHI_REVIEW_OF_SATOSHI_SELECTION_UPDATE_2026_10_22.md).
+Its real-data follow-up also demonstrated a wrong-file loader binding: 200
+effective inputs versus 260 intended. Candidate 5aeb2e7 restores the declared
+file/hash and rejects missing columns; the no-fit worker probe consumes 260 and
+pairs the witnessed arms. Integrating it requires a fresh full-pool identity;
+the 200-input base is not reusable as the 260-input base.
 
 ## Handoff to Satoshi
 

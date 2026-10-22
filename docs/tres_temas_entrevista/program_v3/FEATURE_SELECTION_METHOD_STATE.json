@@ -1,13 +1,16 @@
 {
   "schema": "feature_selection_method_state.v1",
   "updated_on": "2026-10-22",
-  "current_stage": "OWNER_AUTHORIZED_PROVISIONAL_SHARED_SELECTION_PENDING_AUDIT",
+  "current_stage": "SELECTION_INPUT_BINDING_AND_PAIRED_SUPPORT_REPAIR_CANDIDATE_READY",
   "data_admission_complete": false,
   "feature_selection_complete": false,
   "scientific_training_authorized": false,
   "bounded_selection_fits_authorized": true,
   "bounded_selection_scope": "Existing base preserved; Musashi contrast/rescue shard 0/2 of pinned Satoshi selection, not downstream RL or final selection acceptance",
   "operations_plan": "SHARED_SELECTION_EXECUTION_2026_10_22.md",
+  "targeted_review": "MUSASHI_REVIEW_OF_SATOSHI_SELECTION_UPDATE_2026_10_22.md",
+  "candidate_repair": "heuristic-strategy codex/selection-support-pairing-20261022 @5aeb2e7; not integrated into active executors",
+  "last_assigned_execution": "contrast/rescue shard 0/2 complete on first attempts; encoding fallback already owned by peer",
   "affected_prior_phase_closures": "WITHDRAWN_NOT_INPUTS_OR_CHAMPIONS",
   "independent_eth": "PRESERVED_NOT_REVOKED_WITHOUT_AFFECTED_LINEAGE",
   "required_stages": [
@@ -24,6 +27,6 @@
   "population_denominator": "REBUILD_FROM_REQUIRED_INVENTORY_NOT_HARDCODED_OLD_COUNTS",
   "outputs": "Existing warehouse with exact readback, verified physical copies on two hosts; Git code/config/schema/regeneration only",
   "public_database_upload_required": false,
-  "next_allowed_actions": ["complete source recovery and actual admission", "validate prepared-window monthly support", "recompute on new immutable data identity", "execute owner-assigned provisional selection shards after verified merge barriers; retain pending audit disposition"],
+  "next_allowed_actions": ["complete source recovery and actual admission", "validate prepared-window monthly support", "recompute on new immutable data identity", "execute owner-assigned provisional selection shards after verified merge barriers; retain pending audit disposition", "integrate reviewed store binding and support repairs; rebuild affected selection under fresh identity with verified effective inputs"],
   "blocked_actions": ["reuse affected numerical results or learned weights", "call downloads or quality publication data admission", "train before required data and selection acceptance", "claim a pristine holdout after prior inspection"]
 }
