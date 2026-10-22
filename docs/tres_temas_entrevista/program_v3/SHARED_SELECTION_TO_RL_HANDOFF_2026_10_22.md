@@ -2,6 +2,10 @@
 
 Status: selection execution complete; final consumer and release audit pending.
 Owners: Musashi, native SAC without expert; Satoshi, ZigZag-guided learning.
+Owner clarification: the initial SAC policy has NO agent feedback, clipping,
+rolling scaling or implicit extra transforms. See the measured
+[profiles and input policy](FEATURE_PROFILES_ENCODINGS_AND_SAC_INPUT_POLICY_2026_10_22.md),
+including the narrow ASINH fit-scope finding that must be checked before adoption.
 This updates the research sequence, not an authorization to replay the held SAC
 queue or a claim that a new RL campaign has started. DOIN is unchanged.
 
@@ -139,9 +143,11 @@ explicit starting control, not a proven universal optimum. Elapsed time spans
 closures and must not be misreported as always 24 wall-clock hours.
 
 The environment retains position, SL, TP, balance and calendar state in all
-arms. Policy observation feedback none/minimal is a controlled input ablation,
-not deletion of mandatory simulator state. Any partial-observability consequence
-is recorded, not attributed to feature quality alone.
+arms. The initial SAC policy and critics receive no agent-state observations;
+none is the explicit baseline, not an optional choice between inherited modes.
+Any future minimal-feedback arm requires an explicit separate experiment, not
+automatic inclusion. Record partial-observability consequences, not as a
+feature-quality failure alone. Replay actions/rewards remain SAC learning data.
 
 ## 5. Shared Business And Evaluation Contract
 
