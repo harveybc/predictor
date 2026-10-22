@@ -59,3 +59,33 @@ This is physical custody, not warehouse delivery or feature-release approval.
 
 Next action: consume the automatically sealed remaining result when available;
 complete the source-to-consumer review before the independent SAC comparison.
+
+## Subsequent Terminal Read
+
+The arm completed successfully in 1215.5875 seconds (20m16s), with all twelve
+checkpoints. Native child count is zero. The worker and collector timers disabled
+themselves. Both the external-volume mirror and remote replica verified the final
+configuration, output hashes and closure. All twelve assigned arms now have a
+completed result across the original, recovery and relocation batches; historical
+failed attempts remain unchanged. This completes execution, not release approval.
+
+Native trading means over the three seeds (maximum four entries per day):
+
+| Period | Sharpe | Net profit USD | Mean maximum drawdown % | Mean trades | Mean win rate % |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TRAIN | 4.3945 | 112216217.42 | 32.8729 | 1551.67 | 48.5941 |
+| INNER_A | -0.9091 | -2277.89 | 42.5265 | 204.33 | 39.3632 |
+| OBS_2024 | -0.6186 | -2369.34 | 48.1279 | 452.33 | 37.7963 |
+
+These are arithmetic means of separate compounded simulations, not a combined
+portfolio or a pooled drawdown. The native contract does not show generalization.
+
+The already-declared secondary replay with maximum one entry per day gives mean
+OBS_2024 Sharpe 0.07213, profit USD53.15, drawdown13.8906%, trades209.67 and win
+rate35.3469%. All three OBS_2024 records are marked valid; seed20261021 is marked
+invalid under the weekly activity rule on INNER_A. Its OBS_2024 Sharpe1.4843 must
+not be reported alone as a selected result. No checkpoint or recipe was promoted,
+and this small secondary mean is not evidence of a stable edge.
+
+Next action: consolidate the complete consumer comparison and source-to-consumer
+review; no additional fit was launched by this status read.

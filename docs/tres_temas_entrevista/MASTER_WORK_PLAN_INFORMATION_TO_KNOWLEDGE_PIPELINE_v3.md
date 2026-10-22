@@ -660,9 +660,10 @@ por consumidor; SAC sin experto y aprendizaje guiado por ZigZag separados.
 Por orden nueva del propietario, el paquete E3-M pinneado31d90f7 se ejecuto:
 4 contratos consolidados y8 diagnosticos de brecha, secuenciales en la5090.
 La cola original y su recuperacion cerraron con11 brazos unicos completos.
-El unico brazo pendiente, cons_shortlist, ya esta admitido en un worker alterno
-con mas RAM, GPU4070 y limite12GiB, sin cambiar parametros cientificos.
-Tiene recuperacion y dos copias verificadas automaticas. Ver
+El unico brazo pendiente, cons_shortlist, completo en un worker alterno con mas
+RAM, GPU4070 y limite12GiB en20m16s, sin cambiar parametros cientificos.
+Los12 brazos tienen resultado y las dos copias finales estan verificadas.
+Los timers se cerraron automaticamente; resta consolidar y auditar el consumo. Ver
 [traslado del brazo restante](program_v3/E3M_RELOCATED_ARM_2026_10_22.md) y
 [ejecucion asignada](program_v3/E3M_ASSIGNED_GPU_EXECUTION_2026_10_22.md).
 No es una nueva cola SAC ni una aceptacion de la seleccion o sus transformaciones.
