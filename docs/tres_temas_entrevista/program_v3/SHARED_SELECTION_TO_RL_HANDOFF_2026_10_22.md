@@ -11,6 +11,10 @@ Follow-up on Satoshi's v4/shared-work reply and proposed per-agent labels:
 T1 profiles, T2 corrected-store gap diagnostics and T3 extractor contrasts have
 been allocated; their effective pinned v4 packages are still required. No new
 SAC or opportunity-label training has been launched by that review.
+Subsequent v4 package/revision2 checks: eleven exact synthetic regressions pass,
+and the T2 manifest was repaired with the canonical copy before launch. Explicit
+T2 split and executable regularization-rule alignment remain preflight corrections;
+see [current instructions to Satoshi](MUSASHI_INSTRUCTIONS_FOR_V4_CLOSURE_AND_T1_T2_T3_2026_10_22.md).
 Owners: Musashi, native SAC without expert; Satoshi, ZigZag-guided learning.
 Owner clarification: the initial SAC policy has NO agent feedback, clipping,
 rolling scaling or implicit extra transforms. See the measured
