@@ -5,24 +5,25 @@ from pathlib import Path
 import shlex
 
 
-def jobs(manifest, assignment):
-    if (manifest.get("schema") != "t3_manifest.v2" or manifest.get("identity") != "t3v2_8875abf84a63"
-            or assignment.get("manifest") != manifest["identity"] or assignment.get("worker") != "musashi"):
+def jobs(manifest, assignment, *, worker="musashi"):
+    if (worker not in ("musashi", "satoshi") or manifest.get("schema") != "t3_manifest.v2"
+            or manifest.get("identity") != "t3v2_8875abf84a63"
+            or assignment.get("manifest") != manifest["identity"] or assignment.get("worker") != worker):
         raise ValueError("T3_MANIFEST_IDENTITY")
     all_units = manifest["units"]
     if len(all_units) != 43 or [u["id"] for u in all_units] != list(range(43)):
         raise ValueError("T3_MANIFEST_UNITS")
     assigned = assignment["units"]
-    if [u["id"] for u in assigned] != list(range(1, 43, 2)):
+    if [u["id"] for u in assigned] != list(range(1 if worker == "musashi" else 0, 43, 2)):
         raise ValueError("T3_ASSIGNED_UNITS")
     result = []
     for unit in assigned:
         i = unit["id"]
         declared = all_units[i]
         name = f"t3_unit_{i:02d}"
-        if (unit["name"] != name or declared["name"] != name or declared["worker"] != "musashi"
+        if (unit["name"] != name or declared["name"] != name or declared["worker"] != worker
                 or any(unit[k] != declared[k] for k in ("identity", "kind", "group"))
-                or unit["kind"] not in ("pointwise", "per_feature")
+                or unit["kind"] not in (("conv",) if i == 0 else ("pointwise", "per_feature"))
                 or declared["groups_file"] != f"unit_{i:02d}.json"):
             raise ValueError("T3_UNIT_IDENTITY")
         text = unit["command"]

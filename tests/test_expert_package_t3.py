@@ -112,3 +112,28 @@ def test_t3_shard_is_an_explicit_subset_without_changed_commands(tmp_path):
         c["only_jobs"] = bad
         with pytest.raises(ValueError):
             w.planned_jobs(c)
+
+
+def test_peer_even_assignment_requires_explicit_owner_and_exact_commands():
+    import copy
+    from expert_package_t3 import jobs
+    manifest, original = package()
+    template = original["units"][0]["command"]
+    assigned = {"manifest": manifest["identity"], "worker": "satoshi", "units": []}
+    manifest["units"][0]["kind"] = "conv"
+    for u in manifest["units"][::2]:
+        command = template.replace("unit_01", f"unit_{u['id']:02d}")
+        assigned["units"].append(dict(u, command=command,
+            command_identity=hashlib.sha256(command.encode()).hexdigest()[:16]))
+    result = jobs(manifest, assigned, worker="satoshi")
+    assert [j["unit_id"] for j in result] == list(range(0, 43, 2))
+    assert result[0]["kind"] == "conv"
+    with pytest.raises(ValueError):
+        jobs(manifest, assigned)
+    bad = copy.deepcopy(assigned)
+    bad["units"][1]["command"] += " --agent-state full"
+    bad["units"][1]["command_identity"] = hashlib.sha256(bad["units"][1]["command"].encode()).hexdigest()[:16]
+    with pytest.raises(ValueError):
+        jobs(manifest, bad, worker="satoshi")
+    with pytest.raises(ValueError):
+        jobs(manifest, assigned, worker="other")
