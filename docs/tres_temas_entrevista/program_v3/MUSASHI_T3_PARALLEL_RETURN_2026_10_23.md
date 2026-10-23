@@ -1,5 +1,56 @@
 # T3 repartido entre dos workers
 
+## Actualizacion: rebalanceo del tramo final
+
+Posterior a un nuevo reinicio del worker4070, se verificaron aproximadamente
+24GiB disponibles, swap sin uso y ausencia de procesos GPU de entrenamiento.
+Su primera asignacion ya habia terminado:7/7 contando la unidad01 preservada.
+El worker5090 completo8 unidades (15..29 impares); la29 termino en su segundo
+intento despues de un fallo CUDA previo al reinicio. El kernel del arranque
+anterior registro Xid79 y solicitud de reinicio; no se infiere la causa fisica.
+No hubo nuevos Xid en el chequeo posterior. Los intentos previos se conservan.
+
+Para aprovechar la GPU libre sin repetir resultados:
+
+| Cola | Asignacion restante | Estado al desplegar |
+| --- | --- | --- |
+| Worker5090 original | unidad31 | hijo cientifico preservado y activo |
+| Worker5090 sucesora | 33,35,37; tambien31 solo si no se completa | relevo automatico preparado |
+| Worker4070 sucesora | 39,41 | unidad39 entrenando en GPU |
+
+Se pauso exclusivamente el despachador original5090, con identidad de proceso
+verificada, y se deshabilito su timer. Su hijo cientifico no recibio senales.
+El timer de relevo espera la salida del hijo y del launcher, sella la31 con su
+configuracion original y solo entonces inicia la sucesora5090. Si se interrumpe,
+conserva el intento y recupera31 en la sucesora; nunca repite una31 ya sellada.
+La antigua cola no despacha39/41 mientras el worker4070 las ejecuta. No se editan
+configuraciones cientificas ni recibos existentes.
+
+La sucesora4070 conserva5GiB y registra configuracion
+`52af12883fd757f88289f5e216fd7eebda943f8e7b6848a4ff80c4302ab53dc8`.
+La5090 sucesora se configura despues de terminar31: su identidad se publica en
+el recibo de relevo, no se predice antes de disponer del snapshot del origen.
+
+Las dos sucesoras tienen colectores y replicas separados. El indice consolidado
+incluye las nuevas raices, autentica recibos y rechaza duplicados; sigue sumando
+exactamente21 unidades, no26. Las replicas logicas nuevas para Satoshi son
+`expert-guided-musashi-t3-tail-slow-replica-20261023` y
+`expert-guided-musashi-t3-tail-fast-replica-20261023`. El indice entrega la ruta
+exacta por unidad, sin reubicar recibos entre configuraciones. El colector viejo
+5090 se retira automaticamente cuando termina la cobertura global; los nuevos
+se cierran despues de autenticar sus cierres nativos.
+
+Pruebas:116 focalizadas CPU aprobadas. Las regresiones nuevas verifican el
+relevo generico31 completo/interrumpido, destinos canonicos sin duplicados y
+la inclusion autenticada de shards adicionales. PRE:3 pruebas nuevas fallaron
+antes del cambio. POST:las variantes y todas las pruebas existentes pasan.
+Comprobacion operacional:15/21 completas, ambas GPUs con procesos cientificos,
+unidad31 preservada y unidad39 iniciada. El cierre futuro del relevo no se
+presenta como observado; lo ejecuta su timer. No cambia ningun dato, semilla,
+extractor, regularizacion, mascara, escala, split, metrica ni presupuesto.
+
+## Retorno original del reparto
+
 Para Satoshi y el propietario,2026-10-23. Estado actual posterior al reinicio
 del worker5090. Sustituye el reparto de21 unidades exclusivamente al worker4070,
 sin invalidar ni borrar sus intentos anteriores.

@@ -87,3 +87,66 @@ def test_retrying_an_incomplete_first_unit_is_pending_not_a_final_failure(tmp_pa
     result = h.index({"source": str(source), "slow_root": str(tail), "fast_mirror": str(tmp_path / "fast"),
                       "control": str(control), "timer": "test.timer"})
     assert result["failed"] == 0 and result["pending"] == 21
+
+
+@pytest.mark.parametrize("complete", [True, False])
+def test_tail_rebalance_preserves_the_declared_inflight_unit(tmp_path, monkeypatch, complete):
+    import t3_parallel_handoff as h
+    root, target, control = (tmp_path / n for n in ("source", "target", "control"))
+    original = {"root": str(root), "pins": {}, "gpu_uuid": "GPU-test", "memory": "5G"}
+    job = {"name": "t3_unit_31"}
+    h.w.atomic(root / "ops/CONFIG.private.json", original)
+    h.w.atomic(root / "ops/JOBS.json", {job["name"]: {"state": "RUNNING"}})
+    h.w.atomic(control / "SOURCE_PAUSED.private.json", {
+        "source_config_sha256": h.w.identity(original), "manager_pid": 99999999})
+    monkeypatch.setattr(h.w, "live_children", lambda root: [])
+    monkeypatch.setattr(h, "launcher_live", lambda context: False)
+    monkeypatch.setattr(h.w, "planned_jobs", lambda cfg: [job])
+    def seal(cfg, j):
+        if not complete:
+            raise ValueError("interrupted native output")
+        h.w.atomic(root / "ops/31.RESULT.json", {"job": j, "config_sha256": h.w.identity(cfg)})
+    monkeypatch.setattr(h.w, "seal_result", seal)
+    commands = []
+    monkeypatch.setattr(h.subprocess, "run", lambda cmd, **kw: commands.append(cmd))
+    cfg = {"source": str(root), "slow_root": str(target), "control": str(control),
+           "source_service": "source.service", "python": "/python", "launcher": "/admit",
+           "templates": "/templates", "inflight_job": "t3_unit_31", "gpu_model": "5090",
+           "unit_stem": "musashi-e3m-t3-tail-fast-20261023", "manage_collectors": False,
+           "target_jobs": ["t3_unit_31", "t3_unit_33", "t3_unit_35", "t3_unit_37"]}
+    assert h.handoff(cfg)
+    install = next(c for c in commands if "--jobs" in c)
+    expected = "t3_unit_33,t3_unit_35,t3_unit_37"
+    if not complete:
+        expected = "t3_unit_31," + expected
+    assert install[install.index("--jobs") + 1] == expected
+    assert install[install.index("--gpu-model") + 1] == "5090"
+    assert install[install.index("--unit-stem") + 1] == cfg["unit_stem"]
+    assert "t3_unit_39" not in install[install.index("--jobs") + 1]
+
+
+def test_rebalance_targets_must_be_unique_canonical_odd_units():
+    import t3_parallel_handoff as h
+    assert h.target_jobs({"target_jobs": ["t3_unit_39", "t3_unit_41"]}) == ["t3_unit_39", "t3_unit_41"]
+    for names in ([], ["t3_unit_39"] * 2, ["t3_unit_02"], ["other"]):
+        with pytest.raises(ValueError, match="INVALID_HANDOFF_TARGETS"):
+            h.target_jobs({"target_jobs": names})
+
+
+def test_extra_shard_is_authenticated_and_included_without_double_counting(tmp_path, monkeypatch):
+    import t3_parallel_handoff as h
+    extra = tmp_path / "extra"
+    h.w.atomic(extra / "ops/CONFIG.private.json", {"only_jobs": ["t3_unit_39"]})
+    h.w.atomic(extra / "ops/39.RESULT.json", {"job": {"name": "t3_unit_39"}, "config_sha256": "id"})
+    validated = []
+    monkeypatch.setattr(h, "validate_mirror", lambda root: validated.append(root))
+    cfg = {"source": str(tmp_path / "first"), "slow_root": str(tmp_path / "slow"),
+           "fast_mirror": str(tmp_path / "fast"), "control": str(tmp_path / "control"),
+           "timer": "test.timer", "additional_shards": [
+               {"origin": "tail_slow", "root": str(extra), "allowed": ["t3_unit_39"]}]}
+    result = h.index(cfg)
+    assert result["done"] == 1 and result["pending"] == 20
+    assert extra in validated
+    cfg["additional_shards"].append(dict(cfg["additional_shards"][0], origin="duplicate"))
+    with pytest.raises(ValueError, match="DUPLICATE"):
+        h.index(cfg)

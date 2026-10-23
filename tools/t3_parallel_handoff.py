@@ -18,6 +18,13 @@ def partition():
             [f"t3_unit_{i:02d}" for i in range(15, 43, 2)])
 
 
+def target_jobs(cfg):
+    names = cfg.get("target_jobs", partition()[0])
+    if not names or len(names) != len(set(names)) or not set(names) <= set(sum(partition(), [])):
+        raise ValueError("INVALID_HANDOFF_TARGETS")
+    return names
+
+
 def owns_manager(argv, root):
     root = Path(root)
     return (len(argv) == 5 and Path(argv[0]).name.startswith("python")
@@ -47,7 +54,8 @@ def pause(cfg):
     scientific = w.read(root / "ops/CONFIG.private.json")
     w.verify_pins(scientific)
     status = w.read(root / "ops/STATUS.json")
-    if status.get("current_job") != "t3_unit_01":
+    target_jobs(cfg)
+    if status.get("current_job") != cfg.get("inflight_job", "t3_unit_01"):
         raise ValueError("SOURCE_CURSOR_CHANGED_REPLAN_REQUIRED")
     pid = int(subprocess.check_output(["systemctl", "--user", "show", cfg["source_service"],
                                       "-p", "MainPID", "--value"], text=True))
@@ -81,13 +89,17 @@ def handoff(cfg):
     context = w.read(control / "SOURCE_PAUSED.private.json")
     if not context:
         raise ValueError("SOURCE_NOT_PAUSED")
+    names = target_jobs(cfg)
+    inflight = cfg.get("inflight_job", "t3_unit_01")
+    if inflight not in names:
+        raise ValueError("INFLIGHT_MISSING_FROM_RECOVERY_TARGETS")
     if w.live_children(root) or launcher_live(context):
-        w.atomic(control / "STATUS.json", {"state": "WAITING_FOR_INFLIGHT_UNIT", "source": "t3_unit_01"})
+        w.atomic(control / "STATUS.json", {"state": "WAITING_FOR_INFLIGHT_UNIT", "source": inflight})
         return False
     original = w.read(root / "ops/CONFIG.private.json")
     if w.identity(original) != context["source_config_sha256"]:
         raise ValueError("SOURCE_CONFIG_CHANGED")
-    job = next(j for j in w.planned_jobs(original) if j["name"] == "t3_unit_01")
+    job = next(j for j in w.planned_jobs(original) if j["name"] == inflight)
     states = w.read(root / "ops/JOBS.json")
     before = dict(states)
     try:
@@ -112,20 +124,20 @@ def handoff(cfg):
         "state": "STOPPED_FOR_OWNER_REQUESTED_RELOCATION", "parent_config_sha256": w.identity(original),
         "prior_status": counts, "remaining_scientific_children": [], "reason": "DISJOINT_PARALLEL_HANDOFF"})
     shutil.copytree(root / "ops", target / "source/ops", dirs_exist_ok=True)
-    slow, _ = partition()
     completed = {w.read(p)["job"]["name"] for p in (root / "ops").glob("*.RESULT.json")}
-    selected = [n for n in slow if n not in completed]
+    selected = [n for n in names if n not in completed]
     cmd = ["python3", str(target / "prepare_expert_package_t3.py"), "--root", str(target),
            "--python", cfg["python"], "--launcher", cfg["launcher"], "--templates", cfg["templates"],
-           "--relocate", "--gpu-model", "4070", "--memory", "5G", "--jobs", ",".join(selected),
-           "--unit-stem", "musashi-e3m-t3-parallel-slow-20261023"]
+           "--relocate", "--gpu-model", cfg.get("gpu_model", "4070"), "--memory", "5G", "--jobs", ",".join(selected),
+           "--unit-stem", cfg.get("unit_stem", "musashi-e3m-t3-parallel-slow-20261023")]
     if cfg.get("desktop_pid") and Path(f"/proc/{cfg['desktop_pid']}").exists():
         cmd += ["--desktop-pid", str(cfg["desktop_pid"])]
     subprocess.run(cmd, check=True)
-    subprocess.run(["systemctl", "--user", "start", cfg["source_collector"] + ".service"], check=True)
-    subprocess.run(["systemctl", "--user", "disable", "--now", cfg["source_collector"] + ".timer"], check=True)
-    subprocess.run(["systemctl", "--user", "enable", "--now", cfg["slow_collector"] + ".timer"], check=True)
-    subprocess.run(["systemctl", "--user", "start", cfg["slow_collector"] + ".service"], check=True)
+    if cfg.get("manage_collectors", True):
+        subprocess.run(["systemctl", "--user", "start", cfg["source_collector"] + ".service"], check=True)
+        subprocess.run(["systemctl", "--user", "disable", "--now", cfg["source_collector"] + ".timer"], check=True)
+        subprocess.run(["systemctl", "--user", "enable", "--now", cfg["slow_collector"] + ".timer"], check=True)
+        subprocess.run(["systemctl", "--user", "start", cfg["slow_collector"] + ".service"], check=True)
     w.atomic(control / "HANDOFF.json", {"source_completed": sorted(completed), "slow_selected": selected,
                                        "source_configuration": w.identity(original), "timestamp": time.time()})
     return True
@@ -136,9 +148,16 @@ def index(cfg):
     slow, fast = partition()
     tail_cfg = w.read(Path(cfg["slow_root"]) / "ops/CONFIG.private.json", {})
     tail_repairs_first = "t3_unit_01" in tail_cfg.get("only_jobs", [])
-    for origin, root, allowed in (("inflight", Path(cfg["source"]), {"t3_unit_01"}),
-                                 ("slow", Path(cfg["slow_root"]), set(slow)),
-                                 ("fast", Path(cfg["fast_mirror"]), set(fast))):
+    shards = [("inflight", Path(cfg["source"]), {"t3_unit_01"}),
+              ("slow", Path(cfg["slow_root"]), set(slow)),
+              ("fast", Path(cfg["fast_mirror"]), set(fast))]
+    for extra in cfg.get("additional_shards", []):
+        allowed = target_jobs({"target_jobs": extra["allowed"]})
+        shards.append((extra["origin"], Path(extra["root"]), set(allowed)))
+    reassigned = set()
+    for _, root, _ in shards[3:]:
+        reassigned.update(w.read(root / "ops/CONFIG.private.json", {}).get("only_jobs", []))
+    for origin, root, allowed in shards:
         if not (root / "ops/CONFIG.private.json").exists():
             continue
         validate_mirror(root)
@@ -151,7 +170,7 @@ def index(cfg):
                          "config_sha256": receipt["config_sha256"], "output": str(root / "out" / name)})
         for name, rec in w.read(root / "ops/JOBS.json", {}).items():
             if name in allowed and rec.get("state") == "FAILED":
-                if origin != "inflight" or not tail_repairs_first:
+                if (origin != "inflight" or not tail_repairs_first) and not (origin == "fast" and name in reassigned):
                     failures.add(name)
     checked = checked_rows(rows)
     failures -= set(checked)
@@ -169,6 +188,8 @@ def index(cfg):
                             str(coverage), cfg["coverage_destination"]], check=True, timeout=45)
             w.atomic(published, {"sha256": current})
     if not pending:
+        for collector in cfg.get("retire_collectors_at_close", []):
+            subprocess.run(["systemctl", "--user", "disable", "--now", collector], check=True)
         subprocess.run(["systemctl", "--user", "disable", "--now", cfg["timer"]], check=True)
     return doc
 
@@ -183,4 +204,9 @@ if __name__ == "__main__":
         pause(config)
     else:
         ready = handoff(config)
-        print(json.dumps({"handoff_complete": ready, "coverage": index(config)}))
+        if config.get("handoff_only"):
+            if ready:
+                subprocess.run(["systemctl", "--user", "disable", "--now", config["timer"]], check=True)
+            print(json.dumps({"handoff_complete": ready}))
+        else:
+            print(json.dumps({"handoff_complete": ready, "coverage": index(config)}))
