@@ -15,6 +15,10 @@ Subsequent v4 package/revision2 checks: eleven exact synthetic regressions pass,
 and the T2 manifest was repaired with the canonical copy before launch. Explicit
 T2 split and executable regularization-rule alignment remain preflight corrections;
 see [current instructions to Satoshi](MUSASHI_INSTRUCTIONS_FOR_V4_CLOSURE_AND_T1_T2_T3_2026_10_22.md).
+Latest operational return: [T1 complete and T2 running](MUSASHI_T1_RETURN_AND_T2_RUNNING_2026_10_22.md).
+The eight-unit corrected-store T2 queue is now deployed on the5090, and131 T1
+profile rows were delivered across the two lists. T3 and final release review
+remain pending; earlier waiting/preflight entries are historical observations.
 Owners: Musashi, native SAC without expert; Satoshi, ZigZag-guided learning.
 Owner clarification: the initial SAC policy has NO agent feedback, clipping,
 rolling scaling or implicit extra transforms. See the measured

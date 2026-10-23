@@ -11,6 +11,7 @@ import math
 import os
 from pathlib import Path
 import shutil
+import shlex
 import subprocess
 import tempfile
 import tarfile
@@ -73,6 +74,10 @@ def jobs():
 
 
 def planned_jobs(cfg):
+    if cfg.get("campaign") == "v4_t2":
+        return t2_jobs(cfg["t2_manifest"])
+    if cfg.get("campaign") is not None:
+        raise ValueError("UNKNOWN_CAMPAIGN")
     all_jobs = jobs()
     selected = cfg.get("only_jobs")
     if selected is None:
@@ -81,6 +86,42 @@ def planned_jobs(cfg):
     if not selected or len(selected) != len(set(selected)) or any(n not in known for n in selected):
         raise ValueError("INVALID_JOB_SUBSET")
     return [known[n] for n in selected]
+
+
+def t2_jobs(manifest):
+    result = []
+    expected = [(lst, state, reg, drop, wd) for lst in ("core15", "shortlist_strict")
+                for state in ("none", "full")
+                for reg, drop, wd in (("base", .1, 1e-4), ("strong", .3, 1e-2))]
+    if len(manifest["units"]) != len(expected):
+        raise ValueError("T2_UNIT_COUNT")
+    for order, (unit, (lst, state, reg, drop, wd)) in enumerate(zip(manifest["units"], expected), 1):
+        name = f"gap_{lst}_{state}_{reg}"
+        text = unit["command"]
+        if (unit["order"] != order or unit["name"] != name or unit["list"] != lst
+                or unit["agent_state"] != state or unit["dropout"] != drop or unit["wd"] != wd
+                or unit["identity"] != hashlib.sha256(text.encode()).hexdigest()[:16]):
+            raise ValueError("T2_UNIT_IDENTITY")
+        argv = shlex.split(text)
+        if argv[:2] != ["tools/expert_guided_e3m.py", "run"] or len(argv[2:]) % 2:
+            raise ValueError("T2_COMMAND_SHAPE")
+        pairs = list(zip(argv[2::2], argv[3::2]))
+        options = dict(pairs)
+        expected_options = {"--admitted": "<musashi-root>/data/admitted", "--csv-dir": "<musashi-root>/data/sel15",
+            "--store": "<musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet",
+            "--feature-list": f"<musashi-root>/in/FEATURE_LIST_{lst}.json", "--out": f"<musashi-root>/out/{name}",
+            "--units": "2", "--head": "16", "--variants": "FULL", "--max-epochs": "1000",
+            "--scaling": "fixed_train", "--nonstationary": "diff", "--agent-state": state,
+            "--exec-contract": "sac", "--split-contract": "consolidated"}
+        numeric = {"--dropout": drop, "--wd": wd, "--min-orders-per-week": 2.0}
+        if (len(options) != len(pairs) or set(options) != set(expected_options) | set(numeric)
+                or any(options.get(k) != v for k, v in expected_options.items())
+                or any(float(options[k]) != v for k, v in numeric.items())):
+            raise ValueError("T2_COMMAND_CONTRACT")
+        result.append({"name": name, "list": f"FEATURE_LIST_{lst}.json", "encoded": False,
+                       "split": "consolidated", "state": state, "dropout": drop, "wd": wd,
+                       "peer_command_identity": unit["identity"], "peer_command": text})
+    return result
 
 
 def choose_gpu(text, model="5090"):
@@ -95,6 +136,10 @@ def choose_gpu(text, model="5090"):
 
 def command(cfg, job):
     root = Path(cfg["root"])
+    if cfg.get("campaign") == "v4_t2":
+        t2_jobs(cfg["t2_manifest"])
+        return [cfg["launcher"], "-q", "-m", cfg["memory"], "-t", "43200s", "-n", "t2-" + job["name"],
+                "--", cfg["python"], *shlex.split(job["peer_command"].replace("<musashi-root>", str(root)))]
     subdir, parquet = (("full_pool_enc", "full_pool_enc_eurusd_h1.parquet") if job["encoded"]
                        else ("full_pool", "full_pool_eurusd_h1.parquet"))
     cmd = [cfg["launcher"], "-q", "-m", cfg["memory"], "-t", "43200s", "-n", "e3m-" + job["name"],
@@ -147,6 +192,11 @@ def validate_result(cfg, job):
     result, scaler, probe = [read(out / n) for n in ("E3M.json", "SCALER.json", "PROBE.json")]
     if any(not isinstance(v, dict) for v in (result, scaler, probe)):
         raise ValueError("INCOMPLETE_TERMINAL_ARTIFACTS")
+    if cfg.get("campaign") == "v4_t2":
+        if result.get("exec_contract") != "sac" or result.get("min_orders_per_week") != 2.0:
+            raise ValueError("T2_EXECUTION_CONTRACT")
+        if "labels" in result and (not isinstance(result["labels"], dict) or result["labels"].get("mode") != "zigzag"):
+            raise ValueError("T2_LABEL_CONTRACT")
     if (result["device"] != "cuda" or result["verify"] is not True
             or result["scaling"] != "fixed_train" or result["variants"] != ["FULL"]
             or result["split_contract"]["arm"] != job["split"]
@@ -181,6 +231,8 @@ def validate_result(cfg, job):
         for source in ("trading", "musashi_contract"):
             for period in periods(job):
                 m = rec[source][period]
+                if cfg.get("campaign") == "v4_t2" and not 0 <= m["max_entries_per_day"] <= 1:
+                    raise ValueError("T2_DAILY_CAP")
                 for key in ("net_profit_usd", "max_drawdown_pct", "trades", "win_rate"):
                     if m[key] is not None and not math.isfinite(float(m[key])):
                         raise ValueError("NONFINITE_NATIVE_METRIC")
@@ -205,6 +257,11 @@ def receipt_path(cfg, job):
 def seal_result(cfg, job):
     verify_pins(cfg)
     receipt = validate_result(cfg, job)
+    if cfg.get("campaign") == "v4_t2":
+        for previous in (Path(cfg["root"]) / "ops").glob("*.RESULT.json"):
+            other = read(previous)
+            if other["job"]["list"] == job["list"] and other["support_hash"] != receipt["support_hash"]:
+                raise ValueError("T2_PAIRED_SUPPORT_CHANGED")
     atomic(receipt_path(cfg, job), receipt)
     return receipt
 
@@ -395,9 +452,10 @@ def run(cfg):
 
 
 def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_unit=None, recovery_source=None,
-               gpu_model="5090", gpu_background_processes=None):
+               gpu_model="5090", gpu_background_processes=None, archive_sha256=ARCHIVE,
+               campaign=None, t2_manifest=None):
     root = Path(root).resolve()
-    if digest(root / "hs_code_final.tar.gz") != ARCHIVE:
+    if digest(root / "hs_code_final.tar.gz") != archive_sha256:
         raise ValueError("ARCHIVE_IDENTITY_CHANGED")
     verify_archive_code(root)
     gpu = choose_gpu(subprocess.check_output(["nvidia-smi", "--query-gpu=index,name,uuid", "--format=csv,noheader"], text=True),
@@ -413,6 +471,8 @@ def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_uni
            "min_disk_bytes": 8 * 1024**3, "timer_unit": timer_unit or "musashi-e3m-assigned-20261022.timer",
            "pins": {str(p): digest(p) for p in paths}}
     cfg["runtime_versions"] = runtime_versions(cfg["python"])
+    if campaign is not None:
+        cfg.update(campaign=campaign, t2_manifest=t2_manifest)
     if gpu_background_processes:
         cfg["gpu_background_processes"] = gpu_background_processes
     if only_jobs is not None:

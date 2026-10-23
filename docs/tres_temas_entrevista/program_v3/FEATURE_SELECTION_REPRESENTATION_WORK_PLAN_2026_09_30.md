@@ -647,6 +647,14 @@ Las siguientes pruebas se diseñan antes de implementar; NO están ejecutadas:
 
 ## 10. Subplan ejecutable por incrementos
 
+Actualizacion operativa 2026-10-22: [T1 completo y T2 en ejecucion](MUSASHI_T1_RETURN_AND_T2_RUNNING_2026_10_22.md).
+T1 entrega131 perfiles TRAIN-only (listas v4 de15/116). T2 ejecuta ocho
+diagnosticos secuenciales consolidated en la5090, sin cambiar el science pin
+186b131; primer brazo completo y segundo iniciado automaticamente al chequeo.
+Luego Satoshi aplica la regla interna identificada de regularizacion y emite T3.
+Los perfiles no eligen extractores por si solos: T3 y la auditoria del consumo
+siguen pendientes antes del cierre compartido y las rondas RL independientes.
+
 Prioridad: negocio y operación semanal, después admisibilidad/calidad de datos.
 Este subplan se inserta en perfiles/selección del subplan modular y reutiliza
 P-PRE de denoising y P-TRN de transformaciones del plan maestro. No crea una
