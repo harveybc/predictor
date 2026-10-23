@@ -43,31 +43,30 @@ Ocho brazos secuenciales, identidades nuevas: {core15, estricta 116} × estado {
 {base 0.1/1e-4, fuerte 0.3/1e-2}; `--exec-contract sac` (1/día, 1:50) en demostraciones, DAgger, árbitro
 y evaluación; `--min-orders-per-week 2.0`; `--scaling fixed_train --nonstationary diff`; mismas semillas.
 
-**Defecto encontrado al verificar (2026-10-23 01:0xZ, antes de que arranques):** el `MANIFEST.json` del pool
-fusionado `_s` salió sin la clave `features` (mi script de fusión escribió sólo `columns`); el cargador
-`load_store` y el verificador de la ronda la exigen, así que la cola habría caído en el primer brazo con
-`KeyError: 'features'`. Reparado en `<store-root>` (parquet intacto, sha `32edb424…`; manifiesto sha
-`10658d60…`, 316 features = columnas menos `timestamp`, misma convención que el pool v3) y en el script de
-fusión. No puedo escribir dentro de tu paquete (mi copia a tu directorio fue denegada por política), así que
-antes de lanzar aplica tú el mismo arreglo, que no toca el parquet:
+**Manifiesto `_s` sin `features`:** defecto mío (el script de fusión escribió sólo `columns`), reparado en
+`<store-root>` (manifiesto `10658d60…`, parquet intacto `32edb424…`) y **ya corregido por Musashi dentro de su
+paquete** (copia previa en `ops/preflight/`); no hay nada más que copiar.
 
-```bash
-cd /var/tmp/expert-guided-musashi-t2-20261023/data/full_pool_s && python3 - <<'PY'
-import json; p="MANIFEST.json"; m=json.load(open(p)); m.setdefault("features",[c for c in m["columns"] if c!="timestamp"])
-m.setdefault("features_note","added 2026-10-23: same convention as the v3 full pool (columns minus timestamp); the parquet is untouched")
-json.dump(m,open(p,"w"),indent=1); print(len(m["features"]))
-PY
-sha256sum MANIFEST.json | cut -c1-16    # esperado 10658d6004175379
-cd /var/tmp/expert-guided-musashi-t2-20261023 && MEM=4G GPU=0 setsid nohup bash gamma_queue_t2.sh > nohup.log 2>&1 < /dev/null & disown
-```
+**Split explícito (tu punto):** `gamma_queue_t2.sh` no pasaba `--split-contract` y el parser por defecto usa
+`dev3y`. El comando efectivo de cada unidad lleva ahora `--split-contract consolidated` (TRAIN 2020-01 → 2023-07
+de ajuste, bloque interno 2023H2 = `INNER_A`, 2024 una lectura, TEST cerrado); el resultado **no** es comparable
+con el diagnóstico v3 (dev3y). El listado tipado de las 8 unidades (orden, marcador, comando efectivo, identidad =
+sha256 del comando, archivo y campos esperados) está en `T2_UNITS_2026_10_23.json` junto a este documento: un
+`T2_DONE` en el LOG no prueba nada; cada `E3M.json` se verifica por sus campos y por la identidad de su comando.
+Tú lanzas con tu wrapper local (GPU por UUID; el `GPU=0` del ejemplo era sólo un ejemplo); yo no corro copia
+alguna de T2 ni toco los pins una vez iniciada.
 
-Regla de lectura (declarada, como pediste): no se elige la regularización sólo por la brecha mínima;
-se reporta rendimiento INNER, brecha TRAIN−INNER, dispersión entre semillas y DD juntos, y la elección
-es la frontera no dominada frente al control base, con soporte común verificado entre los brazos
-comparados (hashes `support_hash` en cada E3M.json). `none`/`full` y `base`/`fuerte` son contrastes
-declarados; `full` no se traslada a tu SAC. Los `E3M.json` los recojo por `scp` y anexo con atribución.
+Regla de lectura, ahora **ejecutable** (tu punto 3): `tools/expert_guided_clean_round.py regularize --spec
+CLEAN_ROUND_SPEC.json --results <musashi-root>/out --out REGULARIZATION_DECISION.json [--apply]`. Lee sólo los
+cuatro brazos `agent_state=none` (los `full` son tu contraste declarado, nunca fuente); por lista exige tres
+semillas válidas y el mismo `support_hash` TRAIN/INNER_A entre los dos ajustes; vector por ajuste = (Sharpe
+INNER_A ↑, brecha TRAIN−INNER_A ↓, desviación entre semillas ↓, DD máximo INNER_A ↓); gana el único no dominado;
+si quedan dos, desempate declarado antes de leer nada: (1) mayor Sharpe medio si la diferencia supera la
+desviación agrupada de semillas, (2) menor brecha media, (3) base; sin lista válida común → `DEFAULT_BY_VALIDITY`,
+que nunca se aplica. `OBS_2024` no se lee. El spec lleva `candidates` {base 0.1/1e-4, fuerte 0.3/1e-2} y la
+observación v3 queda marcada como histórica, no fuente. Los `E3M.json` los recojo por `scp` y anexo con atribución.
 
-## T3 — contraste de tipo de extractor por grupo (5090; mitad tuya) — después de T2
+## T3 — contraste de tipo de extractor por grupo (5090; mitad tuya) — manifiesto EMITIDO, fits tras T2
 
 Ejes separados y declarados (no mezclados): (a) **tipo de extractor** con columnas y codificaciones del
 grupo fijas: conv causal pequeña (2 unidades, k3) vs identidad/puntual (sin mezcla temporal) para
@@ -77,5 +76,14 @@ vs rama uniforme para wavelet; (b) **representación** padre/componentes (ya med
 (semánticos: familia de la selección; 25 grupos) sobre la lista estricta v4. Emito la cola finita con
 E3-M `--groups` por variante de tipo (una variante por grupo a la vez, el resto fijo), 3 semillas,
 contrato 1/día–1:50, decisión en el bloque interno, brecha y parámetros por componente registrados;
-te asigno los grupos impares, yo los pares. Manifiesto de unidades/shards/firmas/semillas con el paquete,
-cuando cierre T2 (para no solapar dos trabajos pesados en tu host).
+te asigno los grupos impares, yo los pares. **Manifiesto ya emitido** (`tools/expert_guided_t3_manifest.py emit`;
+heuristic-strategy `docs/short_horizon/clean_round/evidence/t3/T3_MANIFEST.json`, identidad `t3_7a056b35acd8`):
+26 unidades = control (todo `conv`, id 0, mía) + 25 grupos de la lista estricta v4 con ids estables por el orden del
+archivo de grupos (digest pinneado); impares tuyos (13), pares + control míos (13); tipo de contraste por grupo:
+`pointwise` (kernel 1, sin mezcla temporal dentro del extractor) para calendario, eventos, COT, diarios, factores,
+fuerza y grupos de una columna; `per_feature` (un extractor por columna: ramas por escala en wavelet, por
+componente en Hilbert) para el resto; columnas y codificaciones del grupo fijas; ventana [24,1] fija;
+regularización = **dependencia explícita** del `REGULARIZATION_DECISION.json` de T2 (`queue --decision …` se niega
+a emitir sin él, así que no hay que relanzar la cola por una decisión manual). Cada unidad lleva su identidad y
+los campos esperados; un resultado negativo también cierra la unidad; nada se declara óptimo para SAC desde este
+proxy. Las colas por worker se emiten cuando exista la decisión T2.

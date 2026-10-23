@@ -1,0 +1,226 @@
+{
+ "package": "<musashi-root> = /var/tmp/expert-guided-musashi-t2-20261023 (5090 host)",
+ "code": "heuristic-strategy satoshi/expert-guided-rl-20261019 @186b131 (hs_code_t2.tar.gz sha256 2ee7094c6ec0b934...)",
+ "store": {
+  "parquet_sha256": "32edb4248d659661764ee5abf982a7ee9a0e7659e08a88c03b5a28ce2466ae67",
+  "manifest_sha256": "10658d6004175379787a4f13d9d527274c495156324a1d33b6895bc4c48cf3f4 (features key repaired by Musashi)"
+ },
+ "lists": {
+  "core15": "FEATURE_LIST_core15.json sha256 86f8dddfb8057a683b1371d8d973271c19c29816cd85ecf4a0db3c9058398c0d",
+  "shortlist_strict": "FEATURE_LIST_shortlist_strict.json (sha in CLEAN_ROUND_SPEC.json selection block)"
+ },
+ "split": "--split-contract consolidated EXPLICIT (the parser default is dev3y): TRAIN 2020-01..2023-07 fit, inner block 2023H2 = INNER_A, OBS_2024 read once, TEST closed; NOT comparable with the v3 dev3y diagnostic",
+ "business_rules": "replay contract (max 1 entry/day, leverage 1:50) in demonstrations, DAgger, arbiter and every period; >= 2 orders/week as the PERIOD AVERAGE with weeks_below_min_orders reported",
+ "consumer": "tools/expert_guided_clean_round.py regularize --spec CLEAN_ROUND_SPEC.json --results <musashi-root>/out --out REGULARIZATION_DECISION.json: reads only the 4 agent_state=none arms (the `full` arms are Musashi's declared contrast and never a source), REG_RULE non-dominated + declared tie-break; OBS_2024 never read",
+ "a_marker_is_not_a_result": "T2_DONE in LOG proves nothing; every E3M.json is verified by its expected fields and the identity of its command",
+ "units": [
+  {
+   "order": 1,
+   "name": "gap_core15_none_base",
+   "state_marker": "STATE/GAP_core15_none_base",
+   "list": "core15",
+   "agent_state": "none",
+   "regularization": "base",
+   "dropout": 0.1,
+   "wd": 0.0001,
+   "command": "tools/expert_guided_e3m.py run --admitted <musashi-root>/data/admitted --csv-dir <musashi-root>/data/sel15 --store <musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet --feature-list <musashi-root>/in/FEATURE_LIST_core15.json --out <musashi-root>/out/gap_core15_none_base --units 2 --head 16 --variants FULL --max-epochs 1000 --scaling fixed_train --nonstationary diff --agent-state none --dropout 0.1 --wd 1e-4 --exec-contract sac --min-orders-per-week 2.0 --split-contract consolidated",
+   "identity": "037105381ed84a61",
+   "expected": {
+    "file": "out/gap_core15_none_base/E3M.json",
+    "fields": {
+     "trials.FULL": "3 seeds (20261019, 20261020, 20261021), each with trading.TRAIN and trading.INNER_A",
+     "decision.means.FULL": "inner_a_sharpe_mean, all_valid",
+     "meta.support_hash": "TRAIN and INNER_A (must match across the 4 arms of the same list)",
+     "split_contract.arm": "consolidated",
+     "agent_state.mode": "none",
+     "exec_contract": "sac",
+     "min_orders_per_week": 2.0,
+     "labels.mode": "zigzag",
+     "meta.scaling.policy": "fixed_train"
+    }
+   }
+  },
+  {
+   "order": 2,
+   "name": "gap_core15_none_strong",
+   "state_marker": "STATE/GAP_core15_none_strong",
+   "list": "core15",
+   "agent_state": "none",
+   "regularization": "strong",
+   "dropout": 0.3,
+   "wd": 0.01,
+   "command": "tools/expert_guided_e3m.py run --admitted <musashi-root>/data/admitted --csv-dir <musashi-root>/data/sel15 --store <musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet --feature-list <musashi-root>/in/FEATURE_LIST_core15.json --out <musashi-root>/out/gap_core15_none_strong --units 2 --head 16 --variants FULL --max-epochs 1000 --scaling fixed_train --nonstationary diff --agent-state none --dropout 0.3 --wd 1e-2 --exec-contract sac --min-orders-per-week 2.0 --split-contract consolidated",
+   "identity": "577b80fbbc9bd9a1",
+   "expected": {
+    "file": "out/gap_core15_none_strong/E3M.json",
+    "fields": {
+     "trials.FULL": "3 seeds (20261019, 20261020, 20261021), each with trading.TRAIN and trading.INNER_A",
+     "decision.means.FULL": "inner_a_sharpe_mean, all_valid",
+     "meta.support_hash": "TRAIN and INNER_A (must match across the 4 arms of the same list)",
+     "split_contract.arm": "consolidated",
+     "agent_state.mode": "none",
+     "exec_contract": "sac",
+     "min_orders_per_week": 2.0,
+     "labels.mode": "zigzag",
+     "meta.scaling.policy": "fixed_train"
+    }
+   }
+  },
+  {
+   "order": 3,
+   "name": "gap_core15_full_base",
+   "state_marker": "STATE/GAP_core15_full_base",
+   "list": "core15",
+   "agent_state": "full",
+   "regularization": "base",
+   "dropout": 0.1,
+   "wd": 0.0001,
+   "command": "tools/expert_guided_e3m.py run --admitted <musashi-root>/data/admitted --csv-dir <musashi-root>/data/sel15 --store <musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet --feature-list <musashi-root>/in/FEATURE_LIST_core15.json --out <musashi-root>/out/gap_core15_full_base --units 2 --head 16 --variants FULL --max-epochs 1000 --scaling fixed_train --nonstationary diff --agent-state full --dropout 0.1 --wd 1e-4 --exec-contract sac --min-orders-per-week 2.0 --split-contract consolidated",
+   "identity": "3d8c8eec35ecca35",
+   "expected": {
+    "file": "out/gap_core15_full_base/E3M.json",
+    "fields": {
+     "trials.FULL": "3 seeds (20261019, 20261020, 20261021), each with trading.TRAIN and trading.INNER_A",
+     "decision.means.FULL": "inner_a_sharpe_mean, all_valid",
+     "meta.support_hash": "TRAIN and INNER_A (must match across the 4 arms of the same list)",
+     "split_contract.arm": "consolidated",
+     "agent_state.mode": "full",
+     "exec_contract": "sac",
+     "min_orders_per_week": 2.0,
+     "labels.mode": "zigzag",
+     "meta.scaling.policy": "fixed_train"
+    }
+   }
+  },
+  {
+   "order": 4,
+   "name": "gap_core15_full_strong",
+   "state_marker": "STATE/GAP_core15_full_strong",
+   "list": "core15",
+   "agent_state": "full",
+   "regularization": "strong",
+   "dropout": 0.3,
+   "wd": 0.01,
+   "command": "tools/expert_guided_e3m.py run --admitted <musashi-root>/data/admitted --csv-dir <musashi-root>/data/sel15 --store <musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet --feature-list <musashi-root>/in/FEATURE_LIST_core15.json --out <musashi-root>/out/gap_core15_full_strong --units 2 --head 16 --variants FULL --max-epochs 1000 --scaling fixed_train --nonstationary diff --agent-state full --dropout 0.3 --wd 1e-2 --exec-contract sac --min-orders-per-week 2.0 --split-contract consolidated",
+   "identity": "85fac18b855e74e1",
+   "expected": {
+    "file": "out/gap_core15_full_strong/E3M.json",
+    "fields": {
+     "trials.FULL": "3 seeds (20261019, 20261020, 20261021), each with trading.TRAIN and trading.INNER_A",
+     "decision.means.FULL": "inner_a_sharpe_mean, all_valid",
+     "meta.support_hash": "TRAIN and INNER_A (must match across the 4 arms of the same list)",
+     "split_contract.arm": "consolidated",
+     "agent_state.mode": "full",
+     "exec_contract": "sac",
+     "min_orders_per_week": 2.0,
+     "labels.mode": "zigzag",
+     "meta.scaling.policy": "fixed_train"
+    }
+   }
+  },
+  {
+   "order": 5,
+   "name": "gap_shortlist_strict_none_base",
+   "state_marker": "STATE/GAP_shortlist_strict_none_base",
+   "list": "shortlist_strict",
+   "agent_state": "none",
+   "regularization": "base",
+   "dropout": 0.1,
+   "wd": 0.0001,
+   "command": "tools/expert_guided_e3m.py run --admitted <musashi-root>/data/admitted --csv-dir <musashi-root>/data/sel15 --store <musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet --feature-list <musashi-root>/in/FEATURE_LIST_shortlist_strict.json --out <musashi-root>/out/gap_shortlist_strict_none_base --units 2 --head 16 --variants FULL --max-epochs 1000 --scaling fixed_train --nonstationary diff --agent-state none --dropout 0.1 --wd 1e-4 --exec-contract sac --min-orders-per-week 2.0 --split-contract consolidated",
+   "identity": "2c6c7a532c6be052",
+   "expected": {
+    "file": "out/gap_shortlist_strict_none_base/E3M.json",
+    "fields": {
+     "trials.FULL": "3 seeds (20261019, 20261020, 20261021), each with trading.TRAIN and trading.INNER_A",
+     "decision.means.FULL": "inner_a_sharpe_mean, all_valid",
+     "meta.support_hash": "TRAIN and INNER_A (must match across the 4 arms of the same list)",
+     "split_contract.arm": "consolidated",
+     "agent_state.mode": "none",
+     "exec_contract": "sac",
+     "min_orders_per_week": 2.0,
+     "labels.mode": "zigzag",
+     "meta.scaling.policy": "fixed_train"
+    }
+   }
+  },
+  {
+   "order": 6,
+   "name": "gap_shortlist_strict_none_strong",
+   "state_marker": "STATE/GAP_shortlist_strict_none_strong",
+   "list": "shortlist_strict",
+   "agent_state": "none",
+   "regularization": "strong",
+   "dropout": 0.3,
+   "wd": 0.01,
+   "command": "tools/expert_guided_e3m.py run --admitted <musashi-root>/data/admitted --csv-dir <musashi-root>/data/sel15 --store <musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet --feature-list <musashi-root>/in/FEATURE_LIST_shortlist_strict.json --out <musashi-root>/out/gap_shortlist_strict_none_strong --units 2 --head 16 --variants FULL --max-epochs 1000 --scaling fixed_train --nonstationary diff --agent-state none --dropout 0.3 --wd 1e-2 --exec-contract sac --min-orders-per-week 2.0 --split-contract consolidated",
+   "identity": "5959122b83176ac4",
+   "expected": {
+    "file": "out/gap_shortlist_strict_none_strong/E3M.json",
+    "fields": {
+     "trials.FULL": "3 seeds (20261019, 20261020, 20261021), each with trading.TRAIN and trading.INNER_A",
+     "decision.means.FULL": "inner_a_sharpe_mean, all_valid",
+     "meta.support_hash": "TRAIN and INNER_A (must match across the 4 arms of the same list)",
+     "split_contract.arm": "consolidated",
+     "agent_state.mode": "none",
+     "exec_contract": "sac",
+     "min_orders_per_week": 2.0,
+     "labels.mode": "zigzag",
+     "meta.scaling.policy": "fixed_train"
+    }
+   }
+  },
+  {
+   "order": 7,
+   "name": "gap_shortlist_strict_full_base",
+   "state_marker": "STATE/GAP_shortlist_strict_full_base",
+   "list": "shortlist_strict",
+   "agent_state": "full",
+   "regularization": "base",
+   "dropout": 0.1,
+   "wd": 0.0001,
+   "command": "tools/expert_guided_e3m.py run --admitted <musashi-root>/data/admitted --csv-dir <musashi-root>/data/sel15 --store <musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet --feature-list <musashi-root>/in/FEATURE_LIST_shortlist_strict.json --out <musashi-root>/out/gap_shortlist_strict_full_base --units 2 --head 16 --variants FULL --max-epochs 1000 --scaling fixed_train --nonstationary diff --agent-state full --dropout 0.1 --wd 1e-4 --exec-contract sac --min-orders-per-week 2.0 --split-contract consolidated",
+   "identity": "1a31dc2f06e33b10",
+   "expected": {
+    "file": "out/gap_shortlist_strict_full_base/E3M.json",
+    "fields": {
+     "trials.FULL": "3 seeds (20261019, 20261020, 20261021), each with trading.TRAIN and trading.INNER_A",
+     "decision.means.FULL": "inner_a_sharpe_mean, all_valid",
+     "meta.support_hash": "TRAIN and INNER_A (must match across the 4 arms of the same list)",
+     "split_contract.arm": "consolidated",
+     "agent_state.mode": "full",
+     "exec_contract": "sac",
+     "min_orders_per_week": 2.0,
+     "labels.mode": "zigzag",
+     "meta.scaling.policy": "fixed_train"
+    }
+   }
+  },
+  {
+   "order": 8,
+   "name": "gap_shortlist_strict_full_strong",
+   "state_marker": "STATE/GAP_shortlist_strict_full_strong",
+   "list": "shortlist_strict",
+   "agent_state": "full",
+   "regularization": "strong",
+   "dropout": 0.3,
+   "wd": 0.01,
+   "command": "tools/expert_guided_e3m.py run --admitted <musashi-root>/data/admitted --csv-dir <musashi-root>/data/sel15 --store <musashi-root>/data/full_pool_s/full_pool_eurusd_h1.parquet --feature-list <musashi-root>/in/FEATURE_LIST_shortlist_strict.json --out <musashi-root>/out/gap_shortlist_strict_full_strong --units 2 --head 16 --variants FULL --max-epochs 1000 --scaling fixed_train --nonstationary diff --agent-state full --dropout 0.3 --wd 1e-2 --exec-contract sac --min-orders-per-week 2.0 --split-contract consolidated",
+   "identity": "4c352b6fed276505",
+   "expected": {
+    "file": "out/gap_shortlist_strict_full_strong/E3M.json",
+    "fields": {
+     "trials.FULL": "3 seeds (20261019, 20261020, 20261021), each with trading.TRAIN and trading.INNER_A",
+     "decision.means.FULL": "inner_a_sharpe_mean, all_valid",
+     "meta.support_hash": "TRAIN and INNER_A (must match across the 4 arms of the same list)",
+     "split_contract.arm": "consolidated",
+     "agent_state.mode": "full",
+     "exec_contract": "sac",
+     "min_orders_per_week": 2.0,
+     "labels.mode": "zigzag",
+     "meta.scaling.policy": "fixed_train"
+    }
+   }
+  }
+ ]
+}
