@@ -100,3 +100,15 @@ def test_t3_mismatched_support_is_not_sealed(tmp_path, monkeypatch):
     monkeypatch.setattr(w, "validate_result", lambda *a: {"job": jobs[1], "support_hash": {"TRAIN": "new"}})
     with pytest.raises(ValueError, match="PAIRED_SUPPORT"):
         w.seal_result(cfg, jobs[1])
+
+
+def test_t3_shard_is_an_explicit_subset_without_changed_commands(tmp_path):
+    w = worker()
+    manifest, units = package()
+    c = {"campaign": "v4_t3", "t3_manifest": manifest, "t3_units": units,
+         "only_jobs": ["t3_unit_15", "t3_unit_17"]}
+    assert [j["name"] for j in w.planned_jobs(c)] == c["only_jobs"]
+    for bad in ([], ["t3_unit_15", "t3_unit_15"], ["t3_unit_02"]):
+        c["only_jobs"] = bad
+        with pytest.raises(ValueError):
+            w.planned_jobs(c)

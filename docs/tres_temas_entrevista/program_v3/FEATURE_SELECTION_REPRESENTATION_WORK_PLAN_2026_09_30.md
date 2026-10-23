@@ -647,6 +647,12 @@ Las siguientes pruebas se diseñan antes de implementar; NO están ejecutadas:
 
 ## 10. Subplan ejecutable por incrementos
 
+Actualizacion tras reinicio2026-10-23: [T3 paralelo14+7](MUSASHI_T3_PARALLEL_RETURN_2026_10_23.md).
+La5090 vuelve con margen de RAM y ejecuta14 ids impares15..41; la4070 conserva
+7 ids01..13, incluida la unidad en curso, sin interrumpirla. Colas nuevas5GiB,
+guardias intactos y relevo/cobertura automatizados. No duplicar estas21 unidades
+en el carril de Satoshi ni descartar sus recibos de origen al consolidar.
+
 Actualizacion de recursos2026-10-23: [traslado T3](MUSASHI_T3_RELOCATION_RETURN_2026_10_23.md).
 La cola de21 impares pasa al worker con32GiB RAM/4070 tras cinco fallos y cero
 unidades completas en el host de la5090. Guardias intactos; mismos comandos,

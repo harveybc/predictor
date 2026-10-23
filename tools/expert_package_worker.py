@@ -76,7 +76,14 @@ def jobs():
 def planned_jobs(cfg):
     if cfg.get("campaign") == "v4_t3":
         from expert_package_t3 import jobs as t3_jobs
-        return t3_jobs(cfg["t3_manifest"], cfg["t3_units"])
+        all_jobs = t3_jobs(cfg["t3_manifest"], cfg["t3_units"])
+        names = cfg.get("only_jobs")
+        if names is None:
+            return all_jobs
+        known = {j["name"] for j in all_jobs}
+        if not names or len(names) != len(set(names)) or not set(names) <= known:
+            raise ValueError("T3_INVALID_SHARD")
+        return [j for j in all_jobs if j["name"] in names]
     if cfg.get("campaign") == "v4_t2":
         return t2_jobs(cfg["t2_manifest"])
     if cfg.get("campaign") is not None:

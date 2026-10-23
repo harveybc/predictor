@@ -2,6 +2,7 @@
 """Verify the peer's T3 v2 package and install its finite sequential worker."""
 import argparse
 from pathlib import Path
+import re
 import subprocess
 
 from expert_package_t3 import jobs
@@ -38,7 +39,7 @@ def verify_package(root):
     return manifest, assignment
 
 
-def validate_relocation(root, versions):
+def validate_relocation(root, versions, selected=None):
     root = Path(root)
     source = root / "source/ops"
     cfg = read(source / "CONFIG.private.json")
@@ -48,7 +49,11 @@ def validate_relocation(root, versions):
             or stop["state"] != "STOPPED_FOR_OWNER_REQUESTED_RELOCATION"
             or status["state"] != "STOPPED_FOR_RELOCATION" or stop["remaining_scientific_children"]):
         raise ValueError("T3_SOURCE_NOT_AUTHENTICATED_AND_STOPPED")
-    if stop["prior_status"]["done"] != 0 or list(source.glob("*.RESULT.json")):
+    receipts = [read(p) for p in source.glob("*.RESULT.json")]
+    completed = {r["job"]["name"] for r in receipts}
+    if (len(completed) != stop["prior_status"]["done"] or len(completed) != len(receipts)
+            or any(r["config_sha256"] != identity(cfg) for r in receipts)
+            or (completed and (selected is None or set(selected) & completed))):
         raise ValueError("T3_RELOCATION_WOULD_REPEAT_COMPLETED_UNITS")
     if versions != cfg["runtime_versions"]:
         raise ValueError("T3_RELOCATION_RUNTIME_CHANGED")
@@ -66,11 +71,12 @@ def validate_relocation(root, versions):
         raise ValueError("T3_RELOCATION_INPUT_PINS_EMPTY")
     return {"parent_config_sha256": identity(cfg), "source_stop_sha256": digest(source / "RELOCATION_STOP.private.json"),
             "source_config_file_sha256": digest(source / "CONFIG.private.json"), "verified_input_files": verified,
-            "source_done": 0, "source_failed": stop["prior_status"]["failed"], "science_flags_unchanged": True,
+            "source_done": len(completed), "source_failed": stop["prior_status"]["failed"], "science_flags_unchanged": True,
             "hardware_changed": True, "cross_hardware_bitwise_equivalence_claimed": False}
 
 
-def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="5090", desktop_pid=None):
+def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="5090", desktop_pid=None,
+            selected=None, memory="4G", unit_stem=None):
     root = Path(root).resolve()
     manifest, assignment = verify_package(root)
     path = root / "gamma_queue_musashi.sh"
@@ -81,7 +87,7 @@ def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="509
     provenance = {"science_commit": SCIENCE, "peer_package_commit": "8d6dbd5b",
                   "manifest": manifest["identity"], "new_SAC_fits": 0}
     if relocate:
-        provenance.update(validate_relocation(root, runtime_versions(python)))
+        provenance.update(validate_relocation(root, runtime_versions(python), selected))
     elif gpu_model != "5090":
         raise ValueError("T3_ALTERNATE_GPU_REQUIRES_RELOCATION")
     background = {}
@@ -91,9 +97,16 @@ def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="509
             raise ValueError("NOT_A_DESKTOP_PROCESS")
         background[str(desktop_pid)] = {**process_identity(desktop_pid), "max_memory_mib": 32}
     stem = "musashi-e3m-t3-relocated-20261023" if relocate else "musashi-e3m-t3-20261023"
-    cfg = initialize(root, python, launcher, memory="4G", timer_unit=stem + ".timer",
+    if unit_stem:
+        if not re.fullmatch(r"musashi-e3m-t3-[a-z-]+-20261023", unit_stem):
+            raise ValueError("T3_INVALID_UNIT_STEM")
+        stem = unit_stem
+    if memory not in ("4G", "5G"):
+        raise ValueError("T3_UNSUPPORTED_MEMORY_BUDGET")
+    cfg = initialize(root, python, launcher, memory=memory, timer_unit=stem + ".timer",
                      archive_sha256=ARCHIVE, campaign="v4_t3", t3_manifest=manifest, t3_units=assignment,
-                     recovery_source=provenance, gpu_model=gpu_model, gpu_background_processes=background)
+                     recovery_source=provenance, gpu_model=gpu_model, gpu_background_processes=background,
+                     only_jobs=selected)
     units = Path.home() / ".config/systemd/user"
     units.mkdir(parents=True, exist_ok=True)
     for suffix in ("service", "timer"):
@@ -102,11 +115,13 @@ def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="509
         text = text.replace("musashi-e3m-assigned-20261022", stem)
         (units / (stem + "." + suffix)).write_text(text)
     atomic(root / "ops/T3_DEPLOYMENT.json", {"science_commit": SCIENCE, "config_sha256": identity(cfg),
-           "units": 21, "manifest": manifest["identity"], "memory_GiB": 4, "new_SAC_fits": 0})
+           "units": len(selected) if selected else 21, "manifest": manifest["identity"],
+           "memory_GiB": int(memory[:-1]), "new_SAC_fits": 0})
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
     subprocess.run(["systemctl", "--user", "enable", "--now", stem + ".timer"], check=True)
     subprocess.run(["systemctl", "--user", "start", stem + ".service"], check=True)
-    print({"config_sha256": identity(cfg), "units": 21, "manifest": manifest["identity"]})
+    print({"config_sha256": identity(cfg), "units": len(selected) if selected else 21,
+           "manifest": manifest["identity"]})
 
 
 if __name__ == "__main__":
@@ -118,6 +133,10 @@ if __name__ == "__main__":
     p.add_argument("--relocate", action="store_true")
     p.add_argument("--gpu-model", choices=("5090", "4070"), default="5090")
     p.add_argument("--desktop-pid", type=int)
+    p.add_argument("--jobs", help="explicit comma-separated subset of the canonical odd units")
+    p.add_argument("--memory", default="4G")
+    p.add_argument("--unit-stem")
     a = p.parse_args()
     prepare(a.root, a.python, a.launcher, a.templates, relocate=a.relocate,
-            gpu_model=a.gpu_model, desktop_pid=a.desktop_pid)
+            gpu_model=a.gpu_model, desktop_pid=a.desktop_pid,
+            selected=a.jobs.split(",") if a.jobs else None, memory=a.memory, unit_stem=a.unit_stem)

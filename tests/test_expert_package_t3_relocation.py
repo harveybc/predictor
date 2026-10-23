@@ -57,3 +57,15 @@ def test_t3_relocation_rejects_duplicate_or_unmatched_provenance(tmp_path, fault
     m.atomic(tmp_path / "source/ops/RELOCATION_STOP.private.json", stop)
     with pytest.raises(ValueError):
         m.validate_relocation(tmp_path, versions)
+
+
+def test_shard_relocation_excludes_every_completed_receipted_unit(tmp_path):
+    m = module()
+    cfg, stop = fixture(m, tmp_path)
+    stop["prior_status"]["done"] = 1
+    m.atomic(tmp_path / "source/ops/RELOCATION_STOP.private.json", stop)
+    m.atomic(tmp_path / "source/ops/first.RESULT.json", {
+        "config_sha256": m.identity(cfg), "job": {"name": "t3_unit_01"}})
+    assert m.validate_relocation(tmp_path, {"torch": "same"}, ["t3_unit_03"])["source_done"] == 1
+    with pytest.raises(ValueError, match="REPEAT"):
+        m.validate_relocation(tmp_path, {"torch": "same"}, ["t3_unit_01"])
