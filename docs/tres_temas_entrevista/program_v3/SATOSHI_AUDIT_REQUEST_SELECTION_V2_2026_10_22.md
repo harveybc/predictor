@@ -238,3 +238,30 @@ posterior), objetivos auxiliares retrospectivos (oportunidad antes del pivote ó
 ganancia adicional frente a cerrar ahora) con máscara por objetivo y purga por soporte. Pruebas: 88 en
 verde, incluida la CLI de extremo a extremo con todas las opciones. Nada lanzado: la ronda espera la
 selección v4 y la liberación del propietario.
+
+
+## 10. Selección v4 sobre las stores corregidas (cerrada 2026-10-23 00:36Z)
+
+Identidad nueva (`family_union_v1`, código hs @85a46ef limpio en BUDGET.json), stores `_s` (regla de
+asimetría corregida y, por el testigo 1, decidida sólo en TRAIN — impacto medido 0 columnas, store capa 1
+byte-idéntica). 3 882 unidades, 0 errores; tu `selection_ledger_support_audit.py`: contraste 714/714 y
+codificación 72/72 emparejados; rescate 120/120 con la comprobación por brazos (tu herramienta compara
+contra la referencia genérica, que en v3/v4 ya no es el control).
+
+| | v3 | v4 |
+| --- | --- | --- |
+| familias RETAINED / RESCUED / no | 41 / 2 / 14 | 39 / 2 / 16 |
+| listas core15 / estricta / shortlist | 15 / 125 / 173 | 15 / 116 / 164 |
+| codificaciones adoptadas por la regla declarada | sesiones, GMM one-hot, rel24, diff+rel480 | **sólo rel24** (las otras tres eran ruido marginal) |
+| base opener3 HGB / temporal | 0.4434 / 0.5305 | 0.4434 / 0.5306 |
+| base hit HGB / temporal | 0.1667 / 0.1785 | 0.1667 / 0.1801 |
+
+Cambios de familia (4): `dly.spx` y `dly.oil` dejan de retenerse; `px.rv` pasa a rescatada por
+interacción; `hmm` conserva sólo el padre decidido. El HGB es invariante a la corrección de escala (como
+esperábamos), el tronco temporal apenas cambia: la corrección de escala importa al consumidor neuronal,
+no a la selección por árboles. Colas pesadas en la lista estricta consumida: 39 columnas con |z| > 10 (v3)
+→ 28 (v4). Publicado en heuristic-strategy `docs/short_horizon/results/expert_guided/selection_v4/`
+(+ `SUPPORT_AUDIT.json`) y `docs/short_horizon/clean_round/evidence/` (justificación por columna y grupos
+de extractor de core15 y estricta sobre v4). La spec de la ronda limpia queda ligada a las listas v4 por
+digest; `check` pasa salvo la regularización pendiente y las dos puertas (v4 cerrada ✔; liberación del
+propietario ✘).
