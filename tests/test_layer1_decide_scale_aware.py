@@ -55,11 +55,27 @@ def test_candidate_skew_is_measured_on_train_rows_only():
     assert dec == "LOG" and f"{skew(np.log(x[tr])):.2f}" in why
 
 
-def test_log_is_rejected_when_a_later_row_is_outside_its_domain():
+def test_recipe_is_decided_on_train_only_and_later_domain_failures_become_nan():
+    """Auditor's witness (2026-10-22): changing ONLY a row after TRAIN must leave the recipe and every transformed
+    TRAIN value unchanged; the offending later row becomes NaN and is counted."""
     x = _lognormal(5000, 1e-3, seed=5)
     tr = np.zeros(len(x), bool)
     tr[:4000] = True
-    x[4500] = 0.0                                                       # TRAIN strictly positive, a later zero
+    d0 = diagnostics(x[tr])
+    dec0, why0, y0 = decide("px.rv_4", x, d0, train=tr)
+    x2 = x.copy()
+    x2[4500] = 0.0                                                      # TRAIN identical, a later zero
+    d2 = diagnostics(x2[tr])
+    dec2, why2, y2 = decide("px.rv_4", x2, d2, train=tr)
+    assert dec0 == dec2 == "LOG"
+    assert np.array_equal(y0[tr], y2[tr]) and np.isnan(y2[4500]) and np.isfinite(y2[4501])
+    assert d2["domain_nan_rows_after_train"] == 1 and "recipe unchanged" in why2 and d0["domain_nan_rows_after_train"] == 0
+
+
+def test_a_train_domain_failure_is_decided_on_train():
+    x = _lognormal(5000, 1e-3, seed=6)
+    x[100] = 0.0                                                        # inside TRAIN: LOG is not admissible
+    tr = np.ones(len(x), bool)
     d = diagnostics(x[tr])
     dec, why, y = decide("px.rv_4", x, d, train=tr)
-    assert dec == "ASINHS" and "LOG rejected" in why and np.isfinite(y).all()
+    assert dec == "ASINHS" and "LOG rejected: outside its domain on TRAIN" in why and np.isfinite(y).all()

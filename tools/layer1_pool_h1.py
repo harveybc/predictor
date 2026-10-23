@@ -101,8 +101,8 @@ def decide(name: str, x: np.ndarray, d: dict, train=None) -> tuple[str, str, np.
     Skew rule (rev 2026-10-22, scale-aware): for a non-negative variable with |skew| > 2 on TRAIN, the first candidate
     that at least halves |skew| on TRAIN is applied, in this declared order:
       ASINH   asinh(x)            the original rule; kept wherever it already works (e.g. candle geometry in pips)
-      LOG     log(x)              when x > 0 on every TRAIN row (scale-free); if a later row is <= 0 the candidate is
-                                  rejected (domain check only, recorded) and the next one is tried
+      LOG     log(x)              when x > 0 on every TRAIN row (scale-free); a LATER row <= 0 becomes NaN (counted)
+                                  and never changes the recipe (rev 2 2026-10-22, auditor's witness)
       ASINHS  asinh(x / s)        s = TRAIN median of the positive values (frozen constant); defined for zeros
     The original rule applied asinh in native units only, which is the identity for magnitudes ~1e-3 (ranges,
     realized volatilities, spectral energies): those variables stayed skewed although a transform halves their skew.
@@ -115,27 +115,38 @@ def decide(name: str, x: np.ndarray, d: dict, train=None) -> tuple[str, str, np.
     if sk is not None and abs(sk) > 2 and d.get("min") is not None and d["min"] >= 0:
         from scipy.stats import skew
         tr = np.ones(len(x), bool) if train is None else np.asarray(train, bool)
+        xt = x[tr]
         notes = []
+        # the recipe is DECIDED on TRAIN only (domain and skew); rows after TRAIN never change it: a later row outside
+        # the frozen recipe's domain becomes NaN (counted, window excluded), never an epsilon, a clip or a new recipe
         cands = [("ASINH", lambda v: np.arcsinh(v), "asinh(x)")]
-        if d["min"] > 0:
+        if np.nanmin(xt) > 0:
             cands.append(("LOG", lambda v: np.log(v), "log(x)"))
+        else:
+            notes.append("LOG rejected: outside its domain on TRAIN (zeros)")
         s_ = d.get("median_pos")
         if s_:
             cands.append(("ASINHS", lambda v, s_=s_: np.arcsinh(v / s_), f"asinh(x / {s_:.6g}) with the TRAIN median of positive values"))
         for dec, fn, desc in cands:
             with np.errstate(divide="ignore", invalid="ignore"):
-                y = fn(x)
-            src_ok = np.isfinite(x)
-            bad_out = int((src_ok & ~np.isfinite(y)).sum())
-            if bad_out:
-                notes.append(f"{dec} rejected: {bad_out} finite rows outside its domain")
+                yt = fn(xt)
+            ys = yt[np.isfinite(yt)]
+            if len(ys) < len(xt[np.isfinite(xt)]):
+                notes.append(f"{dec} rejected: outside its domain on TRAIN")
                 continue
-            ys = y[tr & np.isfinite(y)]
             sk2 = float(skew(ys))
             if abs(sk2) < 0.5 * abs(sk):
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    y = fn(x)
+                y = np.where(np.isfinite(y), y, np.nan)                  # -inf from log(0) after TRAIN -> NaN
+                later_bad = int((np.isfinite(x) & ~np.isfinite(y) & ~tr).sum())
                 if dec == "ASINHS":
                     d["transform_scale"] = s_
-                return dec, f"positive and skewed (TRAIN skew {sk:.2f} -> {sk2:.2f} with {desc})" + (f"; {'; '.join(notes)}" if notes else ""), y
+                d["domain_nan_rows_after_train"] = later_bad
+                reason = f"positive and skewed (TRAIN skew {sk:.2f} -> {sk2:.2f} with {desc})"
+                if later_bad:
+                    reason += f"; {later_bad} rows after TRAIN outside the domain -> NaN (recipe unchanged)"
+                return dec, reason + (f"; {'; '.join(notes)}" if notes else ""), y
             notes.append(f"{dec} {sk:.2f}->{sk2:.2f} does not halve it")
         return "NONE", f"skewed (TRAIN skew {sk:.2f}) but no candidate halves it: {'; '.join(notes)}", None
     return "NONE", "stationary, not strongly skewed", None
