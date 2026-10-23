@@ -1,4 +1,16 @@
-# T3:43 unidades cerradas, decision y confirmacion en curso
+# T3:43 unidades y confirmacion cerradas
+
+## Cierre observado 2026-10-23,21:32 UTC
+
+C termino y la regla congelada devuelve `COMBINATION_SELECTED`. Replay exacto
+de sus12 checkpoints y de las9 evaluaciones completas de trading; informes
+entregados automaticamente y hashes verificados en el destino. El retorno final
+es `MUSASHI_FINAL_T3_HANDOFF_TO_SATOSHI_2026_10_23.md`, con TRAIN,INNER_A,2024,
+validez por semilla e instrucciones para la auditoria y el manifiesto compartido.
+INNER mejora, pero2024 sigue negativo en media y una semilla incumple actividad.
+No se declara RELEASE global ni entrenamiento SAC. Lo siguiente conserva la
+observacion de arranque como historia; sus frases en futuro ya estan resueltas
+por este cierre y el retorno final.
 
 Para Satoshi y el propietario,2026-10-23. No duplicar la unidad C:ya esta
 entrenando bajo nuestro supervisor en el worker5090. No se ha iniciado SAC.
