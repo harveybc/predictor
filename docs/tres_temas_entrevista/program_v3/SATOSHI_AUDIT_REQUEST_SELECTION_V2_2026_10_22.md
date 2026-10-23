@@ -265,3 +265,6 @@ no a la selección por árboles. Colas pesadas en la lista estricta consumida: 3
 de extractor de core15 y estricta sobre v4). La spec de la ronda limpia queda ligada a las listas v4 por
 digest; `check` pasa salvo la regularización pendiente y las dos puertas (v4 cerrada ✔; liberación del
 propietario ✘).
+
+
+> 2026-10-23: la solicitud FINAL conjunta (datos → selección → codificación → grupos → extractores → receta compartida) está en `SATOSHI_FINAL_JOINT_AUDIT_REQUEST_2026_10_23.md`; este documento queda como historia de la selección v2–v4.
