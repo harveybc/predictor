@@ -1,5 +1,9 @@
 # Shared Selection To Independent RL Consumers
 
+Latest2026-10-23 execution: [T2 complete, assigned T3 v2 running](MUSASHI_T3_V2_GPU_START_2026_10_23.md).
+The21 odd-id units run sequentially on the5090 with automatic authenticated
+mirrors. Earlier T2-running observations below are historical, not current status.
+
 Status: selection execution and all12 assigned E3-M arms complete; shared release
 and profile-to-extractor acceptance remain pending. Current results, qualifications
 and Satoshi's final-audit handoff are consolidated in the

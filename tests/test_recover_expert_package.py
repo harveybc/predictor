@@ -42,3 +42,16 @@ def test_accepted_receipt_prevents_automatic_repair(tmp_path, monkeypatch):
     atomic(tmp_path / "ops" / (job["name"] + ".RESULT.json"), {"accepted": True})
     assert recovery.recover(c) == []
     assert out.exists()
+
+
+def test_recovery_uses_the_active_campaign_plan(tmp_path, monkeypatch):
+    name = "t3_unit_01"
+    c = {"root": str(tmp_path), "pins": {}, "campaign": "v4_t3"}
+    out = tmp_path / "out" / name
+    out.mkdir(parents=True)
+    (out / "E3M.json").write_text('{"meta":')
+    atomic(tmp_path / "ops/JOBS.json", {name: {"state": "RUNNING", "entered": 1}})
+    monkeypatch.setattr(recovery, "live_children", lambda root: [])
+    monkeypatch.setattr(recovery, "planned_jobs", lambda cfg: [{"name": name}], raising=False)
+    assert recovery.recover(c) == [name]
+    assert not out.exists()

@@ -74,6 +74,9 @@ def jobs():
 
 
 def planned_jobs(cfg):
+    if cfg.get("campaign") == "v4_t3":
+        from expert_package_t3 import jobs as t3_jobs
+        return t3_jobs(cfg["t3_manifest"], cfg["t3_units"])
     if cfg.get("campaign") == "v4_t2":
         return t2_jobs(cfg["t2_manifest"])
     if cfg.get("campaign") is not None:
@@ -136,10 +139,14 @@ def choose_gpu(text, model="5090"):
 
 def command(cfg, job):
     root = Path(cfg["root"])
-    if cfg.get("campaign") == "v4_t2":
-        t2_jobs(cfg["t2_manifest"])
-        return [cfg["launcher"], "-q", "-m", cfg["memory"], "-t", "43200s", "-n", "t2-" + job["name"],
-                "--", cfg["python"], *shlex.split(job["peer_command"].replace("<musashi-root>", str(root)))]
+    if cfg.get("campaign") in ("v4_t2", "v4_t3"):
+        selected = planned_jobs(cfg)
+        if job not in selected:
+            raise ValueError("UNPLANNED_PEER_JOB")
+        placeholder = "<root>" if cfg["campaign"] == "v4_t3" else "<musashi-root>"
+        prefix = "t3-" if cfg["campaign"] == "v4_t3" else "t2-"
+        return [cfg["launcher"], "-q", "-m", cfg["memory"], "-t", "43200s", "-n", prefix + job["name"],
+                "--", cfg["python"], *shlex.split(job["peer_command"].replace(placeholder, str(root)))]
     subdir, parquet = (("full_pool_enc", "full_pool_enc_eurusd_h1.parquet") if job["encoded"]
                        else ("full_pool", "full_pool_eurusd_h1.parquet"))
     cmd = [cfg["launcher"], "-q", "-m", cfg["memory"], "-t", "43200s", "-n", "e3m-" + job["name"],
@@ -192,7 +199,7 @@ def validate_result(cfg, job):
     result, scaler, probe = [read(out / n) for n in ("E3M.json", "SCALER.json", "PROBE.json")]
     if any(not isinstance(v, dict) for v in (result, scaler, probe)):
         raise ValueError("INCOMPLETE_TERMINAL_ARTIFACTS")
-    if cfg.get("campaign") == "v4_t2":
+    if cfg.get("campaign") in ("v4_t2", "v4_t3"):
         if result.get("exec_contract") != "sac" or result.get("min_orders_per_week") != 2.0:
             raise ValueError("T2_EXECUTION_CONTRACT")
         if "labels" in result and (not isinstance(result["labels"], dict) or result["labels"].get("mode") != "zigzag"):
@@ -215,6 +222,9 @@ def validate_result(cfg, job):
             raise ValueError("SCALER_NONFINITE_OR_SHAPE")
     if any(float(v) <= 0 for v in scaler["std"]):
         raise ValueError("SCALER_INVALID_STD")
+    if cfg.get("campaign") == "v4_t3":
+        from expert_package_t3 import validate_extra
+        validate_extra(cfg, job, result, features)
     if (probe["split_contract"] != job["split"] or probe["scaling"] != "fixed_train"
             or probe["agent_state"] != job["state"]):
         raise ValueError("PROBE_CONTRACT_MISMATCH")
@@ -231,7 +241,7 @@ def validate_result(cfg, job):
         for source in ("trading", "musashi_contract"):
             for period in periods(job):
                 m = rec[source][period]
-                if cfg.get("campaign") == "v4_t2" and not 0 <= m["max_entries_per_day"] <= 1:
+                if cfg.get("campaign") in ("v4_t2", "v4_t3") and not 0 <= m["max_entries_per_day"] <= 1:
                     raise ValueError("T2_DAILY_CAP")
                 for key in ("net_profit_usd", "max_drawdown_pct", "trades", "win_rate"):
                     if m[key] is not None and not math.isfinite(float(m[key])):
@@ -257,7 +267,7 @@ def receipt_path(cfg, job):
 def seal_result(cfg, job):
     verify_pins(cfg)
     receipt = validate_result(cfg, job)
-    if cfg.get("campaign") == "v4_t2":
+    if cfg.get("campaign") in ("v4_t2", "v4_t3"):
         for previous in (Path(cfg["root"]) / "ops").glob("*.RESULT.json"):
             other = read(previous)
             if other["job"]["list"] == job["list"] and other["support_hash"] != receipt["support_hash"]:
@@ -453,7 +463,7 @@ def run(cfg):
 
 def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_unit=None, recovery_source=None,
                gpu_model="5090", gpu_background_processes=None, archive_sha256=ARCHIVE,
-               campaign=None, t2_manifest=None):
+               campaign=None, t2_manifest=None, t3_manifest=None, t3_units=None):
     root = Path(root).resolve()
     if digest(root / "hs_code_final.tar.gz") != archive_sha256:
         raise ValueError("ARCHIVE_IDENTITY_CHANGED")
@@ -465,6 +475,9 @@ def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_uni
         paths.extend(p for p in (root / name).rglob("*") if p.is_file() and "__pycache__" not in p.parts
                      and (name in ("data", "in") or p.suffix == ".py"))
     paths.extend(p for p in root.glob("*.py") if p.is_file())
+    if campaign == "v4_t3":
+        paths.extend(p for p in (root / "t3").rglob("*") if p.is_file())
+        paths.extend(root / n for n in ("PINS.sha256", "T3_MANIFEST.json", "T3_UNITS_musashi.json"))
     cfg = {"root": str(root), "python": str(Path(python).expanduser().resolve()),
            "launcher": str(Path(launcher).expanduser().resolve()), "memory": memory, "gpu_uuid": gpu,
            "seeds": [20261019, 20261020, 20261021], "max_entered_attempts": 2,
@@ -473,6 +486,8 @@ def initialize(root, python, launcher, *, only_jobs=None, memory="4G", timer_uni
     cfg["runtime_versions"] = runtime_versions(cfg["python"])
     if campaign is not None:
         cfg.update(campaign=campaign, t2_manifest=t2_manifest)
+    if campaign == "v4_t3":
+        cfg.update(t3_manifest=t3_manifest, t3_units=t3_units)
     if gpu_background_processes:
         cfg["gpu_background_processes"] = gpu_background_processes
     if only_jobs is not None:

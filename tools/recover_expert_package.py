@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import time
 
-from expert_package_worker import atomic, identity, jobs, live_children, read, verify_pins
+from expert_package_worker import atomic, identity, planned_jobs, live_children, read, verify_pins
 
 
 def recover(cfg):
@@ -24,7 +24,7 @@ def recover(cfg):
         if live_children(root):
             return []
         states, restored = read(ops / "JOBS.json", {}), []
-        for job in jobs():
+        for job in planned_jobs(cfg):
             name = job["name"]
             rec = states.get(name, {})
             out = root / "out" / name

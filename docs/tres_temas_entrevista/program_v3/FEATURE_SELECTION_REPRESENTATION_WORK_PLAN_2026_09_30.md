@@ -647,6 +647,12 @@ Las siguientes pruebas se diseñan antes de implementar; NO están ejecutadas:
 
 ## 10. Subplan ejecutable por incrementos
 
+Actualizacion2026-10-23: [T3 v2 desplegado](MUSASHI_T3_V2_GPU_START_2026_10_23.md).
+T2 completo8/8; Satoshi aplico la regla congelada y eligio regularizacion base.
+Las21 unidades impares T3 v2 corren secuencialmente en la5090 con supervisor,
+recuperacion y espejos automaticos; las22 pares/control pertenecen al otro carril.
+Siguen decision por grupo, combinacion y auditoria final compartida antes de SAC.
+
 Actualizacion operativa 2026-10-22: [T1 completo y T2 en ejecucion](MUSASHI_T1_RETURN_AND_T2_RUNNING_2026_10_22.md).
 T1 entrega131 perfiles TRAIN-only (listas v4 de15/116). T2 ejecuta ocho
 diagnosticos secuenciales consolidated en la5090, sin cambiar el science pin
