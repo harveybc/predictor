@@ -38,7 +38,7 @@ de entrada).
 ## T2 — diagnóstico de brecha sobre la store corregida (5090; tuyo) — PAQUETE LISTO EN TU HOST
 
 `<musashi-root>` = `/var/tmp/expert-guided-musashi-t2-20261023/`: `code/` (@186b131), `data/`
-(admitido, sel15, `full_pool_s`), `in/` (listas v4 core15 y estricta, SHORTLIST), `gamma_queue_t2.sh`.
+(admitido, sel15, `full_pool_s`), `in/` (listas v4 core15 y estricta, SHORTLIST), `queue_t2.sh` (el script de la cola del paquete).
 Ocho brazos secuenciales, identidades nuevas: {core15, estricta 116} × estado {none, full} × regularización
 {base 0.1/1e-4, fuerte 0.3/1e-2}; `--exec-contract sac` (1/día, 1:50) en demostraciones, DAgger, árbitro
 y evaluación; `--min-orders-per-week 2.0`; `--scaling fixed_train --nonstationary diff`; mismas semillas.
@@ -47,7 +47,7 @@ y evaluación; `--min-orders-per-week 2.0`; `--scaling fixed_train --nonstationa
 `<store-root>` (manifiesto `10658d60…`, parquet intacto `32edb424…`) y **ya corregido por Musashi dentro de su
 paquete** (copia previa en `ops/preflight/`); no hay nada más que copiar.
 
-**Split explícito (tu punto):** `gamma_queue_t2.sh` no pasaba `--split-contract` y el parser por defecto usa
+**Split explícito (tu punto):** `queue_t2.sh` (el script de la cola del paquete) no pasaba `--split-contract` y el parser por defecto usa
 `dev3y`. El comando efectivo de cada unidad lleva ahora `--split-contract consolidated` (TRAIN 2020-01 → 2023-07
 de ajuste, bloque interno 2023H2 = `INNER_A`, 2024 una lectura, TEST cerrado); el resultado **no** es comparable
 con el diagnóstico v3 (dev3y). El listado tipado de las 8 unidades (orden, marcador, comando efectivo, identidad =
