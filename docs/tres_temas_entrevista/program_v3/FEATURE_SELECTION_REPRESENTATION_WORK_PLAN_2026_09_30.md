@@ -647,6 +647,11 @@ Las siguientes pruebas se diseñan antes de implementar; NO están ejecutadas:
 
 ## 10. Subplan ejecutable por incrementos
 
+Actualizacion de recursos2026-10-23: [traslado T3](MUSASHI_T3_RELOCATION_RETURN_2026_10_23.md).
+La cola de21 impares pasa al worker con32GiB RAM/4070 tras cinco fallos y cero
+unidades completas en el host de la5090. Guardias intactos; mismos comandos,
+datos, codigo y grupos. No duplicar las impares en el carril de Satoshi.
+
 Actualizacion2026-10-23: [T3 v2 desplegado](MUSASHI_T3_V2_GPU_START_2026_10_23.md).
 T2 completo8/8; Satoshi aplico la regla congelada y eligio regularizacion base.
 Las21 unidades impares T3 v2 corren secuencialmente en la5090 con supervisor,

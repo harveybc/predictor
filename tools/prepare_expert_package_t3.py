@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 
 from expert_package_t3 import jobs
-from expert_package_worker import atomic, digest, identity, initialize, read
+from expert_package_worker import atomic, digest, identity, initialize, process_identity, read, runtime_versions
 
 
 SCIENCE = "1aaf367923fae467988b1ca87d5aa3c74321141f"
@@ -38,7 +38,39 @@ def verify_package(root):
     return manifest, assignment
 
 
-def prepare(root, python, launcher, templates):
+def validate_relocation(root, versions):
+    root = Path(root)
+    source = root / "source/ops"
+    cfg = read(source / "CONFIG.private.json")
+    stop = read(source / "RELOCATION_STOP.private.json")
+    status = read(source / "STATUS.json")
+    if (cfg["campaign"] != "v4_t3" or identity(cfg) != stop["parent_config_sha256"]
+            or stop["state"] != "STOPPED_FOR_OWNER_REQUESTED_RELOCATION"
+            or status["state"] != "STOPPED_FOR_RELOCATION" or stop["remaining_scientific_children"]):
+        raise ValueError("T3_SOURCE_NOT_AUTHENTICATED_AND_STOPPED")
+    if stop["prior_status"]["done"] != 0 or list(source.glob("*.RESULT.json")):
+        raise ValueError("T3_RELOCATION_WOULD_REPEAT_COMPLETED_UNITS")
+    if versions != cfg["runtime_versions"]:
+        raise ValueError("T3_RELOCATION_RUNTIME_CHANGED")
+    verified = 0
+    for filename, expected in cfg["pins"].items():
+        rel = Path(filename).relative_to(cfg["root"])
+        if rel.parts[0] not in ("code", "data", "in", "t3", "hs_code_final.tar.gz",
+                                "gamma_queue_musashi.sh", "PINS.sha256", "T3_MANIFEST.json",
+                                "T3_UNITS_musashi.json"):
+            continue
+        if digest(root / rel) != expected:
+            raise ValueError("T3_RELOCATION_INPUT_CHANGED:" + str(rel))
+        verified += 1
+    if not verified:
+        raise ValueError("T3_RELOCATION_INPUT_PINS_EMPTY")
+    return {"parent_config_sha256": identity(cfg), "source_stop_sha256": digest(source / "RELOCATION_STOP.private.json"),
+            "source_config_file_sha256": digest(source / "CONFIG.private.json"), "verified_input_files": verified,
+            "source_done": 0, "source_failed": stop["prior_status"]["failed"], "science_flags_unchanged": True,
+            "hardware_changed": True, "cross_hardware_bitwise_equivalence_claimed": False}
+
+
+def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="5090", desktop_pid=None):
     root = Path(root).resolve()
     manifest, assignment = verify_package(root)
     path = root / "gamma_queue_musashi.sh"
@@ -46,11 +78,22 @@ def prepare(root, python, launcher, templates):
         path.symlink_to("t3_queue_musashi.sh")
     elif path.resolve() != (root / "t3_queue_musashi.sh").resolve():
         raise ValueError("T3_QUEUE_ALIAS_CHANGED")
-    stem = "musashi-e3m-t3-20261023"
+    provenance = {"science_commit": SCIENCE, "peer_package_commit": "8d6dbd5b",
+                  "manifest": manifest["identity"], "new_SAC_fits": 0}
+    if relocate:
+        provenance.update(validate_relocation(root, runtime_versions(python)))
+    elif gpu_model != "5090":
+        raise ValueError("T3_ALTERNATE_GPU_REQUIRES_RELOCATION")
+    background = {}
+    if desktop_pid:
+        cmd = (Path("/proc") / str(desktop_pid) / "cmdline").read_bytes().split(b"\0")[0]
+        if Path(cmd.decode()).name != "snapd-desktop-integration":
+            raise ValueError("NOT_A_DESKTOP_PROCESS")
+        background[str(desktop_pid)] = {**process_identity(desktop_pid), "max_memory_mib": 32}
+    stem = "musashi-e3m-t3-relocated-20261023" if relocate else "musashi-e3m-t3-20261023"
     cfg = initialize(root, python, launcher, memory="4G", timer_unit=stem + ".timer",
                      archive_sha256=ARCHIVE, campaign="v4_t3", t3_manifest=manifest, t3_units=assignment,
-                     recovery_source={"science_commit": SCIENCE, "peer_package_commit": "8d6dbd5b",
-                                      "manifest": manifest["identity"], "new_SAC_fits": 0})
+                     recovery_source=provenance, gpu_model=gpu_model, gpu_background_processes=background)
     units = Path.home() / ".config/systemd/user"
     units.mkdir(parents=True, exist_ok=True)
     for suffix in ("service", "timer"):
@@ -72,5 +115,9 @@ if __name__ == "__main__":
     p.add_argument("--python", required=True)
     p.add_argument("--launcher", required=True)
     p.add_argument("--templates", required=True)
+    p.add_argument("--relocate", action="store_true")
+    p.add_argument("--gpu-model", choices=("5090", "4070"), default="5090")
+    p.add_argument("--desktop-pid", type=int)
     a = p.parse_args()
-    prepare(a.root, a.python, a.launcher, a.templates)
+    prepare(a.root, a.python, a.launcher, a.templates, relocate=a.relocate,
+            gpu_model=a.gpu_model, desktop_pid=a.desktop_pid)

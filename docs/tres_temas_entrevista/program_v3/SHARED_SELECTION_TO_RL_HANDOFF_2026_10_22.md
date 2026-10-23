@@ -1,5 +1,10 @@
 # Shared Selection To Independent RL Consumers
 
+Current2026-10-23: [T3 moved to the larger-RAM worker](MUSASHI_T3_RELOCATION_RETURN_2026_10_23.md).
+The5090 attempt produced zero complete units and five failures; its queue is
+stopped and all21 odd units now run sequentially on the4070 worker with32GiB RAM.
+Science/input identities are preserved; hardware and operational identity differ.
+
 Latest2026-10-23 execution: [T2 complete, assigned T3 v2 running](MUSASHI_T3_V2_GPU_START_2026_10_23.md).
 The21 odd-id units run sequentially on the5090 with automatic authenticated
 mirrors. Earlier T2-running observations below are historical, not current status.
