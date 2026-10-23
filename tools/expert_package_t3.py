@@ -84,3 +84,52 @@ def validate_extra(cfg, job, result, features):
         raise ValueError("T3_WINDOW_CONTRACT")
     if result.get("labels") != {"mode": "zigzag"}:
         raise ValueError("T3_LABEL_CONTRACT")
+
+
+def confirmation_job(cfg):
+    root = Path(cfg["root"])
+    ready_path = root / "in/T3_READY.json"
+    if hashlib.sha256(ready_path.read_bytes()).hexdigest() != cfg["confirmation"]["readiness_sha256"]:
+        raise ValueError("T3_COMBINATION_READINESS_CHANGED")
+    ready = json.loads(ready_path.read_text())
+    control_path = root / "in/T3_CONTROL.json"
+    if (ready.get("state") != "READY_FOR_PER_GROUP_DECISION_AUDIT" or ready.get("count") != 43
+            or hashlib.sha256(control_path.read_bytes()).hexdigest() != ready["units"]["t3_unit_00"]["result_sha256"]):
+        raise ValueError("T3_COMBINATION_CONTROL_OR_READINESS")
+    path = root / "in/T3_DECISION.json"
+    if hashlib.sha256(path.read_bytes()).hexdigest() != cfg["confirmation"]["decision_sha256"]:
+        raise ValueError("T3_COMBINATION_DECISION_CHANGED")
+    decision = json.loads(path.read_text())
+    base = json.loads((root / "t3/groups/unit_00.json").read_text())
+    combined_path = root / "t3/groups/unit_C.json"
+    actual = json.loads(combined_path.read_text())
+    rows = decision["groups"]
+    if (decision["manifest"] != cfg["t3_manifest"]["identity"]
+            or len(rows) != len(base["groups"]) or {r["group"] for r in rows} != set(base["groups"])):
+        raise ValueError("T3_COMBINATION_DECISION_GROUPS")
+    groups, widths, kinds = dict(base["groups"]), dict(base["units"]), dict(base["kinds"])
+    for row in rows:
+        name, choice = row["group"], row["chosen"]
+        allowed = {u["kind"] for u in cfg["t3_manifest"]["units"] if u["group"] == name} | {"conv"}
+        if choice not in allowed:
+            raise ValueError("T3_COMBINATION_UNKNOWN_CHOICE")
+        if choice == "pointwise":
+            kinds[name] = "pointwise"
+        elif choice == "per_feature":
+            members = groups.pop(name)
+            kinds.pop(name)
+            for column in members:
+                key = name + "/" + column
+                groups[key], widths[key], kinds[key] = [column], base["units"].get(name, 2), "conv"
+    if (actual.get("name") != "t3_unit_C" or actual.get("groups") != groups
+            or actual.get("units") != widths or actual.get("kinds") != kinds):
+        raise ValueError("T3_COMBINATION_GROUPS_CHANGED")
+    prototype = jobs(cfg["t3_manifest"], cfg["t3_units"])[0]
+    argv = shlex.split(prototype["peer_command"])
+    argv[argv.index("--groups") + 1] = "<root>/t3/groups/unit_C.json"
+    argv[argv.index("--out") + 1] = "<root>/out/t3_unit_C"
+    command = shlex.join(argv)
+    return {**prototype, "name": "t3_unit_C", "unit_id": "C", "kind": "combination", "group": None,
+            "groups_file": "t3/groups/unit_C.json", "groups_sha256": hashlib.sha256(combined_path.read_bytes()).hexdigest(),
+            "peer_command": command, "peer_command_identity": hashlib.sha256(command.encode()).hexdigest()[:16],
+            "peer_unit_identity": cfg["confirmation"]["decision_sha256"]}

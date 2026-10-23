@@ -137,3 +137,39 @@ def test_peer_even_assignment_requires_explicit_owner_and_exact_commands():
         jobs(manifest, bad, worker="satoshi")
     with pytest.raises(ValueError):
         jobs(manifest, assigned, worker="other")
+
+
+def test_combination_changes_only_groups_and_output_and_binds_the_decision(tmp_path):
+    import json
+    from expert_package_t3 import confirmation_job
+    w = worker()
+    manifest, assigned = package()
+    base = {"groups": {"group": ["x", "y"]}, "units": {"group": 2}, "kinds": {"group": "conv"}}
+    decision = {"manifest": manifest["identity"], "groups": [{"group": "group", "chosen": "pointwise"}]}
+    combined = {"name": "t3_unit_C", "rule": "combination", **base, "kinds": {"group": "pointwise"}}
+    w.atomic(tmp_path / "in/T3_DECISION.json", decision)
+    w.atomic(tmp_path / "in/T3_CONTROL.json", {})
+    ready = {"state": "READY_FOR_PER_GROUP_DECISION_AUDIT", "count": 43,
+             "units": {"t3_unit_00": {"result_sha256": w.digest(tmp_path / "in/T3_CONTROL.json")}}}
+    w.atomic(tmp_path / "in/T3_READY.json", ready)
+    w.atomic(tmp_path / "t3/groups/unit_00.json", base)
+    w.atomic(tmp_path / "t3/groups/unit_C.json", combined)
+    c = {"root": str(tmp_path), "campaign": "v4_t3_confirmation", "t3_manifest": manifest, "t3_units": assigned,
+         "confirmation": {"decision_sha256": w.digest(tmp_path / "in/T3_DECISION.json"),
+                          "readiness_sha256": w.digest(tmp_path / "in/T3_READY.json")}}
+    job = confirmation_job(c)
+    assert job["name"] == "t3_unit_C"
+    expected = shlex.split(assigned["units"][0]["command"])
+    actual = shlex.split(job["peer_command"])
+    changed = [i for i,(a,b) in enumerate(zip(expected,actual)) if a != b]
+    assert changed == [expected.index("--groups") + 1, expected.index("--out") + 1]
+    c.update(python="/python", launcher="/admit", memory="5G")
+    assert w.planned_jobs(c) == [job]
+    assert "--agent-state" in w.command(c, job)
+    combined["kinds"]["group"] = "conv"
+    w.atomic(tmp_path / "t3/groups/unit_C.json", combined)
+    with pytest.raises(ValueError, match="COMBINATION_GROUPS"):
+        confirmation_job(c)
+    w.atomic(tmp_path / "in/T3_DECISION.json", dict(decision, extra="changed"))
+    with pytest.raises(ValueError, match="COMBINATION_DECISION"):
+        confirmation_job(c)

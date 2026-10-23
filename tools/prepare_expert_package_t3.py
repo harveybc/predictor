@@ -6,7 +6,7 @@ import re
 import subprocess
 
 from expert_package_t3 import jobs
-from expert_package_worker import atomic, digest, identity, initialize, process_identity, read, runtime_versions
+from expert_package_worker import atomic, digest, identity, initialize, process_identity, read, runtime_versions, planned_jobs
 
 
 SCIENCE = "1aaf367923fae467988b1ca87d5aa3c74321141f"
@@ -76,7 +76,7 @@ def validate_relocation(root, versions, selected=None):
 
 
 def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="5090", desktop_pid=None,
-            selected=None, memory="4G", unit_stem=None):
+            selected=None, memory="4G", unit_stem=None, confirmation=False):
     root = Path(root).resolve()
     manifest, assignment = verify_package(root)
     path = root / "gamma_queue_musashi.sh"
@@ -86,6 +86,8 @@ def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="509
         raise ValueError("T3_QUEUE_ALIAS_CHANGED")
     provenance = {"science_commit": SCIENCE, "peer_package_commit": "8d6dbd5b",
                   "manifest": manifest["identity"], "new_SAC_fits": 0}
+    if confirmation and (relocate or selected is not None or gpu_model != "5090"):
+        raise ValueError("T3_COMBINATION_REQUIRES_SINGLE_FRESH_5090_QUEUE")
     if relocate:
         provenance.update(validate_relocation(root, runtime_versions(python), selected))
     elif gpu_model != "5090":
@@ -103,8 +105,11 @@ def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="509
         stem = unit_stem
     if memory not in ("4G", "5G"):
         raise ValueError("T3_UNSUPPORTED_MEMORY_BUDGET")
+    evidence = ({"decision_sha256": digest(root / "in/T3_DECISION.json"),
+                 "readiness_sha256": digest(root / "in/T3_READY.json")} if confirmation else None)
     cfg = initialize(root, python, launcher, memory=memory, timer_unit=stem + ".timer",
-                     archive_sha256=ARCHIVE, campaign="v4_t3", t3_manifest=manifest, t3_units=assignment,
+                     archive_sha256=ARCHIVE, campaign="v4_t3_confirmation" if confirmation else "v4_t3",
+                     t3_manifest=manifest, t3_units=assignment, confirmation=evidence,
                      recovery_source=provenance, gpu_model=gpu_model, gpu_background_processes=background,
                      only_jobs=selected)
     units = Path.home() / ".config/systemd/user"
@@ -115,12 +120,12 @@ def prepare(root, python, launcher, templates, *, relocate=False, gpu_model="509
         text = text.replace("musashi-e3m-assigned-20261022", stem)
         (units / (stem + "." + suffix)).write_text(text)
     atomic(root / "ops/T3_DEPLOYMENT.json", {"science_commit": SCIENCE, "config_sha256": identity(cfg),
-           "units": len(selected) if selected else 21, "manifest": manifest["identity"],
+           "units": len(planned_jobs(cfg)), "manifest": manifest["identity"],
            "memory_GiB": int(memory[:-1]), "new_SAC_fits": 0})
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
     subprocess.run(["systemctl", "--user", "enable", "--now", stem + ".timer"], check=True)
     subprocess.run(["systemctl", "--user", "start", stem + ".service"], check=True)
-    print({"config_sha256": identity(cfg), "units": len(selected) if selected else 21,
+    print({"config_sha256": identity(cfg), "units": len(planned_jobs(cfg)),
            "manifest": manifest["identity"]})
 
 
@@ -136,7 +141,9 @@ if __name__ == "__main__":
     p.add_argument("--jobs", help="explicit comma-separated subset of the canonical odd units")
     p.add_argument("--memory", default="4G")
     p.add_argument("--unit-stem")
+    p.add_argument("--confirmation", action="store_true")
     a = p.parse_args()
     prepare(a.root, a.python, a.launcher, a.templates, relocate=a.relocate,
             gpu_model=a.gpu_model, desktop_pid=a.desktop_pid,
-            selected=a.jobs.split(",") if a.jobs else None, memory=a.memory, unit_stem=a.unit_stem)
+            selected=a.jobs.split(",") if a.jobs else None, memory=a.memory, unit_stem=a.unit_stem,
+            confirmation=a.confirmation)
