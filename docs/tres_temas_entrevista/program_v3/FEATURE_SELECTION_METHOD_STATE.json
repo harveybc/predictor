@@ -1,7 +1,22 @@
 {
   "schema": "feature_selection_method_state.v1",
   "updated_on": "2026-10-23",
-  "current_stage": "V4_T3_43_AND_COMBINATION_COMPLETE_REPLAY_VERIFIED_FINAL_AUDIT_PENDING",
+  "current_stage": "V4_FINAL_AUDIT_CORRECTIONS_REQUIRED",
+  "final_joint_audit": {
+    "report": "MUSASHI_FINAL_JOINT_AUDIT_2026_10_23.md",
+    "audited_consumer_commit": "f57f8ef9ccf283409521a23ab1b43cb0b0298e45",
+    "audited_upstream_commit": "048549f047b4efc95ba3c4e7dd06837a907cbbab",
+    "verdict": "REVISE_BEFORE_SHARED_CONSUMPTION",
+    "execution_and_original_context_replay_preserved": true,
+    "fit_scope_witness": "Perturbing only INNER before native upstream GMM refit changes 87048 earlier cells; frozen apply alone passes",
+    "matched_groups": {"contrast": 714, "encoding": 72, "rescue": 120, "discrepancies": 0},
+    "emitter_bad_variants_accepted": 7,
+    "next_queue_matches_selected_C": false,
+    "test_scored": false,
+    "new_policy_fits": 0,
+    "scientific_release": false,
+    "next_action": "Satoshi repairs fold-local learned-producer fit scope and authenticated recipe export; both lanes implement shared frozen consumption; recompute only dependency-affected decisions and return witnesses"
+  },
   "latest_T3_closure": {
     "observed_UTC": "2026-10-23T21:32:13Z",
     "original_units_complete": 43,
@@ -22,7 +37,7 @@
     "scientific_release": false,
     "new_SAC_fits": 0,
     "report": "MUSASHI_FINAL_T3_HANDOFF_TO_SATOSHI_2026_10_23.md",
-    "next_action": "Satoshi assembles final audit request and identified shared consumer recipe without duplicate fits; Musashi reviews and integrates the separate no-expert SAC contrast",
+    "next_action": "Final audit completed with corrections; see final_joint_audit for current actions. This closure records execution/replay, not upstream fit isolation.",
     "older_execution_fields_below": "historical point-in-time snapshots; superseded by this closure for current status"
   },
   "T3_decision_and_confirmation": {"observed_on": "2026-10-23", "completed_units": 43, "own_complete": 21, "own_terminal_failed": 0, "peer_complete": 22, "decision_sha256": "edb331ef24629b5331b524e76f9f213c3464a8eac72b57e1d75f4d34d5d47c0c", "chosen_changes": {"cot.eur": "per_feature", "gmm/logret_1+rv_24+log_range": "pointwise", "fracdiff/log_close": "pointwise"}, "unchanged_conv_groups": 22, "checkpoint_probe_replay": {"state": "PASS_ORIGINAL_CPU_AND_LAUNCHER_ENVIRONMENT", "units": 43, "checkpoints": 516, "cross_CPU_bitwise_claimed": false, "tolerance_relaxed": false}, "combination": {"state": "RUNNING_FIRST_SEED_COMPLETED", "config_sha256": "7ffebafb8253936ed6100b6ca4dd9aff53243b7a763189b39320777f7b4257d1", "GPU": "5090", "memory_GiB": 5, "only_command_options_changed": ["--groups", "--out"], "automatic_replicas_decision_and_original_context_replay": true}, "control_full_trading_replay": {"state": "PASS_ORIGINAL_CPU", "seeds": 3, "periods": ["TRAIN", "INNER_A", "OBS_2024"], "all9_native_metric_dictionaries_exact": true}, "scientific_release": false, "new_SAC_fits": 0, "focused_tests_passed": 134, "report": "MUSASHI_T3_DECISION_AND_CONFIRMATION_2026_10_23.md", "next_action": "Automatic C completion, frozen confirmation rule, native metric report and original-context full trading replay; deliver to Satoshi for final selection audit and shared consumer recipe"},

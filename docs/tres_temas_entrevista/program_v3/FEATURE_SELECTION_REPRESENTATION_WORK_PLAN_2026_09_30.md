@@ -2,6 +2,16 @@
 
 ## Actualizacion operativa 2026-10-23
 
+Auditoria final completada: `MUSASHI_FINAL_JOINT_AUDIT_2026_10_23.md`.
+Estado vigente: `REVISE_BEFORE_SHARED_CONSUMPTION`. Se conservan resultados
+y replays; no certifican aislamiento del ajuste de productores upstream.
+Corregir ajuste por particion de los productores aprendidos, exportacion
+autenticada de la receta y consumo congelado identico en ambas lineas.
+Medir descendientes afectados y recalcular solo sus decisiones, sin cambiar
+reglas de negocio ni optimizar sobre 2024. Aun no hay liberacion ni fits SAC.
+
+El siguiente parrafo conserva el cierre operativo anterior a esa auditoria:
+
 T1 y T2 cerrados; T3 v2 tiene43 unidades autenticadas y la confirmacion C
 completa (`COMBINATION_SELECTED`). Replay exacto en contextos originales:
 516 checkpoints originales mas12 de C; control y C reproducen tambien sus
