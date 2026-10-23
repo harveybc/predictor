@@ -1,0 +1,52 @@
+{
+  "scope": "bounded read-only probes, no admission or science changes",
+  "peer_commit": "08371722eef13e359dc5a981eaa3e3e3b29c9f23",
+  "source_sha256": "a9d21cdd8bc35a68755451f26b162c302fe60ec589d79b1cee9cf189f2fde409",
+  "result_sha256": "d07622dc344e85ca7a56bf9ad85e548cfce6701a3970182e1f457bf4c20e550e",
+  "cases": [
+    {
+      "case": "real_pinned_legacy_control",
+      "accepted": true,
+      "errors": []
+    },
+    {
+      "case": "explicit_zigzag_control",
+      "accepted": true,
+      "errors": []
+    },
+    {
+      "case": "explicit_opportunity_negative_control",
+      "accepted": false,
+      "errors": [
+        "LABELS:opportunity:DECLARED"
+      ]
+    },
+    {
+      "case": "unknown_mode_negative_control",
+      "accepted": false,
+      "errors": [
+        "LABELS:oracle:UNKNOWN_MODE"
+      ]
+    },
+    {
+      "case": "explicit_null_labels_not_absent",
+      "accepted": true,
+      "errors": []
+    },
+    {
+      "case": "malformed_labels_type",
+      "accepted": false,
+      "exception": "AttributeError"
+    },
+    {
+      "case": "arbitrary_producer_missing_labels",
+      "accepted": true,
+      "errors": []
+    },
+    {
+      "case": "same_result_wrong_list_regularization_identity",
+      "accepted": true,
+      "errors": []
+    }
+  ]
+}
