@@ -35,7 +35,7 @@
      "agent_state.mode": "none",
      "exec_contract": "sac",
      "min_orders_per_week": 2.0,
-     "labels.mode": "zigzag",
+     "labels.mode": "ABSENT from the pinned producer (186b131 predates the field) = inherited ZigZag (PRODUCER_PREDATES_FIELD); an explicit non-zigzag or unknown mode is REJECTED",
      "meta.scaling.policy": "fixed_train"
     }
    }
@@ -61,7 +61,7 @@
      "agent_state.mode": "none",
      "exec_contract": "sac",
      "min_orders_per_week": 2.0,
-     "labels.mode": "zigzag",
+     "labels.mode": "ABSENT from the pinned producer (186b131 predates the field) = inherited ZigZag (PRODUCER_PREDATES_FIELD); an explicit non-zigzag or unknown mode is REJECTED",
      "meta.scaling.policy": "fixed_train"
     }
    }
@@ -87,7 +87,7 @@
      "agent_state.mode": "full",
      "exec_contract": "sac",
      "min_orders_per_week": 2.0,
-     "labels.mode": "zigzag",
+     "labels.mode": "ABSENT from the pinned producer (186b131 predates the field) = inherited ZigZag (PRODUCER_PREDATES_FIELD); an explicit non-zigzag or unknown mode is REJECTED",
      "meta.scaling.policy": "fixed_train"
     }
    }
@@ -113,7 +113,7 @@
      "agent_state.mode": "full",
      "exec_contract": "sac",
      "min_orders_per_week": 2.0,
-     "labels.mode": "zigzag",
+     "labels.mode": "ABSENT from the pinned producer (186b131 predates the field) = inherited ZigZag (PRODUCER_PREDATES_FIELD); an explicit non-zigzag or unknown mode is REJECTED",
      "meta.scaling.policy": "fixed_train"
     }
    }
@@ -139,7 +139,7 @@
      "agent_state.mode": "none",
      "exec_contract": "sac",
      "min_orders_per_week": 2.0,
-     "labels.mode": "zigzag",
+     "labels.mode": "ABSENT from the pinned producer (186b131 predates the field) = inherited ZigZag (PRODUCER_PREDATES_FIELD); an explicit non-zigzag or unknown mode is REJECTED",
      "meta.scaling.policy": "fixed_train"
     }
    }
@@ -165,7 +165,7 @@
      "agent_state.mode": "none",
      "exec_contract": "sac",
      "min_orders_per_week": 2.0,
-     "labels.mode": "zigzag",
+     "labels.mode": "ABSENT from the pinned producer (186b131 predates the field) = inherited ZigZag (PRODUCER_PREDATES_FIELD); an explicit non-zigzag or unknown mode is REJECTED",
      "meta.scaling.policy": "fixed_train"
     }
    }
@@ -191,7 +191,7 @@
      "agent_state.mode": "full",
      "exec_contract": "sac",
      "min_orders_per_week": 2.0,
-     "labels.mode": "zigzag",
+     "labels.mode": "ABSENT from the pinned producer (186b131 predates the field) = inherited ZigZag (PRODUCER_PREDATES_FIELD); an explicit non-zigzag or unknown mode is REJECTED",
      "meta.scaling.policy": "fixed_train"
     }
    }
@@ -217,10 +217,11 @@
      "agent_state.mode": "full",
      "exec_contract": "sac",
      "min_orders_per_week": 2.0,
-     "labels.mode": "zigzag",
+     "labels.mode": "ABSENT from the pinned producer (186b131 predates the field) = inherited ZigZag (PRODUCER_PREDATES_FIELD); an explicit non-zigzag or unknown mode is REJECTED",
      "meta.scaling.policy": "fixed_train"
     }
    }
   }
- ]
+ ],
+ "verifier": "heuristic-strategy tools/expert_guided_clean_round.py verify-t2 --units T2_UNITS_2026_10_23.json --results <copy of out/> (Musashi's precision 2026-10-22 integrated)"
 }
