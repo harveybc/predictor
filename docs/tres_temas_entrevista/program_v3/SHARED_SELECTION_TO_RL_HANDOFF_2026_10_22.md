@@ -6,6 +6,11 @@ and Satoshi's final-audit handoff are consolidated in the
 [complete return](MUSASHI_TO_SATOSHI_SELECTION_RESULTS_AND_FINAL_AUDIT_HANDOFF_2026_10_22.md).
 Chronological observations below remain evidence of their stated inspection times,
 not claims that already-completed jobs are still queued.
+Follow-up on Satoshi's v4/shared-work reply and proposed per-agent labels:
+[bounded technical review and CPU witnesses](MUSASHI_REVIEW_SATOSHI_SHARED_WORK_AND_EXPERT_SIGNAL_2026_10_22.md).
+T1 profiles, T2 corrected-store gap diagnostics and T3 extractor contrasts have
+been allocated; their effective pinned v4 packages are still required. No new
+SAC or opportunity-label training has been launched by that review.
 Owners: Musashi, native SAC without expert; Satoshi, ZigZag-guided learning.
 Owner clarification: the initial SAC policy has NO agent feedback, clipping,
 rolling scaling or implicit extra transforms. See the measured
