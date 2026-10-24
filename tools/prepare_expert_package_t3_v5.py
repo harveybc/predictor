@@ -48,7 +48,15 @@ def shard(role):
     return [f"t3_unit_{i:02d}" for i in ids]
 
 
-def prepare(root, python, launcher, templates, role):
+def selected_jobs(role, overrides=None):
+    names = shard(role) if overrides is None else overrides
+    allowed = set(shard("fast") + shard("slow"))
+    if not names or len(set(names)) != len(names) or not set(names) <= allowed:
+        raise ValueError("V5_INVALID_EXPLICIT_SHARD")
+    return names
+
+
+def prepare(root, python, launcher, templates, role, only_jobs=None, unit_stem=None, defer_start=False):
     root = Path(root).resolve()
     manifest, assignment = verify(root)
     for name in ("T3_MANIFEST.json", "T3_UNITS_musashi.json"):
@@ -61,11 +69,14 @@ def prepare(root, python, launcher, templates, role):
     if queue.exists() and digest(queue) != digest(source):
         raise ValueError("V5_QUEUE_ALIAS_CHANGED")
     shutil.copyfile(source, queue)
-    stem = f"musashi-e3m-t3-v5-{role}-20261024"
+    names = selected_jobs(role, only_jobs)
+    stem = unit_stem or f"musashi-e3m-t3-v5-{role}-20261024"
+    if not all(c.isalnum() or c == "-" for c in stem):
+        raise ValueError("V5_INVALID_UNIT_STEM")
     # v4_t3 denotes the existing worker protocol; scientific identity is the new pinned manifest.
     cfg = initialize(root, python, launcher, memory="5G", timer_unit=stem + ".timer",
         archive_sha256=ARCHIVE, campaign="v4_t3", t3_manifest=manifest, t3_units=assignment,
-        only_jobs=shard(role), gpu_model="5090" if role == "fast" else "4070",
+        only_jobs=names, gpu_model="5090" if role == "fast" else "4070",
         recovery_source={"science_commit": SCIENCE, "selection": "v5", "manifest": manifest["identity"],
                          "peer_package_commit": "6e58f4f0", "role": role, "science_flags_changed": False})
     units = Path.home() / ".config/systemd/user"
@@ -74,11 +85,12 @@ def prepare(root, python, launcher, templates, role):
         content = (Path(templates) / ("expert-package-worker." + suffix)).read_text()
         content = content.replace("/var/tmp/expert-guided-musashi-20261022", str(root)).replace("musashi-e3m-assigned-20261022", stem)
         (units / (stem + "." + suffix)).write_text(content)
-    deployment = {"manifest": manifest["identity"], "config_sha256": identity(cfg), "jobs": shard(role), "memory_GiB": 5}
+    deployment = {"manifest": manifest["identity"], "config_sha256": identity(cfg), "jobs": names, "memory_GiB": 5}
     atomic(root / "ops/T3_DEPLOYMENT.json", deployment)
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
-    subprocess.run(["systemctl", "--user", "enable", "--now", stem + ".timer"], check=True)
-    subprocess.run(["systemctl", "--user", "start", stem + ".service"], check=True)
+    if not defer_start:
+        subprocess.run(["systemctl", "--user", "enable", "--now", stem + ".timer"], check=True)
+        subprocess.run(["systemctl", "--user", "start", stem + ".service"], check=True)
     print(deployment)
 
 
@@ -87,5 +99,9 @@ if __name__ == "__main__":
     for name in ("root", "python", "launcher", "templates"):
         p.add_argument("--" + name, required=True)
     p.add_argument("--role", required=True, choices=("fast", "slow"))
+    p.add_argument("--jobs")
+    p.add_argument("--unit-stem")
+    p.add_argument("--defer-start", action="store_true")
     a = p.parse_args()
-    prepare(a.root, a.python, a.launcher, a.templates, a.role)
+    prepare(a.root, a.python, a.launcher, a.templates, a.role,
+            a.jobs.split(",") if a.jobs else None, a.unit_stem, a.defer_start)
