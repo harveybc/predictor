@@ -1,12 +1,28 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-21. Las prioridades mas recientes prevalecen sobre los
+Actualizado: 2026-10-24. Las prioridades mas recientes prevalecen sobre los
 cortes operativos anteriores; el estado generado y CURRENT_EXECUTION indican
 que esta ejecutandose, no los parrafos de arranque historicos.
 Los resultados afectados por datos defectuosos se eliminan, no se conservan
 como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
+
+BASE COMPARTIDA CERRADA2026-10-24: seleccion v5, perfiles/codificaciones,
+T2/T3 y C quedan aceptados para desarrollo tras re-revision A1-A4 y paridad
+exacta de entradas con SAC. Base de nuevos experimentos:
+`recipe_5a8f2155318ba7c7`,121 columnas,25 grupos conceptuales/31 extractores,
+13 slots observados a paso2, constantes TRAIN congeladas, sin feedback,
+clipping ni z-score movil. Toda variacion futura deriva de esta identidad y
+declara sus diferencias. No volver a los datos/configs anteriores ni repetir
+seleccion por el solapamiento interno declarado. Tareas restantes son de
+integracion y despliegue, no de seleccion; no afirmar que SAC ya esta corriendo.
+Reparto y evidencia: [cierre compartido y siguientes carriles](program_v3/MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md).
+Satoshi: experto solo del lado de entrenamiento en su GPU asignada. Musashi:
+SAC sin experto, prioridad5090 y4070 para trabajo secundario con admision de
+memoria. Mantener negocio, costos, TRAIN/VALIDATION separados, TEST cerrado,
+presupuesto fijo y reajuste al final. No se condiciona continuar a profit>0.
+Los estados operativos inferiores son historicos.
 
 PRIORIDAD CORREGIDA POR EL PROPIETARIO2026-10-21: completar datos, ingenieria y
 seleccion del pool acordado antes de seguir afinando modelos/ventanas. El grid

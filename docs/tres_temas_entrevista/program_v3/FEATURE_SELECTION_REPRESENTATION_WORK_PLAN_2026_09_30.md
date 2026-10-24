@@ -2,6 +2,16 @@
 
 ## Actualizacion operativa 2026-10-24
 
+CIERRE VIGENTE: seleccion v5, perfiles T1, T2, T3 y combinacion C terminados.
+Re-revision A1-A4 y sonda SAC real aceptan la receta
+`recipe_5a8f2155318ba7c7` como base compartida de desarrollo:121 columnas,
+25 grupos conceptuales/31 ramas efectivas, constantes TRAIN congeladas,
+13 observaciones a paso2, sin feedback, clipping ni z-score movil.
+No repetir seleccion/T3. Informe y tareas concretas de integracion:
+`MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md`.
+Todavia no es una campana SAC desplegada: falta cableado al simulador,
+specs actuales y publicacion automatica. El siguiente parrafo es historico.
+
 T3 v5 desplegado y con dos procesos CUDA verificados:19 unidades impares en
 5090 y3 en4070, sin solaparse con las23 de Satoshi. Sin reinicio necesario;
 5GiB por entrenamiento, una reserva por trabajo, timers de reanudacion y

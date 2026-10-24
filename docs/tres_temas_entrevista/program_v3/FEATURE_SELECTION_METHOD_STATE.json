@@ -1,7 +1,27 @@
 {
   "schema": "feature_selection_method_state.v1",
   "updated_on": "2026-10-24",
-  "current_stage": "V5_T3_COMBINATION_RUNNING_540_CHECKPOINT_REPLAY_EXACT",
+  "current_stage": "SHARED_RECIPE_ACCEPTED_SAC_INPUT_PARITY_PASS_ENGINE_INTEGRATION_NEXT",
+  "shared_recipe_rereview": {
+    "report": "MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md",
+    "verdict": "ACCEPT_SHARED_RECIPE_FOR_DEVELOPMENT",
+    "recipe": "recipe_5a8f2155318ba7c7",
+    "recipe_sha256": "93ac66dc40de4b48a65a1455b0a391f15aad78cae43738a4e7d164d768cf118b",
+    "columns": 121,
+    "conceptual_groups": 25,
+    "resolved_branches": 31,
+    "A1_real_rebuild_repeated": true,
+    "A2_replay_binding_mutants_before_accepted": 5,
+    "A2_replay_binding_mutants_after_rejected": 5,
+    "strengthened_emitter_real_recipe_byte_identical": true,
+    "SAC_source_actor_critics_and_trunk_probe_exact": true,
+    "SAC_policy_reload_exact": true,
+    "SAC_trading_engine_integration_verified": false,
+    "new_scientific_fits": 0,
+    "selection_rerun_required": false,
+    "test_scored": false,
+    "next_action": "Replace stale expert launcher references and add explicit recipe consumption; bind verified SAC observations to business engine, pin separate finite campaigns and publishers"
+  },
   "v5_T3_closure": {
     "report": "MUSASHI_T3_V5_CLOSURE_AND_SATOSHI_ORDER_2026_10_24.md",
     "authenticated_units": 45,
@@ -10,12 +30,12 @@
     "combined_groups_sha256": "a9f553a762db63c665260263700fc1351319d70a7675f72ed002cfb463487be4",
     "checkpoint_replay_exact": 540,
     "control_trading_rollouts_exact": 9,
-    "combination": "RUNNING_NATIVE_CUDA_5090",
+    "combination": "COMBINATION_SELECTED_ORIGINAL_CPU_REPLAY_EXACT",
     "combination_config_sha256": "cad1c29de05277a37135b9916fea437b86b51f6186c99d1c7adbce4fe78f14aa",
     "automatic_finalizer_and_replica": true,
     "scientific_release": false,
     "new_SAC_fits": 0,
-    "next_action": "C closes, frozen interaction rule and original-CPU replay run automatically; peer independently verifies decision and prepares recipe v2; final A1-A4 and consumer parity review"
+    "next_action": "Complete; superseded operationally by shared_recipe_rereview"
   },
   "v5_T3_tail_rebalance": {
     "report": "MUSASHI_T3_V5_REBALANCE_2026_10_24.md",
@@ -139,7 +159,7 @@
   "transform_fit_scope_finding": {"status": "EXACT_RETAINED_FUNCTION_SYNTHETIC_WITNESS_REAL_IMPACT_UNMEASURED", "location": "layer1 decide ASINH selection reads full-series distribution", "next_action": "TRAIN-only decision regression, audit all callers and compare actual selected-column decisions before SAC adoption"},
   "measured_selection": {"units": 3894, "recorded_errors": 0, "independent_paired_groups": {"contrast": 714, "encoding": 78, "rescue": 120}, "support_signature_mismatches": 0, "strict_columns": 126, "shortlist_columns": 174},
   "consumer_v3b_update": {"observed_on": "2026-10-22", "queue_started_UTC": "13:04:39", "strict_fit_observed_running": true, "column_counts": {"core15": 15, "strict": 125, "shortlist": 173, "strict_plus_encodings": 137, "core15_plus_relatives": 24}, "removed_selection_only_control": "raw.log_close", "rolling_reference": "QUEUED_NOT_YET_SCORED", "consolidated_four_arms": "QUEUED_NOT_YET_SCORED", "shared_support": "cutoff configured and hashes instrumented; cross-arm completed-receipt equality pending", "execution_attribution_corrected_in": "b5bcef18"},
-  "remaining_closures": ["final source-to-tensor and upstream fitted-transform audit", "numeric group/profile and measured extractor recipe closure", "consumer support/activity/accounting and warehouse readback qualifications", "fixed TRAIN scaler integration into SAC consumer", "independent SAC subset and extractor comparison"],
+  "remaining_closures": ["SAC actual trading-engine business/accounting integration", "expert launcher current recipe/spec binding", "campaign publisher warehouse readback", "independent SAC subset and extractor comparison"],
   "affected_prior_phase_closures": "WITHDRAWN_NOT_INPUTS_OR_CHAMPIONS",
   "independent_eth": "PRESERVED_NOT_REVOKED_WITHOUT_AFFECTED_LINEAGE",
   "required_stages": [
@@ -156,6 +176,6 @@
   "population_denominator": "REBUILD_FROM_REQUIRED_INVENTORY_NOT_HARDCODED_OLD_COUNTS",
   "outputs": "Existing warehouse with exact readback, verified physical copies on two hosts; Git code/config/schema/regeneration only",
   "public_database_upload_required": false,
-  "next_allowed_actions": ["complete source recovery and actual admission", "validate prepared-window monthly support", "recompute on new immutable data identity", "execute owner-assigned provisional selection shards after verified merge barriers; retain pending audit disposition", "integrate reviewed store binding and support repairs; rebuild affected selection under fresh identity with verified effective inputs"],
+  "next_allowed_actions": ["integrate accepted frozen recipe into both actual consumers without refitting", "verify trading-engine timestamp, business and cost parity", "replace stale expert launcher recipe/spec references", "pin finite independent SAC and expert-guided run specs", "verify campaign publishers, recovery and resource admission before automated deployment"],
   "blocked_actions": ["reuse affected numerical results or learned weights", "call downloads or quality publication data admission", "train before required data and selection acceptance", "claim a pristine holdout after prior inspection"]
 }

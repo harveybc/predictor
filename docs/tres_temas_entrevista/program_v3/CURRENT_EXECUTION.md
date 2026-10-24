@@ -1,8 +1,19 @@
 # Ejecucion vigente
 
-Actualizado2026-10-21. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
+Actualizado2026-10-24. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
 Ninguna orden ni donante de las campanas predictivas retiradas puede despachar
 trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
+
+## Estado vigente del24 de octubre
+
+Seleccion v5 y representacion C cerradas; re-revision y consumo SAC sin fit
+verificados. Base:recipe_5a8f2155318ba7c7,121 columnas,25 grupos/31 ramas,
+13 slots a paso2, fijo TRAIN, sin feedback/clipping/rolling. Procedimiento,
+evidencia y reparto en MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md.
+Proximo: Satoshi actualiza su launcher a la receta real; Musashi conecta el
+adaptador probado al motor SAC, verifica negocio/costos y pinnea el lote.
+No hay nueva campana de politica lanzada por esta revision. Ningun texto
+RUNNING inferior autoriza reanudar colas antiguas ni sustituye este estado.
 
 ## Continuacion del21 de octubre
 

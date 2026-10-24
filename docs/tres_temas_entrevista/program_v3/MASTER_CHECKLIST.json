@@ -1,6 +1,16 @@
 {
   "schema": "master_checklist.v1",
-  "updated_on": "2026-10-18",
+  "updated_on": "2026-10-24",
+  "current_shared_selection": {
+    "state": "ACCEPTED_FOR_DEVELOPMENT",
+    "recipe": "recipe_5a8f2155318ba7c7",
+    "scope": "v5 admitted store, selected 121-column tensor, encodings, profiles, groups and measured C representation",
+    "report": "MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md",
+    "native_SAC_probe": "EXACT_CPU_NO_FIT",
+    "remaining": ["actual trading-engine integration", "current expert launcher/spec binding", "finite campaign deployment and publisher readback"],
+    "selection_rerun_required": false
+  },
+  "legacy_item_scope_note": "General inventory/program gates below are broader than the closed v5 baseline; no claim that every optional source or warehouse delivery is certified by this selection review",
   "scope": "CURRENT_AFFECTED_FINANCIAL_POPULATION_NOT_INDEPENDENT_BENCHMARKS",
   "states": ["NOT_STARTED", "DESIGNED", "IN_PROGRESS", "WAIT_ACCEPTANCE", "DEFERRED"],
   "items": [
@@ -21,7 +31,7 @@
     {"id": "I9-N", "name": "NEAT", "state": "DEFERRED", "gate": "Final optional program after RL"},
     {"id": "I11-I12", "name": "optional_calendar_and_M5PHET", "state": "DEFERRED", "gate": "Do not delay data, selection or RL"}
   ],
-  "active_dispatch": "EXISTING_BOUNDED_DATA_RECOVERY_AND_QUALITY_PUBLICATION_ONLY",
+  "active_dispatch": "SHARED_RECIPE_CONSUMER_INTEGRATION_NO_POLICY_FIT_STARTED",
   "scientific_training_authorized": false,
   "historical_percentages_reused": false,
   "forbidden_shortcuts": ["admit from HTTP200 or finite-row fraction", "fill price gaps", "reuse withdrawn experiments", "require forecast-naive victory for RL", "declare an RL campaign running from a written plan"]
