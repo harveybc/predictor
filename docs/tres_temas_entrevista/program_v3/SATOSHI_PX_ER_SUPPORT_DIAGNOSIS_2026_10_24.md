@@ -108,7 +108,7 @@ efecto de 3 barras. Queda documentado como convención declarada de la receta v3
 - Rollout (`Ctx.rollout`, `tools/expert_guided_e1t.py` y `tools/expert_guided_e3m.py`): si `obs_ok[r]` es falso, la
   acción es **HOLD** con TP/SL por defecto; el entorno sigue corriendo (posiciones abiertas, SL/TP, cierre forzoso).
 - Reporte: el `Dataset` lleva el recuento de exclusiones **por razón y por periodo** (las siete razones más
-  `before_eligible_from`; campo `excl` de `load_store`/`load`), y `ds.meta` lleva `rows_eligible` y `support_hash` por periodo; el cargador por receta separa
+  `before_eligible_from`; campo `Dataset.exclusions`, máscaras por fila en `Dataset.masks`), y `ds.meta` lleva `rows_eligible` y `support_hash` por periodo; el cargador por receta separa
   `rows_excluded_warmup` de `rows_excluded_nan_windows` (`SCALER.json` / documento de escala); todo acaba en
   `E3M.json["meta"]`.
 - **Lo que no reporta hoy** (tu petición de intervalos explícitos de no-observación): ni los intervalos [inicio, fin)
