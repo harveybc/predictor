@@ -6,6 +6,15 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del24 de octubre
 
+21:42UTC: SAC R3 YA CORRE, codigo agent-multi2d4aaa99, receta120 vigente.
+5500 decisiones/4499 actualizaciones verificadas en5090. GROUPED -> FLAT,
+100000 decisiones cada uno, seed7, cola y colector habilitados tras reinicio.
+Integracion cerrada reutilizando BarEnv compartido, con HOLD automatico sin
+inventar observaciones y replay gamma**duracion. Sin experto, feedback, rolling,
+reajuste, early stopping ni TEST. Detalles y evidencia en
+MUSASHI_SAC_R3_RUNNING_2026_10_24.md. Los parrafos siguientes describen el corte
+anterior al arranque, no tareas pendientes actuales ni autoridad para colas viejas.
+
 ACTUALIZACION: retirada px.er_1 terminada por Musashi; receta vigente para el
 consumo siguiente recipe_a58261c0fdc0a59d,120 columnas. Paridad E3-M/SAC exacta,
 todas las ventanas comunes iguales,1707/216/608 ventanas recuperadas,31 pruebas
@@ -24,7 +33,7 @@ financieros. Falta la equivalencia economica y el tratamiento explicito de
 intervalos sin ventana valida, antes del lote. Hallazgo compartido de soporte
 px.er_1/px.er_2 y reparto en MUSASHI_SAC_ENGINE_PROGRESS_AND_SUPPORT_NOTE_2026_10_24.md.
 ZigZag multirresolucion no es dependencia del carril SAC.
-No hay nueva campana de politica lanzada por esta revision. Ningun texto
+En aquel corte no habia nueva campana de politica lanzada. Ningun texto
 RUNNING inferior autoriza reanudar colas antiguas ni sustituye este estado.
 
 ## Continuacion del21 de octubre

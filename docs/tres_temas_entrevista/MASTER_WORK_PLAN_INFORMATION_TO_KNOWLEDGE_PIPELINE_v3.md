@@ -8,6 +8,14 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+ARRANQUE VERIFICADO2026-10-24 21:42UTC: SAC sin experto sobre receta R3 vigente,
+120 columnas. Cola GROUPED->FLAT de100000 decisiones por brazo automatizada en
+5090, sin feedback/rolling, con costos y calendario del motor compartido.
+Reinicio acotado, checkpoints, inferencia y copia/publicacion automaticos.
+[Identidad y evidencia del arranque](program_v3/MUSASHI_SAC_R3_RUNNING_2026_10_24.md).
+Los pendientes de integracion descritos en los cortes siguientes ya estan
+resueltos por ese despliegue; no significan que siga esperando autorizacion.
+
 DERIVACION APROBADA2026-10-24: Musashi retiro solo px.er_1; la base de consumo
 vigente es recipe_a58261c0fdc0a59d,120 columnas, mismo store y constantes
 restantes. Paridad y recuperacion de soporte verificadas sin interpolar ni

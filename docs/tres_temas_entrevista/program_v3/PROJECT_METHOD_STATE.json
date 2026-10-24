@@ -1,8 +1,9 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-24",
-  "current_stage": "SHARED_RECIPE_CLOSED_CONSUMER_ENGINE_INTEGRATION",
-  "current_state_reference": "FEATURE_SELECTION_METHOD_STATE.json#recipe_revision3",
+  "current_stage": "RECIPE_R3_NATIVE_SAC_RUNNING_AUTOMATED",
+  "current_state_reference": "MUSASHI_SAC_R3_RUNNING_2026_10_24.md",
+  "current_sac_queue": {"code": "2d4aaa99", "engine_code": "89512e8", "recipe": "recipe_a58261c0fdc0a59d", "spec_sha256": "7568df4f3ba7b6e80fb86cce70c42adeb9b4d0b6a227fd947183baa0ba8518cc", "state": "TRAINING", "arms": ["GROUPED", "FLAT"], "steps_per_arm": 100000, "seed": 7, "early_stopping": false, "refit": false, "feedback": false, "expert": false, "test_read": false, "sequential_automatic": true, "reboot_timer_enabled": true, "collector_timer_enabled": true, "last_observed_steps": 5500, "last_observed_updates": 4499, "observed_at": "2026-10-24T21:42:47Z", "scientific_results_completed": 0},
   "current_baseline": "recipe_a58261c0fdc0a59d",
   "historical_sections_below": "Prior execution snapshots, not running jobs or authority to resume old data",
   "paired_early_stopping": {
