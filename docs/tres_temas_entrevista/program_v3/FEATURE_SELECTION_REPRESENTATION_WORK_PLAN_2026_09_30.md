@@ -2,6 +2,17 @@
 
 ## Actualizacion operativa 2026-10-23
 
+Continuacion v5 verificada (2026-10-24 04:03 UTC): 3882 unidades sin errores;
+listas exportadas exactas: core15=15, estricta=121, shortlist consumible=165
+(168 antes de excluir tres retornos de oro por cobertura de ventanas).
+Store, justificacion, perfiles T1 y spec completos. Corregida doble reserva
+de RAM del orquestador; T2 estricto ya tiene proceso GPU real y una sola
+reserva de 4GiB, con configuracion cientifica identica. La cola existente
+continua secuencialmente a regularizacion y manifiesto T3; no lanzar duplicados.
+Retorno operativo: heuristic-strategy `6468522`,
+`docs/short_horizon/clean_round/MUSASHI_V5_QUEUE_RECOVERY_2026_10_23.md`.
+Esto no sustituye la revision final de las correcciones A1-A4 ni autoriza SAC.
+
 Auditoria final completada: `MUSASHI_FINAL_JOINT_AUDIT_2026_10_23.md`.
 Estado vigente: `REVISE_BEFORE_SHARED_CONSUMPTION`. Se conservan resultados
 y replays; no certifican aislamiento del ajuste de productores upstream.
