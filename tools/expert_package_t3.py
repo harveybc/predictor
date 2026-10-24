@@ -4,17 +4,23 @@ import json
 from pathlib import Path
 import shlex
 
+CONTRACTS = {
+    "t3v2_8875abf84a63": (43, "full_pool_s", .1, 1e-4),
+    "t3v2_7db1953f99ad": (45, "full_pool_s_a1", .3, .01),
+}
+
 
 def jobs(manifest, assignment, *, worker="musashi"):
     if (worker not in ("musashi", "satoshi") or manifest.get("schema") != "t3_manifest.v2"
-            or manifest.get("identity") != "t3v2_8875abf84a63"
+            or manifest.get("identity") not in CONTRACTS
             or assignment.get("manifest") != manifest["identity"] or assignment.get("worker") != worker):
         raise ValueError("T3_MANIFEST_IDENTITY")
+    count, store, dropout, wd = CONTRACTS[manifest["identity"]]
     all_units = manifest["units"]
-    if len(all_units) != 43 or [u["id"] for u in all_units] != list(range(43)):
+    if len(all_units) != count or [u["id"] for u in all_units] != list(range(count)):
         raise ValueError("T3_MANIFEST_UNITS")
     assigned = assignment["units"]
-    if [u["id"] for u in assigned] != list(range(1 if worker == "musashi" else 0, 43, 2)):
+    if [u["id"] for u in assigned] != list(range(1 if worker == "musashi" else 0, count, 2)):
         raise ValueError("T3_ASSIGNED_UNITS")
     result = []
     for unit in assigned:
@@ -35,20 +41,20 @@ def jobs(manifest, assignment, *, worker="musashi"):
         pairs = list(zip(argv[2::2], argv[3::2]))
         options = dict(pairs)
         expected = {"--admitted": "<root>/data/admitted", "--csv-dir": "<root>/data/sel15",
-                    "--store": "<root>/data/full_pool_s/full_pool_eurusd_h1.parquet",
+                    "--store": f"<root>/data/{store}/full_pool_eurusd_h1.parquet",
                     "--feature-list": "<root>/in/FEATURE_LIST_shortlist_strict.json",
                     "--groups": f"<root>/t3/groups/unit_{i:02d}.json", "--out": f"<root>/out/{name}",
                     "--variants": "FULL", "--units": "2", "--depth": "2", "--head": "16",
                     "--max-epochs": "1000", "--scaling": "fixed_train", "--nonstationary": "diff",
                     "--split-contract": "consolidated", "--agent-state": "none", "--window": "13",
                     "--stride": "2", "--exec-contract": "sac"}
-        numeric = {"--dropout": 0.1, "--wd": 1e-4, "--min-orders-per-week": 2.0}
+        numeric = {"--dropout": dropout, "--wd": wd, "--min-orders-per-week": 2.0}
         if (len(options) != len(pairs) or set(options) != set(expected) | set(numeric)
                 or any(options.get(k) != v for k, v in expected.items())
                 or any(float(options[k]) != v for k, v in numeric.items())):
             raise ValueError("T3_COMMAND_CONTRACT")
         result.append({"name": name, "unit_id": i, "list": "FEATURE_LIST_shortlist_strict.json",
-                       "split": "consolidated", "state": "none", "dropout": .1, "wd": 1e-4,
+                       "split": "consolidated", "state": "none", "dropout": dropout, "wd": wd,
                        "groups_file": "t3/groups/" + declared["groups_file"],
                        "groups_sha256": declared["groups_file_sha256"],
                        "kind": unit["kind"], "group": unit["group"],

@@ -51,6 +51,60 @@ def test_t3_uses_exact_peer_commands_and_only_odd_units(tmp_path):
         assert command[command.index("--") + 2:] == shlex.split(u["command"].replace("<root>", str(tmp_path)))
 
 
+def package_v5():
+    import copy
+    manifest, assigned = package()
+    manifest["identity"] = assigned["manifest"] = "t3v2_7db1953f99ad"
+    for i in (43, 44):
+        u = copy.deepcopy(manifest["units"][1 if i % 2 else 2])
+        u.update(id=i, name=f"t3_unit_{i:02d}", groups_file=f"unit_{i:02d}.json", identity=f"identity-{i}")
+        manifest["units"].append(u)
+        if i % 2:
+            new = dict(u, command=assigned["units"][0]["command"].replace("unit_01", f"unit_{i:02d}"))
+            assigned["units"].append(new)
+    for u in assigned["units"]:
+        u["command"] = u["command"].replace("full_pool_s/", "full_pool_s_a1/").replace("--dropout 0.1", "--dropout 0.3").replace("--wd 0.0001", "--wd 0.01")
+        u["command_identity"] = hashlib.sha256(u["command"].encode()).hexdigest()[:16]
+    return manifest, assigned
+
+
+def test_v5_manifest_keeps_new_science_and_disjoint_fast_slow_shards():
+    w = worker()
+    manifest, assigned = package_v5()
+    cfg = {"campaign": "v4_t3", "t3_manifest": manifest, "t3_units": assigned}
+    all_jobs = w.planned_jobs(cfg)
+    assert len(all_jobs) == 22
+    assert all(j["dropout"] == .3 and j["wd"] == .01 for j in all_jobs)
+    slow = [j["name"] for j in all_jobs[:3]]
+    fast = [j["name"] for j in all_jobs[3:]]
+    assert len(w.planned_jobs(dict(cfg, only_jobs=slow))) == 3
+    assert len(w.planned_jobs(dict(cfg, only_jobs=fast))) == 19
+    assert not set(slow) & set(fast)
+    for u in assigned["units"]:
+        assert next(j["peer_command"] for j in all_jobs if j["name"] == u["name"]) == u["command"]
+
+
+def test_v5_refuses_old_regularization_even_with_updated_command_hash():
+    w = worker()
+    manifest, assigned = package_v5()
+    u = assigned["units"][0]
+    u["command"] = u["command"].replace("--dropout 0.3", "--dropout 0.1")
+    u["command_identity"] = hashlib.sha256(u["command"].encode()).hexdigest()[:16]
+    with pytest.raises(ValueError, match="T3_COMMAND_CONTRACT"):
+        w.planned_jobs({"campaign": "v4_t3", "t3_manifest": manifest, "t3_units": assigned})
+
+
+def test_v5_deployment_partition_and_pin_failure(tmp_path):
+    from prepare_expert_package_t3_v5 import shard, verify
+    assert len(shard("fast")) == 19 and len(shard("slow")) == 3
+    assert sorted(shard("fast") + shard("slow")) == [f"t3_unit_{i:02d}" for i in range(1, 45, 2)]
+    with pytest.raises(ValueError, match="UNKNOWN_ROLE"):
+        shard("other")
+    (tmp_path / "PINS.sha256").write_text("modified")
+    with pytest.raises(ValueError, match="PACKAGE_PIN_CHANGED"):
+        verify(tmp_path)
+
+
 @pytest.mark.parametrize("fault", ["hash", "duplicate", "feedback", "split", "window", "groups", "extra"])
 def test_t3_rejects_changed_or_resealed_commands(fault):
     w = worker()
