@@ -1,0 +1,17 @@
+{
+ "schema": "constant_recipe_derivation.v1",
+ "state": "DERIVED_NOT_SCIENTIFICALLY_EVALUATED",
+ "identity": "recipe_a58261c0fdc0a59d",
+ "retired": [
+  "px.er_1"
+ ],
+ "fits": 0,
+ "imputations": 0,
+ "parent_sha256": "93ac66dc40de4b48a65a1455b0a391f15aad78cae43738a4e7d164d768cf118b",
+ "files": {
+  "FEATURE_LIST.json": "e9594d957b494b7a76756208ead4a8936ee45a6f9359f5ceb665878bd8b98671",
+  "SCALER.json": "f97334f02ec64ec1cd7edccf3ff3f29d9799085c585a734b233dda13c6f12d2a",
+  "GROUPS.json": "9a64ac7f1459b465f785dfe3a1ccf5bda3a2c31f44026d807ee33487472762af",
+  "RECIPE.json": "a5da300389e0f0684720903eb027294f32efcb1717eee7f7e546ca0c3320f4a6"
+ }
+}

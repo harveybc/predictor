@@ -8,6 +8,13 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+DERIVACION APROBADA2026-10-24: Musashi retiro solo px.er_1; la base de consumo
+vigente es recipe_a58261c0fdc0a59d,120 columnas, mismo store y constantes
+restantes. Paridad y recuperacion de soporte verificadas sin interpolar ni
+reentrenar; no trasladar metricas antiguas al soporte ampliado. Detalle:
+[receta revision3](program_v3/MUSASHI_RECIPE_R3_RETIREMENT_RETURN_2026_10_24.md).
+La receta121 descrita abajo es su padre, no la identidad del proximo lote.
+
 BASE COMPARTIDA CERRADA2026-10-24: seleccion v5, perfiles/codificaciones,
 T2/T3 y C quedan aceptados para desarrollo tras re-revision A1-A4 y paridad
 exacta de entradas con SAC. Base de nuevos experimentos:

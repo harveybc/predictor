@@ -1,7 +1,23 @@
 {
   "schema": "feature_selection_method_state.v1",
   "updated_on": "2026-10-24",
-  "current_stage": "SHARED_RECIPE_ACCEPTED_SAC_INPUT_PARITY_PASS_ENGINE_INTEGRATION_NEXT",
+  "current_stage": "RECIPE_R3_PARITY_PASS_FULL_ROLLOUT_INTEGRATION_NEXT",
+  "recipe_revision3": {
+    "report": "MUSASHI_RECIPE_R3_RETIREMENT_RETURN_2026_10_24.md",
+    "recipe": "recipe_a58261c0fdc0a59d",
+    "recipe_sha256": "a5da300389e0f0684720903eb027294f32efcb1717eee7f7e546ca0c3320f4a6",
+    "columns": 120,
+    "retired": ["px.er_1"],
+    "parent_unchanged": true,
+    "common_valid_tensors_exact": true,
+    "two_consumer_probe_exact": true,
+    "new_valid_windows": {"TRAIN": 1707, "INNER_A": 216, "OBS_2024": 608},
+    "tests_passed": 31,
+    "real_engine_HOLD_transitions": 8,
+    "scientific_fits": 0,
+    "expanded_support_performance_verified": false,
+    "next_action": "Musashi closes causal no-observation transitions and economic parity, then native SAC finite deployment; expert label design is not a dependency"
+  },
   "shared_recipe_rereview": {
     "report": "MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md",
     "verdict": "ACCEPT_SHARED_RECIPE_FOR_DEVELOPMENT",

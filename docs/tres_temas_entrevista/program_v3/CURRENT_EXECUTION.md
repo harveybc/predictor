@@ -6,6 +6,14 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del24 de octubre
 
+ACTUALIZACION: retirada px.er_1 terminada por Musashi; receta vigente para el
+consumo siguiente recipe_a58261c0fdc0a59d,120 columnas. Paridad E3-M/SAC exacta,
+todas las ventanas comunes iguales,1707/216/608 ventanas recuperadas,31 pruebas
+del exportador/derivacion en verde. Motor real:8 transiciones HOLD verificadas.
+Detalle: MUSASHI_RECIPE_R3_RETIREMENT_RETURN_2026_10_24.md. No fit financiero.
+Faltan tratamiento de no-observacion y equivalencia economica del rollout;
+no dependen del diseno de etiquetas de Satoshi. La receta121 inferior es padre.
+
 Seleccion v5 y representacion C cerradas; re-revision y consumo SAC sin fit
 verificados. Base:recipe_5a8f2155318ba7c7,121 columnas,25 grupos/31 ramas,
 13 slots a paso2, fijo TRAIN, sin feedback/clipping/rolling. Procedimiento,

@@ -1,0 +1,50 @@
+{
+  "schema": "sac_shared_recipe_probe.v1",
+  "state": "PASS",
+  "recipe": "recipe_a58261c0fdc0a59d",
+  "recipe_sha256": "a5da300389e0f0684720903eb027294f32efcb1717eee7f7e546ca0c3320f4a6",
+  "reference_sha256": "09938a3b4c531d8df9d91400f569fd4b01316dfad6fe449addbb0c1b9ec0ccd1",
+  "tensor_sha256": "82de5af3f22bc8b837ee99b3b873140cd1dc8cb1bd50884e56f9c4fcd9a57630",
+  "probe_shape": [
+    23,
+    13,
+    120
+  ],
+  "valid_rows": {
+    "TRAIN": 21221,
+    "INNER_A": 2805,
+    "OBS_2024": 6208
+  },
+  "valid_masks_exact": true,
+  "source_to_tensor_exact": true,
+  "actor_input_exact": true,
+  "twin_critic_input_exact": true,
+  "trunk_same_weights_exact": true,
+  "policy_reload_exact": true,
+  "observations": "features only",
+  "scientific_fits": 0,
+  "retirement_comparison": {
+    "parent_sha256": "93ac66dc40de4b48a65a1455b0a391f15aad78cae43738a4e7d164d768cf118b",
+    "common_valid_tensors_exact": true,
+    "lost_valid_rows": 0,
+    "new_valid_rows": {
+      "TRAIN": 1707,
+      "INNER_A": 216,
+      "OBS_2024": 608
+    },
+    "expanded_support_trading_equivalence_claimed": false
+  },
+  "environment_steps": 0,
+  "test_scored": false,
+  "trading_engine_integration_verified": false,
+  "inputs": {
+    "store": "cd0eb8d20c0d0888f7814cda410557a79a927e5cc125e9de5c15dbe073d2f543",
+    "manifest": "7970e3c4feae0186ea5867063774d2855587e01ee068377e3100ba36b29ce535"
+  },
+  "consumer_code": {
+    "app/frozen_recipe_inputs.py": "fe37ece5415394d45d4021ccd585c1ddedb99dad007a4bc4595878278b1cb21b",
+    "agent_plugins/recipe_features.py": "e099d435e60ee25473fc8025167fcf21dbd070157674c9848d0a7c856a093c6f",
+    "agent_plugins/temporal_features.py": "7ab00c018175e7c21fe1e3cedb1666e90ff6dfaf53bf260d994f206a639bd08d",
+    "agent_plugins/sac_agent.py": "bec9d00d0b776c144fd9095ce166b918e828f8283d2fb6921a06b05c9c5eb807"
+  }
+}

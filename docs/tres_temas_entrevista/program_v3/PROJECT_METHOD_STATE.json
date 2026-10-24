@@ -2,8 +2,8 @@
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-24",
   "current_stage": "SHARED_RECIPE_CLOSED_CONSUMER_ENGINE_INTEGRATION",
-  "current_state_reference": "FEATURE_SELECTION_METHOD_STATE.json#shared_recipe_rereview",
-  "current_baseline": "recipe_5a8f2155318ba7c7",
+  "current_state_reference": "FEATURE_SELECTION_METHOD_STATE.json#recipe_revision3",
+  "current_baseline": "recipe_a58261c0fdc0a59d",
   "historical_sections_below": "Prior execution snapshots, not running jobs or authority to resume old data",
   "paired_early_stopping": {
     "state": "COMPLETED_AND_WAREHOUSE_READBACK_VERIFIED", "as_of": "2026-10-19T15:05:19Z", "observed_steps": 100000,

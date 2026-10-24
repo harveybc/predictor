@@ -40,6 +40,29 @@ def verify(a):
     reference = json.loads(a.reference.read_text())
     cp = module("shared_probe_definition", a.hs_root / "tools/consumer_probe.py")
     data = FrozenRecipeInputs.load(rec, a.store, a.manifest)
+    retirement = None
+    if a.parent_recipe is not None:
+        if a.parent_sha is None or sha(a.parent_recipe) != a.parent_sha:
+            raise ValueError("SAC_PROBE_PARENT_PIN")
+        parent = json.loads(a.parent_recipe.read_text())
+        old = FrozenRecipeInputs.load(parent, a.store, a.manifest)
+        idx = parent["list"]["columns"].index("px.er_1")
+        keep = [j for j in range(parent["list"]["n"]) if j != idx]
+        if rec["list"]["columns"] != [parent["list"]["columns"][j] for j in keep]:
+            raise ValueError("SAC_PROBE_RETIREMENT_COLUMNS")
+        if not np.array_equal(old.row_ts_ns, data.row_ts_ns) or not np.array_equal(old.period, data.period):
+            raise ValueError("SAC_PROBE_RETIREMENT_CLOCK")
+        if np.any(old.valid & ~data.valid):
+            raise ValueError("SAC_PROBE_RETIREMENT_LOST_ROWS")
+        for start in range(0, len(old.valid), 512):
+            ids = np.flatnonzero(old.valid[start:start + 512]) + start
+            if not np.array_equal(old.windows[ids][:, :, keep], data.windows[ids]):
+                raise ValueError("SAC_PROBE_RETIREMENT_CHANGED_SURVIVORS")
+        retirement = {"parent_sha256": a.parent_sha, "common_valid_tensors_exact": True,
+                      "lost_valid_rows": 0, "new_valid_rows": {
+                          p: int((data.valid & ~old.valid & (data.period == p)).sum())
+                          for p in rec["split"]["periods"]},
+                      "expanded_support_trading_equivalence_claimed": False}
     g, sc = rec["representation"]["resolved"], rec["scaler"]
     candidate = cp.probe_document(rec, data.row_ts_ns, data.windows, data.valid, data.period,
                                   data.slot_ts_ns, sc["features"], g, sc["mean"], sc["std"])
@@ -113,6 +136,7 @@ def verify(a):
             "valid_rows": candidate["valid_rows"], "valid_masks_exact": True, "source_to_tensor_exact": True,
             "actor_input_exact": True, "twin_critic_input_exact": True, "trunk_same_weights_exact": True,
             "policy_reload_exact": True, "observations": "features only", "scientific_fits": 0,
+            "retirement_comparison": retirement,
             "environment_steps": 0, "test_scored": False, "trading_engine_integration_verified": False,
             "inputs": {"store": sha(a.store), "manifest": sha(a.manifest)},
             "consumer_code": {name: sha(a.agent_root / name) for name in (
@@ -126,6 +150,8 @@ def main():
         p.add_argument("--" + name, type=Path, required=True)
     p.add_argument("--recipe-sha", required=True)
     p.add_argument("--reference-sha", required=True)
+    p.add_argument("--parent-recipe", type=Path)
+    p.add_argument("--parent-sha")
     a = p.parse_args()
     result = verify(a)
     a.out.parent.mkdir(parents=True, exist_ok=True)
