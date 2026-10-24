@@ -22,6 +22,9 @@ Satoshi: experto solo del lado de entrenamiento en su GPU asignada. Musashi:
 SAC sin experto, prioridad5090 y4070 para trabajo secundario con admision de
 memoria. Mantener negocio, costos, TRAIN/VALIDATION separados, TEST cerrado,
 presupuesto fijo y reajuste al final. No se condiciona continuar a profit>0.
+Avance de integracion: puente de observaciones al motor verificado en CPU;
+no autoriza sustituir el contrato economico ni omitir intervalos sin entradas.
+Detalle y evidencia: [avance SAC y soporte](program_v3/MUSASHI_SAC_ENGINE_PROGRESS_AND_SUPPORT_NOTE_2026_10_24.md).
 Los estados operativos inferiores son historicos.
 
 PRIORIDAD CORREGIDA POR EL PROPIETARIO2026-10-21: completar datos, ingenieria y

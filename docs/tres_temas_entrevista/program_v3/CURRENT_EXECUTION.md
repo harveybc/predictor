@@ -10,8 +10,12 @@ Seleccion v5 y representacion C cerradas; re-revision y consumo SAC sin fit
 verificados. Base:recipe_5a8f2155318ba7c7,121 columnas,25 grupos/31 ramas,
 13 slots a paso2, fijo TRAIN, sin feedback/clipping/rolling. Procedimiento,
 evidencia y reparto en MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md.
-Proximo: Satoshi actualiza su launcher a la receta real; Musashi conecta el
-adaptador probado al motor SAC, verifica negocio/costos y pinnea el lote.
+Avance del mismo dia: enlace real gym-fx/SAC verificado con27 pruebas CPU y
+8 transiciones HOLD sobre barras admitidas; tensores/reloj exactos, sin fits
+financieros. Falta la equivalencia economica y el tratamiento explicito de
+intervalos sin ventana valida, antes del lote. Hallazgo compartido de soporte
+px.er_1/px.er_2 y reparto en MUSASHI_SAC_ENGINE_PROGRESS_AND_SUPPORT_NOTE_2026_10_24.md.
+ZigZag multirresolucion no es dependencia del carril SAC.
 No hay nueva campana de politica lanzada por esta revision. Ningun texto
 RUNNING inferior autoriza reanudar colas antiguas ni sustituye este estado.
 
