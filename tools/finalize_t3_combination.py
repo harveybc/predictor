@@ -87,7 +87,7 @@ def tick(cfg):
             host = cfg["replay_host"]
             subprocess.run(["scp", "-q", cfg["replay_plan"], host + ":" + cfg["remote_replay_plan"]], check=True, timeout=60)
             command = ["systemd-run", "--user", "--wait", "--collect", "--quiet",
-                       "--unit=musashi-t3-combination-probe-replay-20261023", "-p", "MemoryMax=2G",
+                       "--unit=" + cfg.get("replay_unit", "musashi-t3-combination-probe-replay-20261023"), "-p", "MemoryMax=2G",
                        "-p", "MemorySwapMax=0", "-p", "CPUQuota=100%", "-p", "Nice=15",
                        "--setenv=CUDA_VISIBLE_DEVICES=", "--setenv=OMP_NUM_THREADS=1",
                        "--setenv=OPENBLAS_NUM_THREADS=1", "--setenv=MKL_NUM_THREADS=1",

@@ -193,17 +193,20 @@ def test_peer_even_assignment_requires_explicit_owner_and_exact_commands():
         jobs(manifest, assigned, worker="other")
 
 
-def test_combination_changes_only_groups_and_output_and_binds_the_decision(tmp_path):
+@pytest.mark.parametrize('v5', [False, True])
+def test_combination_changes_only_groups_and_output_and_binds_the_decision(tmp_path, v5):
     import json
     from expert_package_t3 import confirmation_job
     w = worker()
     manifest, assigned = package()
+    if v5:
+        manifest, assigned = package_v5()
     base = {"groups": {"group": ["x", "y"]}, "units": {"group": 2}, "kinds": {"group": "conv"}}
     decision = {"manifest": manifest["identity"], "groups": [{"group": "group", "chosen": "pointwise"}]}
     combined = {"name": "t3_unit_C", "rule": "combination", **base, "kinds": {"group": "pointwise"}}
     w.atomic(tmp_path / "in/T3_DECISION.json", decision)
     w.atomic(tmp_path / "in/T3_CONTROL.json", {})
-    ready = {"state": "READY_FOR_PER_GROUP_DECISION_AUDIT", "count": 43,
+    ready = {"state": "READY_FOR_PER_GROUP_DECISION_AUDIT", "count": 45 if v5 else 43,
              "units": {"t3_unit_00": {"result_sha256": w.digest(tmp_path / "in/T3_CONTROL.json")}}}
     w.atomic(tmp_path / "in/T3_READY.json", ready)
     w.atomic(tmp_path / "t3/groups/unit_00.json", base)

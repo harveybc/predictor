@@ -1,7 +1,22 @@
 {
   "schema": "feature_selection_method_state.v1",
   "updated_on": "2026-10-24",
-  "current_stage": "V5_T3_DISJOINT_PARALLEL_RUNNING_FINAL_ACCEPTANCE_PENDING",
+  "current_stage": "V5_T3_COMBINATION_RUNNING_540_CHECKPOINT_REPLAY_EXACT",
+  "v5_T3_closure": {
+    "report": "MUSASHI_T3_V5_CLOSURE_AND_SATOSHI_ORDER_2026_10_24.md",
+    "authenticated_units": 45,
+    "consumed_columns": 121,
+    "decision_sha256": "7291c1aa1505472d043295495d0c622cebb04a747eb2c6e65c15004720425b8a",
+    "combined_groups_sha256": "a9f553a762db63c665260263700fc1351319d70a7675f72ed002cfb463487be4",
+    "checkpoint_replay_exact": 540,
+    "control_trading_rollouts_exact": 9,
+    "combination": "RUNNING_NATIVE_CUDA_5090",
+    "combination_config_sha256": "cad1c29de05277a37135b9916fea437b86b51f6186c99d1c7adbce4fe78f14aa",
+    "automatic_finalizer_and_replica": true,
+    "scientific_release": false,
+    "new_SAC_fits": 0,
+    "next_action": "C closes, frozen interaction rule and original-CPU replay run automatically; peer independently verifies decision and prepares recipe v2; final A1-A4 and consumer parity review"
+  },
   "v5_T3_tail_rebalance": {
     "report": "MUSASHI_T3_V5_REBALANCE_2026_10_24.md",
     "retained_original_fast": "07..23 odd; native 23 preserved",

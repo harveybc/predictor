@@ -56,7 +56,7 @@ def selected_jobs(role, overrides=None):
     return names
 
 
-def prepare(root, python, launcher, templates, role, only_jobs=None, unit_stem=None, defer_start=False):
+def prepare(root, python, launcher, templates, role, only_jobs=None, unit_stem=None, defer_start=False, confirmation=False):
     root = Path(root).resolve()
     manifest, assignment = verify(root)
     for name in ("T3_MANIFEST.json", "T3_UNITS_musashi.json"):
@@ -70,13 +70,18 @@ def prepare(root, python, launcher, templates, role, only_jobs=None, unit_stem=N
         raise ValueError("V5_QUEUE_ALIAS_CHANGED")
     shutil.copyfile(source, queue)
     names = selected_jobs(role, only_jobs)
+    if confirmation and (role != 'fast' or only_jobs is not None):
+        raise ValueError('V5_CONFIRMATION_REQUIRES_FRESH_FAST_QUEUE')
     stem = unit_stem or f"musashi-e3m-t3-v5-{role}-20261024"
     if not all(c.isalnum() or c == "-" for c in stem):
         raise ValueError("V5_INVALID_UNIT_STEM")
     # v4_t3 denotes the existing worker protocol; scientific identity is the new pinned manifest.
+    evidence = ({'decision_sha256': digest(root / 'in/T3_DECISION.json'),
+                 'readiness_sha256': digest(root / 'in/T3_READY.json')} if confirmation else None)
     cfg = initialize(root, python, launcher, memory="5G", timer_unit=stem + ".timer",
-        archive_sha256=ARCHIVE, campaign="v4_t3", t3_manifest=manifest, t3_units=assignment,
-        only_jobs=names, gpu_model="5090" if role == "fast" else "4070",
+        archive_sha256=ARCHIVE, campaign="v4_t3_confirmation" if confirmation else "v4_t3",
+        t3_manifest=manifest, t3_units=assignment, confirmation=evidence,
+        only_jobs=None if confirmation else names, gpu_model="5090" if role == "fast" else "4070",
         recovery_source={"science_commit": SCIENCE, "selection": "v5", "manifest": manifest["identity"],
                          "peer_package_commit": "6e58f4f0", "role": role, "science_flags_changed": False})
     units = Path.home() / ".config/systemd/user"
@@ -85,7 +90,8 @@ def prepare(root, python, launcher, templates, role, only_jobs=None, unit_stem=N
         content = (Path(templates) / ("expert-package-worker." + suffix)).read_text()
         content = content.replace("/var/tmp/expert-guided-musashi-20261022", str(root)).replace("musashi-e3m-assigned-20261022", stem)
         (units / (stem + "." + suffix)).write_text(content)
-    deployment = {"manifest": manifest["identity"], "config_sha256": identity(cfg), "jobs": names, "memory_GiB": 5}
+    deployment = {"manifest": manifest["identity"], "config_sha256": identity(cfg),
+                  "jobs": ['t3_unit_C'] if confirmation else names, "memory_GiB": 5}
     atomic(root / "ops/T3_DEPLOYMENT.json", deployment)
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
     if not defer_start:
@@ -102,6 +108,7 @@ if __name__ == "__main__":
     p.add_argument("--jobs")
     p.add_argument("--unit-stem")
     p.add_argument("--defer-start", action="store_true")
+    p.add_argument("--confirmation", action="store_true")
     a = p.parse_args()
     prepare(a.root, a.python, a.launcher, a.templates, a.role,
-            a.jobs.split(",") if a.jobs else None, a.unit_stem, a.defer_start)
+            a.jobs.split(",") if a.jobs else None, a.unit_stem, a.defer_start, a.confirmation)

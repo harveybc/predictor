@@ -99,7 +99,8 @@ def confirmation_job(cfg):
         raise ValueError("T3_COMBINATION_READINESS_CHANGED")
     ready = json.loads(ready_path.read_text())
     control_path = root / "in/T3_CONTROL.json"
-    if (ready.get("state") != "READY_FOR_PER_GROUP_DECISION_AUDIT" or ready.get("count") != 43
+    count = CONTRACTS[cfg["t3_manifest"]["identity"]][0]
+    if (ready.get("state") != "READY_FOR_PER_GROUP_DECISION_AUDIT" or ready.get("count") != count
             or hashlib.sha256(control_path.read_bytes()).hexdigest() != ready["units"]["t3_unit_00"]["result_sha256"]):
         raise ValueError("T3_COMBINATION_CONTROL_OR_READINESS")
     path = root / "in/T3_DECISION.json"

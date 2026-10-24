@@ -20,10 +20,14 @@ def compare(actual, expected):
 def replay(plan):
     source = Path(plan["source_root"])
     if plan.get("source_reference_config"):
-        from t3_peer_preflight import verify_inputs
         cfg = w.read(plan["source_reference_config"])
         def verify_source():
-            verify_inputs(source, cfg)
+            if cfg.get("t3_manifest", {}).get("identity") == "t3v2_7db1953f99ad":
+                from close_t3_v5 import verify_source as verify_v5
+                verify_v5(source, cfg)
+            else:
+                from t3_peer_preflight import verify_inputs
+                verify_inputs(source, cfg)
             if w.runtime_versions(cfg["python"]) != cfg["runtime_versions"]:
                 raise ValueError("REPLAY_RUNTIME_VERSIONS")
     else:
@@ -36,7 +40,10 @@ def replay(plan):
     import torch
     from app.short_horizon.expert_guided import data as DG, temporal as T
     requested = w.read(source / "in/FEATURE_LIST_shortlist_strict.json")["features"]
-    ds = DG.load_store(source / "data/admitted", source / "data/full_pool_s/full_pool_eurusd_h1.parquet",
+    fixed = cfg.get("t3_manifest", {}).get("fixed", {})
+    store = fixed.get("store_dir", "full_pool_s")
+    dropout = fixed.get("regularization", {}).get("dropout", .1)
+    ds = DG.load_store(source / "data/admitted", source / "data" / store / "full_pool_eurusd_h1.parquet",
                        requested, scaling="fixed_train", contract="consolidated", nonstationary="diff",
                        win=13, stride=2, verify=True, end="2025-01-01")
     if plan.get("trading_replay"):
@@ -72,7 +79,7 @@ def replay(plan):
                 X = np.concatenate((ds.windows[rows].reshape(len(rows), -1).astype(np.float32),
                                     np.zeros((len(rows), 9), np.float32)), axis=1)
                 model = T.TemporalPolicyNet(len(requested), 13, 2, n_reg=2 if module.startswith("open_") else 0,
-                                            n_state=9, dropout=.1, **result["arch"])
+                                            n_state=9, dropout=dropout, **result["arch"])
                 model.load_state_dict(torch.load(run / (key + ".pt"), map_location="cpu", weights_only=True), strict=True)
                 policy = T.TorchPolicy(model)
                 policies[seed][module] = policy
