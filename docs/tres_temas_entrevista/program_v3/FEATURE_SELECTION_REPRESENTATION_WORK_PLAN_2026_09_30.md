@@ -1,6 +1,16 @@
 # Selección progresiva de características y representaciones temporales
 
-## Actualizacion operativa 2026-10-23
+## Actualizacion operativa 2026-10-24
+
+T3 v5 desplegado y con dos procesos CUDA verificados:19 unidades impares en
+5090 y3 en4070, sin solaparse con las23 de Satoshi. Sin reinicio necesario;
+5GiB por entrenamiento, una reserva por trabajo, timers de reanudacion y
+colectores con replicas verificadas. Se conserva el comando cientifico
+recibido, regularizacion fuerte0.3/0.01 y lista estricta121. Retorno:
+`MUSASHI_T3_V5_PARALLEL_START_2026_10_24.md`. Decision, combinacion C,
+replay y auditoria final siguen despues de autenticar las45 unidades.
+
+## Actualizacion anterior 2026-10-23
 
 Continuacion v5 verificada (2026-10-24 04:03 UTC): 3882 unidades sin errores;
 listas exportadas exactas: core15=15, estricta=121, shortlist consumible=165
