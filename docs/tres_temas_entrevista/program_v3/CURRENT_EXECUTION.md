@@ -6,12 +6,22 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+07:38UTC: contraste de dropout solo del critico EN EJECUCION, codigo afb3bc37,
+spec1c63c1a4. CRITIC_BASE en5090:1500 decisiones,499 actualizaciones; admision
+GPU sintetica de ambos brazos PASS. Secuencia automatica CRITIC_BASE0.3 ->
+CRITIC_NODROP0.0,100000 decisiones cada uno, actor0.3 y todo lo demas fijo.
+Control debe reproducir pesos finales del padre antes del tratamiento.
+Timers de worker y copia/publicacion habilitados; primer colector correcto,
+aun0 informes esperados. Sin feedback, rolling, reajuste, early stopping ni TEST.
+[Diseno y arranque](MUSASHI_CRITIC_DROPOUT_RUNNING_2026_10_25.md).
+Los cortes inferiores son historicos, no estado actual del sucesor.
+
 06:55UTC: diagnostico posterior TERMINADO,10/10 replays TRAIN/INNER exactos,
 32 archivos con copia fisica independiente verificada. Sin fits nuevos ni TEST.
 COMMANDS5 final emite CLOSE_LONG estando plano en todas las decisiones;99.84%
 de muestras estocasticas INNER tambien caen ahi. El critico favorece ese comando
 en256/256 observaciones muestreadas; no es solo efecto de inferencia determinista.
-No hay sucesor entrenando. Siguiente contraste definido: dropout solo del critico,
+En ese corte no habia sucesor entrenando. Contraste definido: dropout solo del critico,
 sin cambiar actor,datos,negocio ni entradas. Es hipotesis, no solucion demostrada.
 Retorno: agent-multi docs/work_plan/64_ORDER_POLICY_DIAGNOSIS_RETURN.md,
 productor0998df03, informe faf136ecabda9282a2fd39327c19235e6b11db7709c992a421ef6d0e5dcd639b.

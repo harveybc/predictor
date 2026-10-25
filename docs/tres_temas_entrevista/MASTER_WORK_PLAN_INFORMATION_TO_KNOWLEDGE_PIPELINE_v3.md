@@ -8,6 +8,15 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+ARRANQUE2026-10-25 07:38UTC: autorizado y desplegado el contraste dropout
+solo del critico. Control0.3 -> variante0.0, actor0.3 fijo,100000 decisiones
+por brazo, mismas semillas, datos, arquitectura y negocio. Control ya entrena;
+el siguiente brazo exige reproduccion exacta del padre. Automatizacion acotada
+incluye evaluacion, diagnostico Q/acciones, publicacion y copia verificada.
+No hay decisiones intermedias por profit ni ampliaciones implicitas del estudio.
+[Contrato y prueba de arranque](program_v3/MUSASHI_CRITIC_DROPOUT_RUNNING_2026_10_25.md).
+El cierre inferior describe el estado anterior a este despacho.
+
 CIERRE2026-10-25 06:55UTC: contraste de ordenes completo,24/24 publicaciones;
 diagnostico posterior completo,10 replays exactos,32 archivos verificados en dos
 maquinas. Se observa concentracion de politica/critico en cierres sin posicion,

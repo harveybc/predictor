@@ -1,9 +1,10 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-25",
-  "current_stage": "FROZEN_ORDER_POLICY_DIAGNOSIS_COMPLETE",
+  "current_stage": "CRITIC_DROPOUT_CONTRAST_RUNNING",
+  "critic_dropout_study": {"producer":"afb3bc37", "spec_sha256":"1c63c1a4f42630d87b8f35a0fd97dbde451badc4731d76fd5dd9f227fc908fd6", "arms":["CRITIC_BASE","CRITIC_NODROP"], "critic_dropout":[0.3,0.0], "actor_dropout":0.3, "steps_per_arm":100000, "seed":7, "tests_passed":48, "gpu_admission":"PASS", "observed_at":"2026-10-25T07:37:59Z", "observed_decisions":1500, "observed_gradient_updates":499, "worker_timer_enabled":true, "collector_timer_enabled":true, "first_collect":"COPIED_AND_PUMPED;0 reports expected", "next":"control exact identity then treatment and final comparison automatically"},
   "order_policy_diagnosis": {"producer":"0998df03", "finished_at":"2026-10-25T06:55:14Z", "replays_exact":10, "fits":0, "independent_files_verified":32, "report_sha256":"faf136ecabda9282a2fd39327c19235e6b11db7709c992a421ef6d0e5dcd639b", "return":"agent-multi/docs/work_plan/64_ORDER_POLICY_DIAGNOSIS_RETURN.md", "successor_fit_started":false, "next":"critic-only dropout contrast; preserve no-feedback and all scientific inputs"},
-  "current_state_reference": "MUSASHI_ORDER_POLICY_DIAGNOSIS_RETURN_2026_10_25.md",
+  "current_state_reference": "MUSASHI_CRITIC_DROPOUT_RUNNING_2026_10_25.md",
   "current_sac_queue": {"code": "b117dce0", "engine_code": "89512e8", "recipe": "recipe_a58261c0fdc0a59d", "spec_sha256": "79c4b87eb64d7285583614afe624a196dbf7c632f0351d2d0f4aa2c4130bfd5e", "state": "COMPLETE", "arms": ["TARGET", "COMMANDS5"], "steps_per_arm": 100000, "seed": 7, "early_stopping": false, "refit": false, "feedback": false, "expert": false, "test_read": false, "sequential_automatic": true, "reboot_timer_enabled": true, "collector_timer_enabled": true, "CPU_tests_passed": 56, "deployed_alpha_scenarios_passed": 16, "observed_at": "2026-10-25T06:35:46Z", "scientific_results_completed": 2, "reports_delivered_readback":24},
   "closed_parent_sac": {"spec_sha256":"7568df4f3ba7b6e80fb86cce70c42adeb9b4d0b6a227fd947183baa0ba8518cc", "completed_arms":2, "reports_delivered_readback":24, "state":"COMPLETE"},
   "latest_order_study_observation": {"observed_at":"2026-10-25T06:55:14Z", "state":"DIAGNOSIS_COMPLETE", "arm":"COMMANDS5", "decisions":100000, "gradient_updates":98999, "postrun_diagnostic_replays_exact":10, "automatic_handoff_verified":true},
