@@ -6,6 +6,19 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+14:23UTC: LOTE HIBRIDO DETENIDO, timer deshabilitado y MainPID=0.19 ajustes
+completos; HYBRID_DSR_s19 interrumpido. Colector sigue preservando/publicando.
+Tres checkpoints autenticados eligieron LONG en256/256 ventanas INNER cada
+uno, aunque SHORT estaba habilitado. Nueva prueba sintetica de direccion
+condicionada a una senal observable FALLO con16384 decisiones. Las pruebas
+anteriores (5 PASS) demostraban ejecucion y aprendizaje de acciones fijas,
+no discriminacion contextual. Causa raiz aun no establecida. Ninguna politica
+del lote se promueve. Los resultados se conservan como diagnostico, sin
+afirmar que la contabilidad este corrupta. No hay ETA nueva de entrenamiento.
+Informe: agent-multi/docs/work_plan/71_HYBRID_DIRECTIONAL_COLLAPSE.md.
+Prioridad: calificar direccion y cierre/HOLD condicionados antes de nuevos fits.
+Los estados de ejecucion y estimaciones inferiores son historicos.
+
 Aclaracion de negocio: CIERRE ANTICIPADO VOLUNTARIO OBLIGATORIO en ambos
 sentidos; SL/TP y aplanado forzoso no lo sustituyen. Regresion nativa ampliada:
 2/2 pruebas pasan (largo/corto, incluso con cuota diaria de entradas agotada).

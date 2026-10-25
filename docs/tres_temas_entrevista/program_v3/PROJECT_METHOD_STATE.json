@@ -1,7 +1,20 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-25",
-  "current_stage": "HYBRID_OUTPUT_AND_REWARD_RUNNING",
+  "current_stage": "HYBRID_SUSPENDED_DIRECTIONAL_QUALIFICATION",
+  "directional_qualification_stop": {
+    "observed_at": "2026-10-25T14:23:36Z",
+    "report": "agent-multi/docs/work_plan/71_HYBRID_DIRECTIONAL_COLLAPSE.md",
+    "real_probe": "3 checkpoints: LONG argmax in 256/256 shared INNER observations each; SHORT unmasked",
+    "conditional_synthetic_test": "FAILED at 16384 decisions; root cause not established",
+    "native_and_constant_controls": "5 passed; insufficient for conditional learning qualification",
+    "completed_units": 19,
+    "interrupted_unit": "HYBRID_DSR_s19",
+    "worker_main_pid": 0,
+    "restart_timer": "disabled",
+    "collector": "enabled for preserved results",
+    "promotion": "NONE"
+  },
   "mandatory_early_exit": {
     "required": true,
     "contract": "agent-multi/docs/work_plan/67_RL_OUTPUT_ACTION_CONTRACT.md#mandatory-discretionary-early-exit",
@@ -12,7 +25,7 @@
   },
   "hybrid_output_and_reward": {
     "spec_sha256": "bcd180f16a548dd9e402adecfdb9cb578066c611c5dd1b1340896ff0cf8df9f6",
-    "state": "RUNNING",
+    "state": "SUSPENDED_DIRECTIONAL_QUALIFICATION",
     "plan": "agent-multi/docs/work_plan/70_HYBRID_AUTOMATION_EXECUTION.md",
     "algorithm": "SB3 PPO with categorical and conditional Beta distribution; not SAC",
     "units": 24,
@@ -24,7 +37,7 @@
     "observed_updates": 780,
     "CPU_tests_passed": 39,
     "GPU_admission": "PASS",
-    "worker_and_collector_timers": "ENABLED",
+    "worker_and_collector_timers": "WORKER_DISABLED; COLLECTOR_ENABLED",
     "feedback": "routing mask only, no state vector in encoder",
     "rolling_scaling": false,
     "expert": false,
@@ -174,7 +187,7 @@
   "reuse": {"accepted_generic_code": true, "affected_metrics_rankings_weights_configs": false, "independent_populations": "PRESERVE_UNLESS_AFFECTED_LINEAGE_PROVEN"},
   "authorization_scope": {"bounded_data_recovery_and_CPU_tests": true, "real_capital": false, "financial_fits_before_admission": false, "do_not_reinvent_DOIN": true},
   "next_allowed_actions": [
-    "execute frozen 24-unit categorical output and reward queue sequentially",
+    "diagnose conditional direction and early-close learning before any new financial fit",
     "authenticate, mirror and publish each final native evaluation automatically",
     "retain all failures, activity exclusions and paired metrics; no checkpoint selection",
     "report business semantics, activity, costs and TRAIN/validation separately without selecting on 2024",
