@@ -6,6 +6,21 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+12:25UTC: SALIDAS CATEGORICAS Y RECOMPENSAS EN EJECUCION en5090.
+Spec bcd180f16a548dd9e402adecfdb9cb578066c611c5dd1b1340896ff0cf8df9f6.
+Primer control CAT_FIXED_s7:80384/102400 decisiones,780 actualizaciones PPO.
+Ocho brazos x tres semillas (24 fits), secuenciales y con recuperacion acotada.
+Accion categorica real; SL/TP/volumen condicionales Beta. Nuevo backend PPO,
+no se presenta como SAC ni como contraste de una sola variable con SAC previo.
+39 pruebas CPU y admision GPU de ambos modos PASS. Timers worker/colector
+habilitados; primera copia/outbox correcta, aun sin reporte financiero final.
+Plan ejecutable: agent-multi/docs/work_plan/70_HYBRID_AUTOMATION_EXECUTION.md.
+Receta R3 fija, sin rolling, vector de estado ni experto. TEST no se lee.
+La mascara de acciones sigue presente como metadato de restricciones, no como
+entrada del extractor. No hay early stopping ni reajuste en este lote.
+El barrido alpha anterior cerro:36/36 reportes publicados; los tres finales
+sin operaciones. Los cortes siguientes son historicos, no estado vigente.
+
 09:09UTC: CALIBRACION DE ACTIVIDAD corriendo, codigo7373699f,spec853c1ef8.
 ACT_ALPHA001 lleva2250 decisiones/1249 actualizaciones en5090. Cola automatica
 alpha fijo0.01 ->0.1 ->1.0,100000 decisiones cada uno. Misma receta/red/negocio;
