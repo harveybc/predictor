@@ -1,10 +1,26 @@
 # Ejecucion vigente
 
-Actualizado2026-10-24. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
+Actualizado2026-10-25. Autoridad: master v3 y RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md.
 Ninguna orden ni donante de las campanas predictivas retiradas puede despachar
 trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
-## Estado vigente del24 de octubre
+## Estado vigente del25 de octubre
+
+02:36UTC: la cola de contrato de ordenes ya ejecuta el diagnostico en la GPU
+primaria. Codigo agent-multi b117dce0, spec79c4b87e, receta R3 sin cambios.
+Alpha real del motor:16 escenarios sinteticos aprobados;56 pruebas CPU.
+Secuencia automatica: replay y barrido diagnostico de umbral -> TARGET fresco
+-> COMMANDS5 -> comparacion final/copia/warehouse. Sin feedback, experto,
+rolling, early stopping, reajuste ni TEST. El control fresco debe reproducir
+el hash de la politica padre antes de arrancar el contraste dependiente.
+Detalles: MUSASHI_ORDER_CONTRACT_STUDY_2026_10_25.md.
+
+La cola padre GROUPED/FLAT termino sin fallos;24/24 informes publicados y
+verificados. GROUPED final2024: -54.36USD,22 ordenes (actividad insuficiente).
+FLAT final2024: -3694.08USD,257 ordenes. No hay pendiente de Satoshi para este
+carril. Los cortes inferiores son historicos, no estado en ejecucion.
+
+## Corte historico del24 de octubre
 
 21:42UTC: SAC R3 YA CORRE, codigo agent-multi2d4aaa99, receta120 vigente.
 5500 decisiones/4499 actualizaciones verificadas en5090. GROUPED -> FLAT,

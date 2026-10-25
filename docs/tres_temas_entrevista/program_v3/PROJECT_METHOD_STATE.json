@@ -1,9 +1,10 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-10-24",
-  "current_stage": "RECIPE_R3_NATIVE_SAC_RUNNING_AUTOMATED",
-  "current_state_reference": "MUSASHI_SAC_R3_RUNNING_2026_10_24.md",
-  "current_sac_queue": {"code": "2d4aaa99", "engine_code": "89512e8", "recipe": "recipe_a58261c0fdc0a59d", "spec_sha256": "7568df4f3ba7b6e80fb86cce70c42adeb9b4d0b6a227fd947183baa0ba8518cc", "state": "TRAINING", "arms": ["GROUPED", "FLAT"], "steps_per_arm": 100000, "seed": 7, "early_stopping": false, "refit": false, "feedback": false, "expert": false, "test_read": false, "sequential_automatic": true, "reboot_timer_enabled": true, "collector_timer_enabled": true, "last_observed_steps": 5500, "last_observed_updates": 4499, "observed_at": "2026-10-24T21:42:47Z", "scientific_results_completed": 0},
+  "updated_on": "2026-10-25",
+  "current_stage": "ORDER_CONTRACT_DIAGNOSTIC_RUNNING_AUTOMATED",
+  "current_state_reference": "MUSASHI_ORDER_CONTRACT_STUDY_2026_10_25.md",
+  "current_sac_queue": {"code": "b117dce0", "engine_code": "89512e8", "recipe": "recipe_a58261c0fdc0a59d", "spec_sha256": "79c4b87eb64d7285583614afe624a196dbf7c632f0351d2d0f4aa2c4130bfd5e", "state": "DIAGNOSING", "arms": ["TARGET", "COMMANDS5"], "steps_per_arm": 100000, "seed": 7, "early_stopping": false, "refit": false, "feedback": false, "expert": false, "test_read": false, "sequential_automatic": true, "reboot_timer_enabled": true, "collector_timer_enabled": true, "CPU_tests_passed": 56, "deployed_alpha_scenarios_passed": 16, "observed_at": "2026-10-25T02:36:31Z", "scientific_results_completed": 0},
+  "closed_parent_sac": {"spec_sha256":"7568df4f3ba7b6e80fb86cce70c42adeb9b4d0b6a227fd947183baa0ba8518cc", "completed_arms":2, "reports_delivered_readback":24, "state":"COMPLETE"},
   "current_baseline": "recipe_a58261c0fdc0a59d",
   "historical_sections_below": "Prior execution snapshots, not running jobs or authority to resume old data",
   "paired_early_stopping": {
@@ -136,15 +137,12 @@
   "reuse": {"accepted_generic_code": true, "affected_metrics_rankings_weights_configs": false, "independent_populations": "PRESERVE_UNLESS_AFFECTED_LINEAGE_PROVEN"},
   "authorization_scope": {"bounded_data_recovery_and_CPU_tests": true, "real_capital": false, "financial_fits_before_admission": false, "do_not_reinvent_DOIN": true},
   "next_allowed_actions": [
-    "continue active paired SAC unchanged to authenticated closure",
-    "native timers dispatch four sealed critic regularization ablations sequentially with unchanged business and full TRAIN/VALIDATION",
-    "publish checkpoint metrics and verify closed snapshots on second physical machine without agent polling",
-    "resolve native quote clocks, side, actual gaps and session/holiday calendar",
-    "inventory required variables and raw dependencies with actual monthly support",
-    "admit real verified replacements and deploy the admitted-only lake root",
-    "recompute preprocessing and selection; distinguish policy relevance from price-MAE relevance",
-    "prepare existing RL environment and synthetic CPU business/accounting tests in parallel",
-    "use bounded Satoshi research/evidence lanes without monitoring or fits"
+    "finish pinned order-contract diagnostics and authenticate exact parent metric replay",
+    "automatically train fresh TARGET then COMMANDS5 only after control replay succeeds",
+    "publish all fixed checkpoint metrics and final comparison; mirror artifacts with warehouse readback",
+    "report business semantics, activity, costs and TRAIN/validation separately without selecting on 2024",
+    "keep shared recipe fixed; Satoshi expert lane remains independent",
+    "defer optimizer, capacity/context and periodic refit studies until order-contract evidence"
   ],
   "not_established": ["whole_inventory_acceptance", "complete_cleanup_including_Git_history", "full_external_catalogue_final_selection", "causal_effect_identification", "universal_RL_environment_certification", "profitable_policy"],
   "test_policy": "2025 was already examined; no restored pristine-holdout claim"

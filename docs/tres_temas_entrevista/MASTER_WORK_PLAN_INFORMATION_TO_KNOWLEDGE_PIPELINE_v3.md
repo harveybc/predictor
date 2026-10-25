@@ -1,12 +1,23 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-24. Las prioridades mas recientes prevalecen sobre los
+Actualizado: 2026-10-25. Las prioridades mas recientes prevalecen sobre los
 cortes operativos anteriores; el estado generado y CURRENT_EXECUTION indican
 que esta ejecutandose, no los parrafos de arranque historicos.
 Los resultados afectados por datos defectuosos se eliminan, no se conservan
 como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
+
+PRIORIDAD DEL PROPIETARIO2026-10-25: verificar la dinamica de ordenes antes de
+optimizar. La cola padre SAC R3 termino. La nueva secuencia automatica es
+alpha de negocio -> replay/diagnostico de acciones y umbrales -> control TARGET
+fresco -> COMMANDS5 -> comparacion/publicacion. No introducir realimentacion,
+recortes de entradas o cambios de datos, red, costos o presupuesto en este
+contraste. Tamano porcentual fijo declarado; especialistas por estado y tamano
+aprendido son contrastes posteriores, no cambios silenciosos. Primero contrato,
+luego busqueda pequena de aprendizaje, capacidad/contexto y reajuste al final.
+[Diseno, resultados padre y despliegue](program_v3/MUSASHI_ORDER_CONTRACT_STUDY_2026_10_25.md).
+El texto de arranque del24 de octubre inferior es un corte historico.
 
 ARRANQUE VERIFICADO2026-10-24 21:42UTC: SAC sin experto sobre receta R3 vigente,
 120 columnas. Cola GROUPED->FLAT de100000 decisiones por brazo automatizada en
