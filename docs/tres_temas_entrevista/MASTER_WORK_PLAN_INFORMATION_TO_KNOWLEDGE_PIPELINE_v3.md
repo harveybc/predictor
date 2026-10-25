@@ -8,6 +8,15 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+CIERRE2026-10-25 06:55UTC: contraste de ordenes completo,24/24 publicaciones;
+diagnostico posterior completo,10 replays exactos,32 archivos verificados en dos
+maquinas. Se observa concentracion de politica/critico en cierres sin posicion,
+tambien en TRAIN. Siguiente diseno: contraste dropout solo del critico, sin
+cambiar actor ni datos/negocio; aun no lanzado. No aumentar complejidad ni
+rehacer seleccion para intentar ocultar esta inestabilidad.
+[Retorno y limites](program_v3/MUSASHI_ORDER_POLICY_DIAGNOSIS_RETURN_2026_10_25.md).
+La secuencia de arranque siguiente ya termino y no autoriza duplicarla.
+
 PRIORIDAD DEL PROPIETARIO2026-10-25: verificar la dinamica de ordenes antes de
 optimizar. La cola padre SAC R3 termino. La nueva secuencia automatica es
 alpha de negocio -> replay/diagnostico de acciones y umbrales -> control TARGET

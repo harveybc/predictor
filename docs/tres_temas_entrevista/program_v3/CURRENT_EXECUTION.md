@@ -6,6 +6,20 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+06:55UTC: diagnostico posterior TERMINADO,10/10 replays TRAIN/INNER exactos,
+32 archivos con copia fisica independiente verificada. Sin fits nuevos ni TEST.
+COMMANDS5 final emite CLOSE_LONG estando plano en todas las decisiones;99.84%
+de muestras estocasticas INNER tambien caen ahi. El critico favorece ese comando
+en256/256 observaciones muestreadas; no es solo efecto de inferencia determinista.
+No hay sucesor entrenando. Siguiente contraste definido: dropout solo del critico,
+sin cambiar actor,datos,negocio ni entradas. Es hipotesis, no solucion demostrada.
+Retorno: agent-multi docs/work_plan/64_ORDER_POLICY_DIAGNOSIS_RETURN.md,
+productor0998df03, informe faf136ecabda9282a2fd39327c19235e6b11db7709c992a421ef6d0e5dcd639b.
+
+03:57UTC: cola TARGET/COMMANDS5 cerrada sin fallos,24/24 informes publicados
+y verificados. Control fresco exacto; COMMANDS5 final cero operaciones en los
+tres periodos. Los siguientes parrafos son cortes historicos de esa ejecucion.
+
 02:42UTC: diagnostico terminado PASS,8 replays exactos y32 casos de umbral.
 Relevo automatico comprobado: TARGET entrenando en5090,1750 decisiones y749
 actualizaciones. COMMANDS5 sigue en cola; no hay nuevos resultados finales.

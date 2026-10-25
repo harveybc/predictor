@@ -1,11 +1,12 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-25",
-  "current_stage": "ORDER_CONTRACT_TARGET_TRAINING_AUTOMATED",
-  "current_state_reference": "MUSASHI_ORDER_CONTRACT_STUDY_2026_10_25.md",
-  "current_sac_queue": {"code": "b117dce0", "engine_code": "89512e8", "recipe": "recipe_a58261c0fdc0a59d", "spec_sha256": "79c4b87eb64d7285583614afe624a196dbf7c632f0351d2d0f4aa2c4130bfd5e", "state": "TRAINING", "arms": ["TARGET", "COMMANDS5"], "steps_per_arm": 100000, "seed": 7, "early_stopping": false, "refit": false, "feedback": false, "expert": false, "test_read": false, "sequential_automatic": true, "reboot_timer_enabled": true, "collector_timer_enabled": true, "CPU_tests_passed": 56, "deployed_alpha_scenarios_passed": 16, "observed_at": "2026-10-25T02:42:24Z", "scientific_results_completed": 0},
+  "current_stage": "FROZEN_ORDER_POLICY_DIAGNOSIS_COMPLETE",
+  "order_policy_diagnosis": {"producer":"0998df03", "finished_at":"2026-10-25T06:55:14Z", "replays_exact":10, "fits":0, "independent_files_verified":32, "report_sha256":"faf136ecabda9282a2fd39327c19235e6b11db7709c992a421ef6d0e5dcd639b", "return":"agent-multi/docs/work_plan/64_ORDER_POLICY_DIAGNOSIS_RETURN.md", "successor_fit_started":false, "next":"critic-only dropout contrast; preserve no-feedback and all scientific inputs"},
+  "current_state_reference": "MUSASHI_ORDER_POLICY_DIAGNOSIS_RETURN_2026_10_25.md",
+  "current_sac_queue": {"code": "b117dce0", "engine_code": "89512e8", "recipe": "recipe_a58261c0fdc0a59d", "spec_sha256": "79c4b87eb64d7285583614afe624a196dbf7c632f0351d2d0f4aa2c4130bfd5e", "state": "COMPLETE", "arms": ["TARGET", "COMMANDS5"], "steps_per_arm": 100000, "seed": 7, "early_stopping": false, "refit": false, "feedback": false, "expert": false, "test_read": false, "sequential_automatic": true, "reboot_timer_enabled": true, "collector_timer_enabled": true, "CPU_tests_passed": 56, "deployed_alpha_scenarios_passed": 16, "observed_at": "2026-10-25T06:35:46Z", "scientific_results_completed": 2, "reports_delivered_readback":24},
   "closed_parent_sac": {"spec_sha256":"7568df4f3ba7b6e80fb86cce70c42adeb9b4d0b6a227fd947183baa0ba8518cc", "completed_arms":2, "reports_delivered_readback":24, "state":"COMPLETE"},
-  "latest_order_study_observation": {"observed_at":"2026-10-25T02:42:24Z", "state":"TRAINING", "arm":"TARGET", "decisions":1750, "gradient_updates":749, "diagnostic_replays_exact":8, "diagnostic_cases":32, "automatic_handoff_verified":true},
+  "latest_order_study_observation": {"observed_at":"2026-10-25T06:55:14Z", "state":"DIAGNOSIS_COMPLETE", "arm":"COMMANDS5", "decisions":100000, "gradient_updates":98999, "postrun_diagnostic_replays_exact":10, "automatic_handoff_verified":true},
   "current_baseline": "recipe_a58261c0fdc0a59d",
   "historical_sections_below": "Prior execution snapshots, not running jobs or authority to resume old data",
   "paired_early_stopping": {
@@ -138,9 +139,9 @@
   "reuse": {"accepted_generic_code": true, "affected_metrics_rankings_weights_configs": false, "independent_populations": "PRESERVE_UNLESS_AFFECTED_LINEAGE_PROVEN"},
   "authorization_scope": {"bounded_data_recovery_and_CPU_tests": true, "real_capital": false, "financial_fits_before_admission": false, "do_not_reinvent_DOIN": true},
   "next_allowed_actions": [
-    "finish pinned order-contract diagnostics and authenticate exact parent metric replay",
-    "automatically train fresh TARGET then COMMANDS5 only after control replay succeeds",
-    "publish all fixed checkpoint metrics and final comparison; mirror artifacts with warehouse readback",
+    "closed order study and frozen diagnostic complete; do not re-dispatch those fits",
+    "design matched critic-only dropout contrast with initialization parity before fitting",
+    "retain all diagnostic evidence and paired action/critic metrics; no checkpoint selection",
     "report business semantics, activity, costs and TRAIN/validation separately without selecting on 2024",
     "keep shared recipe fixed; Satoshi expert lane remains independent",
     "defer optimizer, capacity/context and periodic refit studies until order-contract evidence"
