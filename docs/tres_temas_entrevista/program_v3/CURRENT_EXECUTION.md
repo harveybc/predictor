@@ -6,6 +6,26 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+23:57UTC: CONTRASTE DE EXTRACTORES ACTIVO Y AUTOMATIZADO, codigo e31e7d8d
+en agent-multi. Spec 5e655081d3297f4c0e2c4ee881bd338f4d5ca4ae462ec7a59eb49df29f78c738.
+Primero cuatro controles sinteticos del extractor independiente; luego seis
+fits frescos SHARED/INDEPENDENT x semillas7/19/43,102400 decisiones cada uno,
+misma receta120 y negocio, sin realimentacion ni rolling ni experto ni TEST.
+Primer control5632/131072 al chequeo; cero fits financieros todavia. Timer
+de worker y copia/publicacion activos, primera copia y pump verificados.
+Veinte pruebas focales pasan, incluyendo que instrumentar no cambia los pesos.
+
+Diagnostico previo cerrado: recompensa y contabilidad nativa reconcilian;
+la financiacion se liquida al cierre. Mismas entradas pueden corresponder a
+posiciones con SL distintos y preferencia opuesta de cerrar/mantener: testigo
+sintetico, no se anadio estado. Gradientes en9 tramos TRAIN/18 lotes sin updates:
+14 cosenos actor/critico negativos; justifica el contraste, no demuestra cura.
+Audit de inferencia anterior21/21,42 reportes publicados/verificados: muestreo
+vence al control ciego en profit en4/9 pares INNER, sin ventaja robusta probada.
+Plan agent-multi/docs/work_plan/75_HYBRID_LEARNING_MECHANISM.md. Estimacion
+provisional90--120min; brazo independiente financiero aun sin tiempo medido.
+Los cortes siguientes son historicos.
+
 20:50UTC: LOTE V2 COMPLETO,24/24 fits al primer intento,72/72 reportes
 publicados/leidos de vuelta y4/4 calificadores GPU aprobados. Ningun brazo
 cumplio actividad y comportamiento en sus tres semillas. No hay ganador.
