@@ -1,10 +1,11 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-25",
-  "current_stage": "ORDER_CONTRACT_DIAGNOSTIC_RUNNING_AUTOMATED",
+  "current_stage": "ORDER_CONTRACT_TARGET_TRAINING_AUTOMATED",
   "current_state_reference": "MUSASHI_ORDER_CONTRACT_STUDY_2026_10_25.md",
   "current_sac_queue": {"code": "b117dce0", "engine_code": "89512e8", "recipe": "recipe_a58261c0fdc0a59d", "spec_sha256": "79c4b87eb64d7285583614afe624a196dbf7c632f0351d2d0f4aa2c4130bfd5e", "state": "DIAGNOSING", "arms": ["TARGET", "COMMANDS5"], "steps_per_arm": 100000, "seed": 7, "early_stopping": false, "refit": false, "feedback": false, "expert": false, "test_read": false, "sequential_automatic": true, "reboot_timer_enabled": true, "collector_timer_enabled": true, "CPU_tests_passed": 56, "deployed_alpha_scenarios_passed": 16, "observed_at": "2026-10-25T02:36:31Z", "scientific_results_completed": 0},
   "closed_parent_sac": {"spec_sha256":"7568df4f3ba7b6e80fb86cce70c42adeb9b4d0b6a227fd947183baa0ba8518cc", "completed_arms":2, "reports_delivered_readback":24, "state":"COMPLETE"},
+  "latest_order_study_observation": {"observed_at":"2026-10-25T02:42:24Z", "state":"TRAINING", "arm":"TARGET", "decisions":1750, "gradient_updates":749, "diagnostic_replays_exact":8, "diagnostic_cases":32, "automatic_handoff_verified":true},
   "current_baseline": "recipe_a58261c0fdc0a59d",
   "historical_sections_below": "Prior execution snapshots, not running jobs or authority to resume old data",
   "paired_early_stopping": {

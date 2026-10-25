@@ -66,6 +66,11 @@ TRAIN; alpha passed all16 scenarios in the deployed runtime. Service RAM was
 zero scientific reports expected yet. This confirms operation, not a new fit
 or completed diagnostic. Generated status and receipts supersede this snapshot.
 
+Follow-up at 2026-10-25T02:42:24Z: diagnostic closed PASS with8 exact parent
+replays and32 threshold cases. The timer automatically dispatched fresh TARGET,
+observed at1750 decisions/749 updates on the primary GPU. COMMANDS5 remains
+queued after control completion; no intermediate result was used to dispatch.
+
 No changes to DOIN, the expert lane, the shared engine, parent results or data.
 Next learning-parameter search remains after order-contract evidence, followed
 by capacity/context and finally periodic refitting. Do not auto-launch a large
