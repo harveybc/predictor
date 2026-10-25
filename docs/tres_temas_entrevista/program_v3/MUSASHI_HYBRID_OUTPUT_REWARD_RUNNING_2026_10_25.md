@@ -48,6 +48,15 @@ adopted without repeating fits. Failed/inactive results remain explicit.
 Initial collection succeeded before any final report existed. Publication
 of this campaign's actual financial report still awaits its first completion.
 
+Follow-up 12:28:47 UTC: the first fit completed at 12:28:08 and seed19 started
+automatically. Its three native reports are independently mirrored and verified
+through warehouse read-back: 3 expected, 3 delivered, 0 pending, 0 mismatch.
+The first unit took 384.5 seconds wall time, including final evaluation. A
+rough three-hour full-batch ETA remains provisional until learned-risk arms
+are measured. INNER_A control seed7: 65 trades, 2.4074/week, 44.62% wins,
+-1266.09 USD net profit, Sharpe -0.85848, maximum drawdown 30.43%. No
+three-seed conclusion or final treatment ranking is available yet.
+
 Adaptive coefficient refinement and a robust Sharpe-uncertainty estimator are
 deferred, not silently scheduled. Costs remain assumed rather than broker
 verified. No changes or extra tasks are required from the independent expert

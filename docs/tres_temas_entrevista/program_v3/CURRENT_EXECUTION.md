@@ -6,6 +6,12 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+12:28UTC: primer ajuste CAT_FIXED_s7 completo; CAT_FIXED_s19 arranco solo.
+Tres reportes entregados y leidos de vuelta, cero pendientes/discrepancias.
+Primer ajuste384.5s de pared; ETA del lote ~3h, provisional hasta medir riesgo
+aprendido. Control seed7 INNER_A:65 operaciones,2.4074/semana,44.62% ganadas,
+profit -1266.09USD,Sharpe -0.85848,DD30.43%. Aun no concluye ninguna terna.
+
 12:25UTC: SALIDAS CATEGORICAS Y RECOMPENSAS EN EJECUCION en5090.
 Spec bcd180f16a548dd9e402adecfdb9cb578066c611c5dd1b1340896ff0cf8df9f6.
 Primer control CAT_FIXED_s7:80384/102400 decisiones,780 actualizaciones PPO.
