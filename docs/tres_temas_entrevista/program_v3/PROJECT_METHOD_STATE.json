@@ -2,6 +2,14 @@
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-25",
   "current_stage": "HYBRID_OUTPUT_AND_REWARD_RUNNING",
+  "mandatory_early_exit": {
+    "required": true,
+    "contract": "agent-multi/docs/work_plan/67_RL_OUTPUT_ACTION_CONTRACT.md#mandatory-discretionary-early-exit",
+    "native_regression": "2 passed: close long and short before barriers, even with exhausted entry quota",
+    "learning_and_financial_efficacy": "NOT_ESTABLISHED; zero voluntary closes in initial completed policies",
+    "next_priority": "paired adverse/favorable close-versus-hold learning tests and financial diagnostics",
+    "active_batch": "unchanged; diagnostic ranking is not complete business-strategy acceptance"
+  },
   "hybrid_output_and_reward": {
     "spec_sha256": "bcd180f16a548dd9e402adecfdb9cb578066c611c5dd1b1340896ff0cf8df9f6",
     "state": "RUNNING",

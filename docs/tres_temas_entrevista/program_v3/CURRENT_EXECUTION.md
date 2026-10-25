@@ -6,6 +6,16 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+Aclaracion de negocio: CIERRE ANTICIPADO VOLUNTARIO OBLIGATORIO en ambos
+sentidos; SL/TP y aplanado forzoso no lo sustituyen. Regresion nativa ampliada:
+2/2 pruebas pasan (largo/corto, incluso con cuota diaria de entradas agotada).
+Esto verifica ejecucion, no aprendizaje. Las primeras politicas completadas
+tienen cero AGENT_CLOSE y no representan una estrategia de negocio completa.
+Siguiente prioridad: controles de aprendizaje cierre/HOLD sobre trayectorias
+adversas y favorables, sin recompensa artificial por cerrar ni datos futuros.
+Contrato detallado: agent-multi/docs/work_plan/67_RL_OUTPUT_ACTION_CONTRACT.md.
+El lote activo conserva su identidad; sus rankings son diagnosticos.
+
 12:28UTC: primer ajuste CAT_FIXED_s7 completo; CAT_FIXED_s19 arranco solo.
 Tres reportes entregados y leidos de vuelta, cero pendientes/discrepancias.
 Primer ajuste384.5s de pared; ETA del lote ~3h, provisional hasta medir riesgo
