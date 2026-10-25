@@ -6,6 +6,26 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+20:50UTC: LOTE V2 COMPLETO,24/24 fits al primer intento,72/72 reportes
+publicados/leidos de vuelta y4/4 calificadores GPU aprobados. Ningun brazo
+cumplio actividad y comportamiento en sus tres semillas. No hay ganador.
+Auditoria posterior completa:24 modelos,96 checkpoints,12543 cierres nativos
+reproducidos contablemente;75 archivos copiados y verificados por hash.
+Los cierres anticipados son utiles en unos casos y perjudiciales en otros;
+varios brazos aprenden operaciones de una hora cuyos costos superan el bruto.
+Esto no justifica quitar el cierre voluntario ni forzar ordenes.
+
+Contraste siguiente EN EJECUCION, sin entrenamientos: tres modelos CAT_FIXED,
+argmax vs muestreo categorico aprendido vs control sin informacion de mercado
+con probabilidades marginales TRAIN. Tres semillas de muestreo comunes por
+timestamp,21 unidades/42 rollouts TRAIN+INNER, sin lectura de2024 ni TEST.
+3/21 unidades completas al chequeo, relevo automatico confirmado. Primer
+replay argmax reproduce exactamente trades y metricas originales en ambos
+periodos. Worker y recolector/publicador automaticos activos; codigo211542e7,
+colector53345121. No se cambiaron datos, costos, SL/TP, ventanas ni feedback.
+Plan: agent-multi/docs/work_plan/74_HYBRID_V2_BEHAVIOR_AUDIT.md.
+Los cortes siguientes son historicos.
+
 15:38UTC: SUCESOR V2 EN CALIFICACION GPU AUTOMATIZADA, codigo6d5876d7.
 Spec f068e3e4e94fca446326f6d5bfb5ac448531a8c8559197a75ab9091f2741194b.
 Primer control16384/131072 decisiones sinteticas, latido vigente; cero fits

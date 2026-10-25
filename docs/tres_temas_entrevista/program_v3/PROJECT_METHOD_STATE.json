@@ -1,7 +1,21 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-25",
-  "current_stage": "HYBRID_V2_GPU_CONDITIONAL_QUALIFICATION_RUNNING",
+  "current_stage": "HYBRID_V2_INFERENCE_DIAGNOSTIC_RUNNING",
+  "hybrid_behavior_audit": {
+    "plan": "agent-multi/docs/work_plan/74_HYBRID_V2_BEHAVIOR_AUDIT.md",
+    "parent_completed_fits": 24,
+    "parent_reports_verified_and_published": 72,
+    "parent_eligible_three_seed_arms": 0,
+    "native_close_accounting_replays": 12543,
+    "checkpoint_probes": 96,
+    "next_running": "21 inference-only units; argmax, conditional sampling and TRAIN-marginal blind control",
+    "observed_complete": 3,
+    "observed_at": "2026-10-25T20:50:31Z",
+    "fits": 0,
+    "automatic_worker_and_collector": true,
+    "test": "closed; no new 2024 selection"
+  },
   "hybrid_conditional_successor": {
     "code": "6d5876d7",
     "spec_sha256": "f068e3e4e94fca446326f6d5bfb5ac448531a8c8559197a75ab9091f2741194b",
@@ -200,7 +214,7 @@
   "reuse": {"accepted_generic_code": true, "affected_metrics_rankings_weights_configs": false, "independent_populations": "PRESERVE_UNLESS_AFFECTED_LINEAGE_PROVEN"},
   "authorization_scope": {"bounded_data_recovery_and_CPU_tests": true, "real_capital": false, "financial_fits_before_admission": false, "do_not_reinvent_DOIN": true},
   "next_allowed_actions": [
-    "automatic v2 qualification; financial successor only if all four learning controls pass",
+    "complete automated inference diagnostic and publication, compare all seeds before next training contrast",
     "authenticate, mirror and publish each final native evaluation automatically",
     "retain all failures, activity exclusions and paired metrics; no checkpoint selection",
     "report business semantics, activity, costs and TRAIN/validation separately without selecting on 2024",
