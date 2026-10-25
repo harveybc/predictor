@@ -6,6 +6,24 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+15:38UTC: SUCESOR V2 EN CALIFICACION GPU AUTOMATIZADA, codigo6d5876d7.
+Spec f068e3e4e94fca446326f6d5bfb5ac448531a8c8559197a75ab9091f2741194b.
+Primer control16384/131072 decisiones sinteticas, latido vigente; cero fits
+financieros todavia.5090 usando752MiB, proceso~2GiB RAM. Cuatro controles
+de aprendizaje (tres semillas, contexto actual y pasado) preceden24 fits;
+solo se despachan si todos pasan. Timer y copia/publicacion verificados.
+Receta120 columnas y reglas de negocio intactas; nueva representacion explicita
+con fusion causal8, secuencia completa y cabezales policy/value separados.
+No se presenta como la representacion E3M original ni como SAC: backend PPO
+categorico/Beta. No experto, feedback de cuenta, rolling, relleno ni TEST.
+CPU:23 pruebas incluyendo aprendizaje y contabilidad de cierre;25 en el
+subconjunto final rapido. Control120x13 mixto pasa9contextos y recarga exacta.
+La semilla19 del control pequeno fallo NOP a65536, conservada como limite.
+Resultados financieros no garantizados. La elegibilidad exige ambos sentidos,
+NOP/HOLD y cierre voluntario, ademas de actividad; no se fuerzan operaciones.
+Detalle agent-multi/docs/work_plan/73_CONDITIONAL_SUCCESSOR_RUNNING.md.
+Lote viejo sigue detenido. Los cortes siguientes son historicos.
+
 14:23UTC: LOTE HIBRIDO DETENIDO, timer deshabilitado y MainPID=0.19 ajustes
 completos; HYBRID_DSR_s19 interrumpido. Colector sigue preservando/publicando.
 Tres checkpoints autenticados eligieron LONG en256/256 ventanas INNER cada

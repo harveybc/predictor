@@ -1,7 +1,20 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-25",
-  "current_stage": "HYBRID_SUSPENDED_DIRECTIONAL_QUALIFICATION",
+  "current_stage": "HYBRID_V2_GPU_CONDITIONAL_QUALIFICATION_RUNNING",
+  "hybrid_conditional_successor": {
+    "code": "6d5876d7",
+    "spec_sha256": "f068e3e4e94fca446326f6d5bfb5ac448531a8c8559197a75ab9091f2741194b",
+    "report": "agent-multi/docs/work_plan/73_CONDITIONAL_SUCCESSOR_RUNNING.md",
+    "stage": "four GPU synthetic learning controls then 24 financial fits only upon all passing",
+    "observed_at": "2026-10-25T15:38:49Z",
+    "observed_synthetic_steps": 16384,
+    "financial_fits": 0,
+    "automatic_worker_and_collector": true,
+    "full_shape_CPU_control": "9 contexts pass; exact reload",
+    "architecture": "selected branches, causal fusion 8, full temporal sequence, separate policy/value heads",
+    "inputs_business_test": "unchanged; TEST closed"
+  },
   "directional_qualification_stop": {
     "observed_at": "2026-10-25T14:23:36Z",
     "report": "agent-multi/docs/work_plan/71_HYBRID_DIRECTIONAL_COLLAPSE.md",
@@ -187,7 +200,7 @@
   "reuse": {"accepted_generic_code": true, "affected_metrics_rankings_weights_configs": false, "independent_populations": "PRESERVE_UNLESS_AFFECTED_LINEAGE_PROVEN"},
   "authorization_scope": {"bounded_data_recovery_and_CPU_tests": true, "real_capital": false, "financial_fits_before_admission": false, "do_not_reinvent_DOIN": true},
   "next_allowed_actions": [
-    "diagnose conditional direction and early-close learning before any new financial fit",
+    "automatic v2 qualification; financial successor only if all four learning controls pass",
     "authenticate, mirror and publish each final native evaluation automatically",
     "retain all failures, activity exclusions and paired metrics; no checkpoint selection",
     "report business semantics, activity, costs and TRAIN/validation separately without selecting on 2024",
