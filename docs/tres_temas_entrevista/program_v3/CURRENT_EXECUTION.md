@@ -6,6 +6,18 @@ trabajo. El propietario autoriza continuar automaticamente con datos admitidos.
 
 ## Estado vigente del25 de octubre
 
+09:09UTC: CALIBRACION DE ACTIVIDAD corriendo, codigo7373699f,spec853c1ef8.
+ACT_ALPHA001 lleva2250 decisiones/1249 actualizaciones en5090. Cola automatica
+alpha fijo0.01 ->0.1 ->1.0,100000 decisiones cada uno. Misma receta/red/negocio;
+sin feedback ni recompensa por operar. Solo finales con >2 trades/semana de
+promedio por separado en TRAIN e INNER_A pueden entrar al ranking;2024 no elige.
+68 pruebas CPU y admision GPU de los tres brazos PASS. Copia/outbox activos.
+ETA provisional2h desde09:08UTC. Detalle: MUSASHI_ACTIVITY_FIRST_RUNNING_2026_10_25.md.
+
+08:54UTC: contraste dropout cerrado; ambos finales0 operaciones en todos los
+periodos, control exacto.24/24 informes publicados y copia verificada. Quitar
+dropout del critico no recupero actividad. Cortes siguientes historicos.
+
 07:38UTC: contraste de dropout solo del critico EN EJECUCION, codigo afb3bc37,
 spec1c63c1a4. CRITIC_BASE en5090:1500 decisiones,499 actualizaciones; admision
 GPU sintetica de ambos brazos PASS. Secuencia automatica CRITIC_BASE0.3 ->

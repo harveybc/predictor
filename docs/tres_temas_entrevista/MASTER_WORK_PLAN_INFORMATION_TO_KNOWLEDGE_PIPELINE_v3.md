@@ -8,6 +8,17 @@ como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
+PRIORIDAD2026-10-25 09:09UTC: actividad antes de comparaciones financieras.
+El contraste de dropout termino sin recuperar operaciones. Ya corre una cola
+de alpha fijo0.01/0.1/1.0, misma receta/red/recompensa/negocio,100k decisiones
+por brazo. Se exige >2 operaciones ejecutadas/semana de promedio en TRAIN e
+INNER_A separadamente. Inactivos nunca ganan por perdida o drawdown cero.
+2024 se reporta sin decidir; TEST cerrado. Sin operaciones forzadas ni premio
+por abrir. Worker/copia/warehouse automatizados. No ampliar arquitectura ni
+comparar familias como si estuvieran calibradas antes de cumplir actividad.
+[Contrato y arranque](program_v3/MUSASHI_ACTIVITY_FIRST_RUNNING_2026_10_25.md).
+Los siguientes son cortes historicos anteriores.
+
 ARRANQUE2026-10-25 07:38UTC: autorizado y desplegado el contraste dropout
 solo del critico. Control0.3 -> variante0.0, actor0.3 fijo,100000 decisiones
 por brazo, mismas semillas, datos, arquitectura y negocio. Control ya entrena;
