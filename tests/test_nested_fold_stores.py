@@ -98,3 +98,31 @@ def test_cli_build_and_check(tmp_path):
     assert m1["fit_window"] != m2["fit_window"] and m1["train_rows"] < m2["train_rows"]
     # identical decisions and constants give byte-identical columns: the fold identity lives in the MANIFEST (window, rows)
     assert NF.sha(tmp_path / "out" / "f1" / "MANIFEST.json") != NF.sha(tmp_path / "out" / "f2" / "MANIFEST.json")
+
+
+def test_build_full_substitutes_scope_columns_and_drops_constants(tmp_path):
+    f, pool, man0 = make_pool(tmp_path)
+    cols = ["HIGH@diff", "RAW_CLOSE_LOG_RETURN", "RAW_ELAPSED_HOURS", "RSI", "CONST", "CLOSE_TWIN@diff"]
+    # the pool needs the decided slots as columns (the consolidated pool stores decided values)
+    pool["HIGH@diff"] = np.r_[np.nan, np.diff(pool["HIGH"])]
+    pool["CLOSE_TWIN@diff"] = np.r_[np.nan, np.diff(pool["CLOSE_TWIN"])]
+    pool.to_parquet(f, index=False)
+    man0["file_sha256"] = NF.sha(f)
+    (f.parent / "MANIFEST.json").write_text(json.dumps(man0))
+    so = tmp_path / "scopes"
+    so.mkdir()
+    sc = pd.DataFrame({"timestamp": pool["timestamp"], "RSI": pool["RSI"].to_numpy() * 0.5})
+    sc.to_parquet(so / "SCOPE_f1.parquet", index=False)
+    (so / "SCOPE_f1.json").write_text(json.dumps({"sha256": NF.sha(so / "SCOPE_f1.parquet"), "scope": {"name": "f1", "fit_window": list(WIN)},
+                                                   "activity": {"mode": "expanding"}, "learned_decisions": {}, "fixed_decisions_changed": {}}))
+    man = NF.build_full(pool, man0, cols, "f1", WIN, so / "SCOPE_f1.parquet", so / "SCOPE_f1.json", tmp_path / "full" / "f1")
+    assert man["hygiene"]["std_zero_dropped"] == ["CONST"] and "CONST" not in man["features"]
+    assert "RSI" in man["substituted"] and man["substituted"]["RSI"]["max_abs_change"] > 0
+    assert man["transforms"]["RAW_ELAPSED_HOURS"]["scope"] == "LOG1P_SHIFT"
+    built = pd.read_parquet(tmp_path / "full" / "f1" / man["file"])
+    assert np.allclose(built["RSI"].to_numpy(), pool["RSI"].to_numpy() * 0.5)
+    assert NF.check_full(pool, man0, tmp_path / "full" / "f1")["status"] == "PASS"
+    # a scope file that does not match its report is refused
+    (so / "SCOPE_f1.json").write_text(json.dumps({"sha256": "0" * 64, "scope": {"name": "f1", "fit_window": list(WIN)}}))
+    with pytest.raises(SystemExit, match="SCOPE_IDENTITY"):
+        NF.build_full(pool, man0, cols, "f1", WIN, so / "SCOPE_f1.parquet", so / "SCOPE_f1.json", tmp_path / "full" / "f1b")

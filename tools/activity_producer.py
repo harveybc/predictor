@@ -97,15 +97,41 @@ def usable(allowed: np.ndarray, hit: np.ndarray, res: np.ndarray, lookback: int 
 
 
 def scope_predictions(X: pd.DataFrame, hit: np.ndarray, res: np.ndarray, allowed: np.ndarray, k: int = 5, embargo: int = EMBARGO,
-                      lookback: int = 1):
+                      lookback: int = 1, mode: str = "purged_kfold"):
     """(p, report): out-of-fold predictions on the allowed bars (purged contiguous k-fold over the usable rows,
-    embargo on both sides), full-model predictions elsewhere. Nothing outside ``allowed`` is ever fitted on."""
+    embargo on both sides), full-model predictions elsewhere. Nothing outside ``allowed`` is ever fitted on.
+
+    ``mode="expanding"`` (audit A1-12, lane F7 2026-10-26): FORWARD-only cross-fitting. The allowed bars are cut into
+    ``k`` contiguous blocks in time; block i is predicted by a model fitted on the usable rows strictly BEFORE the
+    block minus the embargo, so no training row of any prediction lies after it. The first block has no past and
+    receives NaN (counted), never an in-sample value. Bars after the allowed span still get the full model, which
+    was fitted only on earlier (allowed) rows."""
+    if mode not in ("purged_kfold", "expanding"):
+        raise ValueError(f"ACTIVITY_MODE_UNKNOWN:{mode}")
     Xv = X.to_numpy(float)
     rows = np.flatnonzero(usable(allowed, hit, res, lookback))
     full = _fit(Xv, hit, rows)
     p = full.predict_proba(Xv)[:, 1]
     alw = np.flatnonzero(allowed)
     edges = np.linspace(0, len(alw), k + 1).astype(int)
+    if mode == "expanding":
+        nan_rows = 0
+        for i in range(k):
+            lo_b, hi_b = alw[edges[i]], alw[min(edges[i + 1], len(alw)) - 1]
+            sel = np.zeros(len(hit), bool)
+            sel[lo_b:hi_b + 1] = True
+            sel &= allowed
+            past = np.zeros(len(hit), bool)
+            past[:max(lo_b - embargo, 0)] = True
+            tr = np.flatnonzero(usable(allowed & past, hit, res, lookback))
+            if i == 0 or len(tr) < 2 or len(np.unique(hit[tr])) < 2:
+                p[sel] = np.nan
+                nan_rows += int(sel.sum())
+                continue
+            m = _fit(Xv, hit, tr)
+            p[sel] = m.predict_proba(Xv[sel])[:, 1]
+        return p, {"fit_rows_full": int(len(rows)), "mode": "expanding", "blocks": k, "embargo_bars": embargo,
+                   "input_lookback_bars": lookback, "allowed_bars": int(allowed.sum()), "nan_first_block_rows": nan_rows}
     for i in range(k):
         lo_b, hi_b = alw[edges[i]], alw[min(edges[i + 1], len(alw)) - 1]
         held = np.zeros(len(hit), bool)
@@ -116,5 +142,5 @@ def scope_predictions(X: pd.DataFrame, hit: np.ndarray, res: np.ndarray, allowed
         m = _fit(Xv, hit, tr)
         sel = held & allowed
         p[sel] = m.predict_proba(Xv[sel])[:, 1]
-    return p, {"fit_rows_full": int(len(rows)), "oof_folds": k, "embargo_bars": embargo, "input_lookback_bars": lookback,
+    return p, {"fit_rows_full": int(len(rows)), "mode": "purged_kfold", "oof_folds": k, "embargo_bars": embargo, "input_lookback_bars": lookback,
                "allowed_bars": int(allowed.sum())}

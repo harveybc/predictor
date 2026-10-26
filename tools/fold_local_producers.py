@@ -219,7 +219,8 @@ class Builder:
         if not self.a.skip_activity:
             from tools import activity_producer as AP
             Xa, hit, res, feats = self.activity()
-            p, arep = AP.scope_predictions(Xa, hit, res, allowed, lookback=AP.max_lag(feats) + 1)
+            p, arep = AP.scope_predictions(Xa, hit, res, allowed, lookback=AP.max_lag(feats) + 1,
+                                           mode=getattr(self.a, "activity_mode", "purged_kfold"))
             cols["act.p_hit"] = p
             rep["activity"] = arep | {"features": feats}
         # keep only the slots of the bound pool whose values differ from it
@@ -322,6 +323,8 @@ def add_inputs(p):
         p.add_argument(f"--{k}", required=True)
     p.add_argument("--scopes", required=True)
     p.add_argument("--skip-activity", action="store_true")
+    p.add_argument("--activity-mode", default="purged_kfold", choices=("purged_kfold", "expanding"),
+                   help="act.p_hit cross-fit: purged k-fold (A1) or FORWARD-only expanding blocks (A1-12)")
 
 
 def main(argv=None):
