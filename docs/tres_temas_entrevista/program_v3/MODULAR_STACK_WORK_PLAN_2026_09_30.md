@@ -19,6 +19,13 @@ The new assembly is a usable implementation, not evidence that it beats the
 published reference. Existing TimeFilter cells keep their exact author recipe.
 No scientific conclusion is based on a small plumbing fixture.
 
+Public reuse entry point: [feature_selector](https://github.com/harveybc/feature_selector).
+Its synthetic CPU example and portability guide document existing selection
+engines. The universal selection-plugin API and a second real nonfinancial
+adapter are follow-up packaging work after I5; they do not add a prerequisite
+to the running feature-selection campaign. Scientific engines retain their
+current repository owners.
+
 ## Requirements and acceptance matrix
 
 | ID | Requirement | Observable acceptance |
@@ -38,6 +45,7 @@ No scientific conclusion is based on a small plumbing fixture.
 | MS13 | DOIN objective | Candidate and data digests, explicit validation metric/direction, retained weights and replayable result. |
 | MS14 | Profiling coverage | One inventory row per dataset/feature and explicit measured/missing/excluded status; no blanket coverage claim. |
 | MS15 | Representation for RL | Encoder exports rank-three bottleneck; policy adapter and its reward/early-stop validation are separate owned integrations. |
+| MS16 | Strong per-feature Dense controls after final selection | Historical flattened-window ANN is identified and replayed faithfully or marked NOT_REPRODUCIBLE; a separately named causal-window Dense branch is compared with Conv1D under the same temporal fusion/core/head, rows and budget. Neither equates dense units with timestamps. |
 
 ## Default shapes and contracts
 
@@ -72,6 +80,11 @@ selection or grouping with coverage and exclusions reported.
 External plugins must declare input/output contracts and preserve their grid.
 Equal output shapes alone do not establish aligned times. Inputs with different
 frequencies require a separate causal alignment transform before assembly.
+The historical per-feature ANN is a deliberately **non-temporal control** and
+is exempt from MS03 only as a separate whole-model comparator. Its branches
+flatten each feature's input window, apply their own Dense layers and concatenate
+learned vectors. Matching the length of a temporal axis never turns those units
+into chronological positions; a `Reshape` alone cannot make it an MS03 plugin.
 
 ## Feature characterization, grouping and selection
 
@@ -181,11 +194,51 @@ the prefix, core transfer arms; one-feature vs grouped branches; selected vs all
 features; bottleneck width/time/depth; MAE vs tuned Huber. Report configuration
 and optimization cost, including AE cost, with every model metric.
 
+**I6-D, after the I5 final feature manifest, alongside I6-B:** run two distinct
+Dense comparisons. First, recover the historical ANN's actual source revision,
+effective configuration, inputs, preprocessing and checkpoint/result identities.
+Replay it on its original feature set and protocol. A refit on the finally
+selected features is a new whole-model control, never a thesis replication. If
+the original recipe cannot be authenticated, mark the historical replay
+NOT_REPRODUCIBLE rather than claiming a thesis replication. Second, implement
+a new time-aligned
+causal-window Dense branch: at each output time it reads only its declared
+past receptive field, shares weights over time and emits a rank-three sequence.
+Swap only this branch family against Conv1D while keeping fusion, positional
+encoding, core and heads identical. This second arm tests branch choice but is
+not the historical ANN. Do not silently route flattened Dense vectors into a
+temporal core or compare unlike downstream architectures as a branch-only test.
+
+The new controls use the same final feature IDs/order, physical lookback, target
+and horizon definitions, availability masks, normalization fitted on TRAIN,
+BUSINESS_WEEKLY_WALK_FORWARD weeks, same-row target naive, seed, early-stop
+rule and finite search budget. Match parameter count and measured compute as
+closely as feasible; report residual differences and pretraining cost rather
+than hiding them. Start with one seed; use at most three if a paired result
+needs stability evidence. Keep LITERATURE_STATIC reproductions untouched.
+Rank by held-out weekly target skill and cost; strategy tests remain behind the
+strict same-row naive gate. Dense winning is an accepted scientific outcome.
+
 DOIN optimizes the declared validation objective. Candidate validity includes
 time divisibility, width/head compatibility, donor identity, parameter bounds
 and resource limits. A dry-run contract is not an optimization result. Keep the
 incumbent, candidate history and independent verification result in the existing
 warehouse path when that adapter is exercised; local smoke metrics remain local.
+
+## Predictive information diagnostic
+
+After the active architecture contrast, follow
+[Predictive Information and Window Diagnostic](PREDICTIVE_INFORMATION_WINDOW_DIAGNOSTIC.md).
+Reuse retained TRAIN diagnostics first; no new fit is launched by this addition.
+It tests horizon/window information saturation, not a universal Nyquist bound.
+
+**I6-E:** the first concrete resolution experiment is specified in
+[Origin-Anchored Resolution Work Plan](I6E_ORIGIN_ANCHORED_RESOLUTION_WORK_PLAN.md).
+It compares hourly, 72-hour, 36-hour and 18-hour inputs for hourly-issued 72-hour predictions,
+with a shared modular R0 model, weekly refits and statistical controls. The
+extension selects spacing and input count within TRAIN for each authenticated
+strategy horizon, then evaluates frozen choices over all validation weeks. Prepare
+on CPU alongside existing work; GPU fits follow the active I6-B/I7 contrast.
 
 ## Test order and release evidence
 

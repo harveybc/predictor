@@ -1,0 +1,16 @@
+{
+  "relations": {
+    "feature_alias_groups": 6,
+    "feature_filter_rankings": 50202,
+    "feature_filter_subsets": 980,
+    "feature_pair_gate": 70199,
+    "feature_pair_metrics": 7458876,
+    "feature_pair_stability": 1263564,
+    "feature_redundancy_clusters": 315,
+    "fs_phase23_load_receipt": 11726,
+    "fs_phase23_run": 3
+  },
+  "restored": "cube_phase2-3_20261007.duckdb",
+  "verified": true
+}
+rc=0

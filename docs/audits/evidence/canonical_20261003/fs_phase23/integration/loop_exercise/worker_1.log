@@ -1,0 +1,18 @@
+2026-10-06T00:56:06Z coordinator slot=1 BEGIN loop cap=256M wall=5m threads=1 steal=0 commit=stub
+2026-10-06T00:56:06Z coordinator slot=1 CLAIMED s0
+{"action": "WIN", "home": true}
+2026-10-06T00:56:06Z coordinator slot=1 RUN s0
+2026-10-06T00:56:08Z coordinator slot=1 COMPLETED s0 wall=2s
+2026-10-06T00:56:08Z coordinator slot=1 CLAIMED s1
+{"action": "WIN", "home": true}
+2026-10-06T00:56:08Z coordinator slot=1 RUN s1
+2026-10-06T00:56:09Z coordinator slot=1 COMPLETED s1 wall=1s
+2026-10-06T00:56:10Z coordinator slot=1 CLAIMED bad
+{"action": "WIN", "home": true}
+2026-10-06T00:56:10Z coordinator slot=1 RUN bad
+2026-10-06T00:56:11Z coordinator slot=1 FAILED bad rc=3 wall=1s
+ALL_DONE
+2026-10-06T00:56:11Z coordinator slot=1 ALL_DONE every shard of the plan is terminal; slot exits
+2026-10-06T00:56:11Z coordinator slot=1 BEGIN loop cap=256M wall=5m threads=1 steal=0 commit=stub
+ALL_DONE
+2026-10-06T00:56:11Z coordinator slot=1 ALL_DONE every shard of the plan is terminal; slot exits

@@ -1,0 +1,15 @@
+eurusd feature_alias_groups copy 1 4087db1a00678739 live 1 4087db1a00678739 EQUAL
+eurusd feature_filter_rankings copy 45990 c2d983fdde260024 live 45990 c2d983fdde260024 EQUAL
+eurusd feature_filter_subsets copy 686 2a50443e326104e1 live 686 2a50443e326104e1 EQUAL
+eurusd feature_pair_gate copy 66795 415f65fecada7998 live 66795 415f65fecada7998 EQUAL
+eurusd feature_pair_metrics copy 7213860 03e8f8e160dbea0c live 7213860 03e8f8e160dbea0c EQUAL
+eurusd feature_pair_stability copy 1202310 7df21b0a2fcfc755 live 1202310 7df21b0a2fcfc755 EQUAL
+eurusd feature_redundancy_clusters copy 277 8228253fa56fffa6 live 277 8228253fa56fffa6 EQUAL
+eth feature_alias_groups copy 5 84c25556f3bbada8 live 5 84c25556f3bbada8 EQUAL
+eth feature_filter_rankings copy 4212 767333e18abe60f1 live 4212 767333e18abe60f1 EQUAL
+eth feature_filter_subsets copy 294 73790f4f89124699 live 294 73790f4f89124699 EQUAL
+eth feature_pair_gate copy 3403 00718c737b7b1eac live 3403 00718c737b7b1eac EQUAL
+eth feature_pair_metrics copy 245016 c6634d60336e611b live 245016 c6634d60336e611b EQUAL
+eth feature_pair_stability copy 61254 d7842dcccad089c8 live 61254 d7842dcccad089c8 EQUAL
+eth feature_redundancy_clusters copy 38 5b9bd26e106c02ec live 38 5b9bd26e106c02ec EQUAL
+ALL_EQUAL

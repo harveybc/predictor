@@ -1,0 +1,11 @@
+[Unit]
+Description=Dispatch one preliminary FS4 %i task after a short cooldown
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=15s
+Unit=fs4-preliminary@%i.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

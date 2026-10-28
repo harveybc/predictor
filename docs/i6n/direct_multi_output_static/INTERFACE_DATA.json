@@ -1,0 +1,346 @@
+{
+  "schema": "i6dmo.interface.data.v1",
+  "lane": "data",
+  "status": "IMPLEMENTED_CPU_TESTED_EXACT_DEFAULT",
+  "owner_modules": [
+    "tools/i6dmo/data.py",
+    "tools/i6dmo/naive.py",
+    "tools/i6dmo/provenance.py",
+    "tools/i6dmo/cli_data.py",
+    "tools/i6dmo/producer_recovery.v1.json"
+  ],
+  "owner_tests": [
+    "tests/i6dmo/test_data_dmo.py",
+    "tests/i6dmo/_synth.py"
+  ],
+  "shared_files_added": {
+    "tools/i6dmo/__init__.py": "EMPTY file (0 bytes); identical empty adds by other lanes merge cleanly",
+    "tests/i6dmo/__init__.py": "EMPTY file (0 bytes)"
+  },
+  "cli_registration": "tools/i6dmo/cli_data.py exposes register(subparsers) adding: data-bundle, data-verify, naive-replay. The CLI owner (ops) imports it additively; it is also runnable alone as `python -m tools.i6dmo.cli_data <cmd>`.",
+  "inputs": {
+    "input_dir": "a no-STLFSI4 input directory holding INPUT.npz (ts int64 UTC bar-END seconds, x float64 (rows,19) manifest order, price float64 EURUSD close), CLOCK.json, CALENDAR.json, DERIVATION.json, PREPARATION.json, CLOCK_SCOPE.json; resolved from the private deployment spec (never committed)",
+    "expected_identities": {
+      "feature_manifest_sha256": "2ff34fa21d5841da1befdd4d898db911128d959a5e460d04cc45b54955416470",
+      "availability_contract_sha256": "9668898c28cafeef2bc48e7d3a42e82a2655d699ff8f0d8d59e921bf120b1bc9",
+      "calendar": "FX_NY_17_ASSUMED_NOT_BROKER / i6n-v1 (ASSUMED, not a verified broker calendar)"
+    },
+    "test_rows": "refused: any ts >= splits.test.start raises TEST_ROWS_PRESENT before any array is materialized"
+  },
+  "api": {
+    "tools.i6dmo.data.WindowSpec.from_design(design) -> WindowSpec": "span_hours=24, spacing_hours=2, observations=13, include_origin=True, issuance_hours=1; offsets_hours() == (-24,-22,...,-2,0)",
+    "tools.i6dmo.data.load_input(input_dir, design) -> InputBundle": "ts, x, price, features, file digests; refuses TEST rows, manifest mismatch, STLFSI4 or alias columns",
+    "tools.i6dmo.data.build_origin_table(bundle, design) -> OriginTable": "every observed hourly bar is an origin candidate (no thinning); per origin: row_id 'EURUSD|<iso t>', split (FIT|INNER|VALIDATION), week_id, input_ok + reason, per-head label mask (C1 MANAGEMENT M), per-head entry mask (C1 ENTRY M), p(t), p(t+h) exact or NaN; counted reasons per split x head",
+    "tools.i6dmo.data.materialize(bundle, table, split) -> SplitArrays": "X float64 (n,13,19) RAW; y_price float64 (n,6) original price p(t+h) with NaN where mask False; mask bool (n,6); entry_mask bool (n,6); price_origin (n,); origin_ts (n,); row_ids (n,). Only rows with input_ok and >=1 valid head are included (keep_row_if_any_head_valid)",
+    "tools.i6dmo.data.fit_statistics(bundle, table) -> dict": "per-feature mean/std over FIT-row window bars only; per-head fit-only naive MAE (loss scale) ; zero scale -> typed ZERO_SCALE disposition, never an epsilon",
+    "tools.i6dmo.data.verify_bundle(out_dir) -> dict": "re-hashes every file and row id list; typed BUNDLE_DIGEST_MISMATCH on any change",
+    "tools.i6dmo.naive.naive_replay(input_dir_or_bundle, row_ids, horizons)": "independent of data.py target arrays: re-reads ts/price, looks up p(t) and p(t+h) by exact timestamp, returns per-head n, sum_abs, mae and row_ids_sha256",
+    "tools.i6dmo.naive.weekly_diagnostics(rows) -> dict": "per week x head sums/counts, explicit ABSENT weeks/heads; annual pooled MAE = sum/count, never mean of weekly MAEs",
+    "tools.i6dmo.provenance.availability_gate(features)": "reuses tools.i6n_contracts.feature_availability.gate; returns PASS + unverified list; confirmatory_test_blocked=True while any feature is UNVERIFIED",
+    "tools.i6dmo.provenance.producer_status()": "seven unresolved producers/clocks: RECOVERED (path@commit + reproduction match) or STILL_UNRESOLVED (missing object)",
+    "tools.i6dmo.data.load_split(bundle_dir, split) -> dict": "verify then merge model and aux arrays",
+    "tools.i6dmo.data.build_frozen_bundle(input_dir, design, out_dir, *, code_commit=None) -> dict": "writes ARRAYS_<split>.npz for FIT/INNER/VALIDATION and BUNDLE.json with digests: input files, calendar, manifest, availability contract, gate report, row_ids per split, arrays, origin-table reason counts, coverage report; bundle_sha256 is the identity consumed by model/ops",
+    "tools.i6dmo.naive.paired_metrics(arrays, predictions, design, *, input_dir, checkpoint, sealed_at) -> dict": "builds the C2 (tools.i6n_contracts.paired_metrics) input on identical row ids and physical h, scores it, and attaches a manual recomputation that must agree; relative error (MAE_h-naive_h)/naive_h, negative better"
+  },
+  "fixed_decisions_implemented": [
+    "origin t is the last completed observed hourly bar (bar-END clock); its value is included",
+    "inputs are 13 slot instants t-24h..t at 2 h spacing, each sampled as-of the last finite observation with available_time <= s (DS2_ASOF_LAST_AVAILABLE); staleness recorded; never the next row",
+    "targets p(t+h) at exact hourly endpoints h in {2,3,4,5,6,12}; never the next observed row",
+    "split membership: origin in split AND target in the same split (cross-boundary labels purged); FIT label_available_by = inner boundary",
+    "TRAIN [2020-01-01,2024-01-01); INNER = last 8 weeks (2023-11-06..2024-01-01); VALIDATION [2024-01-01,2025-01-01); TEST never materialized"
+  ],
+  "bundle_format": {
+    "conforms_to": "INTERFACE_MODEL.json consumed_data_bundle_contract (model lane @12e13752); its load_data_bundle() accepted the real bundle",
+    "BUNDLE.json": {
+      "schema": "i6dmo.data_bundle.v1",
+      "features": "19 names, MANIFEST_NO_STLFSI4 order",
+      "feature_manifest_sha256": "2ff34fa2...",
+      "horizons_hours": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        12
+      ],
+      "offsets_hours": [
+        -24,
+        -22,
+        -20,
+        -18,
+        -16,
+        -14,
+        -12,
+        -10,
+        -8,
+        -6,
+        -4,
+        -2,
+        0
+      ],
+      "splits": "{fit, inner, validation} -> {path, sha256 (file), aux_path, start, end, label_available_by, n_rows, row_ids_sha256, arrays_sha256, aux_sha256 (content), head_valid, head_entry_valid, counts (typed reasons), first/last_origin}",
+      "fit_statistics": "per-head fit-only naive MAE (naive_mae_fit) and per-feature fit-only mean/std; status OK|ZERO_SCALE|UNSUPPORTED_HEAD",
+      "other": "inputs{name:sha256}, calendar{id,version,sha256,label ASSUMED_NOT_BROKER}, availability_gate, producer_status, confirmatory_test_blocked, coverage, design_sha256, code{commit, files_sha256}, bundle_sha256 (content identity; excludes npz container digests, which carry write times), files{name: file sha256}"
+    },
+    "<split>.npz": "exactly row_id (n,) int64 origin epoch s, x (n,13,19) float64 RAW oldest->origin, origin_price (n,), target_price (n,6) NaN where mask False, mask (n,6) bool = C1 MANAGEMENT label support",
+    "<split>_aux.npz": "row_id (n,) int64 (same order), row_ids (n,) str 'EURUSD|<iso>', entry_mask (n,6) bool = C1 ENTRY support (subset of mask), week_ids (n,) str calendar week; slot_staleness_s (n,13,19) int64",
+    "test": "never present; load_input refuses TEST_ROWS_PRESENT"
+  },
+  "real_bundle_built": {
+    "status": "SUPERSEDED_BY_EXACT; the ASOF bundles 3e42c3f5 (short) and e88f72aa (long) are retained as the separately named ASOF arm, not deleted",
+    "exact_short": {
+      "code_commit": "7601904f",
+      "rule": "DS2_EXACT",
+      "bundle_sha256": "5f3d678295cda9b1841565fa8df7a9017804d793596fd9b7634ebaf998790122",
+      "bundle_json_file_sha256": "489ebb8deabbcd392ff6180d804636edc5426d873f061eecb75e1c762ad6d603",
+      "data_contract_sha256": "02a37cc7140d16fd",
+      "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+      "rows": {
+        "fit": 14279,
+        "inner": 624,
+        "validation": 4122
+      },
+      "row_ids_sha256": {
+        "fit": "1d0a295c0356eb1ba723b91ea8cdcfa2d03db8aca5f62bfdf9aaeda0cd5648a5",
+        "inner": "582af6e37fb50129a48f11b606f4fd256a7a431978c947e3c72ee389a223f3a6",
+        "validation": "b4ccd80cfdc399a432c4042ae1dfaa394f3aa6cbf2537801b94fbc742e52b244"
+      },
+      "fit_naive_mae": {
+        "2": 0.0010524471214455814,
+        "3": 0.0013024451699907742,
+        "4": 0.0015218521445506154,
+        "5": 0.0017217456849464728,
+        "6": 0.0019143797935103257,
+        "12": 0.0028857732041322973
+      },
+      "origins_lost_vs_asof": {
+        "fit": "18144-14279=3865",
+        "inner": "739-624=115",
+        "validation": "4889-4122=767"
+      },
+      "exclusions": {
+        "fit": {
+          "INPUT_SLOT_NOT_OBSERVED": 5941,
+          "INPUT_VALUE_NOT_FINITE": 291
+        },
+        "inner": {
+          "INPUT_SLOT_NOT_OBSERVED": 200
+        },
+        "validation": {
+          "INPUT_SLOT_NOT_OBSERVED": 1330,
+          "INPUT_VALUE_NOT_FINITE": 17
+        }
+      }
+    },
+    "exact_long": {
+      "code_commit": "7601904f",
+      "rule": "DS12_EXACT",
+      "bundle_sha256": "9f14c2d28a36b837433149846391e3cce0727c7d47828d6e05889e6940886ffb",
+      "bundle_json_file_sha256": "48460378d26c67027931652fe4cf396c731941e35984779529c60f78b923b507",
+      "data_contract_sha256": "b3f4f7f39c96ef0a",
+      "rows": {
+        "fit": 0,
+        "inner": 0,
+        "validation": 0
+      },
+      "finding": "EMPTY SUPPORT: every 144 h / 12 h ladder crosses a >=47 h weekend closure, so no origin has 13 exact bars; all candidates are INPUT_SLOT_NOT_OBSERVED (fit 23153, inner 944, validation 6243). The sealed long family cannot fit under DS12_EXACT; running it requires an explicit ruling (ASOF arm or a market-time window redesign), not a silent substitution."
+    }
+  },
+  "input_sampling": {
+    "default": "EXACT (DS2_EXACT / DS12_EXACT): a missing or non-finite exact slot is a counted exclusion, never filled (audit AUD-DMO-01; sealed require_exact_timestamps)",
+    "optional_arm": "sampling=ASOF_LAST_AVAILABLE -> DS{spacing}_ASOF_LAST_AVAILABLE with its own data_contract_sha256; never a substitution",
+    "authentication": "data.authenticate_sampling / data.load_split(design=...) refuse SAMPLING_RULE_MISMATCH"
+  },
+  "successor_availability_contract": {
+    "path": "tools/i6dmo/feature_availability.successor.v2.json",
+    "contract_sha256": "c1c00b291829b69579ec8b9940775584b606094ef68d39ca25b5690ac64048d6",
+    "status": "PREPARED_NOT_ADOPTED",
+    "promoted": [
+      "fx.gbpusd.logret_1h",
+      "px.close_loc",
+      "px.log_co",
+      "px.rv5",
+      "rg.atr_ratio"
+    ],
+    "still_unverified": [
+      "fred.rates.dgs3mo.diff_5d",
+      "fred.rates.dgs7.logret_5d"
+    ],
+    "role": "TEST gate input; short design keeps 9668898c"
+  },
+  "long_family": {
+    "experiment_id": "I6-DMO-LONG-DS12-STATIC-R0",
+    "sampling_rule": "DS12_ASOF_LAST_AVAILABLE (DS{spacing}_ASOF_LAST_AVAILABLE)",
+    "offsets_hours": [
+      -144,
+      -132,
+      -120,
+      -108,
+      -96,
+      -84,
+      -72,
+      -60,
+      -48,
+      -36,
+      -24,
+      -12,
+      0
+    ],
+    "horizons_hours": [
+      18,
+      24,
+      36,
+      48,
+      60,
+      72
+    ],
+    "build": "python -m tools.i6dmo.cli_data data-bundle --design EXPERIMENT.short.json --long-data-view --input-dir <data-root>/inputs/extended-no-stlfsi4 --out <new-dir> --code-commit <commit>",
+    "identity_note": "data_contract_sha256 covers asset/input/horizons/feature_policy/splits/business only; a model-lane sealed long design (derived_from, seal_sha256) has the same data contract, so this preparation bundle is reusable after short closure; design_sha256 in BUNDLE.json is the unsealed long data view",
+    "real_bundle": {
+      "code_commit": "0a6d9584",
+      "bundle_sha256": "e88f72aa93b478c6e175efc671e706ce85d1125127444b26b0017973b44277a1",
+      "bundle_json_file_sha256": "afcef506df02ceba74fac77b6b41e5e3b22ea4e2b2b69d0e4556403b880b9a75",
+      "data_contract_sha256": "6e354fe6f8ad1930aa75aa16bc516717b04f75b4c9ef60c84c2b59c911d85e75",
+      "design_view_sha256": "572b790a652adf805af384072741372ab8b6e959eda871695f05046f8cda6104",
+      "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+      "rows": {
+        "fit": 15017,
+        "inner": 611,
+        "validation": 4043
+      },
+      "row_ids_sha256": {
+        "fit": "bcd3851803ca9db0c841d0258d05e370b0d906ba70115f2b7f24abbfec92b6c4",
+        "inner": "73ab737659a2ecc5063d6248a790583529ba3ce26e1b9c3b5673c8ff06d185f1",
+        "validation": "7c146e1c1a931c4809974311132a40c397edf278e8a64d828af32b03dbf0b231"
+      },
+      "fit_naive_mae": {
+        "18": 0.003520077603812118,
+        "24": 0.0041066740071937155,
+        "36": 0.0049606599392748715,
+        "48": 0.005832833627927531,
+        "60": 0.006581544885177455,
+        "72": 0.0074618939897981825
+      },
+      "earliest_consumed_bar": "2019-12-26T23:00:00+00:00 (before TRAIN start; after the DCA_2019 declared-assumption span 2019-03-11..2019-12-01, inside the declared, not quote-verified December-2019 warmup of the clock scope)"
+    }
+  },
+  "market_grid_candidates": {
+    "module": "tools/i6dmo/market_grid.py",
+    "tests": "tests/i6dmo/test_market_grid.py",
+    "rules": [
+      "MG2_MARKET_EXACT",
+      "MG12_MARKET_EXACT"
+    ],
+    "study": "docs/i6n/direct_multi_output_static/market_grid/SUPPORT_STUDY.json (d2b6a238...)",
+    "cli": "python -m tools.i6dmo.market_grid --design <short design> --input-dir <input> --out <report.json>",
+    "status": "SUPPORT_STUDY_NOT_A_PREDICTIVE_MEASUREMENT; candidates not sealed, no fit"
+  },
+  "market_time": {
+    "order": "MUSASHI_TO_SATOSHI_MARKET_TIME_PAIR_20261015 (50d20d01) section 1.1; plan MARKET_TIME_PAIR_PLAN.md sections 2/4/6",
+    "status": "TRAINING_ADAPTER_IMPLEMENTED_CPU_TESTED_NO_FIT_HAS_RUN",
+    "module": "tools/i6dmo/market_grid.py",
+    "tests": "tests/i6dmo/test_market_bundle.py (15 passed), tests/i6dmo/test_market_grid.py (9 passed)",
+    "designs": {
+      "mg2": "docs/i6n/direct_multi_output_static/market_grid/DESIGN.mg2.json",
+      "mg12": "docs/i6n/direct_multi_output_static/market_grid/DESIGN.mg12.json",
+      "schema": "i6dmo.market_design.v1 \u2014 DATA_LANE_SEALED_INPUTS_NOT_A_RUNTIME_CONFIG; the runtime/model seal is added by its owner lane",
+      "api": "market_grid.market_design(elapsed_design) -> doc; validate_market_design(doc); data_identity_sha256(doc)",
+      "contradiction_guard": "any 'input'/'history_span_hours'/'spacing_hours' field, or elapsed_span_hours_fixed=True, raises CONTRADICTORY_TIME_FIELDS"
+    },
+    "build": "market_grid.build_market_bundle(input_dir, market_design, out_dir, code_commit=..., shared_with=<other bundle dir>)",
+    "read": "market_grid.load_market_manifest(dir); load_market_split(dir, split, design=<doc>) (authenticates MARKET_RULE_MISMATCH / MARKET_DATA_IDENTITY_MISMATCH); market_grid.paired_metrics(dir, split, predictions, input_dir=...)",
+    "bundle_schema": "i6dmo.market_bundle.v1 \u2014 deliberately NOT i6dmo.data_bundle.v1, so a DS2/ASOF trainer cannot adopt it by shape; it publishes NO fixed 'offsets_hours' ladder (elapsed_offsets_vary_per_row=true) and instead 'offsets_open_market_hours'",
+    "split_npz": {
+      "row_id": "(n,) int64 origin UTC epoch seconds",
+      "x": "(n,13,19) float64 RAW values at the exact expected market slots, oldest->t",
+      "origin_price": "(n,) float64 p(t)",
+      "target_price": "(n,6) float64 exact ELAPSED p(t+h), NaN where mask False",
+      "mask": "(n,6) bool C1 MANAGEMENT support",
+      "offsets_hours": "(n,13) float64 ACTUAL signed offsets from t in HOURS; last column exactly 0",
+      "adjacent_delta_hours": "(n,13) float64 RAW hours between adjacent slots; first column 0; the /24 conversion is the MODEL's",
+      "closure_crossed": "(n,13) int64 0/1; first column 0; 1 when the step from the previous slot crossed a market closure",
+      "slot_instants": "(n,13) int64 UTC epoch seconds of each slot"
+    },
+    "split_aux_npz": "row_id, row_ids ('EURUSD|<iso>'), entry_mask (n,6) C1 ENTRY, week_ids",
+    "model_contract": "plan section 3: sinusoidal code on ACTUAL offsets (never ordinal indices), then two context channels appended before the core (adjacent hours/24, closure 0/1); 19 branches x 4 filters = 76 value channels + 2 context channels",
+    "manifest_seals": [
+      "design_sha256",
+      "data_identity_sha256",
+      "derives_from_design_sha256",
+      "feature_manifest_sha256",
+      "availability_contract_sha256",
+      "calendar{id,version,status,sha256}",
+      "source_clock",
+      "inputs{file:sha256}",
+      "support_hashes{row_ids,arrays,slot_instants,offsets}",
+      "per-split row_ids_sha256/arrays_sha256/aux_sha256/slot_instants_sha256/offsets_sha256",
+      "counts (typed exclusions, closures_vs_gaps, elapsed_span_hours_distribution)",
+      "fit_statistics (FIT-only scalers + per-head fit naive MAE)",
+      "reconciliation",
+      "code{commit,files_sha256,market_grid_sha256}",
+      "bundle_sha256"
+    ],
+    "real_bundles": {
+      "MG2_MARKET_EXACT": {
+        "code_commit": "08b9fb5c",
+        "bundle_sha256": "21400c51525e916c3c6cd9510ea806ec6ee0e998e3daeb8026b56264259a55da",
+        "bundle_json_file_sha256": "471ea311078aafbd12cbdc82b7d76e4c9fc28153b61ffa301370945bb1ef047d",
+        "data_identity_sha256": "d5d97a6e2e6b3f27",
+        "rows": {
+          "fit": 16496,
+          "inner": 715,
+          "validation": 4772
+        },
+        "fit_naive_mae": {
+          "2": 0.001048523188845105,
+          "3": 0.001292862136636821,
+          "4": 0.0015042693356470012,
+          "5": 0.0016927363932781546,
+          "6": 0.0018724161754452692,
+          "12": 0.0027652781556039173
+        },
+        "elapsed_span_hours_range": [
+          24,
+          73
+        ],
+        "rows_crossing_a_closure": 2217
+      },
+      "MG12_MARKET_EXACT": {
+        "code_commit": "08b9fb5c",
+        "bundle_sha256": "c3867b5c0043ed1df80d1f285684fe29691421156bcb9fe7b104ff4b1507670b",
+        "bundle_json_file_sha256": "e6595c0e397c55a02e863c402088ecb582ade968c397b2253716fcc805e5d866",
+        "data_identity_sha256": "0449cd4efd32b50a",
+        "rows": {
+          "fit": 13174,
+          "inner": 546,
+          "validation": 3804
+        },
+        "fit_naive_mae": {
+          "18": 0.003531116932422172,
+          "24": 0.004109250329163924,
+          "36": 0.004962521266073196,
+          "48": 0.005845652497211551,
+          "60": 0.006614685222001326,
+          "72": 0.007534100522518041
+        },
+        "elapsed_span_hours_range": [
+          191,
+          241
+        ],
+        "rows_crossing_a_closure": 13174
+      }
+    },
+    "reconciliation_vs_study": "study d2b6a238; MG2 16496/715/4772 and MG12 13174/546/3804 all MATCH (difference 0), shared usable origins 13123/546/3760 equal to the study; status RECONCILED; counts are references, never quotas",
+    "input": {
+      "sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+      "calendar_sha256": "782603fd26e879d6f837c83e9ec92d363500cb1dd150544e10a80c1ddeb88265",
+      "calendar_status": "ASSUMED_NOT_BROKER"
+    },
+    "limits": [
+      "2024 remains DEVELOPMENT (the 19-feature selection used it)",
+      "two FRED publication clocks unresolved: confirmatory TEST stays blocked",
+      "calendar is ASSUMED, not a verified broker schedule",
+      "no fit has run under this design"
+    ]
+  }
+}

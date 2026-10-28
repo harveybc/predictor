@@ -1,0 +1,275 @@
+{
+  "schema": "musashi_shared_recipe_audit.v1",
+  "checks": {
+    "recipe_matches_sealed_scaler": true,
+    "recipe_columns_and_window_match": true,
+    "actual_recipe_groups_match_C_architecture": true,
+    "admitted_and_calendar_digests": true,
+    "actual_store_and_manifest_digests": true,
+    "merged_parent_files_match": true,
+    "selection_ledger_digest": true,
+    "all43_results_match_retained_join": true,
+    "contrast_support_paired": true,
+    "encoding_support_paired": true,
+    "rescue_support_paired": true,
+    "ledger_unique_and_error_free": true,
+    "per_group_decision_reproduced": true
+  },
+  "paired_support": {
+    "contrast": {
+      "groups": 714,
+      "mismatches": 0,
+      "arm_counts": {
+        "2": 540,
+        "10": 24,
+        "18": 12,
+        "6": 12,
+        "16": 12,
+        "12": 24,
+        "22": 24,
+        "13": 12,
+        "5": 6,
+        "8": 12,
+        "4": 12,
+        "9": 12,
+        "7": 12
+      }
+    },
+    "encoding": {
+      "groups": 72,
+      "mismatches": 0,
+      "arm_counts": {
+        "3": 24,
+        "2": 48
+      }
+    },
+    "rescue": {
+      "groups": 120,
+      "mismatches": 0,
+      "arm_counts": {
+        "4": 120
+      }
+    }
+  },
+  "runtime": {
+    "python": "3.12.13 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:38:16) [GCC 14.3.0]",
+    "numpy": "2.5.1",
+    "pandas": "3.0.3"
+  },
+  "inputs_sha256": {
+    "spec": "453f57b2e9b28d8ab2eac8a428ddddf4792620a1ebf3113c45e419c341c6359f",
+    "scaler": "6e6d9725b0670cc4ceaefdaa3133e80c4e2e9f022a1887970282bae5d6f23be5",
+    "groups": "a9d878cf8c63a5b0ecf13f3e3a664e020ae70cc9cf2fa2d252f1643b227f76ef",
+    "list": "902622d7e47377034ac131d84b08fae9e497105f47aa29d1a1fec1b4099276b1",
+    "manifest": "2ca6648c3c3868d17e5c52719fc0a1c605e7162534b5384c141cd5883df59b32",
+    "decision": "edb331ef24629b5331b524e76f9f213c3464a8eac72b57e1d75f4d34d5d47c0c",
+    "combination": "86d771f12918158230804154cd692c66fd27e7e429ecc884b34a6a0fc887ce39",
+    "c-result": "d7d062b4204b4f575074006b8ea3eb463d6af3163706b3ea843f53910d236e4b"
+  },
+  "recipe_sha256": "109e769003ea26d4f8dcd5b263a938d2261ce5b947131cbcc2b12b2ac4b1c343",
+  "science_commit": "1aaf367923fae467988b1ca87d5aa3c74321141f",
+  "request_scope": "recipe, existing decisions, upstream fit boundaries and consumer integration",
+  "new_policy_fits": 0,
+  "test_scored": false,
+  "original_artifacts_changed": false,
+  "emitter_mutations": {
+    "honest_baseline": {
+      "exit_code": 0,
+      "accepted": true,
+      "recipe_identity": "recipe_6f522eec4ffdacbc",
+      "same_as_delivered": true,
+      "error": null
+    },
+    "scaler_mean_changed": {
+      "exit_code": 0,
+      "accepted": true,
+      "recipe_identity": "recipe_870b83660ba26043",
+      "same_as_delivered": false,
+      "error": null
+    },
+    "scaler_policy_rolling": {
+      "exit_code": 0,
+      "accepted": true,
+      "recipe_identity": "recipe_1ee408c663b8794e",
+      "same_as_delivered": false,
+      "error": null
+    },
+    "group_kind_changed": {
+      "exit_code": 0,
+      "accepted": true,
+      "recipe_identity": "recipe_3f245a8fa3a78cc9",
+      "same_as_delivered": false,
+      "error": null
+    },
+    "model_depth_changed": {
+      "exit_code": 0,
+      "accepted": true,
+      "recipe_identity": "recipe_379a8c7ed86564ff",
+      "same_as_delivered": false,
+      "error": null
+    },
+    "store_digest_changed": {
+      "exit_code": 0,
+      "accepted": true,
+      "recipe_identity": "recipe_1826b7f37aae0743",
+      "same_as_delivered": false,
+      "error": null
+    },
+    "manifest_identity_changed": {
+      "exit_code": 0,
+      "accepted": true,
+      "recipe_identity": "recipe_6f522eec4ffdacbc",
+      "same_as_delivered": false,
+      "error": null
+    },
+    "replay_failed": {
+      "exit_code": 0,
+      "accepted": true,
+      "recipe_identity": "recipe_6f522eec4ffdacbc",
+      "same_as_delivered": false,
+      "error": null
+    },
+    "negative_control_bad_result": {
+      "exit_code": 1,
+      "accepted": false,
+      "recipe_identity": null,
+      "same_as_delivered": false,
+      "error": "RECIPE_C_RESULT_DIGEST_DIFFERS_FROM_COMBINATION_DECISION"
+    },
+    "negative_control_bad_column": {
+      "exit_code": 1,
+      "accepted": false,
+      "recipe_identity": null,
+      "same_as_delivered": false,
+      "error": "RECIPE_SCALER_COLUMNS_DIFFER_FROM_LIST"
+    }
+  },
+  "transform_boundary": {
+    "already_transformed_store_columns": [
+      "OPEN@diff",
+      "HIGH@diff",
+      "LOW@diff",
+      "CLOSE@diff",
+      "RAW_LOG_RANGE@log",
+      "px.range_1@log",
+      "px.range_2@log",
+      "px.range_4@log",
+      "px.range_6@log",
+      "cdl.upper_wick_pips@asinh",
+      "cdl.lower_wick_pips@asinh",
+      "cdl.range_pips@asinh",
+      "cdl.close_minus_low_pips@asinh",
+      "cdl.high_minus_close_pips@asinh",
+      "fx.usdchf.rv_24@log",
+      "wv.lc.A4@diff",
+      "wv.lc.energy_D4@log",
+      "wv.lc.energy_D3@log",
+      "wv.lc.energy_D2@log",
+      "wv.lc.energy_D1@diff",
+      "wv.r1.energy_D4@log",
+      "wv.r1.energy_D3@log",
+      "wv.r1.energy_D2@log",
+      "wv.r1.energy_D1@diff",
+      "wv.usd.energy_D4@log",
+      "fd.lc.d0.3@diff"
+    ],
+    "additional_consumer_differences": [],
+    "recipe_omits_stage_for_suffix_operations": true
+  },
+  "observed_row_window": {
+    "adjacent_gaps_gt_one_hour": 262,
+    "largest_adjacent_gap_hours": 82.0,
+    "physical_span_hours_of_13_stride2_min": 24.0,
+    "physical_span_hours_of_13_stride2_max": 105.0,
+    "semantics": "consecutive observed rows; closures consume no tensor slots, elapsed time can exceed 24h"
+  },
+  "next_queue_consumer": {
+    "command": [
+      "tools/expert_guided_e3m.py",
+      "run",
+      "--admitted",
+      "<package>/admitted",
+      "--csv-dir",
+      "<package>/sel15",
+      "--store",
+      "<package>/store/full_pool_eurusd_h1.parquet",
+      "--feature-list",
+      "<package>/FEATURE_LIST_shortlist_strict.json",
+      "--out",
+      "<output>",
+      "--variants",
+      "FULL",
+      "--units",
+      "2",
+      "--depth",
+      "2",
+      "--head",
+      "16",
+      "--dropout",
+      "0.1",
+      "--wd",
+      "0.0001",
+      "--max-epochs",
+      "1000",
+      "--scaling",
+      "fixed_train",
+      "--nonstationary",
+      "diff",
+      "--split-contract",
+      "consolidated",
+      "--agent-state",
+      "none",
+      "--window",
+      "13",
+      "--stride",
+      "2",
+      "--exec-contract",
+      "sac",
+      "--min-orders-per-week",
+      "2.0",
+      "--groups",
+      "<package>/FEATURE_GROUPS_shortlist_strict.json"
+    ],
+    "uses_recipe_argument": false,
+    "planned_group_file_sha256": "33ac83c1c524e3f1e2677515a5aaa6e412e0053197a3a85bf1bc40650839f3bb",
+    "selected_C_groups_sha256": "a9d878cf8c63a5b0ecf13f3e3a664e020ae70cc9cf2fa2d252f1643b227f76ef",
+    "matches_C_groups": false,
+    "code_recomputes_stationarity_and_scaler": true
+  },
+  "learned_transform_witness": {
+    "layer2_sha256": "634bc044a49a9d39adee5d10685efe615e7249486a1ccd56e33e9c1c44930881",
+    "upstream_fit_period": {
+      "start": "2020-01-01 00:00:00+00:00",
+      "end_exclusive": "2024-01-01 00:00:00+00:00",
+      "rows": 24895,
+      "applies_to": [
+        "kalman",
+        "gmm",
+        "hmm",
+        "fracdiff"
+      ]
+    },
+    "downstream_fit_period": [
+      "2020-01-01",
+      "2023-07-01"
+    ],
+    "selected_affected_columns": [
+      "kf.lc.level_minus_close",
+      "rg.gmm.p0",
+      "rg.gmm.p1",
+      "rg.gmm.p2",
+      "rg.gmm.entropy",
+      "fd.lc.d0.3@diff"
+    ],
+    "recomputed_parent_posterior_matches_store": true,
+    "initial_max_abs_store_delta": 0.0,
+    "inner_rows_used_in_upstream_fit": 3086,
+    "native_refit_max_abs_store_delta": 0.0,
+    "frozen_apply_prefix_unchanged": true,
+    "refit_changed_prefix_cells": 87048,
+    "refit_changed_prefix_rows": 21785,
+    "refit_max_abs_prefix_delta": 0.7357681693133165,
+    "diagnostic_gmm_fits": 2,
+    "policy_fits": 0
+  }
+}

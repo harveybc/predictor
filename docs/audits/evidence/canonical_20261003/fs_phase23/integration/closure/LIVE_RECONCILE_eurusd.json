@@ -1,0 +1,71 @@
+{
+  "backend": "duckdb_olap",
+  "complete": true,
+  "phase": "PHASE_2_3",
+  "population_id": "EURUSD",
+  "receipts_verified": 0,
+  "reconciled_at": "2026-10-07T00:19:00Z",
+  "reconciliation_sha256": "876b228d2861f7ba64abeb0cbc95d403599fb780ce1d0505142765912ecdf7be",
+  "registration": "FIRST_SUBMISSION",
+  "run_id": "phase1-eurusd-final:94d20c038d55e152",
+  "run_sha256": "14eb00d09e9f79a8288853900faa729e28a78c6e7c9bd58e543fb810fa772e04",
+  "schema": "fs_phase23.warehouse_reconcile.v2",
+  "tables": {
+    "feature_alias_groups": {
+      "count": 1,
+      "expected": null,
+      "receipted_inserted": 1,
+      "receipts": 16,
+      "receipts_cover_store": true,
+      "rows_sha256": "4087db1a006787391adad7219a5a02478902ee71ec930f58d295edd46a7bb262"
+    },
+    "feature_filter_rankings": {
+      "count": 45990,
+      "expected": null,
+      "receipted_inserted": 45990,
+      "receipts": 196,
+      "receipts_cover_store": true,
+      "rows_sha256": "c2d983fdde260024f2e926deef927a9806fd33e377103d6bbcb63b74dfc821ca"
+    },
+    "feature_filter_subsets": {
+      "count": 686,
+      "expected": null,
+      "receipted_inserted": 686,
+      "receipts": 14,
+      "receipts_cover_store": true,
+      "rows_sha256": "2a50443e326104e1088d82392f2efa4a67ea21f1a2eb62b491ff0f0ae7963348"
+    },
+    "feature_pair_gate": {
+      "count": 66795,
+      "expected": null,
+      "receipted_inserted": 66795,
+      "receipts": 542,
+      "receipts_cover_store": true,
+      "rows_sha256": "415f65fecada7998c127c967128fda6f382e4e146f82bf4c51552c9a79d0977d"
+    },
+    "feature_pair_metrics": {
+      "count": 7213860,
+      "expected": null,
+      "receipted_inserted": 7213860,
+      "receipts": 9177,
+      "receipts_cover_store": true,
+      "rows_sha256": "03e8f8e160dbea0c00b4318f42f0f80b76264c7db7e8f6f2de78c4f4b9f9520d"
+    },
+    "feature_pair_stability": {
+      "count": 1202310,
+      "expected": null,
+      "receipted_inserted": 1202310,
+      "receipts": 1638,
+      "receipts_cover_store": true,
+      "rows_sha256": "7df21b0a2fcfc755acac6b3eaac9dad8fea41edc2d863016d29e0f31a6c3f6ab"
+    },
+    "feature_redundancy_clusters": {
+      "count": 277,
+      "expected": null,
+      "receipted_inserted": 277,
+      "receipts": 32,
+      "receipts_cover_store": true,
+      "rows_sha256": "8228253fa56fffa657fe3f692083485d7d7581b3649aca29af6943e27c14a3f3"
+    }
+  }
+}

@@ -1,0 +1,249 @@
+{
+  "schema": "i6dmo.interface.model.v1",
+  "lane": "model",
+  "status": "IMPLEMENTED_CPU_TESTED",
+  "owned_files": [
+    "tools/i6dmo/__init__.py (empty, shared)",
+    "tools/i6dmo/design.py",
+    "tools/i6dmo/model.py",
+    "tools/i6dmo/train.py",
+    "tests/i6dmo/__init__.py (empty, shared)",
+    "tests/i6dmo/dmo_model_fixtures.py",
+    "tests/i6dmo/test_dmo_design.py",
+    "tests/i6dmo/test_dmo_model.py",
+    "tests/i6dmo/test_dmo_train.py",
+    "tests/i6dmo/test_dmo_long.py",
+    "tools/i6dmo/final.py",
+    "tests/i6dmo/test_dmo_final.py",
+    "tools/i6dmo/gpu_probe_dmo10.py",
+    "tools/i6dmo/replay_monitor.py",
+    "tests/i6dmo/conftest.py",
+    "tools/i6dmo/dmo10_isolation.py",
+    "tests/i6dmo/test_dmo10_isolation.py",
+    "tests/i6dmo/test_dmo_hourly.py",
+    "docs EXPERIMENT.short_hourly.json + COMMON_SUPPORT_RULES.json (sealed artifacts)"
+  ],
+  "python_api": {
+    "tools.i6dmo.design.load_design(path) -> dict": "typed, unknown/missing fields rejected at every level; fixed C-section values enforced",
+    "tools.i6dmo.design.effective_config(design) -> dict": "sealed effective config; carries the full design and design_sha256; effective_config_sha256 covers everything",
+    "tools.i6dmo.design.validate_design_report(path) -> dict": "pure validate-design logic (no fit, network, TEST, credentials); status PASS or typed code",
+    "tools.i6dmo.design.add_cli(subparsers)": "registers `validate-design --design <path> [--json]` on the shared `python -m tools.i6dmo` parser (ops lane owns __main__)",
+    "tools.i6dmo.model.build_dmo(config) -> DmoBundle": "branches/fusion/core/six independent heads; outputs named h2,h3,h4,h5,h6,h12",
+    "tools.i6dmo.model.save_dmo(bundle, dir) / load_dmo(dir)": "save writes model.weights.h5 (canonical) + forecast_model.keras (compatibility) + MODEL.json with per-tensor weight digests; load REBUILDS via build_dmo + load_weights, verifies every tensor digest (WEIGHTS_DIGEST_MISMATCH) and the weights-file/archive hashes; full-model deserialization is only a secondary weights compatibility check, never the scoring graph; doc.load_path = 'rebuild+load_weights'",
+    "tools.i6dmo.train.train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=None) -> receipt": "one fit; overrides (max_epochs/patience only) are for software tests and stamp scientific=false; CLI exposes none"
+  },
+  "subprocess_entry_point": {
+    "command": "python -m tools.i6dmo.train --design <design.json> --bundle <frozen_data_bundle_dir> --out <new_unit_dir> --device {cpu,gpu} [--json]",
+    "exit_codes": {
+      "0": "COMPLETED",
+      "2": "CONTRACT_ERROR (design invalid / out dir not empty / bad device; nothing trained, no receipt; stdout JSON {status,code})",
+      "3": "FAILED_TYPED (receipt written)",
+      "4": "FAILED_UNTYPED unexpected exception (receipt written, code UNHANDLED_EXCEPTION)"
+    },
+    "out_dir_must_not_exist_or_be_empty": true,
+    "no_epoch_or_sample_overrides_on_cli": true,
+    "gpu_requested_without_visible_gpu": "FAILED_TYPED NO_GPU_VISIBLE (no CPU fallback)",
+    "atomic_terminal": "RECEIPT.json written last via tmp+rename; its presence is the terminal",
+    "progress": "PROGRESS.json rewritten atomically after every epoch: epoch, max_epochs, fit_loss, inner_loss, monitored, stale, best_epoch, updates, elapsed_s, updated_at (unit progress counts epochs; ETA stays UNMEASURED until a full fit completes)"
+  },
+  "consumed_data_bundle_contract": {
+    "owner": "lane data",
+    "manifest": "BUNDLE.json",
+    "manifest_required_keys": [
+      "schema",
+      "features",
+      "feature_manifest_sha256",
+      "horizons_hours",
+      "offsets_hours",
+      "splits"
+    ],
+    "features": "exactly tools.i6n_contracts.feature_availability.MANIFEST_NO_STLFSI4 (19, same order); manifest_sha256 must match",
+    "offsets_hours": [
+      -24,
+      -22,
+      -20,
+      -18,
+      -16,
+      -14,
+      -12,
+      -10,
+      -8,
+      -6,
+      -4,
+      -2,
+      0
+    ],
+    "horizons_hours": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      12
+    ],
+    "splits": "{fit, inner, validation} -> {path (relative), sha256}; a 'test' split or any origin >= 2025-01-01 is refused (TEST_FORBIDDEN)",
+    "split_npz_arrays": {
+      "row_id": "(n,) int64 unique, origin UTC epoch seconds",
+      "x": "(n, 13, 19) float, finite, RAW values, oldest->origin",
+      "origin_price": "(n,) float finite, EURUSD p(t)",
+      "target_price": "(n, 6) float, NaN allowed only where mask is false",
+      "mask": "(n, 6) bool, per-head business/support mask (C1/C2 computed by lane data)"
+    },
+    "model_side_defensive_checks": [
+      "fit origins in [2020-01-01, 2023-11-06)",
+      "fit valid labels t+h < 2023-11-06 (purge)",
+      "inner origins/labels in [2023-11-06, 2024-01-01)",
+      "validation origins/labels in [2024-01-01, 2025-01-01)",
+      "every fit head has >=1 valid label"
+    ]
+  },
+  "produced_unit_artifacts": {
+    "RECEIPT.json": "schema i6dmo.train_receipt.v1: status COMPLETED|FAILED_TYPED|FAILED_UNTYPED, code, detail, scientific, overrides, device, identity {design_sha256, effective_config_sha256, bundle_manifest_sha256, feature_manifest_sha256, scales_sha256, weights_sha256, model_archive_sha256, code_files_sha256}, artifacts {relpath: sha256}, training {best_epoch, best_monitored, stop_reason, epochs_completed, updates, early_stop rule}, model_side_summary {fit,inner,validation: per-head count/mae/naive/relative_error, not authoritative}, timings {fit_s, predict_s, wall_s}, resources {cpu_user_s, cpu_sys_s, max_rss_kib, cgroup_memory_peak_bytes|null, tf_gpu_memory_peak_bytes|null, device, visible_gpus, tensorflow_version}",
+    "model/forecast_model.keras + model/MODEL.json": "restored-best weights; load_dmo reproduces predictions exactly",
+    "SCALES.json": "fit-only input mean/std per feature and per-head fit naive MAE (training coordinate scale)",
+    "TRAINING.json": "per-epoch fit_loss, inner_loss, monitored=0.5*(fit+inner), per-head sums/counts, stale count, weights sha; best_epoch, stop_reason; monitor_evaluation {procedure i6dmo.monitor_eval.v2 (canonical_loader_rebuild monitor instance, loader_overhead_s, witness: per-batch per-head float64 partial sums + row-id batch digests + in-function code witness), batch_size (= training batch), graph inference, partition sequential_row_id_fixed, dtype, accumulation, best-epoch monitored + per-head sums/counts, self_check PASS} \u2014 the DMO10 replay MUST recompute via tools.i6dmo.train.replay_monitored(model, fit, inner, record) (shared evaluate_monitored path; any other batching is MONITOR_PATH_MISMATCH), bitwise on the same device",
+    "predictions/{fit,inner,validation}.npz": "row_id, horizons_hours, origin_price, predicted_price (n,6) original USD/EUR, target_price (NaN where invalid), mask"
+  },
+  "training_coordinate": "y_h = (p(t+h) - p(t)) / naive_fit_h where naive_fit_h = fit-only masked mean |p(t+h)-p(t)|; the per-head loss is therefore exactly MAE_h / naive_fit_h; prediction p_hat = p(t) + yhat_h * naive_fit_h",
+  "typed_dispositions": [
+    "ZERO_NAIVE_SCALE",
+    "HEAD_UNSUPPORTED_IN_FIT",
+    "CONSTANT_FEATURE_IN_FIT",
+    "NONFINITE_INPUT",
+    "NONFINITE_LOSS",
+    "NO_GPU_VISIBLE",
+    "TEST_FORBIDDEN",
+    "FEATURE_IDENTITY_MISMATCH",
+    "STLFSI4_ALIAS",
+    "PURGE_VIOLATION",
+    "SPLIT_BOUNDARY_VIOLATION"
+  ],
+  "validate_design": {
+    "standalone": "python -m tools.i6dmo.design validate-design --design <design> [--json]  (exit 0 PASS, 2 FAILED with typed code)",
+    "shared_cli": "ops lane __main__ calls tools.i6dmo.design.add_cli(subparsers); handler sets args.func"
+  },
+  "fixed_choices_not_in_section_C_declared_in_effective_config": {
+    "batch_order": "seeded_permutation_per_epoch (np.random.default_rng(seed))",
+    "core_activation": "relu (plan names only filters/kernel/stride)",
+    "positional_encoding": "additive sinusoid at physical offsets -24..0 h (subclass of the plugin PositionalEncoding)",
+    "restore": "lowest monitored epoch, first tie; min_delta governs patience only (i6n masked early-stop convention)",
+    "op_determinism": "ENABLED everywhere with STATIC algorithm selection (enable_op_determinism + TF_CUDNN_USE_AUTOTUNE=0 + TF_CUDNN_DETERMINISTIC/TF_DETERMINISTIC_OPS=1 + XLA autoclustering off), set before TF init in tools/i6dmo/model.py and re-forced by enable_determinism(); flags recorded in receipt/MODEL.json/PREDICTIONS.json and in monitor_evaluation.determinism_flags; replay refuses records from other flags (DETERMINISM_FLAGS_MISMATCH); reload and predictions stay bitwise"
+  },
+  "long_family": {
+    "seal_command": "python -m tools.i6dmo seal-long-design --short-design <EXPERIMENT.short.json> --short-terminal <terminals/<id>/TERMINAL.json of short.report> --out <EXPERIMENT.long.json> [--json]  (also python -m tools.i6dmo.design ...); exit 0 SEALED, 2 typed FAILED",
+    "pipeline": "seal-long-design (model lane, writes the long design) -> ops `seal-long --root R --design EXPERIMENT.long.json` (campaign sealing) -> long.fit leaves WAIT_ARTIFACT",
+    "short_closure_accepted": "terminal schema i6dmo.terminal.v1, unit_id short.report, status COMPLETE|NOT_ELIGIBLE, identity_sha256; only these fields are read (never eligibility/metrics)",
+    "derived": "short design + PLAN section 5: experiment_id I6-DMO-LONG-DS12-STATIC-R0, horizons [18,24,36,48,60,72], history_span_hours 144, spacing_hours 12; observations 13, issuance 1 h and every other block mirrored; derived_from {short_design_sha256, short_terminal{unit_id, identity_sha256, terminal_file_sha256}}; seal_sha256 over the body",
+    "deterministic": "byte-identical output for the same inputs; idempotent onto an identical file; LONG_DESIGN_EXISTS onto a different one",
+    "undecided": "LONG_PLAN_OPEN_FIELDS (currently empty) -> LONG_DESIGN_UNDECIDED: <dotted field>, nothing written; any 'UNDECIDED' value in a long design fails validate-design with the same code",
+    "schema_compat": "long design keeps schema i6dmo.design.v1 (ops _design_checks); family is selected by experiment_id; effective config carries family short|long",
+    "trainer": "same train entry point; long bundle must declare offsets -144..0 step 12 and horizons 18..72 (BUNDLE_OFFSETS/BUNDLE_HORIZONS otherwise); outputs h18..h72; same masked normalized loss",
+    "typed_codes": [
+      "LONG_DESIGN_UNDECIDED",
+      "LONG_DESIGN_SEAL",
+      "LONG_DESIGN_EXISTS",
+      "SHORT_NOT_TERMINAL_VALID",
+      "SHORT_DESIGN_REQUIRED"
+    ]
+  },
+  "short_identities": {
+    "design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
+    "effective_config_sha256": "287e4f11e4ef385234becf02d9ed31864d8a3a58fc0b4c7f3e4c6a765a76e097 (FINAL pre-release identity; supersedes cd78cc6c/9106 8420/7f7b2aed intermediates)"
+  },
+  "final_refit": {
+    "protocol": "typed FINAL_REFIT design = design.final_refit_design(validation design): experiment_id + '-FINAL', TRAIN [2021-01-01, 2025-01-01) with the same 8-week inner tail (fit [2021-01-01, 2024-11-06), inner [2024-11-06, 2025-01-01)), validation split removed, sealed; effective mode FINAL_REFIT; FINAL_PLAN_OPEN_FIELDS (empty) -> FINAL_DESIGN_UNDECIDED",
+    "unit_runner": "_family_design derives the final design for kind final_refit and refuses a unit window differing from the typed one (FINAL_WINDOW_MISMATCH); the REAL CLI (python -m tools.i6dmo.train) consumes the final design file directly",
+    "identity": "final design/effective shas differ from validation shas; a validation-era bundle is refused under the final design (SPLIT_BOUNDARY_VIOLATION) and vice versa, so no inherited TRAINED terminal crosses identities; scales fit only on the final TRAIN window; every final sample/label strictly before TEST",
+    "software_test_overrides": "env I6DMO_TEST_TRAINING_OVERRIDES (JSON, max_epochs/patience only) for subprocess tests; stamps scientific=false; no CLI flag"
+  },
+  "final_test_path": {
+    "module": "tools/i6dmo/final.py (model lane), registered as unit_runner HOOKS['final_test'] (replaces the strategy placeholder by registration)",
+    "guards": "guard_test(root): TEST_READINESS READY; PAIR_VALIDATION/PROCEDURE_FREEZE/DATA_PROVENANCE PASS without TEST reads; PROCEDURE_FREEZE.final_fit_policy must equal the typed FINAL_REFIT; DATA_PROVENANCE.evidence.fred_clocks must resolve fred.rates.dgs3mo.diff_5d and fred.rates.dgs7.logret_5d (not UNVERIFIED/STILL_UNRESOLVED); then guard_execution_policy(root): strategy_adapter.load_execution_policy + execution_from_policy, refusing absent (EXECUTION_POLICY_MISSING) or tampered (EXECUTION_POLICY_TAMPERED) receipts; conventions are never re-derived",
+    "test_bundle": "build_test_bundle(final_design, {'test': arrays}, out, readiness=guard_test(...)): single test split bound to readiness_sha256 and the final design sha; the ordinary trainer refuses it (TEST_FORBIDDEN)",
+    "predictions": "generate_test_predictions(final_unit_dir, test_bundle_dir, out, readiness=...): frozen weights + fit-only SCALES reused, design shas must match, writes test.npz (row_id, predicted_price, ...) + PREDICTIONS.json; trained=false",
+    "hook": "run_unit(spec,...): spec needs campaign_root, upstream_dirs {final.short_refit, final.long_refit}, test_bundles {short, long}; refusals are FAILED with disposition FINAL_BLOCKED_GATE:<code> naming the missing object; backtest delegates to strategy export run_final_backtest(spec, predictions, execution_params, out_dir) (until published: FINAL_BLOCKED_GATE:FINAL_BACKTEST_EXPORT_MISSING with predictions retained)"
+  },
+  "dmo10_probe": "CUDA_VISIBLE_DEVICES=<scope> python -m tools.i6dmo.gpu_probe_dmo10 [--out DIR]: one session, in_session vs rebuild vs full_load per-head sums on one batch; exit 1 + divergent_pairs names the diverging pair (lane 4 bounded GPU scope; CPU logic tested)",
+  "monitor_tolerance": {
+    "version": "v2 sealed as i6dmo.monitor_numeric_equivalence.v2 (floor_protocol_identity): formula/reference/rtol/atol/scope/dtype/label/flags/runtime; label NUMERICALLY_EQUIVALENT never BITWISE/PASS; old receipts keep their FAIL; activation requires PROVEN gpu_cross_process (recorded device+process identity, GPU visible), never flag inference; cross-device replay is typed CROSS_DEVICE_NOT_COMPARABLE",
+    "scope": "cross-process GPU comparison of the monitored value and per-batch per-head float64 partial sums ONLY; CPU end-to-end, in-session self-check, reload identity, saved-vs-reloaded predictions, input witness bytes, weight digests, forward identity and determinism flags stay BITWISE",
+    "bound": "|delta| <= 1e-9 + 5e-5*|recorded| per partial sum and for the monitored value",
+    "calibration": "recorded witness distribution across eight excluded-mechanism rounds, observed max 1.82e-5, margin against flapping, far below any scientific effect",
+    "justification": "a reproduced, build/context-specific numerical discrepancy between in-session and fresh-instance GPU executions of this pinned TF build, cause not demonstrated (eight mechanisms excluded), bounded by the versioned NUMERICALLY_EQUIVALENT protocol; prospective, no past run re-graded",
+    "activation": "only with static-algorithm determinism flags recorded and equal on both sides",
+    "outcomes": "WITHIN_DECLARED_FLOOR (reported with max deltas and allowance; row-level hex stays a diagnostic in row_forward_diagnostics) vs MONITOR_WITNESS_DIVERGENCE beyond the floor (hard)",
+    "declared_in": "EFFECTIVE config training.monitor_comparison_floor (effective sha changes; design sha unchanged)"
+  },
+  "replay_entrypoint": "python -m tools.i6dmo.replay_monitor --design <design> --bundle <bundle> --unit <trained unit> [--json]: fresh flags-first interpreter; canonical load; recomputes the monitored value through the recorded procedure with witness comparison; exit 0 MATCH/TOLERATED (verdict JSON), 5 typed disposition; refuses records or processes with tf_imported_before_flags=true (DETERMINISM_INIT_ORDER_INVALID)",
+  "monitor_witness_v2_extensions": {
+    "weights_at_witness": "per-tensor digests of the evaluated instance, recorded in the witness and diffed by replay_monitor against MODEL.json weight_tensors (typed WEIGHTS_AT_WITNESS_MISMATCH names tensors)",
+    "batch0_predictions_hex": "per-row per-head float64 hex of batch 0 per split; replay diffs and reports first divergent rows + uniform/localized delta-pattern verdict inside MONITOR_WITNESS_DIVERGENCE",
+    "tensor_float_32": "disabled flags-first in enable_determinism and recorded in determinism_flags",
+    "input_witness": "post-normalization float32 byte digests (split, per batch, batch-0 per row, first 8 rows byte-complete) recorded before any forward and diffed first at replay; typed INPUT_WITNESS_MISMATCH names batches/rows/elements; input_materialization pinned to i6dmo.monitor_input.v1 (bundle arrays, float64 CPU normalization, single float32 cast in materialize_monitor_inputs, shared by fit and replay)",
+    "monitor_forward": "one dedicated eager forward (i6dmo.monitor_forward.v1, source sha256) owned by the monitor module; used by fit-time recording and replay_monitor; records/witnesses from any other forward are refused typed MONITOR_FORWARD_MISMATCH; grappler remapping/layout_optimizer/auto_mixed_precision disabled flags-first and enforced"
+  },
+  "decision_impact": "monitor_evaluation.decision_impact: near-tie negative control (stopping_decision_impact at measured 1.82e-5 relative uncertainty) reporting could_change_best_epoch / could_change_patience_or_stop; training decisions untouched; no invariance claim",
+  "dmo10_isolation": "python -m tools.i6dmo.dmo10_isolation {freeze|forward|diff|flags}: frozen batch digests to Git (arrays local), element-level diff before reduction, independent fsum reproduction, controlled flags-on/off child comparison (SUPPORTS/DOES_NOT_SUPPORT/NOT_INFORMATIVE_ON_CPU); retained checkpoint only, no fits",
+  "hourly_control": {
+    "seal": "python -m tools.i6dmo seal-hourly-control --short-design <short> --out-dir <dir> [--json] (also tools.i6dmo.design); writes EXPERIMENT.short_hourly.json + COMMON_SUPPORT_RULES.json, deterministic/idempotent, no fit",
+    "identity": "I6-DMO-SHORT-HOURLY-DS1-STATIC-R0, design sha 971ba9c42a2dbbe86d2bd100f5f85c9e8e3ccbfbcbe3a62a9d0a18f83cec0767; 24 elapsed h, spacing 1 h, 25 obs incl. t, heads 2..12, same recipe/cadence/splits",
+    "forced_adjustment": "head Flatten input 25x4=100 (vs 13x4=52); everything else identical (branch/core params 304/1932)",
+    "availability": "declared in derived_from.availability_declaration; counts owned by the data lane market-grid study",
+    "common_support": "COMMON_SUPPORT_RULES.json sha 9d61117f... frozen before scoring and bound into the sealed design; REUSED_MODEL_SUBSET_SCORE != trained-on-common-population; encoder/R2/cadence are distinct later designs",
+    "data_bundle": "a bundle for this family must declare offsets -24..0 step 1 (25) and horizons 2..12; a 13-slot bundle is a typed BUNDLE_OFFSETS refusal"
+  },
+  "market_time": {
+    "status": "FIT_PATH_IMPLEMENTED_CPU_TESTED_NO_FIT (review B-1/B-2/B-4 repaired)",
+    "owned": [
+      "tools/i6dmo/design.py (market-time schema + seal-market-time)",
+      "tools/i6dmo/model.py (DynamicPhysicalTimeEncoder, market-time families)",
+      "tests/i6dmo/test_dmo_market_time.py"
+    ],
+    "designs": {
+      "short": "EXPERIMENT.mg2.json, I6-DMO-SHORT-MG2-MARKET-EXACT-R0: rule MG2_MARKET_EXACT, 13 obs, spacing 2 open-market hours, history 24 open-market hours, heads [2,3,4,5,6,12]",
+      "long": "EXPERIMENT.mg12.json, I6-DMO-LONG-MG12-MARKET-EXACT-R0: rule MG12_MARKET_EXACT, 13 obs, spacing 12, history 144, heads [18,24,36,48,60,72]"
+    },
+    "schema": "NEW typed schema i6dmo.market_time_design.v1 (separate from i6dmo.design.v1; history_span_hours keeps its old elapsed meaning and is ABSENT here). market_time block: rule, observations, spacing_open_market_hours, span_open_market_hours, include_origin, elapsed_span_fixed=false, require_exact_market_slots=true. A fixed-elapsed field (history_span_hours/spacing_hours/observations under input) alongside market_time is typed MARKET_TIME_CONTRADICTION.",
+    "seal": "inputs/formula identity (time_encoder), feature manifest, calendar (ASSUMED_NOT_BROKER), source-clock/availability contract, data candidate+support study digests, seed 6102026, runtime (tensorflow/keras) -> seal_sha256",
+    "cli": "python -m tools.i6dmo seal-market-time --short-design <EXPERIMENT.short.json> --candidate-dir <market_grid dir> --out-dir <dir> [--json]; validate-design accepts both sealed designs (family short_mg2 / long_mg12)",
+    "model_extension": {
+      "layer": "i6dmo.DynamicPhysicalTimeEncoder v1, serializable, immediately after branch fusion",
+      "inputs": "per-example offsets_hours (batch, slots) signed UTC hours from t (last exactly 0) and closure_crossed (batch, slots) 0/1; NEVER ordinal slot indices and never a fixed per-batch grid",
+      "encoding": "the same deterministic sinusoidal rule as PositionalEncoding evaluated on the ACTUAL offsets: sin/cos with rates 10000^(-2*(c//2)/C), added to the 76 fused value channels",
+      "context_channels": "then APPEND exactly two channels before the core: adjacent elapsed-hours/24 (fixed unit conversion, never fitted) and closure_crossed (0/1); first slot adjacent delta 0 and flag 0",
+      "shapes": "19 branches -> core input (batch, slots, 78) = 76 encoded + 2 context; dtype float32",
+      "metadata": "MODEL.json records market-slot order vs actual wall-clock time explicitly; no donor is compatible by shape alone (time_encoder + market_time identity must match)"
+    },
+    "unchanged": "branches 4/3/1, core 8->4 (k3,s1), six Flatten->Dense(8,relu)->Dense(1,linear) heads, AdamW 1e-3/1e-4, batch 256, 200 epochs, patience 10, min_delta 1e-8, equal-head masked normalized MAE, best-weight restore, mean end-of-epoch FIT/INNER monitor at identical weights, and the already-reviewed numerical policy (i6dmo.monitor_numeric_equivalence.v2) with NO broadened tolerance and DMO10 not reopened",
+    "ds2_preserved": "the old elapsed DS2/hourly/long families keep their exact behaviour under their own configs (no shared default change, no DOIN change); a DS2 replay test asserts the 13x19 input, 76-channel fusion and fixed-offset encoder are untouched",
+    "consumes_data_bundle": "BUNDLE.json market-time variant: features (19, MANIFEST_NO_STLFSI4), horizons_hours, rule, slots, spacing/span open-market hours, calendar+support-study digests, and per-split arrays adding offsets_hours (n, slots) float and closure_crossed (n, slots) bool/0-1 alongside row_id/x/origin_price/target_price/mask; a fixed offsets_hours list (elapsed grid) is refused",
+    "sealed": {
+      "mg2": {
+        "experiment_id": "I6-DMO-SHORT-MG2-MARKET-EXACT-R0",
+        "design_sha256": "1fa48222a7136111b245f70ae07c47c3c67cf56e276e50e3d52edeadd35e3cb2",
+        "seal_sha256": "4b64b4ee321e23ce3c2dcb183fda00fd1488af2494bb15f68c89dd9775344ec8",
+        "effective_config_sha256": "920332aed3997b56a0fce19ced25c2d48abeff77ebb227ce6cff368c311ad768",
+        "file": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg2.json",
+        "supersedes": "169fbece (pre-review seal; the encoder identity gained the ordinal/compressed-ladder guards)"
+      },
+      "mg12": {
+        "experiment_id": "I6-DMO-LONG-MG12-MARKET-EXACT-R0",
+        "design_sha256": "4da1d3e09fc8df36445a080b0c07b1ca58a6c9674e0fa8249c10bc2d66166039",
+        "seal_sha256": "97541764436cc1356600999dd7b68e702a66fab37d82e676522709744dda89c6",
+        "effective_config_sha256": "0853f6d95bc3b70166a469011ba7a8d7f92e740089378e355bb6692c3810dd2f",
+        "file": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg12.json",
+        "supersedes": "8c10a9ca (pre-review seal)"
+      }
+    },
+    "model_api": "tools.i6dmo.model.model_config(features, family='short_mg2'|'long_mg12') -> market config (slots + market_time block, NO offsets_hours grid); build_dmo returns a 3-input model [observations(b,13,19), offsets_hours(b,13), closure_crossed(b,13)]; predict_matrix accepts the list of inputs; save/load carry market_time metadata (slot_order_is_not_wall_clock) and refuse metadata/config disagreement (MARKET_TIME_INCOMPATIBLE)",
+    "short_effective_unchanged": "287e4f11e4ef385234becf02d9ed31864d8a3a58fc0b4c7f3e4c6a765a76e097 (verified after the market-time work)",
+    "fit_path": {
+      "build": "design.effective_config(sealed)['model'] now builds directly: normalize_model_config accepts the sealed block's offsets_hours=None and time_encoder identity (verifying layer/version/unit conversion/context channels) and is byte-equal to model_config(features, family=...)",
+      "bundle": "train.load_data_bundle(dir, effective, design_path) routes market designs to _load_market_bundle: schema read BEFORE body verification (a DS2 bundle is BUNDLE_SCHEMA, never a digest error), market_grid.load_market_manifest + load_market_split authentication (MARKET_RULE_MISMATCH / MARKET_DATA_IDENTITY_MISMATCH), feature/horizon identity, TEST_FORBIDDEN, split and purge boundaries, finiteness, then the time-input conventions",
+      "inputs": "train.market_time_inputs(arrays) -> [x, offsets_hours, closure_crossed] (float32); materialize_monitor_inputs returns that list for market splits and a single tensor for elapsed ones; fit loop, monitor forward, witnesses and prediction/export paths all slice every input consistently",
+      "guards": "typed ORDINAL_OR_INVALID_OFFSETS at BOTH seams, with the minimum adjacent spacing DERIVED FROM THE SEALED DESIGN at each (encoder: min_adjacent_hours = market_time.spacing_open_market_hours; trainer: market_time_inputs(arrays, design=...) via market_spacing_hours) - no fixed floor: last offset exactly 0, all offsets <= 0, increasing towards the origin, adjacent elapsed hours >= the design spacing, first adjacent delta 0, first closure flag 0, flags 0/1",
+      "receipt": "market_time block (rule, spacing/span, slot_order_is_not_wall_clock, time_inputs, bundle_schema); MODEL.json keeps the same metadata",
+      "software_test_knobs": "I6DMO_TEST_TRAINING_OVERRIDES (max_epochs/patience) and I6DMO_TEST_MAX_ROWS (tiny row subset); both stamp scientific=false"
+    }
+  }
+}

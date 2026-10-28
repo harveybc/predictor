@@ -1,0 +1,61 @@
+{
+  "asset_url": "https://github.com/harveybc/predictor/releases/download/phase2-3-feature-selection-20261007/cube_phase2-3_20261007.duckdb.zst",
+  "compressed_asset": "cube_phase2-3_20261007.duckdb.zst",
+  "compressed_sha256": "89d19f47b308bcf9f24853369ab9870c784cc22121ab7a300f0116609394e107",
+  "compressed_size_bytes": 3562568823,
+  "compressor": "*** Zstandard CLI (64-bit) v1.5.7, by Yann Collet ***",
+  "created_on": "2026-10-07",
+  "custody_policy": "The repository retains this manifest, the schema and the SHA-256; the compressed binary is a release asset. Restore requires SHA-256 verification of the asset and of the decompressed file before opening.",
+  "database": "DuckDB",
+  "manifest_sha256": "ac72909f9ef1ae23a5d2aac92775216cf253e0cefb2df4ccc8bd65ddca3b766e",
+  "missing_relations": [],
+  "phase": "PHASE_2_3",
+  "publish_commands": [
+    "gh release create phase2-3-feature-selection-20261007 --repo harveybc/predictor --title 'PHASE_2_3 OLAP snapshot' --notes-file RELEASE_NOTES.md",
+    "gh release upload phase2-3-feature-selection-20261007 cube_phase2-3_20261007.duckdb.zst cube_phase2-3_20261007.duckdb.zst.sha256 --repo harveybc/predictor --clobber"
+  ],
+  "relations": {
+    "feature_alias_groups": {
+      "rows": 6,
+      "rows_sha256": "df5a138645d581fa0f61c1506b3b94ddacd9a7f510e4a37f800e8d50360422e9"
+    },
+    "feature_filter_rankings": {
+      "rows": 50202,
+      "rows_sha256": "e5cee1bfbcf8df59ca6bcec2a57f8dda948f8fc0d8f157e9e22acba967b76cff"
+    },
+    "feature_filter_subsets": {
+      "rows": 980,
+      "rows_sha256": "367caea5829d377a15cb0efc436fa25b45b6e76850b54ed1796e90c0c64650a6"
+    },
+    "feature_pair_gate": {
+      "rows": 70199,
+      "rows_sha256": "d3593bea7248295017c62a3975e2fe8d6963c00d90ef4b554575d2156db0931e"
+    },
+    "feature_pair_metrics": {
+      "rows": 7458876,
+      "rows_sha256": "5f64d130ad825f07985e11d5da0e8ffb13498f55c7d2dbd9a29359b647adacaf"
+    },
+    "feature_pair_stability": {
+      "rows": 1263564,
+      "rows_sha256": "ed775f62df26103bffcd6584ce5c362ad87e850bbfc8806a525df26d5c7bca28"
+    },
+    "feature_redundancy_clusters": {
+      "rows": 315,
+      "rows_sha256": "8c57cbd7bacaf6504febc5b8328c7a7211f18d44fae43df4461fd40ebf3fecfc"
+    },
+    "fs_phase23_load_receipt": {
+      "rows": 11726
+    },
+    "fs_phase23_run": {
+      "rows": 3
+    }
+  },
+  "release_tag": "phase2-3-feature-selection-20261007",
+  "release_url": "https://github.com/harveybc/predictor/releases/tag/phase2-3-feature-selection-20261007",
+  "schema": "olap_snapshot_manifest.v2",
+  "snapshot_file": "cube_phase2-3_20261007.duckdb",
+  "snapshot_sha256": "dd3ce4324fa769190e8087aec0225e6b07933ffbe3ec1f73d02a784a21c73333",
+  "snapshot_size_bytes": 10620252160,
+  "warehouse_runs": {},
+  "zstd_level": 12
+}

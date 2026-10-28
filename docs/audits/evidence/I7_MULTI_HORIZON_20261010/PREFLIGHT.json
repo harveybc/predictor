@@ -1,0 +1,15 @@
+{
+  "schema": "predictor.i7.multi_horizon.support_check.v1",
+  "code_commit": "24d77c30",
+  "design_sha256": "df097c03c2b1db92b7ebb5a2ca076844f789fabd32f4c3d0917676f6991c1e4f",
+  "checked_weeks": 52,
+  "horizons": [1, 2, 3, 4, 5, 6, 24, 48, 72, 96, 120],
+  "minimum_inner_labels_per_horizon": [310, 306, 302, 298, 294, 290, 218, 122, 83, 127, 188],
+  "inner_validation_weeks": 4,
+  "input_support_hours": 24,
+  "maximum_target_purge_hours": 120,
+  "pure_and_real_keras_tests_passed": 8,
+  "test_read": false,
+  "new_annual_model_measurement": false,
+  "scope": "Exact-endpoint label counts after contiguous input-window filtering. Model quality and final artifact custody require campaign closure."
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "sac_shared_recipe_probe.v1",
+  "state": "PASS",
+  "recipe": "recipe_5a8f2155318ba7c7",
+  "recipe_sha256": "93ac66dc40de4b48a65a1455b0a391f15aad78cae43738a4e7d164d768cf118b",
+  "reference_sha256": "36ad1deeb980755fce8fb8e0db6255bed3444d7442f58408ccfb6cc1069c7403",
+  "tensor_sha256": "f087d1a77bbb36999e4aa01192db28435b32b68c807f291057feaf2da233f60f",
+  "probe_shape": [
+    23,
+    13,
+    121
+  ],
+  "valid_rows": {
+    "TRAIN": 19514,
+    "INNER_A": 2589,
+    "OBS_2024": 5600
+  },
+  "valid_masks_exact": true,
+  "source_to_tensor_exact": true,
+  "actor_input_exact": true,
+  "twin_critic_input_exact": true,
+  "trunk_same_weights_exact": true,
+  "policy_reload_exact": true,
+  "observations": "features only",
+  "scientific_fits": 0,
+  "environment_steps": 0,
+  "test_scored": false,
+  "trading_engine_integration_verified": false,
+  "inputs": {
+    "store": "cd0eb8d20c0d0888f7814cda410557a79a927e5cc125e9de5c15dbe073d2f543",
+    "manifest": "7970e3c4feae0186ea5867063774d2855587e01ee068377e3100ba36b29ce535"
+  },
+  "consumer_code": {
+    "app/frozen_recipe_inputs.py": "fe37ece5415394d45d4021ccd585c1ddedb99dad007a4bc4595878278b1cb21b",
+    "agent_plugins/recipe_features.py": "e099d435e60ee25473fc8025167fcf21dbd070157674c9848d0a7c856a093c6f",
+    "agent_plugins/temporal_features.py": "7ab00c018175e7c21fe1e3cedb1666e90ff6dfaf53bf260d994f206a639bd08d",
+    "agent_plugins/sac_agent.py": "bec9d00d0b776c144fd9095ce166b918e828f8283d2fb6921a06b05c9c5eb807"
+  }
+}

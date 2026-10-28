@@ -1,0 +1,12 @@
+[Unit]
+Description=Resume the assigned selection shard without interactive monitoring
+
+[Timer]
+OnBootSec=60s
+OnUnitInactiveSec=60s
+AccuracySec=5s
+Persistent=true
+Unit=musashi-psel-20261022.service
+
+[Install]
+WantedBy=timers.target

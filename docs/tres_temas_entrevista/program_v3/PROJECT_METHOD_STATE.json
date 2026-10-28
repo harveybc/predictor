@@ -1,535 +1,246 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-10-05",
-  "current_stage": "acceptance_test_design",
-  "completed_stages": [
-    "discovery",
-    "requirements"
-  ],
-  "program_owner": "Harvey",
-  "execution_owner": "Satoshi",
-  "handoff_status": "PHASE_1_COMPLETE_PHASE_2_AND_3_AUTHORIZED",
-  "first_experiment": "MOD-E0-DEV",
-  "next_allowed_actions": [
-    "Implement and execute the automated Phase-2 feature-feature dependency and redundancy campaign for the frozen EURUSD and ETH populations.",
-    "Load every Phase-2 metric and disposition into the warehouse, verify readback, and publish a physical DuckDB snapshot with manifest and SHA-256.",
-    "Automatically execute Phase 3 clustering, mRMR and JMI rankings after Phase 2 closes, preserving complete ranking paths and controls.",
-    "Freeze the Phase-4 single-feature extractor design only after PHASE_3_FILTER_COMPLETE; do not start GPU work in this order.",
-    "Continue BUSINESS_WEEKLY_WALK_FORWARD implementation independently; no final financial claim may use LITERATURE_STATIC semantics.",
-    "Keep NEAT, modular branch/core pretraining and RL after dataset-specific selection and Phase-2 extraction closure in the canonical order."
-  ],
+  "updated_on": "2026-10-25",
+  "current_stage": "HYBRID_ENCODER_CONTRAST_AUTOMATED_QUALIFICATION",
+  "hybrid_encoder_contrast": {
+    "code": "e31e7d8d",
+    "plan": "agent-multi/docs/work_plan/75_HYBRID_LEARNING_MECHANISM.md",
+    "spec_sha256": "5e655081d3297f4c0e2c4ee881bd338f4d5ca4ae462ec7a59eb49df29f78c738",
+    "gradient_diagnosis": "14/18 negative cosines on nine TRAIN restarts; zero updates; not proof of cure",
+    "native_reward_and_observability_tests": "PASS; account aliasing demonstrated, no feedback introduced",
+    "focused_tests": 20,
+    "observed_at": "2026-10-25T23:57:43Z",
+    "observed_unit": "QUAL_7_0",
+    "observed_steps": 5632,
+    "sequence": "four independent-encoder learning controls then six fresh SHARED/INDEPENDENT fits, seeds7/19/43",
+    "financial_fits_started": 0,
+    "periods": ["TRAIN", "INNER_A"],
+    "automatic_worker_and_collector": true,
+    "first_copy_and_warehouse_pump": "PASS; zero reports expected yet",
+    "ETA_minutes_provisional": [90, 120],
+    "immutable": "same recipe, business, reward and training budget; no TEST, expert, rolling or feedback vector"
+  },
+  "hybrid_behavior_audit": {
+    "plan": "agent-multi/docs/work_plan/74_HYBRID_V2_BEHAVIOR_AUDIT.md",
+    "parent_completed_fits": 24,
+    "parent_reports_verified_and_published": 72,
+    "parent_eligible_three_seed_arms": 0,
+    "native_close_accounting_replays": 12543,
+    "checkpoint_probes": 96,
+    "next_running": "completed; encoder contrast succeeds this diagnostic",
+    "observed_complete": 21,
+    "published_reports_verified": 42,
+    "conditional_profit_wins_vs_blind": "4/9 INNER pairs",
+    "observed_at": "2026-10-25T23:19:41Z",
+    "fits": 0,
+    "automatic_worker_and_collector": true,
+    "test": "closed; no new 2024 selection"
+  },
+  "hybrid_conditional_successor": {
+    "code": "6d5876d7",
+    "spec_sha256": "f068e3e4e94fca446326f6d5bfb5ac448531a8c8559197a75ab9091f2741194b",
+    "report": "agent-multi/docs/work_plan/73_CONDITIONAL_SUCCESSOR_RUNNING.md",
+    "stage": "four GPU synthetic learning controls then 24 financial fits only upon all passing",
+    "observed_at": "2026-10-25T15:38:49Z",
+    "observed_synthetic_steps": 16384,
+    "financial_fits": 0,
+    "automatic_worker_and_collector": true,
+    "full_shape_CPU_control": "9 contexts pass; exact reload",
+    "architecture": "selected branches, causal fusion 8, full temporal sequence, separate policy/value heads",
+    "inputs_business_test": "unchanged; TEST closed"
+  },
+  "directional_qualification_stop": {
+    "observed_at": "2026-10-25T14:23:36Z",
+    "report": "agent-multi/docs/work_plan/71_HYBRID_DIRECTIONAL_COLLAPSE.md",
+    "real_probe": "3 checkpoints: LONG argmax in 256/256 shared INNER observations each; SHORT unmasked",
+    "conditional_synthetic_test": "FAILED at 16384 decisions; root cause not established",
+    "native_and_constant_controls": "5 passed; insufficient for conditional learning qualification",
+    "completed_units": 19,
+    "interrupted_unit": "HYBRID_DSR_s19",
+    "worker_main_pid": 0,
+    "restart_timer": "disabled",
+    "collector": "enabled for preserved results",
+    "promotion": "NONE"
+  },
+  "mandatory_early_exit": {
+    "required": true,
+    "contract": "agent-multi/docs/work_plan/67_RL_OUTPUT_ACTION_CONTRACT.md#mandatory-discretionary-early-exit",
+    "native_regression": "2 passed: close long and short before barriers, even with exhausted entry quota",
+    "learning_and_financial_efficacy": "NOT_ESTABLISHED; zero voluntary closes in initial completed policies",
+    "next_priority": "paired adverse/favorable close-versus-hold learning tests and financial diagnostics",
+    "active_batch": "unchanged; diagnostic ranking is not complete business-strategy acceptance"
+  },
+  "hybrid_output_and_reward": {
+    "spec_sha256": "bcd180f16a548dd9e402adecfdb9cb578066c611c5dd1b1340896ff0cf8df9f6",
+    "state": "SUSPENDED_DIRECTIONAL_QUALIFICATION",
+    "plan": "agent-multi/docs/work_plan/70_HYBRID_AUTOMATION_EXECUTION.md",
+    "algorithm": "SB3 PPO with categorical and conditional Beta distribution; not SAC",
+    "units": 24,
+    "decisions_per_unit": 102400,
+    "seeds": [7, 19, 43],
+    "observed_at": "2026-10-25T12:25:48.759267+00:00",
+    "observed_unit": "CAT_FIXED_s7",
+    "observed_decisions": 80384,
+    "observed_updates": 780,
+    "CPU_tests_passed": 39,
+    "GPU_admission": "PASS",
+    "worker_and_collector_timers": "WORKER_DISABLED; COLLECTOR_ENABLED",
+    "feedback": "routing mask only, no state vector in encoder",
+    "rolling_scaling": false,
+    "expert": false,
+    "TEST_read": false,
+    "early_stopping": false,
+    "refit": false,
+    "deferred": ["robust Sharpe uncertainty estimator", "adaptive coefficient refinement"]
+  },
+  "activity_tuning_close": {"state":"COMPLETE", "final_policies":"ZERO_TRADES", "reports_readback":36, "pending":0},
+  "activity_first_tuning": {"producer":"7373699f", "spec_sha256":"853c1ef85e8673c2ea3e650c754ae9cc5a2ae3ac82cfbc280609301ef3c6cb97", "arms":["ACT_ALPHA001","ACT_ALPHA010","ACT_ALPHA100"], "fixed_entropy_coefficients":[0.01,0.1,1.0], "activity_rule":"strictly >2 closed trades/all scored weeks in TRAIN and INNER_A separately", "selection":"eligible final100k only; never OBS_2024", "tests_passed":68, "gpu_admission":"PASS", "observed_at":"2026-10-25T09:09:08Z", "decisions":2250, "gradient_updates":1249, "timers":"worker and collector enabled", "next":"automatic grid, activity qualification, comparison and publication"},
+  "critic_dropout_close": {"finished_at":"2026-10-25T08:53:56Z", "state":"COMPLETE", "both_final_policies":"ZERO_TRADES_IN_ALL_PERIODS", "control_weights_exact":true, "warehouse_readback":24, "pending":0},
+  "critic_dropout_study": {"producer":"afb3bc37", "spec_sha256":"1c63c1a4f42630d87b8f35a0fd97dbde451badc4731d76fd5dd9f227fc908fd6", "arms":["CRITIC_BASE","CRITIC_NODROP"], "critic_dropout":[0.3,0.0], "actor_dropout":0.3, "steps_per_arm":100000, "seed":7, "tests_passed":48, "gpu_admission":"PASS", "observed_at":"2026-10-25T07:37:59Z", "observed_decisions":1500, "observed_gradient_updates":499, "worker_timer_enabled":true, "collector_timer_enabled":true, "first_collect":"COPIED_AND_PUMPED;0 reports expected", "next":"control exact identity then treatment and final comparison automatically"},
+  "order_policy_diagnosis": {"producer":"0998df03", "finished_at":"2026-10-25T06:55:14Z", "replays_exact":10, "fits":0, "independent_files_verified":32, "report_sha256":"faf136ecabda9282a2fd39327c19235e6b11db7709c992a421ef6d0e5dcd639b", "return":"agent-multi/docs/work_plan/64_ORDER_POLICY_DIAGNOSIS_RETURN.md", "successor_fit_started":false, "next":"critic-only dropout contrast; preserve no-feedback and all scientific inputs"},
+  "current_state_reference": "CURRENT_EXECUTION.md",
+  "current_sac_queue": {"code": "b117dce0", "engine_code": "89512e8", "recipe": "recipe_a58261c0fdc0a59d", "spec_sha256": "79c4b87eb64d7285583614afe624a196dbf7c632f0351d2d0f4aa2c4130bfd5e", "state": "COMPLETE", "arms": ["TARGET", "COMMANDS5"], "steps_per_arm": 100000, "seed": 7, "early_stopping": false, "refit": false, "feedback": false, "expert": false, "test_read": false, "sequential_automatic": true, "reboot_timer_enabled": true, "collector_timer_enabled": true, "CPU_tests_passed": 56, "deployed_alpha_scenarios_passed": 16, "observed_at": "2026-10-25T06:35:46Z", "scientific_results_completed": 2, "reports_delivered_readback":24},
+  "closed_parent_sac": {"spec_sha256":"7568df4f3ba7b6e80fb86cce70c42adeb9b4d0b6a227fd947183baa0ba8518cc", "completed_arms":2, "reports_delivered_readback":24, "state":"COMPLETE"},
+  "latest_order_study_observation": {"observed_at":"2026-10-25T06:55:14Z", "state":"DIAGNOSIS_COMPLETE", "arm":"COMMANDS5", "decisions":100000, "gradient_updates":98999, "postrun_diagnostic_replays_exact":10, "automatic_handoff_verified":true},
+  "current_baseline": "recipe_a58261c0fdc0a59d",
+  "historical_sections_below": "Prior execution snapshots, not running jobs or authority to resume old data",
+  "paired_early_stopping": {
+    "state": "COMPLETED_AND_WAREHOUSE_READBACK_VERIFIED", "as_of": "2026-10-19T15:05:19Z", "observed_steps": 100000,
+    "completed_checkpoint_pairs": 20, "warehouse_reports_verified": 42,
+    "stop_reason": "TRANSITION_CAP", "best_step": 100000, "physical_second_copy": "COLLECTION_COMPLETE",
+    "contract_sha256": "ac7921533f6c4c95fb7a7de2e5cf6a7307415ca0c8cf7739c908027baa091ad6",
+    "agent_code": "e119e8ad", "gym_code": "df1b602",
+    "arms": ["SAC_FLAT"], "eval_interval": 5000, "patience": 10,
+    "absolute_min_delta": 1e-8, "training_transition_cap": 100000,
+    "metric": "NEGATIVE_MEAN_FULL_TRAIN_VALIDATION_DAILY_LOG_GROWTH",
+    "batch_norm": false, "dropout": false, "weight_decay": false,
+    "batch_norm_dropout_combination_authorized": false,
+    "full_train_and_validation_monitor": true, "isolated_inference_processes": true,
+    "restores_best_checkpoint": true, "focused_cpu_tests_passed": 159,
+    "GPU_monitor_verification": "TWENTY_REAL_CHECKPOINT_PAIRS_AND_READBACK_VERIFIED",
+    "successor_publication_collection_timers_enabled": true,
+    "plan": "RL_PAIRED_EARLY_STOP_2026_10_19.md"
+  },
+  "regularization_sequence": {
+    "state": "DROPOUT_RUNNING_OTHER_THREE_WAIT_PREDECESSOR", "profiles_in_order": ["dropout005", "l2_1e6", "dropout005_l2_1e6", "batchnorm"],
+    "scope": "CRITIC_ONLY_ACTOR_UNCHANGED", "scientific_runtime": "d9e635f7", "unit_renderer": "a7b4da3e",
+    "contract_prefixes": ["8c038a0fba26", "6648b2004659", "74f48bbae704", "684a5fb611a0"],
+    "worker_timers_enabled": 4, "publication_timer_enabled": true, "second_physical_collection_timer_enabled": true,
+    "focused_cpu_tests_passed": 182, "gpu_admission": "BOUNDED_SYNTHETIC_GATE_WHEN_PREDECESSOR_CLOSED_AND_GPU_FREE",
+    "batch_norm_dropout_combination_authorized": false, "new_scientific_fits_started": 1,
+    "dropout_start_check_steps": 1000, "dropout_gpu_smoke": "VERIFIED_SYNTHETIC_24_TRANSITIONS_20_UPDATES",
+    "plan": "RL_REGULARIZATION_SEQUENCE_2026_10_19.md"
+  },
+  "execution_owner": "Musashi",
+  "temporal_sac_pause": {
+    "requested_by_owner": true,
+    "scope": "NEW_TEMPORAL_SAC_FITS_AND_VARIANTS",
+    "new_dispatch_enabled": false,
+    "existing_temporal_fit_state": "TRAIN_AND_VALIDATION_COMPLETED",
+    "direct_early_stop_paused": false,
+    "completed_artifacts_preserved": true
+  },
+  "gpu_allocation_policy": {
+    "preferred": "5090_ESPECIALLY_HEAVY_MODELS_OR_LONG_WINDOWS",
+    "secondary": "4090_PARALLEL_INDEPENDENT_WORK_IF_IDLE_AND_RESOURCE_ADMITTED",
+    "respect_other_agents_work": true,
+    "heavy_processes_per_shared_5090_5070ti_host": 1,
+    "current_selected_queue_unchanged": true,
+    "next_batch_requires_explicit_parallel_task_ownership": true
+  },
+  "priority_order": ["DATA_RECOVERY", "DATA_ADMISSION", "PREPROCESSING_ACCEPTANCE", "FEATURE_SELECTION_REBUILD", "RL_BUSINESS_ENVIRONMENT", "RL_BASELINES", "SAC_RAW_MODULAR", "RL_COMPARISONS_AND_PAPER", "DEFERRED_FORECASTING", "DEFERRED_NEAT"],
+  "handoff_status": "RETURNS_INTEGRATED_REVIEW_CORRECTIONS_APPLIED_ENVIRONMENT_FINDINGS_OPEN",
+  "return_review": "SATOSHI_RETURN_REVIEW_2026_10_18.md",
+  "active_repair_plan": "RL_EXECUTION_REPAIR_PLAN_2026_10_18.md",
+  "rl_repair_evidence": {"next_open_transition": "SYNTHETIC_ACCEPTANCE_PASSED", "gym_code": "5c97750", "agent_code": "3cf82c12", "gym_focused_passed": 256, "agent_focused_passed": 65, "verification_runner_passed": 7, "financial_fits": 0, "broker_financing_verified": false, "full_environment_acceptance": false},
+  "source_clock_evidence": {"data_code": "f7d051754", "provider": "Forexite", "clock": "CET_WINTER_CEST_SUMMER_PRIMARY_DOCUMENTATION_VERIFIED", "candidate_files_normalized": 86, "candidate_rows": 206858, "quote_side_verified": false, "minute_bar_label_verified": false, "new_warehouse_reports": 1, "new_warehouse_metrics": 6, "warehouse_pending": 0, "physical_copies_verified_on_two_machines": true, "admitted": false},
+  "first_RL_experiment": {"refit_cadence": "NONE", "max_entries_per_business_day": 1, "candidate_input_observations": 13, "candidate_input_stride_open_bars": 2, "arms": ["SAC_FLAT", "SAC_PER_FEATURE_CONV1D"], "engineering_repo": "agent-multi", "engineering_plan": "docs/work_plan/43_STATIC_RL_CURATED_COMPARISON.md", "financial_fit_started": true, "fit_scope": "ADMITTED_EURUSD_RAW_BASELINE_NOT_FINAL_SELECTION"},
+  "scientific_training_authorized": true,
+  "core_eurusd_admission": {"scope": "CORE_PRICES_ONLY", "rows": 37309, "months": 72, "missing_required_operating_hours": 0, "interpolated_values": 0, "coherent_m30_verified_rows": 37306, "verified_native_fallback_rows": 3, "calendar_scope": "DECLARED_CONSERVATIVE_BUSINESS_OPERATING_CALENDAR", "global_venue_calendar_certified": false, "full_feature_selection_complete": false, "data_code": "b56d83b2d051fb4e36728295c19ac56e9ac5500d"},
+  "raw_baseline_continuation": {
+    "authorized": true, "input_policy": "RAW_BASELINE_NOT_FINAL_FEATURE_SELECTION",
+    "requires": ["CORE_PRICE_ADMISSION", "REAL_ENVIRONMENT_CLOCK_AND_SESSION_ACCEPTANCE"],
+    "requirements_met": true, "refit_cadence": "NONE",
+    "train": "2020-2023", "train_rows": 24894,
+    "validation": "2024", "validation_rows": 6221,
+    "test_used_for_tuning": false,
+    "resource_policy": "ONE_HEAVY_PROCESS_ON_5090_NO_PARALLEL_5070TI",
+    "status": "COMPLETED_AND_WAREHOUSE_READBACK_VERIFIED", "running_arm": null,
+    "completed_tasks": 12, "warehouse_delivered": 12,
+    "warehouse_pending": 0, "warehouse_mismatch": 0,
+    "second_host_collection": "COLLECTION_COMPLETE",
+    "physical_sha256": "bc8626578f43af5a777f468a0cc5c6cd2c3fd5e8df8061b62b9d2a0d52767288",
+    "results_document": "RL_RAW_CONTROL_RESULT_2026_10_19.md",
+    "started_at": "2026-10-19T08:10:33Z",
+    "contract_sha256": "b195273eb9f91cff23a735d3c72ee8ab95754dbf85c1c663fe46dc42550a30b7",
+    "agent_code": "75f24688", "gym_code": "461b594",
+    "gym_tests_passed": 297, "integration_tests_passed": 65,
+    "queue_integration_tests_passed": 72,
+    "persistent_services_enabled": true, "metrics_publication_timer_enabled": true,
+    "declared_tasks": 12,
+    "dispatch_order": ["SAC_FLAT", "SAC_PER_FEATURE_CONV1D", "NO_TRADE", "PASSIVE_LONG", "PASSIVE_SHORT", "RANDOM"],
+    "scientific_configuration_unchanged_after_reorder": true,
+    "cuda_environment_collision_corrected": true,
+    "submitted_order_cancellation_fixed": true,
+    "reopen_evidence_equivalence_verified": true,
+    "previous_attempt_disposition": "FAILED_NO_ACCEPTED_MODEL_OR_METRICS"
+  },
+  "data_admission_complete": false,
+  "boundary_recovery": {"provider": "FXCM", "source_archive": "2019/53", "observed_missing_hours_per_pair": 40, "pairs": ["eurusd", "gbpusd"], "whole_lake_admitted": false},
+  "histdata_clock_diagnostic": {"code": "b6ae8413f", "raw_years": [2023, 2024, 2025], "paired_daily_comparisons": 4578, "warehouse_reports": 6, "warehouse_metrics": 22890, "pending": 0, "mismatch": 0, "two_machine_copies_verified": true, "admitted": false, "automatic_clock_selection": false},
+  "selection_rebuild_adapter": {"code": "9d4d06a", "scope": "ADMITTED_EURUSD_CORE_PROFILE_PAIRWISE_FILTER_SUBSET", "synthetic_engine_execution_verified": true, "remote_publication": true, "causal_evidence_computed": false, "financial_execution": true, "tests_passed": 55},
+  "feature_selection_complete": false,
+  "feature_selection_complete_scope": "FULL_EXTERNAL_FINANCIAL_CATALOGUE",
+  "admitted_core_selection": {
+    "state": "FILTER_SELECTION_OLAP_AND_TWO_PHYSICAL_COPIES_VERIFIED",
+    "selection_complete": "WITHIN_DECLARED_ADMITTED_POPULATION",
+    "full_inventory_complete": false, "causal_evidence_computed": false,
+    "candidate_count": 30, "selected_count": 15, "pairs": 435,
+    "warehouse_rows": 37198, "pending": 0, "mismatch": 0,
+    "verified_snapshot_files": 39, "additional_verified_deployment_files": 2,
+    "selection_sha256": "553fc04707ee3d1d2d552a21af073bf942e3a1b880150f2b34245764446c09e2"
+  },
+  "selected_rl_comparison": {
+    "state": "COMPLETED_AND_WAREHOUSE_READBACK_VERIFIED", "completed_tasks": 12, "warehouse_reports_verified": 12,
+    "scope": "ADMITTED_EURUSD_CORE_DERIVED_NOT_FULL_CATALOGUE",
+    "contract_sha256": "37e0619224109416dc35a726831183975fd41b03823a30685630dc2896d38029",
+    "selection_sha256": "553fc04707ee3d1d2d552a21af073bf942e3a1b880150f2b34245764446c09e2",
+    "started_at": "2026-10-19T10:50:19Z", "agent_code": "ab265fad", "gym_code": "df1b602",
+    "declared_tasks": 12, "training_transitions_each_SAC": 100000,
+    "startup_observed_steps": 0, "refit_cadence": "NONE",
+    "order_budget": {"sizing_mode": "balance_budget", "rel_volume": 0.1, "balance_basis": "CASH_WHILE_FLAT", "allocation_units": "ACCOUNT_CURRENCY_MARGIN_CEILING", "leverage": 50, "min_order_volume": 1, "volume_step": 1, "broker_constraints_scope": "ILLUSTRATIVE_NOT_VERIFIED", "sl_tp_required": true},
+    "leverage1_incomplete_contract": "143051b1_STOPPED_OWNER_PRIORITIZED_LEVERAGE50_NOT_REUSED",
+    "superseded_incomplete_contract": "41c6acf3_NOT_REUSED_PORTFOLIO_FRACTION_REPLACED",
+    "persistent_worker_and_publication_and_collection": true,
+    "required_input": "NEW_SELECTED_MANIFEST_FROM_REPAIRED_ADMITTED_CANDIDATES",
+    "arms": ["SAC_SELECTED_DIRECT", "SAC_SELECTED_PER_FEATURE_FUSION_CORE"],
+    "raw_control_is_substitute": false,
+    "additional_raw_campaigns_allowed_before_selection": false,
+    "overfitting_ablations": "PROSPECTIVE_SEPARATE_ES_DROPOUT_WEIGHT_DECAY_BATCHNORM",
+    "current_raw_has_early_stopping": false,
+    "current_raw_has_dropout": false,
+    "plan": "RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md#8-selected-inputs-and-overfitting-clarification-2026-10-19"
+  },
+  "current_runtime_method_state": "../../i6n/weekly_test/PROJECT_METHOD_STATE.json",
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
-    "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "CURRENT_EXECUTION.md",
+    "execution": "CURRENT_EXECUTION.md",
     "queue": "EXPERIMENT_EXECUTION_QUEUE.json",
     "checklist": "MASTER_CHECKLIST.json",
-    "feature_selection": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
-    "feature_selection_phase23": "FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md",
-    "business_weekly": "BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md",
-    "business_weekly_traceability": "BUSINESS_WEEKLY_TRACEABILITY.json",
-    "modular_stack": "MODULAR_STACK_WORK_PLAN_2026_09_30.md",
-    "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-    "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
-    "news_live": "NEWS_LIVE_PARALLEL_2026_09_24.md"
+    "rl_first": "RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md",
+    "satoshi_order": "SATOSHI_DATA_AND_RL_ORDER_2026_10_18.md",
+    "data_procedure": "financial-data/work_plan/17_CANONICAL_INVENTORY_AND_CURATION.md"
   },
-  "authorization_scope": {
-    "engineering_and_offline_experiments": "AUTONOMOUS_WITHIN_RESOURCE_AND_DATA_CONTRACTS",
-    "shadow_mt5_demo_alpaca_paper": true,
-    "real_capital": false,
-    "remote_code_or_new_license": "EXPLICIT_OWNER_DECISION",
-    "credentials_or_physical_hardware": "OWNER_ACTION_WHEN_REQUIRED"
-  },
-  "architecture_comparison": {
-    "order": [
-      "dataset_target_split_contract",
-      "dataset_specific_selection",
-      "grouping_and_receptive_fields",
-      "matched_ARCH_controls",
-      "branch_pretraining",
-      "E1_R0_R1_R2",
-      "select_and_fix_branch_prefix",
-      "H_CORE",
-      "core_transfer",
-      "freeze_final_representation",
-      "Dense_vs_NEAT",
-      "SAC_and_DQN_raw_vs_modular",
-      "deferred_causal_calendar_model_input"
-    ],
-    "R3_defined": false,
-    "NEAT_role": "LATE_EVOLVED_HEAD_NOT_HYPERPARAMETER_OPTIMIZER",
-    "DEAP_role": "CONFIGURATION_AND_HYPERPARAMETER_SEARCH",
-    "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
-  },
-  "feature_selection": {
-    "active_phase": "PHASE_2_DEPENDENCY_REDUNDANCY_THEN_PHASE_3_FILTERS",
-    "canonical_denominators": {
-      "EURUSD": 366,
-      "ETH": 83
-    },
-    "phase_1_completion_gate": "COMPLETE_EURUSD_366_OF_366_ETH_83_OF_83_WAREHOUSE_READBACK_VERIFIED",
-    "phase_2_gpu_allowed": false,
-    "business_manifest": "EURUSD_FIRST",
-    "secondary_development_manifest": "ETH_SEPARATE",
-    "stages": [
-      "PS0",
-      "PS1",
-      "PS2",
-      "PS3-C",
-      "PS3-R",
-      "PS4",
-      "PS5",
-      "PS6",
-      "PS7"
-    ],
-    "causal_ladder": [
-      "association_and_predictive_relevance",
-      "observed_historical_interventions",
-      "same_episode_counterfactual"
-    ],
-    "not_identified_means_rejected": false,
-    "calendar_episode_use_now": "TREATMENT_CONTROL_DISCOVERY_FOR_FEATURE_SELECTION_ONLY",
-    "calendar_as_model_input": "DEFERRED_FINAL_OPTIONAL_AFTER_NEAT_RL_AND_PAPER_BASELINE",
-    "extractibility_controls": [
-      "raw",
-      "random_encoder",
-      "trained_encoder"
-    ],
-    "future_target_in_operational_encoder": false,
-    "final_sets": [
-      "all_admissible",
-      "predictive_redundancy",
-      "predictive_plus_causal",
-      "predictive_causal_plus_extraction",
-      "optional_generative_preference"
-    ],
-    "phase_2_started": false,
-    "phase_2_expected_pairs": {
-      "EURUSD": 66795,
-      "ETH": 3403
-    },
-    "phase_2_metrics": [
-      "exact_and_numeric_equivalence",
-      "pearson",
-      "spearman",
-      "kendall_tau",
-      "mutual_information",
-      "distance_correlation",
-      "lagged_cross_correlation",
-      "fold_stability"
-    ],
-    "phase_3_methods": [
-      "spearman_hierarchical_clustering",
-      "mRMR",
-      "JMI"
-    ],
-    "phase_3_controls": [
-      "ALL_ADMISSIBLE",
-      "UNIVARIATE_MI",
-      "CAUSAL_SUPPORTED",
-      "RANDOM_K"
-    ],
-    "phase_4_started": false,
-    "phase_1_results": {
-      "EURUSD": {
-        "features": 366,
-        "targets": 14,
-        "decisions": 5124,
-        "selected_feature_target_pairs": 34,
-        "selected_distinct_features": 12,
-        "warehouse_run_id": "phase1-eurusd-final:94d20c038d55e152"
-      },
-      "ETH": {
-        "features": 83,
-        "targets": 6,
-        "decisions": 498,
-        "selected_feature_target_pairs": 3,
-        "selected_distinct_features": 3,
-        "warehouse_run_id": "phase1-final:ETH:29d2f745f5d9e87c"
-      },
-      "olap_snapshot_release": "https://github.com/harveybc/predictor/releases/tag/phase1-feature-selection-20261005"
-    }
-  },
-  "business_evaluation": {
-    "primary_mode": "BUSINESS_WEEKLY_WALK_FORWARD",
-    "sensitivity_mode": "BUSINESS_MONTHLY_WALK_FORWARD",
-    "literature_mode": "LITERATURE_STATIC",
-    "rolling_train_calendar_years": 4,
-    "validation_and_test": "COMPLETE_CONSECUTIVE_ELIGIBLE_WEEKS_WITH_DISPOSITIONS",
-    "frozen_artifact": "UPDATE_AND_DECISION_PROCEDURE_NOT_ONE_STATIC_CHECKPOINT",
-    "update_modes": [
-      "FULL_RETRAIN_ROLLING_4Y",
-      "WARM_UPDATE_ROLLING_4Y"
-    ],
-    "strict_memory_claim_allowed_for": [
-      "FULL_RETRAIN_ROLLING_4Y"
-    ]
-  },
-  "literature_comparability": {
-    "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
-    "required_before": "NEW_SCIENTIFIC_TRAINING",
-    "modes": [
-      "REPRODUCTION",
-      "MATCHED_DOMAIN_COMPARISON"
-    ],
-    "unmatched_published_scores_are_comparators": false
-  },
-  "closure_reporting": {
-    "scope": "CURRENT_AND_ALL_FUTURE_ORDER_SETS",
-    "required_columns": [
-      "task_horizon_split",
-      "metric_and_scale",
-      "model_error",
-      "naive_error",
-      "skill_vs_naive",
-      "literature_value_and_source",
-      "comparability_status"
-    ],
-    "missing_comparator": "EXPLICIT_NOT_COMPARABLE_WITH_REASON_NO_INVENTED_VALUE",
-    "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
-  },
-  "learning_regimes": {
-    "R0": {
-      "detector_initialization": "RANDOM",
-      "detector_update": "TRAINABLE",
-      "rest_update": "TRAINABLE"
-    },
-    "R1": {
-      "detector_initialization": "SHARED_PRETRAINED",
-      "detector_update": "FROZEN",
-      "rest_update": "TRAINABLE"
-    },
-    "R2": {
-      "detector_initialization": "SHARED_PRETRAINED",
-      "detector_update": "TRAINABLE",
-      "rest_update": "TRAINABLE"
-    }
-  },
-  "execution_governance": {
-    "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
-    "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"
-  },
-  "news_live_track": {
-    "allowed_modes": [
-      "SHADOW",
-      "MT5_DEMO",
-      "ALPACA_PAPER"
-    ],
-    "real_capital_authorized": false,
-    "blocks_scientific_experiments": false,
-    "provider_quality_must_match_answering_path": true
-  },
-  "proposal_coverage": {
-    "P-MOD": [
-      "MOD-E0-DEV",
-      "MOD-ARCH-COMPARE",
-      "MOD-E1",
-      "MOD-FROZEN-PREFIX",
-      "MOD-CORE-PRETRAIN",
-      "MOD-CONF",
-      "MOD-E3",
-      "FIN-LOSS-OPT"
-    ],
-    "P-L2": [
-      "L2-PUBLIC-RL"
-    ],
-    "P-CAP": [
-      "CAP-CALIBRATION"
-    ],
-    "P-PRE": [
-      "PRE-NOISE"
-    ],
-    "P-TRN": [
-      "TRN-TRANSFER"
-    ],
-    "P-INC": [
-      "INC-SIMULATION"
-    ]
-  },
-  "signal_steps": [
-    "STEP-01",
-    "STEP-02",
-    "STEP-03",
-    "STEP-04",
-    "STEP-05",
-    "STEP-06",
-    "STEP-07",
-    "STEP-08",
-    "STEP-09",
-    "STEP-10",
-    "STEP-11",
-    "STEP-12",
-    "STEP-13"
+  "reuse": {"accepted_generic_code": true, "affected_metrics_rankings_weights_configs": false, "independent_populations": "PRESERVE_UNLESS_AFFECTED_LINEAGE_PROVEN"},
+  "authorization_scope": {"bounded_data_recovery_and_CPU_tests": true, "real_capital": false, "financial_fits_before_admission": false, "do_not_reinvent_DOIN": true},
+  "next_allowed_actions": [
+    "complete automated inference diagnostic and publication, compare all seeds before next training contrast",
+    "authenticate, mirror and publish each final native evaluation automatically",
+    "retain all failures, activity exclusions and paired metrics; no checkpoint selection",
+    "report business semantics, activity, costs and TRAIN/validation separately without selecting on 2024",
+    "keep shared recipe fixed; Satoshi expert lane remains independent",
+    "defer optimizer, capacity/context and periodic refit studies until order-contract evidence"
   ],
-  "compression_lanes": [
-    "C1",
-    "C2",
-    "C3",
-    "C4",
-    "C5",
-    "C6",
-    "C7"
-  ],
-  "shared_requirements": [
-    "FE",
-    "EVENT",
-    "META",
-    "I-INFO",
-    "H-ES",
-    "GOVERNANCE",
-    "WEEKLY-RL"
-  ],
-  "tasks": [
-    {
-      "id": "BUSINESS-CONTRACT",
-      "owner": "owner+M05",
-      "status": "DESIGNED",
-      "depends_on": [],
-      "next_action": "Bind EURUSD targets, costs, risk and point-in-time sources to the weekly protocol.",
-      "deliverable": "Versioned business task contract.",
-      "evidence": []
-    },
-    {
-      "id": "BUSINESS-WEEKLY-WALK-FORWARD",
-      "owner": "M05+forecast+RL",
-      "status": "DESIGNED",
-      "depends_on": [
-        "BUSINESS-CONTRACT"
-      ],
-      "next_action": "Repair paired-evidence persistence, distinct short/long model identity and longitudinal dependence; configure MAE and then close BW01-BW18 adapters.",
-      "deliverable": "Restartable weekly validation/test runner with one disposition per week.",
-      "evidence": []
-    },
-    {
-      "id": "BENCHMARK-CONTRACTS",
-      "owner": "M06",
-      "status": "IN_PROGRESS",
-      "depends_on": [],
-      "next_action": "Keep exact author recipes and matched intervention contracts separate.",
-      "deliverable": "Per-domain benchmark dossier.",
-      "evidence": []
-    },
-    {
-      "id": "SOTA-REPRO",
-      "owner": "reference lane",
-      "status": "IN_PROGRESS",
-      "depends_on": [
-        "BENCHMARK-CONTRACTS"
-      ],
-      "next_action": "Close remaining faithful reference evidence without changing author inputs.",
-      "deliverable": "Comparable literature table with same-row baselines.",
-      "evidence": []
-    },
-    {
-      "id": "FS-PROGRESSIVE",
-      "owner": "M03+causal+M02",
-      "status": "IN_PROGRESS",
-      "depends_on": [
-        "BUSINESS-CONTRACT"
-      ],
-      "next_action": "Run automated Phase 2 pairwise dependency/redundancy and Phase 3 filter rankings; persist all rows in the warehouse and publish verified snapshots. Keep Phase 4 extractibility paused.",
-      "deliverable": "Complete pairwise metrics, alias/redundancy groups and candidate subset trajectories for EURUSD and ETH.",
-      "evidence": [
-        "Phase 1 completion commit 2a2a386f and warehouse readback receipts"
-      ]
-    },
-    {
-      "id": "MOD-E0-DEV",
-      "owner": "M01",
-      "status": "EXECUTED",
-      "depends_on": [],
-      "next_action": "Retain as historical development evidence only.",
-      "deliverable": "Historical modular development result.",
-      "evidence": [
-        "prior RP evidence retained"
-      ]
-    },
-    {
-      "id": "MOD-ARCH-COMPARE",
-      "owner": "M01+M04",
-      "status": "DESIGNED",
-      "depends_on": [
-        "FS-PROGRESSIVE",
-        "BENCHMARK-CONTRACTS"
-      ],
-      "next_action": "Run matched architecture controls after the final manifest.",
-      "deliverable": "Selected branch architecture and grouping.",
-      "evidence": []
-    },
-    {
-      "id": "MOD-E1",
-      "owner": "M01+M04",
-      "status": "DESIGNED",
-      "depends_on": [
-        "MOD-E0-DEV",
-        "MOD-ARCH-COMPARE"
-      ],
-      "next_action": "Compare branch R0, R1 and R2 on identical rows.",
-      "deliverable": "Branch regime result.",
-      "evidence": []
-    },
-    {
-      "id": "MOD-FROZEN-PREFIX",
-      "owner": "M01",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-E1"
-      ],
-      "next_action": "Freeze the selected identical branch prefix for H-CORE.",
-      "deliverable": "Authenticated fused-sequence producer.",
-      "evidence": []
-    },
-    {
-      "id": "MOD-CORE-PRETRAIN",
-      "owner": "M01+M02",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-E1",
-        "MOD-FROZEN-PREFIX"
-      ],
-      "next_action": "Pretrain H-CORE and test transfer separately.",
-      "deliverable": "Core donor and transfer comparison.",
-      "evidence": []
-    },
-    {
-      "id": "MOD-CONF",
-      "owner": "M04",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-CORE-PRETRAIN"
-      ],
-      "next_action": "Confirm the sealed finalist once on untouched test.",
-      "deliverable": "Confirmatory result.",
-      "evidence": []
-    },
-    {
-      "id": "MOD-E3",
-      "owner": "M05+RL",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-CONF"
-      ],
-      "next_action": "Compare heuristic, SAC and DQN under business costs.",
-      "deliverable": "Business and policy comparison.",
-      "evidence": []
-    },
-    {
-      "id": "L2-PUBLIC-RL",
-      "owner": "RL lane",
-      "status": "DESIGNED",
-      "depends_on": [
-        "BENCHMARK-CONTRACTS"
-      ],
-      "next_action": "Retain public RL control and prepare raw/modular factorial.",
-      "deliverable": "Public RL benchmark result.",
-      "evidence": []
-    },
-    {
-      "id": "CAP-CALIBRATION",
-      "owner": "M06",
-      "status": "IN_PROGRESS",
-      "depends_on": [],
-      "next_action": "Measure per-cell resources for each real runner.",
-      "deliverable": "Placement envelope by workload.",
-      "evidence": []
-    },
-    {
-      "id": "PRE-NOISE",
-      "owner": "M02",
-      "status": "DESIGNED",
-      "depends_on": [
-        "FS-PROGRESSIVE"
-      ],
-      "next_action": "Evaluate denoising as one extractor family, not a universal gate.",
-      "deliverable": "Matched denoising evidence.",
-      "evidence": []
-    },
-    {
-      "id": "TRN-TRANSFER",
-      "owner": "M01+M02",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-CORE-PRETRAIN"
-      ],
-      "next_action": "Measure donor transfer without changing target support.",
-      "deliverable": "Transfer result.",
-      "evidence": []
-    },
-    {
-      "id": "INC-SIMULATION",
-      "owner": "M05",
-      "status": "DESIGNED",
-      "depends_on": [
-        "BUSINESS-CONTRACT"
-      ],
-      "next_action": "Keep simulator mechanics separate from financial claims.",
-      "deliverable": "Audited strategy simulation.",
-      "evidence": []
-    },
-    {
-      "id": "FIN-LOSS-OPT",
-      "owner": "M04",
-      "status": "DESIGNED",
-      "depends_on": [
-        "BUSINESS-CONTRACT",
-        "BENCHMARK-CONTRACTS"
-      ],
-      "next_action": "Execute only after the financial data availability contract is satisfied.",
-      "deliverable": "Matched financial loss/optimizer result.",
-      "evidence": []
-    },
-    {
-      "id": "NEWS-ADAPTER",
-      "owner": "M5PHET+news-signal",
-      "status": "VERIFIED",
-      "depends_on": [],
-      "next_action": "Retain wrapper parity and separate it from quality.",
-      "deliverable": "Typed classification adapter.",
-      "evidence": [
-        "12/12 wrapper parity retained"
-      ]
-    },
-    {
-      "id": "NEWS-SHADOW",
-      "owner": "news-signal",
-      "status": "IN_PROGRESS",
-      "depends_on": [
-        "NEWS-ADAPTER"
-      ],
-      "next_action": "Collect prospective point-in-time news and abstentions.",
-      "deliverable": "Shadow evidence.",
-      "evidence": []
-    },
-    {
-      "id": "NEWS-PAPER",
-      "owner": "M05",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "NEWS-SHADOW",
-        "BUSINESS-CONTRACT"
-      ],
-      "next_action": "Run paper-only after prospective quality and risk gates.",
-      "deliverable": "MT5 demo and Alpaca paper receipts.",
-      "evidence": []
-    },
-    {
-      "id": "CAL-CAUSAL-INPUT",
-      "owner": "future causal+M01+RL",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-E3",
-        "NEWS-PAPER"
-      ],
-      "next_action": "Remain deferred until the primary representation, Dense-versus-NEAT, RL comparison and paper baseline are complete.",
-      "deliverable": "Separate incremental-value ablation for economic-calendar and causal-dossier model inputs.",
-      "evidence": []
-    }
-  ],
-  "state_semantics": {
-    "DESIGNED": "contract exists; no execution claim",
-    "IN_PROGRESS": "real current work or incomplete evidence",
-    "EXECUTED": "run happened; not automatically verified",
-    "VERIFIED": "evidence was independently checked",
-    "historical_reviews": "stored under docs/audits and handoffs, never embedded here"
-  }
+  "not_established": ["whole_inventory_acceptance", "complete_cleanup_including_Git_history", "full_external_catalogue_final_selection", "causal_effect_identification", "universal_RL_environment_certification", "profitable_policy"],
+  "test_policy": "2025 was already examined; no restored pristine-holdout claim"
 }

@@ -1,0 +1,16 @@
+[Unit]
+Description=Assigned E3-M sequential GPU experiments
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/var/tmp/expert-guided-musashi-20261022
+ExecStartPre=/usr/bin/python3 /var/tmp/expert-guided-musashi-20261022/recover_expert_package.py --root /var/tmp/expert-guided-musashi-20261022
+ExecStart=/usr/bin/python3 /var/tmp/expert-guided-musashi-20261022/expert_package_worker.py run --root /var/tmp/expert-guided-musashi-20261022
+Environment=PYTHONDONTWRITEBYTECODE=1
+Restart=on-failure
+RestartSec=60
+TimeoutStopSec=30
+MemoryMax=256M
+MemorySwapMax=0
+Nice=10

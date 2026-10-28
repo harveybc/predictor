@@ -1,0 +1,996 @@
+FFFFFFFFFFFFFFFFFFF                                                      [100%]
+=================================== FAILURES ===================================
+_______ test_committed_manifests_bind_phase1_identities_and_denominators _______
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+    def test_committed_manifests_bind_phase1_identities_and_denominators():
+>       man = _cap("fs_phase23_manifest")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+_______________ test_manifest_identity_is_column_order_invariant _______________
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_manifest_identity_is_colu0')
+
+    def test_manifest_identity_is_column_order_invariant(tmp_path):
+>       man = _cap("fs_phase23_manifest")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:137: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+____________ test_plan_is_deterministic_and_shards_cover_every_pair ____________
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_pairwise_campaign'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_pairwise_campaign'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_plan_is_deterministic_and0')
+
+    def test_plan_is_deterministic_and_shards_cover_every_pair(tmp_path):
+>       camp = _cap("feature_pairwise_campaign")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:148: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_pairwise_campaign.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+________ test_future_row_mutation_does_not_change_earlier_fold_results _________
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_future_row_mutation_does_0')
+
+    def test_future_row_mutation_does_not_change_earlier_fold_results(tmp_path):
+>       man = _cap("fs_phase23_manifest")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:170: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+________________ test_column_order_does_not_change_pair_results ________________
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_column_order_does_not_cha0')
+
+    def test_column_order_does_not_change_pair_results(tmp_path):
+>       pa, da = _population(tmp_path, name="ord_a")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:194: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/test_fs_phase23_driver.py:61: in _population
+    man = _cap("fs_phase23_manifest")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+______ test_restart_is_byte_identical_and_never_recomputes_complete_units ______
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_restart_is_byte_identical0')
+
+    def test_restart_is_byte_identical_and_never_recomputes_complete_units(tmp_path):
+>       manifest_path, data = _population(tmp_path)
+                              ^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:209: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/test_fs_phase23_driver.py:61: in _population
+    man = _cap("fs_phase23_manifest")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+______________ test_restart_submission_produces_no_duplicate_rows ______________
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_pairwise_campaign'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_pairwise_campaign'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_restart_submission_produc0')
+
+    def test_restart_submission_produces_no_duplicate_rows(tmp_path):
+>       camp = _cap("feature_pairwise_campaign")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:228: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_pairwise_campaign.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+____________ test_synthetic_alias_is_grouped_with_a_representative _____________
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_pairwise_campaign'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_pairwise_campaign'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_synthetic_alias_is_groupe0')
+
+    def test_synthetic_alias_is_grouped_with_a_representative(tmp_path):
+>       camp = _cap("feature_pairwise_campaign")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:250: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_pairwise_campaign.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+________ test_nonlinear_pair_is_caught_by_mi_and_dcor_with_low_pearson _________
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_nonlinear_pair_is_caught_0')
+
+    def test_nonlinear_pair_is_caught_by_mi_and_dcor_with_low_pearson(tmp_path):
+>       manifest_path, data = _population(tmp_path)
+                              ^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:267: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/test_fs_phase23_driver.py:61: in _population
+    man = _cap("fs_phase23_manifest")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+______________ test_insufficient_support_abstains_with_diagnostic ______________
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_insufficient_support_abst0')
+
+    def test_insufficient_support_abstains_with_diagnostic(tmp_path):
+>       manifest_path, data = _population(tmp_path)
+                              ^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:282: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/test_fs_phase23_driver.py:61: in _population
+    man = _cap("fs_phase23_manifest")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+_______________ test_lagged_cross_correlation_uses_elapsed_hours _______________
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_lagged_cross_correlation_0')
+
+    def test_lagged_cross_correlation_uses_elapsed_hours(tmp_path):
+>       manifest_path, data = _population(tmp_path)
+                              ^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:293: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/test_fs_phase23_driver.py:61: in _population
+    man = _cap("fs_phase23_manifest")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+___________________ test_no_process_opens_validation_or_test ___________________
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.fs_phase23_manifest'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.fs_phase23_manifest'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_no_process_opens_validati0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x77e826beb6e0>
+
+    def test_no_process_opens_validation_or_test(tmp_path, monkeypatch):
+>       man = _cap("fs_phase23_manifest")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'fs_phase23_manifest'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/fs_phase23_manifest.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+_____________ test_foreign_identity_warehouse_receipt_is_rejected ______________
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_pairwise_campaign'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_pairwise_campaign'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_foreign_identity_warehous0')
+
+    def test_foreign_identity_warehouse_receipt_is_rejected(tmp_path):
+>       camp = _cap("feature_pairwise_campaign")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:332: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_pairwise_campaign.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+__________ test_corrupt_terminal_is_quarantined_and_valid_one_adopted __________
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_pairwise_campaign'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_pairwise_campaign'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_corrupt_terminal_is_quara0')
+
+    def test_corrupt_terminal_is_quarantined_and_valid_one_adopted(tmp_path):
+>       camp = _cap("feature_pairwise_campaign")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:349: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_pairwise_campaign.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+_____________ test_phase2_closure_fails_on_one_missing_disposition _____________
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_pairwise_campaign'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_pairwise_campaign'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_phase2_closure_fails_on_o0')
+
+    def test_phase2_closure_fails_on_one_missing_disposition(tmp_path):
+>       camp = _cap("feature_pairwise_campaign")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:374: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_pairwise_campaign.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+______ test_mrmr_and_jmi_reject_incomplete_matrices_or_mixed_populations _______
+
+name = 'feature_filter_selection'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_filter_selection'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_filter_selection'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_mrmr_and_jmi_reject_incom0')
+
+    def test_mrmr_and_jmi_reject_incomplete_matrices_or_mixed_populations(tmp_path):
+>       sel = _cap("feature_filter_selection")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:412: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_filter_selection'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_filter_selection.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+________ test_phase3_outputs_label_causal_support_and_declare_no_winner ________
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_pairwise_campaign'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_pairwise_campaign'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_phase3_outputs_label_caus0')
+
+    def test_phase3_outputs_label_causal_support_and_declare_no_winner(tmp_path):
+>       camp, manifest_path, data, state, plan, coord = _closed_phase2(tmp_path)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:434: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/test_fs_phase23_driver.py:401: in _closed_phase2
+    camp = _cap("feature_pairwise_campaign")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_pairwise_campaign.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+__________ test_follow_chains_phase3_automatically_when_phase2_closes __________
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_pairwise_campaign'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_pairwise_campaign'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_follow_chains_phase3_auto0')
+
+    def test_follow_chains_phase3_automatically_when_phase2_closes(tmp_path):
+>       camp = _cap("feature_pairwise_campaign")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_pairwise_campaign'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_pairwise_campaign.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+_______ test_status_reports_expected_complete_failed_active_rate_and_eta _______
+
+name = 'feature_selection_phase23_status'
+
+    def _cap(name: str):
+        try:
+>           return importlib.import_module(f"tools.{name}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'tools.feature_selection_phase23_status'
+import_ = <function _gcd_import at 0x77e840da40e0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'tools.feature_selection_phase23_status'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-621/test_status_reports_expected_c0')
+
+    def test_status_reports_expected_complete_failed_active_rate_and_eta(tmp_path):
+>       st = _cap("feature_selection_phase23_status")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools/test_fs_phase23_driver.py:473: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'feature_selection_phase23_status'
+
+    def _cap(name: str):
+        try:
+            return importlib.import_module(f"tools.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.endswith(name):
+>               pytest.fail(f"capability absent: tools/{name}.py")
+E               Failed: capability absent: tools/feature_selection_phase23_status.py
+
+tools/test_fs_phase23_driver.py:29: Failed
+=========================== short test summary info ============================
+FAILED tools/test_fs_phase23_driver.py::test_committed_manifests_bind_phase1_identities_and_denominators
+FAILED tools/test_fs_phase23_driver.py::test_manifest_identity_is_column_order_invariant
+FAILED tools/test_fs_phase23_driver.py::test_plan_is_deterministic_and_shards_cover_every_pair
+FAILED tools/test_fs_phase23_driver.py::test_future_row_mutation_does_not_change_earlier_fold_results
+FAILED tools/test_fs_phase23_driver.py::test_column_order_does_not_change_pair_results
+FAILED tools/test_fs_phase23_driver.py::test_restart_is_byte_identical_and_never_recomputes_complete_units
+FAILED tools/test_fs_phase23_driver.py::test_restart_submission_produces_no_duplicate_rows
+FAILED tools/test_fs_phase23_driver.py::test_synthetic_alias_is_grouped_with_a_representative
+FAILED tools/test_fs_phase23_driver.py::test_nonlinear_pair_is_caught_by_mi_and_dcor_with_low_pearson
+FAILED tools/test_fs_phase23_driver.py::test_insufficient_support_abstains_with_diagnostic
+FAILED tools/test_fs_phase23_driver.py::test_lagged_cross_correlation_uses_elapsed_hours
+FAILED tools/test_fs_phase23_driver.py::test_no_process_opens_validation_or_test
+FAILED tools/test_fs_phase23_driver.py::test_foreign_identity_warehouse_receipt_is_rejected
+FAILED tools/test_fs_phase23_driver.py::test_corrupt_terminal_is_quarantined_and_valid_one_adopted
+FAILED tools/test_fs_phase23_driver.py::test_phase2_closure_fails_on_one_missing_disposition
+FAILED tools/test_fs_phase23_driver.py::test_mrmr_and_jmi_reject_incomplete_matrices_or_mixed_populations
+FAILED tools/test_fs_phase23_driver.py::test_phase3_outputs_label_causal_support_and_declare_no_winner
+FAILED tools/test_fs_phase23_driver.py::test_follow_chains_phase3_automatically_when_phase2_closes
+FAILED tools/test_fs_phase23_driver.py::test_status_reports_expected_complete_failed_active_rate_and_eta
+19 failed in 2.02s

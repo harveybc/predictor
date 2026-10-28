@@ -53,7 +53,7 @@ def main() -> None:
     ax.text(0.55, 9.52, "Predictor: critical path to business trading",
             fontsize=24, fontweight="bold", color="#132238", va="top")
     ax.text(0.55, 9.08,
-            f"Measured status {doc['as_of']}  |  Critical-path ETA: {doc['critical_path_eta']}",
+            wrapped(f"Measured status {doc['as_of']}  |  Critical-path ETA: {doc['critical_path_eta']}", 150),
             fontsize=10.5, color="#526170", va="top")
 
     box_w, box_h = 4.05, 1.82
@@ -62,7 +62,7 @@ def main() -> None:
     for index, item in enumerate(items):
         row, col = divmod(index, 4)
         x, y = xs[col], ys[row]
-        color = COLORS[item["state"]]
+        color = COLORS.get(item["state"], "#2878b5")
         if index:
             previous_row, previous_col = divmod(index - 1, 4)
             px, py = xs[previous_col], ys[previous_row]
@@ -89,9 +89,15 @@ def main() -> None:
                                     (box_w - 0.36) * item["progress"] / 100, 0.13,
                                     boxstyle="round,pad=0,rounding_size=0.04",
                                     facecolor=color, edgecolor="none"))
-        ax.text(x + 0.18, y + 0.73, wrapped(item["evidence"], 53),
+        evidence_lines = wrapped(item["evidence"], 53).splitlines()
+        evidence = "\n".join(evidence_lines[:3])
+        if len(evidence_lines) > 3:
+            evidence = evidence.rstrip(".") + "..."
+        ax.text(x + 0.18, y + 0.73, evidence,
                 fontsize=7.35, color="#334155", va="top", linespacing=1.18)
-        ax.text(x + 0.18, y + 0.12, wrapped(f"ETA: {item['eta']}", 48),
+        eta_lines = wrapped(f"ETA: {item['eta']}", 48).splitlines()
+        eta = "\n".join(eta_lines[:2]) + ("..." if len(eta_lines) > 2 else "")
+        ax.text(x + 0.18, y + 0.12, eta,
                 fontsize=7.35, fontweight="bold", color=color, va="bottom",
                 linespacing=1.05)
 
@@ -105,7 +111,7 @@ def main() -> None:
         x = 0.65 + col * 8.7
         y = 3.62 - row * 0.56
         ax.text(x, y, f"{item['id']}", fontsize=8.2, fontweight="bold",
-                color=COLORS[item["state"]], va="top")
+                color=COLORS.get(item["state"], "#2878b5"), va="top")
         ax.text(x + 0.37, y, wrapped(item["next"], 95), fontsize=7.8,
                 color="#334155", va="top")
 

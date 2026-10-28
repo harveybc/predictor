@@ -1,0 +1,27 @@
+{
+ "schema": "fs_phase23.incident_record.v1",
+ "recorded_at": "2026-10-06T09:01:54.044104+00:00",
+ "incident": "both followers stalled on the coordinator (EURUSD crash loop exit 1; ETH stuck in phase 3)",
+ "root_causes": [
+  {
+   "population": "EURUSD",
+   "cause": "DuckDB 1.5.6 ART primary-key index kept a phantom row_identity_sha256 (205c2e80..., also cccb72a0...) after the follower had been SIGKILLed mid-transaction; SELECT found no row, INSERT raised Duplicate key; CHECKPOINT does not clear it; the follower let the engine exception escape and exited 1 every pass (189 restarts)",
+   "evidence": "logs/follow_eurusd.log tracebacks; repair experiment on a copy: baseline FAIL, after CHECKPOINT FAIL, single-row insert FAIL with 0 matching rows, after table rebuild OK (26,136 rows inserted)"
+  },
+  {
+   "population": "ETH",
+   "cause": "phase-3 terminals were digested with integer K keys in methods[*].subsets; after the JSON write/read cycle the keys are strings and sort differently, so terminal_sha256 never verified and close_phase3 reported 'terminal corrupt' on every pass (the ETH follower itself did not crash-loop; its last exit before the intervention was rc=143 from the operator stop)",
+   "evidence": "recomputed digest of eth/phase3/terminals/*.json.gz equals the JSON-round-trip digest, not the stored one"
+  }
+ ],
+ "fix_commit": "631be7f443646b69d27e3572cf63820c3ab312ae (satoshi/fs-phase23-integrated-20261006)",
+ "fix": [
+  "canonical_bytes digests the JSON form (keys stringified before sorting); phase-3 subsets keyed by str(K)",
+  "follow_once isolates a per-unit submission exception into submit_failures/<unit>.json and continues; follow() never crash-loops on a failed pass and finishes the unit in flight on SIGTERM",
+  "run_phase3 quarantines and recomputes a phase-3 terminal whose digest does not verify",
+  "tools/fs_phase23_deploy/rebuild_duckdb_pk_index.py rebuilds the PK index with count/digest parity; applied to both population stores with followers stopped (PK_INDEX_REBUILD_*.json); the DATA agent had independently rebuilt the EURUSD store at 08:54:21Z (warehouse/INDEX_REBUILD_20261006T085421Z.json)"
+ ],
+ "regression_tests": "4 added; 25 passing with the campaign venv (tools/test_fs_phase23_driver.py, tools/fs_phase23_deploy/test_register_run.py)",
+ "deploy": "DEPLOY_RECEIPT_631be7f44364.json: parity_ok on coordinator, worker_a, worker_b; followers restarted at 08:59:11Z",
+ "side_effect_of_the_redeploy": "deploy_host_step.sh rewrote runner.env with its default FS23_WAREHOUSE (fs_phase23_adapter.duckdb) because the Phase-B warehouse switch had been applied by hand and FS23_WAREHOUSE_OVERRIDE was not passed; the restarted followers therefore wrote to warehouse/fs_phase23_adapter_{eurusd,eth}.duckdb for about one minute (ETH even emitted PHASE_3_FILTER_COMPLETE.json against that throwaway store). Followers were stopped at ~09:00Z. Pending operator steps (the automated repair was denied by the permission classifier): terminate the two lingering follow processes, set FS23_WAREHOUSE back to warehouse/fs_phase23_warehouse.duckdb in runner.env, move aside eurusd/receipts newer than 08:59Z (1 file), eth/phase3/receipts (6), eth/PHASE_3_FILTER_COMPLETE.json, eth/CANDIDATES_FOR_VALIDATION.json and warehouse/fs_phase23_adapter_{eurusd,eth}.duckdb(+.wal), then start the two follower units. Future deploys must pass FS23_WAREHOUSE_OVERRIDE (or deploy.sh must preserve the existing value)."
+}

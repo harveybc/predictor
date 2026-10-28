@@ -6,7 +6,8 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'predictor=app.main:main'
+            'predictor=app.main:main',
+            'predictor-i6d-control=tools.i6d_matched_control:main'
         ],
         # Plugins para el Predictor
         'predictor.plugins': [
@@ -45,9 +46,26 @@ setup(
             'direction_mimo=predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin',
             'direction_logistic=predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin',
         ],
+        # Modular components resolved by the modular_temporal predictor (each carries a version/contract)
+        'modular.branch': [
+            'causal_conv1d=predictor_plugins.modular_temporal:causal_conv1d',
+            'causal_dense_sequence=predictor_plugins.modular_temporal:causal_dense_sequence',
+        ],
+        'modular.control_branch': [
+            'causal_window_dense=predictor_plugins.modular_temporal:causal_window_dense'
+        ],
+        'modular.fusion': ['sequence_concat=predictor_plugins.modular_temporal:sequence_concat'],
+        'modular.core': ['transformer_conv=predictor_plugins.modular_temporal:transformer_conv'],
+        'modular.head': ['forecast=predictor_plugins.modular_temporal:forecast'],
+        # Branch training objectives (PS3-R): a separate axis from the architecture, own versions
+        'modular.objective': [
+            'autoencoder_reconstruction=predictor_plugins.modular_temporal.objectives:AutoencoderReconstruction',
+            'ts2vec_contrastive=predictor_plugins.modular_temporal.objectives:TS2VecContrastive',
+        ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [
             'default_optimizer=optimizer_plugins.default_optimizer:Plugin',
+            'i6n_optimizer=optimizer_plugins.i6n_optimizer:Plugin',
             'neat_optimizer=optimizer_plugins.neat_optimizer:Plugin'
         ],
         # Plugins para el Pipeline (orquestación del flujo completo)

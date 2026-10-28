@@ -1,125 +1,46 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-05T17:00:00-05:00",
-  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md on satoshi/canonical-exec-20261003",
+  "updated_on": "2026-10-19",
+  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md",
   "policy": {
-    "focus": "FEATURE_SELECTION_PHASE_2_THEN_PHASE_3_ONLY",
-    "parallelism": "one durable controller with exclusive CPU shards across omega gamma and dragon",
-    "seed_default": 1,
-    "seed_maximum": 3,
-    "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
-    "gpu_preference": ["gamma_external_5090", "dragon_4090", "gamma_internal_5070ti", "omega_4070"],
-    "gpu_use_now": false,
-    "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
-    "test_policy": "validation and test remain closed during filter selection",
-    "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
-    "snapshot_policy": "physical local DuckDB plus compressed release asset and git manifest"
-  },
-  "superseded": {
-    "neat_hyperparameter_campaigns": "DIAGNOSTIC_ONLY_STOPPED",
-    "all_321_or_all_83_as_selected": false,
-    "phase1_causal_supported_is_final_selection": false,
-    "dated_handoffs_can_dispatch": false
+    "focus": "SELECTED_DIRECT_SAC_GENERALIZATION_AND_AUTOMATIC_REGULARIZATION_ABLATIONS",
+    "financial_training_enabled": true,
+    "temporal_sac_new_experiments_paused_by_owner": true,
+    "temporal_sac_new_dispatch_enabled": false,
+    "direct_sac_early_stop_continues": true,
+    "financial_training_scope": "SCOPED_ADMITTED_CORE_SELECTED_COMPARISON_NOT_FULL_EXTERNAL_CATALOGUE",
+    "gpu_use_now": "ONE_5090_HEAVY_SELECTED_SAC_NO_PARALLEL_5070TI_NO_NEW_RAW_CAMPAIGNS",
+    "gpu_preference_after_acceptance": ["preferred_5090", "secondary_4090", "admitted_optional_workers"],
+    "gpu_scheduling": {
+      "priority": "5090_FOR_ALL_COMPATIBLE_WORK_HEAVIEST_MODELS_AND_LONGEST_WINDOWS_FIRST",
+      "parallel_secondary": "4090_FOR_INDEPENDENT_PLAN_UNITS_IF_IDLE_AND_RESOURCE_ADMITTED",
+      "respect_other_agents_work": true,
+      "duplicate_execution_allowed": false,
+      "current_selected_queue": "SEQUENTIAL_PINNED_NO_IN_PLACE_CONVERSION_TO_DISTRIBUTED",
+      "next_parallel_batch": "DECLARE_TASK_OWNERSHIP_HARDWARE_AND_RUNTIME_BEFORE_DISPATCH",
+      "gpu_hardware_bitwise_equivalence_claimed": false
+    },
+    "shared_host_heavy_jobs": 1,
+    "reuse_affected_artifacts": false,
+    "metrics": "existing_OLAP_exact_readback_and_two_physical_copies",
+    "agent_log_polling": false,
+    "forecasting_and_NEAT": "DEFERRED_FINAL",
+    "test": "previously_examined_2025_not_pristine_after_repair"
   },
   "lanes": [
-    {
-      "priority": 1,
-      "id": "FS-PHASE2-ENGINEERING",
-      "resource": "CPU_worktree",
-      "state": "AUTHORIZED_NOT_STARTED",
-      "work": "Implement and test the durable pairwise driver, bounded worker, warehouse migration, status writer and restart behavior.",
-      "depends_on": [],
-      "produces": "one deployable commit and wheel for all hosts"
-    },
-    {
-      "priority": 2,
-      "id": "FS-PHASE2-PAIRWISE",
-      "resource": "omega_gamma_dragon_CPU",
-      "state": "WAITING_FOR_ENGINEERING",
-      "work": "Compute all EURUSD and ETH feature-feature metrics with exclusive deterministic shards and automatic warehouse delivery.",
-      "depends_on": ["FS-PHASE2-ENGINEERING"],
-      "produces": "PHASE_2_COMPLETE.json plus OLAP tables and verified snapshot"
-    },
-    {
-      "priority": 3,
-      "id": "FS-PHASE3-FILTERS",
-      "resource": "CPU_after_phase2_gate",
-      "state": "WAITING_FOR_PHASE2",
-      "work": "Run Spearman clustering, mRMR and JMI plus controls for every target and horizon; retain full rankings and K paths.",
-      "depends_on": ["FS-PHASE2-PAIRWISE"],
-      "produces": "PHASE_3_FILTER_COMPLETE.json plus candidate subset trajectories"
-    },
-    {
-      "priority": 4,
-      "id": "FS-PHASE4-EXTRACTIBILITY",
-      "resource": "unassigned",
-      "state": "WAITING_FOR_PHASE3_AND_DESIGN",
-      "work": "Freeze and then compare raw random trained AE DAE and temporal alternatives on Phase-3 candidates and matched controls.",
-      "depends_on": ["FS-PHASE3-FILTERS"],
-      "produces": "extractibility evidence for wrapper validation"
-    },
-    {
-      "priority": 7,
-      "id": "MOD-ARCH-E1",
-      "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_FINAL_MANIFEST",
-      "work": "Matched architecture controls, branch donors and R0/R1/R2.",
-      "depends_on": ["FS-PHASE4-EXTRACTIBILITY"],
-      "produces": "winning branch architecture and regime"
-    },
-    {
-      "priority": 8,
-      "id": "MOD-HCORE",
-      "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_MOD_ARCH_E1",
-      "work": "Fix winning branch prefix, materialize fusion, pretrain core and test transfer separately.",
-      "depends_on": ["MOD-ARCH-E1"],
-      "produces": "core donor and transfer result"
-    },
-    {
-      "priority": 9,
-      "id": "MOD-DOIN",
-      "resource": "fleet",
-      "state": "WAITING_FOR_ELIGIBLE_MODEL",
-      "work": "DEAP proposes typed configurations and DOIN evaluates finite candidate batches.",
-      "depends_on": ["MOD-ARCH-E1"],
-      "produces": "verified incumbent and candidate history"
-    },
-    {
-      "priority": 10,
-      "id": "HEAD-DENSE-NEAT",
-      "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_FROZEN_REPRESENTATION",
-      "work": "Dense control versus true NEAT predictive head on the frozen representation.",
-      "depends_on": ["MOD-HCORE"],
-      "produces": "matched head comparison"
-    },
-    {
-      "priority": 11,
-      "id": "RL-RAW-MODULAR",
-      "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_FINAL_REPRESENTATION",
-      "work": "SAC raw/modular and DQN raw/modular, one seed first.",
-      "depends_on": ["MOD-HCORE"],
-      "produces": "matched policy results"
-    },
-    {
-      "priority": 12,
-      "id": "TRADING-PAPER",
-      "resource": "CPU_services",
-      "state": "PAUSED_DURING_SELECTION_FOCUS",
-      "work": "Resume after the active selection closure; promote only naive-eligible artifacts.",
-      "depends_on": [],
-      "produces": "shadow and paper receipts"
-    },
-    {
-      "priority": 99,
-      "id": "CALENDAR-CAUSAL-MODEL-INPUT",
-      "resource": "unassigned",
-      "state": "DEFERRED_FINAL_OPTIONAL",
-      "work": "Test calendar and causal dossier inputs only after representation, NEAT, RL and paper baseline.",
-      "depends_on": ["HEAD-DENSE-NEAT", "RL-RAW-MODULAR", "TRADING-PAPER"],
-      "produces": "separate incremental-value ablation"
-    }
+    {"priority": 2, "id": "SELECTED_DIRECT_SAC_PAIRED_EARLY_STOP", "state": "CLOSED_CAP100K_BEST100K_42_READBACKS_SECOND_COPY_VERIFIED", "dispatch_enabled": false, "continuation_owner": "enabled_resource_aware_systemd_successor_not_this_plan_file", "depends_on": ["SELECTED_CORE_SAC_COMPARISON"], "work": "Contractac792153 closed: TRAIN+361.08%, VALIDATION+0.75%, daily nonannualized validation Sharpe0.000043; no robustness claim; RL_PAIRED_ES_RESULT_2026_10_19.md; dropout successor started"},
+    {"priority": 0, "id": "DATA_NATIVE_RECOVERY", "state": "EURUSD_CORE_RECOVERED_REMAINING_INVENTORY_NOT_CLOSED", "dispatch_enabled": false, "resource": "bounded_CPU_source_jobs", "depends_on": [], "work": "Resolve required-variable source/dependency coverage; EURUSD core has 37309 observed H1 rows over 72 months, not whole-inventory admission"},
+    {"priority": 0, "id": "DATA_ADMISSION", "state": "CORE_PRICES_ONLY_ADMITTED_FULL_CANDIDATE_ADMISSION_PENDING", "dispatch_enabled": false, "depends_on": ["DATA_NATIVE_RECOVERY"], "work": "Verify source/dependency quality and actual monthly support for the configured candidate variables; core admission does not imply selected-feature admission"},
+    {"priority": 1, "id": "SELECTION_REBUILD", "state": "PRIORITY_WAIT_FULL_CANDIDATE_ADMISSION_AND_PREPARED_BUNDLE", "dispatch_enabled": false, "depends_on": ["DATA_ADMISSION"], "work": "Existing individual, pairwise/lag/redundancy and subset engines, declared causal evidence and policy/risk relevance; new selected manifest with reasons and OLAP readback, no retired metrics"},
+    {"priority": 1, "id": "CORE_SELECTION", "state": "CLOSED_15_OF_30_NATIVE_OLAP_AND_TWO_COPIES", "dispatch_enabled": false, "depends_on": [], "work": "Actual admitted EURUSD core-derived subset553fc047,37198 verified native rows; not full external-catalogue selection or causal identification; SELECTED_CORE_RL_2026_10_19.md"},
+    {"priority": 2, "id": "SELECTED_CORE_SAC_COMPARISON", "state": "CLOSED_12_TASKS_AND_12_READBACKS_FUTURE_TEMPORAL_PAUSED", "dispatch_enabled": false, "continuation_owner": "persistent_selected_queue_publication_and_collection_not_this_plan_file", "depends_on": ["CORE_SELECTION"], "work": "Contract37e06192; all12 tasks and12 readbacks complete; no new temporal fits per owner pause; successor direct-only paired early stop already running, selected15 inputs/window13 stride2/leverage50 unchanged"},
+    {"priority": 1, "id": "RL_ENGINEERING", "state": "BOUNDED_REAL_ENGINE_ACCEPTANCE_PASSED_NOT_UNIVERSAL_CERTIFICATION", "dispatch_enabled": false, "depends_on": [], "work": "297 simulator tests, 65 integration tests and 72 queue/publication/copy tests pass; submitted-order cancellation and equivalent faster reopen evidence repaired"},
+    {"priority": 1, "id": "RAW_RL_CONTROL", "state": "CLOSED_12_OF_12_WAREHOUSE_READBACK_AND_TWO_PHYSICAL_COPIES", "dispatch_enabled": false, "continuation_owner": "existing_systemd_queue_not_this_plan_file", "depends_on": [], "work": "Control b195273e closed; eight raw variables, fixed100k SAC budgets, no refit/dropout/early-stop; both SACs lose in validation; not a substitute for selected-input comparison; RL_RAW_CONTROL_RESULT_2026_10_19.md"},
+    {"priority": 2, "id": "RL0_RL1", "state": "WAIT_DATA_SELECTION_AND_ENVIRONMENT_ACCEPTANCE", "dispatch_enabled": false, "depends_on": ["SELECTION_REBUILD", "RL_ENGINEERING"], "work": "Business environment acceptance and common-support baselines"},
+    {"priority": 3, "id": "RL2_SAC_RAW_MODULAR", "state": "WAIT_NEW_SELECTED_MANIFEST_NOT_SATISFIED_BY_RAW_CONTROL", "dispatch_enabled": false, "depends_on": ["RL0_RL1"], "work": "Same selected information for SAC direct versus per-feature causal Conv1D, fusion and temporal core; common business, costs, seeds and declared training monitor; current RAW control is a separate reference"},
+    {"priority": 3, "id": "RL_OVERFITTING_ABLATIONS", "state": "DROPOUT005_RUNNING_OTHER_THREE_WAIT_PREDECESSOR", "dispatch_enabled": false, "continuation_owner": "enabled_native_worker_publication_and_collection_timers_not_this_plan_file", "depends_on": ["SELECTED_DIRECT_SAC_PAIRED_EARLY_STOP"], "work": "Critic-only dropout0.05 running after verified synthetic GPU smoke; Adam coupled L2 1e-6, dropout+L2, standalone BatchNorm follow; renderer a7b4da3e fixes global throttling of normal waits; same scientific contracts, bounded actual attempts and metrics/copy automation"},
+    {"priority": 4, "id": "RL3_RL4", "state": "PLANNED", "dispatch_enabled": false, "depends_on": ["RL2_SAC_RAW_MODULAR"], "work": "Action-compatible challengers, cadence and net-return confirmation; existing DEMO/PAPER procedure"},
+    {"priority": 90, "id": "FORECASTING", "state": "DEFERRED_AFTER_RL", "dispatch_enabled": false, "depends_on": ["RL3_RL4"], "work": "Prospective, business-matched short/long forecasts with horizon-specific naives; no old donors"},
+    {"priority": 99, "id": "NEAT", "state": "DEFERRED_FINAL", "dispatch_enabled": false, "depends_on": ["RL3_RL4"], "work": "Approved late experiments only, no automatic restart"}
   ]
 }

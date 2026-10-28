@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "~/Documents/GitHub/.worktrees/predictor-fs-phase23-int-20261005/tools/fs_phase23_warehouse.py", line 779, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "~/Documents/GitHub/.worktrees/predictor-fs-phase23-int-20261005/tools/fs_phase23_warehouse.py", line 755, in main
+    _dump(wh.reconcile(args.run_id, receipts or None), args.out)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/Documents/GitHub/.worktrees/predictor-fs-phase23-int-20261005/tools/fs_phase23_warehouse.py", line 157, in reconcile
+    return core.reconcile(self.conn, run_id, receipts, expected, backend=self.backend)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/.local/state/canonical_20261003/fs_phase23/venv/lib/python3.12/site-packages/predictor_olap_store/fs_phase23_store.py", line 588, in reconcile
+    n, sha = _run(conn, stored_summary_sql(table, run_id, qualified))[0]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/.local/state/canonical_20261003/fs_phase23/venv/lib/python3.12/site-packages/predictor_olap_store/fs_phase23_store.py", line 247, in _run
+    cursor = conn.execute(sql, list(params))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_duckdb.OutOfMemoryException: Out of Memory Error: failed to allocate data of size 128.0 MiB (149.2 MiB/244.1 MiB used)
+
+Possible solutions:
+* Reducing the number of threads (SET threads=X)
+* Disabling insertion-order preservation (SET preserve_insertion_order=false)
+* Increasing the memory limit (SET memory_limit='...GB')
+
+See also https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads

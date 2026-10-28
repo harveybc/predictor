@@ -1,0 +1,49 @@
+{
+ "schema": "fs_phase23.pk_index_rebuild.v1",
+ "warehouse": "fs_phase23_warehouse_eth.duckdb",
+ "duckdb": "1.5.6",
+ "tables": [
+  {
+   "table": "feature_pair_metrics",
+   "count": 245016,
+   "rows_sha256": "c6634d60336e611b8b9aa544435f06cabce6da384f745205824cb4af56cdec57",
+   "seconds": 4.8
+  },
+  {
+   "table": "feature_pair_stability",
+   "count": 61254,
+   "rows_sha256": "d7842dcccad089c870997855e6364787bdcf29551f0395b31d7fac2dd6ec1795",
+   "seconds": 0.79
+  },
+  {
+   "table": "feature_pair_gate",
+   "count": 3403,
+   "rows_sha256": "00718c737b7b1eac310c74d9a664af5155942ea2eb99d8212b8a6f71c8c5f7b5",
+   "seconds": 0.05
+  },
+  {
+   "table": "feature_alias_groups",
+   "count": 5,
+   "rows_sha256": "84c25556f3bbada8b9ff381441f91b52fa594a5afcf0eb819e9506b68b9c3114",
+   "seconds": 0.0
+  },
+  {
+   "table": "feature_redundancy_clusters",
+   "count": 38,
+   "rows_sha256": "5b9bd26e106c02ec7dbc59f35b1730d579d44312d8b45fda6b0d635a387c4a8f",
+   "seconds": 0.0
+  },
+  {
+   "table": "feature_filter_rankings",
+   "count": 4212,
+   "rows_sha256": "767333e18abe60f1921a6c69797a0bd5899a24dae8470f8476b81e95411c0151",
+   "seconds": 0.05
+  },
+  {
+   "table": "feature_filter_subsets",
+   "count": 294,
+   "rows_sha256": "73790f4f89124699a55b84b8cf40720d72b3250ae6ba403e7da2faec0429fa3a",
+   "seconds": 0.01
+  }
+ ]
+}

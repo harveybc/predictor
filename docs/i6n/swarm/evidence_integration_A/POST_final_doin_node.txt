@@ -1,0 +1,2 @@
+$ (doin-node @df6aad0) PYTHONPATH=src:<doin-core>/src:<deps>/data-lake:<deps>/data-warehouse crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_runtime.py tests/test_shared_population_contract.py tests/test_unified.py tests/test_offchain_shadow.py
+103 passed, 2 warnings in 3.83s

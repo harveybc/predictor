@@ -1,0 +1,2 @@
+$ (doin-plugins @566c5af, doin-node @df6aad0, doin-core @4a321cd, predictor @63522238) DOIN_CORE_EXPECTED_COMMIT=4a321cd PYTHONPATH=<predictor>:src:<doin-core>/src:<doin-node>/src crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_wrapper.py tests/test_predictor_plugins.py
+24 passed in 9.81s

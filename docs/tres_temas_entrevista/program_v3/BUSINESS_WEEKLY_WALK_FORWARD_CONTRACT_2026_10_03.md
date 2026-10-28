@@ -5,7 +5,24 @@ comportamiento exigido; no afirma que todos los runners ya lo implementen.
 
 ## 1. Regla de negocio
 
-El artefacto final no es un modelo estático sino un **procedimiento de
+### Enmienda vigente 2026-10-14
+
+El propietario prioriza comprobar la pareja predictiva completa en la
+estrategia antes de pagar reajustes frecuentes. La cadencia es configurable,
+no obligatoriamente semanal en cada ensayo. El siguiente experimento es
+`BUSINESS_STATIC_BASELINE`, documentado en
+[I6-DMO](../../i6n/direct_multi_output_static/PLAN.md): cuatro anos TRAIN y
+anos completos VALIDATION/TEST, sin updates dentro del ano. Sigue aplicando
+mascaras por horizonte, disponibilidad real, costes y cierre forzoso. No es
+`LITERATURE_STATIC` ni una reproduccion de la operacion semanal prevista.
+
+Primero se entrenan seis cabezales cortos conjuntos con entradas DS2; despues
+seis largos conjuntos y se evalua la pareja congelada en trading. NONE,
+QUARTERLY, MONTHLY y WEEKLY se comparan posteriormente en VALIDATION, sin
+suponer que mas frecuencia siempre mejora. Las reglas semanales que siguen
+gobiernan el brazo WEEKLY, no ordenan activarlo en el baseline.
+
+En el brazo semanal el artefacto final no es un modelo estático sino un **procedimiento de
 actualización y decisión**. En producción los modelos de pronóstico, los
 cabezales de la estrategia heurística y las políticas RL se actualizan durante
 la pausa semanal. Por tanto, el veredicto financiero principal se obtiene con
@@ -27,7 +44,7 @@ Para cada semana de evaluación `W_k`:
 5. al cerrarse `W_k`, sus labels pueden incorporarse a `W_{k+1}` solo cuando su
    disponibilidad real lo permita. Nunca corrigen retrospectivamente `W_k`.
 
-Validation y test son años externos completos divididos en todas sus semanas
+En todos los modos, validation y test son años externos completos divididos en todas sus semanas
 elegibles consecutivas. Si el contrato del dataset enumera 48 semanas, deben
 producirse 48 disposiciones; una semana excluida conserva razón y población. No
 se reemplaza una semana fallida por otra ni se promedia solo lo que terminó.
@@ -46,6 +63,17 @@ se reemplaza una semana fallida por otra ni se promedia solo lo que terminó.
 - `LITERATURE_STATIC`: reproduce exactamente un paper que ajusta una vez y
   puntúa el bloque completo. Sus cifras son comparables con ese paper, no una
   medición del negocio semanal.
+- `BUSINESS_STATIC_BASELINE`: baseline financiero sin reajustes dentro del
+  ano, con calendario/mascaras/costes reales. VALIDATION elige el procedimiento;
+  un refit final unico con los cuatro anos anteriores a TEST queda declarado
+  antes de abrir TEST. Los pesos permanecen congelados durante ese ano.
+- `BUSINESS_QUARTERLY_WALK_FORWARD`: reajusta al inicio de cada trimestre
+  evaluado con cuatro anos previos, manteniendo estado financiero continuo.
+
+Para el siguiente despacho el modo es BUSINESS_STATIC_BASELINE. WEEKLY sigue
+siendo la operacion prevista, cuya ventaja incremental debe medirse. Los
+identificadores "primario" y "no sustituye" de los modos anteriores no
+imponen su ejecucion antes del baseline autorizado.
 
 No hay fallback silencioso entre modos. Una tabla que los compare conserva dos
 columnas de protocolo y no promedia sus filas.

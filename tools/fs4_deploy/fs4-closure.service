@@ -1,0 +1,12 @@
+[Unit]
+Description=FS4 closure follower: controller terminals -> warehouse -> receipts -> STATUS.json / EXTRACTIBILITY_COMPLETE.json (coordinator only; fired by fs4-closure.timer)
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/.config/fs4/closure.env
+ExecStart=/bin/bash ${FS4_CODE}/tools/fs4_deploy/closure_tick.sh
+Nice=15
+IOSchedulingClass=idle
+MemoryMax=1G
+TimeoutStartSec=25m

@@ -1,0 +1,85 @@
+{
+ "admission": {
+  "desktop_reserve_bytes": 3221225472,
+  "host_free_for_new_bytes": 1601683456,
+  "live_lease_count": 1,
+  "live_leases": [
+   {
+    "armed": true,
+    "cap_bytes": 4294967296,
+    "label": "crispdm-fs4-venv-build-1791338480-1681323",
+    "lease_id": "fs4-venv-build-1791338480-1681331-b7461c",
+    "name": "fs4-venv-build",
+    "unit": "crispdm-fs4-venv-build-1791338480-1681323.scope"
+   }
+  ],
+  "mem_available_bytes": 8887463936,
+  "pressure_admit_max": 25.0,
+  "pressure_full_avg10": 0.0,
+  "pressure_some_avg10": 0.0
+ },
+ "cpu": {
+  "cores": 32,
+  "loadavg_1_5_15": [
+   3.82275390625,
+   3.68798828125,
+   3.6513671875
+  ]
+ },
+ "crispdm_batch_slice": {
+  "active": "active",
+  "memory_current_bytes": 252149760,
+  "memory_high_bytes": 7516192768,
+  "memory_max_bytes": 8589934592,
+  "scopes": [
+   "crispdm-fs4-venv-build-1791338480-1681323.scope"
+  ]
+ },
+ "crispdm_run_installed": true,
+ "gpus_read_only": [
+  {
+   "index": 0,
+   "memory_total_mib": 12227,
+   "memory_used_mib": 14,
+   "utilization_pct": 0
+  }
+ ],
+ "measured_at_utc": "2026-10-07T02:06:16Z",
+ "memory": {
+  "available_bytes": 8886878208,
+  "cached_bytes": 5935624192,
+  "free_bytes": 1484648448,
+  "slab_unreclaim_bytes": 1979117568,
+  "swap_free_bytes": 4289466368,
+  "swap_total_bytes": 4294963200,
+  "total_bytes": 15340732416
+ },
+ "python_envs": {
+  "~/anaconda3/envs/tensorflow/bin/python": {
+   "executable": "~/anaconda3/envs/tensorflow/bin/python",
+   "packages": {
+    "duckdb": "MISSING:ModuleNotFoundError",
+    "numpy": "2.4.3",
+    "pandas": "3.0.1",
+    "pyarrow": "23.0.1",
+    "scipy": "1.17.1",
+    "sklearn": "1.8.0"
+   },
+   "python": "3.12.13"
+  },
+  "python3": {
+   "executable": "/usr/bin/python3",
+   "packages": {
+    "duckdb": "MISSING:ModuleNotFoundError",
+    "numpy": "MISSING:ModuleNotFoundError",
+    "pandas": "MISSING:ModuleNotFoundError",
+    "pyarrow": "MISSING:ModuleNotFoundError",
+    "scipy": "MISSING:ModuleNotFoundError",
+    "sklearn": "MISSING:ModuleNotFoundError"
+   },
+   "python": "3.14.4"
+  }
+ },
+ "role": "worker_a",
+ "schema": "fs_phase23_host_health.v1"
+}

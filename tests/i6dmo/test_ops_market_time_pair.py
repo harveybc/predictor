@@ -1,0 +1,266 @@
+"""Market-time pair campaign (order 50d20d01, plan sections 4 and 6; ops scope).
+
+One finite graph short.fit -> short.report -> long.fit -> long.report -> pair.eligibility ->
+strategy.validation (only when the pair qualifies) -> publication/mirror closure. The long family
+is measured even when short eligibility fails; a disqualified pair closes PAIR_NOT_ELIGIBLE; no
+TEST unit is enumerable or claimable; old elapsed-grid terminals are never adopted.
+"""
+import json
+
+import pytest
+
+from tests.i6dmo.ops_fakes import fit_count, make_market_time_campaign, run_worker
+
+
+def _ids(root):
+    from tools.i6dmo import campaign
+    return [u["unit_id"] for u in campaign.load_plan(root)["units"]]
+
+
+def _next_claimable(root):
+    from tools.i6dmo import campaign
+    q = campaign.open_queue(root)
+    try:
+        return {u["unit_id"] for u in q.units() if u["state"] in ("QUEUED", "WAIT_RESOURCE")}
+    finally:
+        q.close()
+
+
+def _drive(root, counter, *, report_mode="ok", pair_mode="ok"):
+    """Advance the finite graph with the fake trainers; returns the per-unit end states."""
+    from tools.i6dmo import campaign, status
+    for _ in range(12):
+        campaign.tick(root)
+        progressed = False
+        for role in ("preferred", "coordinator"):
+            claimable = _next_claimable(root)
+            mode = pair_mode if "pair.eligibility" in claimable else report_mode
+            if run_worker(root, role, counter, mode=mode)["result"] != "IDLE":
+                progressed = True
+        if not progressed:
+            break
+    campaign.tick(root)
+    return {u: status.compute(root, level="unit", unit=u)["state"] for u in _ids(root)}
+
+
+def test_market_time_graph_is_finite_and_has_no_test_unit(tmp_path):
+    from tools.i6dmo import campaign
+    root = make_market_time_campaign(tmp_path)
+    plan = campaign.load_plan(root)
+    assert _ids(root) == ["short.fit", "short.report", "long.fit", "long.report",
+                          "pair.eligibility", "strategy.validation"]
+    units = {u["unit_id"]: u for u in plan["units"]}
+    assert units["long.fit"]["depends_on"] == ["short.report"]
+    assert units["pair.eligibility"]["depends_on"] == ["short.report", "long.report"]
+    assert units["strategy.validation"]["depends_on"] == ["pair.eligibility"]
+    assert all(u["identity_sha256"] for u in plan["units"])  # both designs sealed up front
+    assert plan["mode"] == "MARKET_TIME_PAIR" and plan["test_units_enumerated"] is False
+    assert all(u["test_open"] is False and "test" not in u["windows"] for u in plan["units"])
+    assert plan["expected"]["final_units"] == "NOT_ENUMERABLE_IN_MARKET_TIME_PAIR"
+
+
+def test_long_family_runs_even_when_short_is_not_eligible(tmp_path):
+    from tools.i6dmo import campaign
+    counter = tmp_path / "c.txt"
+    root = make_market_time_campaign(tmp_path)
+    states = _drive(root, counter, report_mode="ineligible")
+    short_report = campaign.open_queue(root)
+    try:
+        term = short_report.terminal("short.report")
+    finally:
+        short_report.close()
+    assert not any(h["eligible"] for h in term["terminal"]["eligibility"].values())
+    assert states["long.fit"] == "COMPLETE" and states["long.report"] == "COMPLETE"
+    assert fit_count(counter) == 2  # the long fit really ran after a failed short eligibility
+    assert states["strategy.validation"] == "BLOCKED"
+
+
+def test_disqualified_pair_closes_with_a_typed_disposition_and_no_strategy_run(tmp_path):
+    from tools.i6dmo import campaign, status
+    counter = tmp_path / "c.txt"
+    root = make_market_time_campaign(tmp_path)
+    states = _drive(root, counter, pair_mode="ineligible")
+    assert states["pair.eligibility"] == "COMPLETE"
+    unit = status.compute(root, level="unit", unit="strategy.validation")
+    assert unit["state"] == "BLOCKED" and unit["disposition"] == "PAIR_NOT_ELIGIBLE"
+    assert unit["attempts"] == []  # the strategy never ran on a disqualified pair
+    assert "strategy.validation" not in counter.read_text()
+    ready = campaign.readiness(root)
+    assert ready["state"] == "TERMINAL" and ready["disposition"] == "PAIR_NOT_ELIGIBLE"
+
+
+def test_qualified_pair_runs_the_validation_strategy(tmp_path):
+    from tools.i6dmo import status
+    counter = tmp_path / "c.txt"
+    root = make_market_time_campaign(tmp_path)
+    states = _drive(root, counter)
+    assert states["pair.eligibility"] == "COMPLETE" and states["strategy.validation"] == "COMPLETE"
+    assert "strategy:strategy.validation" in counter.read_text()
+    assert status.compute(root, level="campaign")["counts"]["COMPLETE"] == 6
+
+
+def test_no_test_unit_can_be_enumerated_or_claimed(tmp_path):
+    from tools.i6dmo import campaign, queue
+    counter = tmp_path / "c.txt"
+    root = make_market_time_campaign(tmp_path)
+    _drive(root, counter)
+    for gate in ("DATA_PROVENANCE", "SOFTWARE_TRACEABILITY"):
+        campaign.record_gate(root, gate, status="PASS", evidence={"x": 1},
+                             splits_read=["train", "validation"])
+    out = campaign.tick(root)
+    assert out["finals_enumerated"] is False
+    assert not [u for u in campaign.load_plan(root)["units"] if u["kind"] in ("final_refit", "final_test")]
+    q = queue.Queue(root / "state" / "queue.sqlite3")
+    try:
+        with pytest.raises(campaign.Refused, match="TEST_NOT_ENUMERABLE_IN_MARKET_TIME_PAIR"):
+            campaign.enumerate_test_units(root)
+        q.ensure_unit("final.pair_test", dict(identity_sha256="f" * 64, kind="final_test", family="pair",
+                                              device="cpu", depends_on=[], stage="FINAL_PAIR_TEST",
+                                              test_open=True), state="QUEUED")
+    finally:
+        q.close()
+    assert run_worker(root, "coordinator", counter)["result"] == "IDLE"  # not in the sealed plan
+
+
+def test_an_elapsed_grid_terminal_is_never_adopted_by_shape_or_horizon_match(tmp_path):
+    """A real DS2 (elapsed) campaign terminal must not be adopted by a market-time identity."""
+    from tests.i6dmo.ops_fakes import make_campaign
+    from tools.i6dmo import campaign
+    counter = tmp_path / "c.txt"
+    donor = make_campaign(tmp_path, name="ds2")            # i6dmo.design.v1 elapsed campaign
+    assert run_worker(donor, "preferred", counter)["result"] == "COMPLETE"
+    donor_identity = next(p.name for p in (donor / "terminals").iterdir())
+    root = make_market_time_campaign(tmp_path, name="mg2", prior_roots=[donor])
+    target = {u["unit_id"]: u for u in campaign.load_plan(root)["units"]}["short.fit"]
+    assert target["identity_sha256"] != donor_identity     # different treatment -> different identity
+    # Forge the elapsed terminal under the market-time identity: same six heads, same window shape.
+    (donor / "terminals" / donor_identity).rename(donor / "terminals" / target["identity_sha256"])
+    assert run_worker(root, "preferred", counter)["result"] == "COMPLETE"
+    assert fit_count(counter) == 2                         # refitted; the elapsed terminal was refused
+    assert any(e["event"] == "PRIOR_REJECTED" for e in campaign.events(root))
+
+
+def test_init_accepts_the_real_sealed_designs_and_refuses_an_elapsed_one(tmp_path):
+    """The seam the fixtures used to hide: the campaign must seal exactly what the model lane produces."""
+    import hashlib
+    from tests.i6dmo.ops_fakes import (elapsed_design_for_market_time, integration_pins,
+                                       sealed_market_time_designs)
+    from tools.i6dmo import campaign
+    short, long = sealed_market_time_designs()
+    pins = integration_pins()["designs"]
+    root = make_market_time_campaign(tmp_path, name="sealed")
+    effective = campaign.load_effective(root)
+    for doc, path, pin in ((effective["design"], short, pins["mg2"]),
+                           (effective["long"]["design"], long, pins["mg12"])):
+        assert doc["schema"] == campaign.MARKET_TIME_DESIGN_SCHEMA
+        # the integrated identity is pinned: a reseal must update INTEGRATION_PINS.json deliberately
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == pin["file_sha256"]
+        assert doc["seal_sha256"] == pin["seal_sha256"] == json.loads(path.read_text())["seal_sha256"]
+        assert doc["experiment_id"] == pin["experiment_id"]
+        assert doc["market_time"]["require_exact_market_slots"] is True
+        assert doc["market_time"]["elapsed_span_fixed"] is False
+        assert "input" not in doc and "history_span_hours" not in doc
+    assert effective["design"]["market_time"]["rule"] == "MG2_MARKET_EXACT"
+    assert effective["long"]["design"]["market_time"]["rule"] == "MG12_MARKET_EXACT"
+    with pytest.raises(campaign.Refused, match="ELAPSED_DESIGN_IN_MARKET_TIME_CAMPAIGN"):
+        make_market_time_campaign(tmp_path, name="elapsed",
+                                  short_design=elapsed_design_for_market_time(tmp_path))
+
+
+def test_a_contradictory_market_time_design_is_refused(tmp_path):
+    """Plan section 2: fixed elapsed fields beside a market_time block are a typed contradiction."""
+    from tests.i6dmo.ops_fakes import sealed_market_time_designs
+    from tools.i6dmo import campaign
+    short, _ = sealed_market_time_designs()
+    doc = json.loads(short.read_text())
+    doc["input"] = {"history_span_hours": 24, "spacing_hours": 2}      # elapsed ladder smuggled back in
+    bad = tmp_path / "contradictory.json"
+    bad.write_text(json.dumps(doc))
+    with pytest.raises(campaign.Refused, match="MARKET_TIME_CONTRADICTION"):
+        make_market_time_campaign(tmp_path, name="contradictory", short_design=bad)
+    doc.pop("input")
+    doc["market_time"] = dict(doc["market_time"], elapsed_span_fixed=True)
+    bad.write_text(json.dumps(doc))
+    # The model lane's sealed-scope validator refuses this one first (FIXED_VALUE); either layer
+    # is a typed refusal, and neither lets a fixed elapsed span into a market-time campaign.
+    with pytest.raises(campaign.Refused, match="FIXED_VALUE|MARKET_TIME_ELAPSED_SPAN_MUST_VARY"):
+        make_market_time_campaign(tmp_path, name="fixedspan", short_design=bad)
+
+
+def test_ops_market_time_design_gate_is_independent_of_the_upstream_validator(tmp_path):
+    """The ops-side gate alone must reject every contradictory or incomplete market-time design."""
+    from tests.i6dmo.ops_fakes import sealed_market_time_designs
+    from tools.i6dmo import campaign
+    short, _ = sealed_market_time_designs()
+    sealed = json.loads(short.read_text())
+    assert campaign._design_checks(sealed, mode=campaign.MODE_MARKET_TIME) == []
+    assert "SCHEMA" in campaign._design_checks(sealed, mode=campaign.MODE_ELAPSED)
+    cases = {
+        "MARKET_TIME_CONTRADICTION": dict(sealed, input={"history_span_hours": 24}),
+        "MARKET_TIME_ELAPSED_SPAN_MUST_VARY": dict(
+            sealed, market_time=dict(sealed["market_time"], elapsed_span_fixed=True)),
+        "MARKET_TIME_REQUIRES_EXACT_SLOTS": dict(
+            sealed, market_time=dict(sealed["market_time"], require_exact_market_slots=False)),
+        "MARKET_TIME_MUST_INCLUDE_ORIGIN": dict(
+            sealed, market_time=dict(sealed["market_time"], include_origin=False)),
+        "MARKET_TIME_FIELD_INVALID:observations": dict(
+            sealed, market_time=dict(sealed["market_time"], observations=0)),
+        "MARKET_TIME_FIELD_MISSING:rule": dict(
+            sealed, market_time={k: v for k, v in sealed["market_time"].items() if k != "rule"}),
+        "MARKET_TIME_BLOCK_MISSING": {k: v for k, v in sealed.items() if k != "market_time"},
+    }
+    for expected, design in cases.items():
+        assert expected in campaign._design_checks(design, mode=campaign.MODE_MARKET_TIME), expected
+    # the elapsed path is untouched by any of this
+    from tests.i6dmo.ops_fakes import load_design
+    assert campaign._design_checks(load_design(), mode=campaign.MODE_ELAPSED) == []
+
+
+def test_a_technical_failure_is_a_typed_terminal_without_retries(tmp_path):
+    from tools.i6dmo import status
+    counter = tmp_path / "c.txt"
+    root = make_market_time_campaign(tmp_path)
+    assert run_worker(root, "preferred", counter, mode="fail")["result"] == "FAILED"
+    unit = status.compute(root, level="unit", unit="short.fit")
+    assert unit["state"] == "FAILED" and len(unit["attempts"]) == 1
+    assert run_worker(root, "preferred", counter)["result"] in ("IDLE", "REFUSED")
+    assert fit_count(counter) == 1  # no retry of a typed failure
+    assert status.compute(root, level="campaign")["state"] == "FAILED"
+
+
+def test_market_time_campaign_refuses_elapsed_grid_bundle_pins(tmp_path):
+    """A market-time campaign must pin MG2/MG12 bundles; an elapsed-grid pin is a typed refusal."""
+    from tools.i6dmo import campaign
+    elapsed = {"relpath": "b", "sha256": "1" * 64, "bundle_sha256": "5f3d6782" + "0" * 56,
+               "input_sampling": "DS2_EXACT"}
+    with pytest.raises(campaign.Refused, match="BUNDLE_SAMPLING: short_bundle must be MG2_MARKET_EXACT"):
+        campaign._check_bundle_pins({"short_bundle": elapsed}, mode=campaign.MODE_MARKET_TIME)
+    market = dict(elapsed, bundle_sha256="21400c51" + "0" * 56, input_sampling="MG2_MARKET_EXACT")
+    campaign._check_bundle_pins({"short_bundle": market}, mode=campaign.MODE_MARKET_TIME)
+    with pytest.raises(campaign.Refused, match="BUNDLE_SAMPLING: short_bundle must be DS2_EXACT"):
+        campaign._check_bundle_pins({"short_bundle": market}, mode=campaign.MODE_ELAPSED)
+
+
+def test_a_swapped_market_bundle_is_caught_before_the_claim(tmp_path):
+    """The pinned data identity must be the one the bundle manifest itself declares."""
+    from tools.i6dmo import status
+    root = make_market_time_campaign(tmp_path)
+    bundle = tmp_path / "bundles" / "mg2"
+    bundle.mkdir(parents=True)
+    (bundle / "BUNDLE.json").write_text(json.dumps(dict(data_identity_sha256="d" * 64)))
+    import hashlib
+    from tools.i6dmo import campaign
+    effective = json.loads((root / "EFFECTIVE_CONFIG.json").read_text())
+    pin = dict(relpath="bundles/mg2", sha256=hashlib.sha256((bundle / "BUNDLE.json").read_bytes()).hexdigest(),
+               bundle_sha256="2" * 64, input_sampling="MG2_MARKET_EXACT", data_contract_sha256="e" * 64)
+    effective["data_pins"]["short_bundle"] = pin
+    body = {k: v for k, v in effective.items() if k != "seal_sha256"}
+    from tools.i6n_swarm.common import sha256_json
+    effective["seal_sha256"] = sha256_json(body)
+    (root / "EFFECTIVE_CONFIG.json").write_text(json.dumps(effective))
+    plan = campaign.load_plan(root)
+    plan["effective_config_sha256"] = sha256_json(effective)
+    campaign._write_plan(root, plan)
+    out = run_worker(root, "preferred", tmp_path / "c.txt")
+    assert out["result"] == "WAIT_ARTIFACT" and out["cause"].startswith("DATA_IDENTITY_MISMATCH:short_bundle")
+    assert status.compute(root, level="unit", unit="short.fit")["attempts"] == []

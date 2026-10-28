@@ -1,5 +1,58 @@
 # Selección progresiva de características y representaciones temporales
 
+## Actualizacion operativa 2026-10-24
+
+CIERRE VIGENTE: seleccion v5, perfiles T1, T2, T3 y combinacion C terminados.
+Re-revision A1-A4 y sonda SAC real aceptan la receta
+`recipe_5a8f2155318ba7c7` como base compartida de desarrollo:121 columnas,
+25 grupos conceptuales/31 ramas efectivas, constantes TRAIN congeladas,
+13 observaciones a paso2, sin feedback, clipping ni z-score movil.
+No repetir seleccion/T3. Informe y tareas concretas de integracion:
+`MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md`.
+Todavia no es una campana SAC desplegada: falta cableado al simulador,
+specs actuales y publicacion automatica. El siguiente parrafo es historico.
+
+T3 v5 desplegado y con dos procesos CUDA verificados:19 unidades impares en
+5090 y3 en4070, sin solaparse con las23 de Satoshi. Sin reinicio necesario;
+5GiB por entrenamiento, una reserva por trabajo, timers de reanudacion y
+colectores con replicas verificadas. Se conserva el comando cientifico
+recibido, regularizacion fuerte0.3/0.01 y lista estricta121. Retorno:
+`MUSASHI_T3_V5_PARALLEL_START_2026_10_24.md`. Decision, combinacion C,
+replay y auditoria final siguen despues de autenticar las45 unidades.
+
+## Actualizacion anterior 2026-10-23
+
+Continuacion v5 verificada (2026-10-24 04:03 UTC): 3882 unidades sin errores;
+listas exportadas exactas: core15=15, estricta=121, shortlist consumible=165
+(168 antes de excluir tres retornos de oro por cobertura de ventanas).
+Store, justificacion, perfiles T1 y spec completos. Corregida doble reserva
+de RAM del orquestador; T2 estricto ya tiene proceso GPU real y una sola
+reserva de 4GiB, con configuracion cientifica identica. La cola existente
+continua secuencialmente a regularizacion y manifiesto T3; no lanzar duplicados.
+Retorno operativo: heuristic-strategy `6468522`,
+`docs/short_horizon/clean_round/MUSASHI_V5_QUEUE_RECOVERY_2026_10_23.md`.
+Esto no sustituye la revision final de las correcciones A1-A4 ni autoriza SAC.
+
+Auditoria final completada: `MUSASHI_FINAL_JOINT_AUDIT_2026_10_23.md`.
+Estado vigente: `REVISE_BEFORE_SHARED_CONSUMPTION`. Se conservan resultados
+y replays; no certifican aislamiento del ajuste de productores upstream.
+Corregir ajuste por particion de los productores aprendidos, exportacion
+autenticada de la receta y consumo congelado identico en ambas lineas.
+Medir descendientes afectados y recalcular solo sus decisiones, sin cambiar
+reglas de negocio ni optimizar sobre 2024. Aun no hay liberacion ni fits SAC.
+
+El siguiente parrafo conserva el cierre operativo anterior a esa auditoria:
+
+T1 y T2 cerrados; T3 v2 tiene43 unidades autenticadas y la confirmacion C
+completa (`COMBINATION_SELECTED`). Replay exacto en contextos originales:
+516 checkpoints originales mas12 de C; control y C reproducen tambien sus
+metricas completas de trading. Retorno y siguiente secuencia:
+`MUSASHI_FINAL_T3_HANDOFF_TO_SATOSHI_2026_10_23.md`.
+Preparar auditoria final y receta compartida; despues integrar el consumidor
+SAC sin experto para comparar entradas seleccionadas y representacion temporal.
+No duplicar T3 ni C. La ganancia INNER no sustituye el2024 negativo en media
+ni su semilla invalida por actividad. No hay RELEASE global ni nuevos fits SAC.
+
 Propuesta de Harvey, revisión de Musashi del 30 de septiembre de 2026.
 Versión 3: enfoque aprobado por el propietario e incorporado al plan maestro.
 Plan de implementación, no declaración de pruebas realizadas. Estado metodológico:
@@ -663,6 +716,31 @@ universo declarado no significa materializar todas las combinaciones: DAG de
 recetas, expansión progresiva, exploración por familia y límites medidos del
 conjunto activo. Un proxy multiescala no certifica wavelet nativa; una métrica
 espectral descriptiva no prueba que su canal transformado llegó al modelo.
+
+Actualizacion tras reinicio2026-10-23: [T3 paralelo14+7](MUSASHI_T3_PARALLEL_RETURN_2026_10_23.md).
+La5090 vuelve con margen de RAM y ejecuta14 ids impares15..41; la4070 conserva
+7 ids01..13, incluida la unidad en curso, sin interrumpirla. Colas nuevas5GiB,
+guardias intactos y relevo/cobertura automatizados. No duplicar estas21 unidades
+en el carril de Satoshi ni descartar sus recibos de origen al consolidar.
+
+Actualizacion de recursos2026-10-23: [traslado T3](MUSASHI_T3_RELOCATION_RETURN_2026_10_23.md).
+La cola de21 impares pasa al worker con32GiB RAM/4070 tras cinco fallos y cero
+unidades completas en el host de la5090. Guardias intactos; mismos comandos,
+datos, codigo y grupos. No duplicar las impares en el carril de Satoshi.
+
+Actualizacion2026-10-23: [T3 v2 desplegado](MUSASHI_T3_V2_GPU_START_2026_10_23.md).
+T2 completo8/8; Satoshi aplico la regla congelada y eligio regularizacion base.
+Las21 unidades impares T3 v2 corren secuencialmente en la5090 con supervisor,
+recuperacion y espejos automaticos; las22 pares/control pertenecen al otro carril.
+Siguen decision por grupo, combinacion y auditoria final compartida antes de SAC.
+
+Actualizacion operativa 2026-10-22: [T1 completo y T2 en ejecucion](MUSASHI_T1_RETURN_AND_T2_RUNNING_2026_10_22.md).
+T1 entrega131 perfiles TRAIN-only (listas v4 de15/116). T2 ejecuta ocho
+diagnosticos secuenciales consolidated en la5090, sin cambiar el science pin
+186b131; primer brazo completo y segundo iniciado automaticamente al chequeo.
+Luego Satoshi aplica la regla interna identificada de regularizacion y emite T3.
+Los perfiles no eligen extractores por si solos: T3 y la auditoria del consumo
+siguen pendientes antes del cierre compartido y las rondas RL independientes.
 
 Prioridad: negocio y operación semanal, después admisibilidad/calidad de datos.
 Este subplan se inserta en perfiles/selección del subplan modular y reutiliza

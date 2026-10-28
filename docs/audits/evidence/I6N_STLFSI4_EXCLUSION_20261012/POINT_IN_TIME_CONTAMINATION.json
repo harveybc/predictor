@@ -1,0 +1,64 @@
+{
+ "applies_to": [
+  "every H4 island result: candidates, fold receipts, fitness values, champions, checkpoints, terminals, archive payloads",
+  "the superseded H72 identity (generated, never started) and anything ever produced under it",
+  "any weekly-refit or inner-fold receipt under experiment i6n-swarm-weekly-2024-v1"
+ ],
+ "consequences": [
+  "not rankable or comparable as valid skill under any successor identity (tools.i6n_contamination)",
+  "no cache, checkpoint, migrant, start-receipt or terminal adoption under the successor identity",
+  "retained as DEVELOPMENT_TUNING history; historical artifacts are NOT edited",
+  "the H4 run itself is not stopped by this label (owner order: do not touch the running H4 units)"
+ ],
+ "evidence": {
+  "audit_branch": "retsu/i6n-causal-trace-audit-addendum-20261012",
+  "audit_commit": "d0642119247f3e3522b753281af0e922af946029",
+  "files_sha256": {
+   "ADDENDUM_FOR_MUSASHI.md": "ecba8c975b24472ccdd6e230209018b85e968b750dfa46aa8d13df3771e69bd8",
+   "FEATURE_AVAILABILITY.json": "4af58212926b6ced43c3c49eace4b923d4a9e12e8ec36089266b87b2ffa45f7e",
+   "FEATURE_PROVENANCE.csv": "cb8ddbfd91a96262ba0009f3aa7ae3bd39c56ad20b9ba623cf10c57733f02e2d"
+  }
+ },
+ "feature": "fred.stress.stlfsi4.level",
+ "identities": {
+  "experiment": [
+   "i6n-swarm-weekly-2024-v1"
+  ],
+  "feature_manifest_sha256": [
+   "3f27b566bc4e265428f625ab04451705c7726e33c891f7bb44b4d89e488b155e"
+  ],
+  "network_id": [
+   "1d6663913dc8464107abde10d8658e380cc483557c9025355c86d20c3bbe2345",
+   "cc6e002e0aeaf8275d1dbbc83a587e6544a0f31000483fe7e01fb3b9fb3f2e7f"
+  ],
+  "plan_sha256": [
+   "1b83490b54af927033a93105e3be85b8b7323c89672b147745bbeb1d3efee983"
+  ],
+  "scientific_config_sha256": [
+   "fb70328d8b057f110006e0713d304b5c42fec5419a8dcee35527add6ca19a4cf",
+   "c22b67e456c9bcc7156024dd5318587d4c876f53220686c41e28e5c9d9aeb97a"
+  ]
+ },
+ "identity_notes": {
+  "feature_manifest_sha256": "tools.i6n_contracts.feature_availability.manifest_sha256(LEGACY_MANIFEST_20)",
+  "network_id": "sha256(genesis_hash, sorted domain ids) for domains i6n-island-sequence-h4 and -h72",
+  "scientific_config_sha256": "H4 optimization_config (running) and the superseded H72 optimization_config"
+ },
+ "known_results": [
+  {
+   "advertised_fitness": -0.010586766321054819,
+   "champion_genotype_sha256": "356e4accee09059a45b7c6863f953ae8aeeedd298f5725efd489589200733535",
+   "horizon_hours": 4,
+   "kind": "H4_CHAMPION",
+   "note": "the genotype itself is an architecture and may be re-evaluated fresh under the successor identity; its contaminated fitness may not be carried over",
+   "plan_sha256": "1b83490b54af927033a93105e3be85b8b7323c89672b147745bbeb1d3efee983",
+   "scientific_config_sha256": "fb70328d8b057f110006e0713d304b5c42fec5419a8dcee35527add6ca19a4cf"
+  }
+ ],
+ "label": "DEVELOPMENT_TUNING_POINT_IN_TIME_CONTAMINATED",
+ "label_sha256": "5f94e09a12c8d929a157c57f84769e0d987381940d96e7d5d70c994e07d09b76",
+ "labelled_at": "2026-10-12",
+ "reason": "the 20-feature manifest includes fred.stress.stlfsi4.level, a Friday-dated weekly value consumed from source date + 23 h while FRED publishes it the following Thursday, i.e. about five days before publication; every fit, fitness, champion, checkpoint, migrant and terminal under these identities consumed it",
+ "ruling": "owner ruling 2026-10-12: exclude STLFSI4 now; mark all prior H4 results as point-in-time contaminated development tuning",
+ "schema": "i6n.point_in_time_contamination.label.v1"
+}

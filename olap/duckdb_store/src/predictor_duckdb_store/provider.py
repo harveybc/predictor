@@ -30,7 +30,16 @@ CAPABILITIES = ("describe", "storage", "discover", "schema", "query",
                 "write_availability_contracts", "resolve_delivery_availability",
                 # E4: the data-foundation ingestion route, owned by this process
                 "write_foundation_envelope", "write_feature_selection_envelope",
-                "reconcile_feature_selection")
+                "reconcile_feature_selection",
+                # Phase-2/3 feature-selection rows: one owned write route, paged readback and
+                # reconciliation; workers never receive the database path.
+                "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23",
+                # Phase-4 extractibility terminals: one owned write route keyed by task_id, paged
+                # readback and reconciliation against the controller's expected counts (FS4-13).
+                "write_fs4_terminals", "read_fs4_terminals", "reconcile_fs4",
+                # DOIN archive projection: gov_metric rows plus versioned DOIN metadata,
+                # append-only events (reorg revokes, never deletes) and readback.
+                "write_doin_projection", "read_doin_projection", "revoke_doin_projection")
 
 #: Refuse to open a database on a volume with less free space than this. An OLAP engine that
 #: runs out of disk mid-write leaves a file nobody can explain.
@@ -179,7 +188,19 @@ class PredictorDuckdbStore(_Cube):
 
     # -- write serialisation ---------------------------------------------------
     def write_metrics(self, report):
+        from predictor_olap_store.query import normalise_report, report_sha256
+
+        normalise_report(report)
+        digest = report_sha256(report)
+        if not isinstance(report.get("report_sha256"), str) or report["report_sha256"].lower() != digest:
+            raise ValueError("report_sha256 mismatch")
         with self._write_lock:
+            with self.engine().connect() as connection:
+                existing = connection.execute(text(
+                    f"SELECT lineage FROM {self._qualified('gov_report')} WHERE report_sha256 = :digest"
+                ), {"digest": digest}).first()
+            if existing is not None:
+                return {"stored": False, "already_stored": True, "lineage": existing[0]}
             return super().write_metrics(report)
 
     def write_terminal(self, terminal):

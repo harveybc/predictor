@@ -1,0 +1,15 @@
+{
+  "already_present": [],
+  "destructive_statements": 0,
+  "dry_run": true,
+  "migration_id": "fs4_0001",
+  "sql_sha256": "bad9467d34f8311307e956aaae0274ce7cd3db39075da0640fe57267a09cf602",
+  "statements": 5,
+  "would_create": [
+    "feature_extractibility_v1",
+    "fs4_load_receipt",
+    "fs4_load_receipt_task",
+    "fs4_extractibility_coverage",
+    "fs4_extractibility_triples"
+  ]
+}

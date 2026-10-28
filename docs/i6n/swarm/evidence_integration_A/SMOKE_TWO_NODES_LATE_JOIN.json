@@ -1,0 +1,37 @@
+{
+ "attempts_by_owner": {
+  "smoke-A": 76,
+  "smoke-B": 16
+ },
+ "checks": {
+  "claim_exclusion": true,
+  "failure_isolation": true,
+  "population_exchange": true,
+  "search_terminated": true,
+  "terminal_adoption": true
+ },
+ "complete": 95,
+ "duplicates": 0,
+ "evaluator_calls": 92,
+ "exit_codes": {
+  "A": 0,
+  "B": 0,
+  "ledger": -15
+ },
+ "failed": 1,
+ "generations_persisted": 3,
+ "label": "SYNTHETIC_EVALUATOR_NOT_A_FIT",
+ "late_join_seconds": 20.0,
+ "passed": true,
+ "production_fit": false,
+ "schema": "i6n.swarm.smoke.v1",
+ "stop": {
+  "direction": "minimize",
+  "generation": 2,
+  "seed": 6102026,
+  "stop_reason": "generation_budget"
+ },
+ "synthetic_evaluator": true,
+ "test_opened": false,
+ "units": 96
+}

@@ -1,0 +1,262 @@
+{
+ "as_of": "2026-10-14",
+ "availability_contract_unchanged": "the sealed contract 9668898c still declares these seven UNVERIFIED; this record does not edit it. A successor contract version is required to promote the five hourly features.",
+ "features": {
+  "fred.rates.dgs3mo.diff_5d": {
+   "clock": {
+    "declared_by_producer": "as-of last value from (D+2) 00:00 UTC, NaN if older than 168 h (NO_VINTAGE)",
+    "proven": false,
+    "status": "STILL_UNRESOLVED"
+   },
+   "formula": "V_D - V_(D-5 observations) after dropping NaN observations (diff because the series is not all positive)",
+   "missing": "first-release publication clock for DGS3MO 2019-2024. Bounded recovery attempt 2026-10-14 against existing governed adapters: financial-data's only FRED adapter (_scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) queries fred/series/observations WITHOUT realtime parameters (current vintage only); the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row; no ALFRED/vintage adapter exists in any sibling repository. Missing artifact: ALFRED per-observation realtime_start for DGS3MO over 2019-2024 (fred/series/observations with realtime_start/realtime_end), or H.15 release timestamps. No new adapter or credential was created. Second bounded attempt 2026-10-15 (order 85ea134e section 3): a governed ALFRED fetch is NOT possible on this host \u2014 the only FRED adapter (financial-data _scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) requires FRED_API_KEY from its process environment, and no governed EnvironmentFile provisions it (~/.config/financial-data/point-in-time-capture.env carries only FD_* variables; no other governed unit declares it). The 2026-05-01 acquisition ran with an ad-hoc key that was not retained. Missing artifacts: (a) ALFRED per-observation realtime_start for 2019-2024 (fred/series/observations with realtime_start/realtime_end) or H.15 release timestamps, and (b) a governed FRED_API_KEY EnvironmentFile for the adapter. No key was searched for in editor logs or printed.",
+   "note": "producer code and formula RECOVERED and reproduced exactly; only the publication clock remains unproven, so the feature stays UNRESOLVED for confirmatory TEST",
+   "producer": {
+    "commit": "18cabb583ed5606ec7865658974513af6b66ee95",
+    "path": "tools/eurusd_ps/covariates.py::fred_series+daily_features",
+    "repo": "feature-eng"
+   },
+   "reproduction": {
+    "scope": "TRAIN rows only (ts < 2024-01-01); no 2024+ value compared, no TEST read",
+    "vs_i6n_input_train_rows": {
+     "clock_note": "offset +1 h rows: INPUT ts is one hour LATER than the producer bar end (I6N EU_DST_OFFSET_MINUS5 policy vs producer NEW_YORK_LOCAL/BAR_START, US/EU DST-gap weeks); never earlier, so no availability violation",
+     "input_nonfinite_rows": 0,
+     "offset_counts_input_minus_producer_h": {
+      "+1": 115,
+      "0": 29040
+     },
+     "row_match_any_offset": "all finite rows",
+     "rows": 29155
+    },
+    "vs_retained_ps1_batch": {
+     "match_rel_1e-9_or_both_nan": 1.0,
+     "max_abs_diff": 0.0,
+     "rows": 71734
+    }
+   },
+   "source": {
+    "path": "<financial-data-root>/macro_economic/fred/rates/dgs3mo/observations.parquet",
+    "sha256": "2829a6fa525c05fa3fc29b882f5ba6211c1e5cca8ddd093e9480f7a379e58b4e"
+   },
+   "status": "STILL_UNRESOLVED"
+  },
+  "fred.rates.dgs7.logret_5d": {
+   "clock": {
+    "declared_by_producer": "as-of last value from (D+2) 00:00 UTC, NaN if older than 168 h (NO_VINTAGE)",
+    "proven": false,
+    "status": "STILL_UNRESOLVED"
+   },
+   "formula": "ln V_D - ln V_(D-5 observations) after dropping NaN observations",
+   "missing": "first-release publication clock for DGS7 2019-2024. Bounded recovery attempt 2026-10-14 against existing governed adapters: financial-data's only FRED adapter (_scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) queries fred/series/observations WITHOUT realtime parameters (current vintage only); the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row; no ALFRED/vintage adapter exists in any sibling repository. Missing artifact: ALFRED per-observation realtime_start for DGS7 over 2019-2024 (fred/series/observations with realtime_start/realtime_end), or H.15 release timestamps. No new adapter or credential was created. Second bounded attempt 2026-10-15 (order 85ea134e section 3): a governed ALFRED fetch is NOT possible on this host \u2014 the only FRED adapter (financial-data _scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) requires FRED_API_KEY from its process environment, and no governed EnvironmentFile provisions it (~/.config/financial-data/point-in-time-capture.env carries only FD_* variables; no other governed unit declares it). The 2026-05-01 acquisition ran with an ad-hoc key that was not retained. Missing artifacts: (a) ALFRED per-observation realtime_start for 2019-2024 (fred/series/observations with realtime_start/realtime_end) or H.15 release timestamps, and (b) a governed FRED_API_KEY EnvironmentFile for the adapter. No key was searched for in editor logs or printed.",
+   "note": "producer code and formula RECOVERED and reproduced exactly; only the publication clock remains unproven, so the feature stays UNRESOLVED for confirmatory TEST",
+   "producer": {
+    "commit": "18cabb583ed5606ec7865658974513af6b66ee95",
+    "path": "tools/eurusd_ps/covariates.py::fred_series+daily_features",
+    "repo": "feature-eng"
+   },
+   "reproduction": {
+    "scope": "TRAIN rows only (ts < 2024-01-01); no 2024+ value compared, no TEST read",
+    "vs_i6n_input_train_rows": {
+     "clock_note": "offset +1 h rows: INPUT ts is one hour LATER than the producer bar end (I6N EU_DST_OFFSET_MINUS5 policy vs producer NEW_YORK_LOCAL/BAR_START, US/EU DST-gap weeks); never earlier, so no availability violation",
+     "input_nonfinite_rows": 0,
+     "offset_counts_input_minus_producer_h": {
+      "+1": 123,
+      "0": 29032
+     },
+     "row_match_any_offset": "all finite rows",
+     "rows": 29155
+    },
+    "vs_retained_ps1_batch": {
+     "match_rel_1e-9_or_both_nan": 1.0,
+     "max_abs_diff": 6.9e-18,
+     "rows": 71734
+    }
+   },
+   "source": {
+    "path": "<financial-data-root>/macro_economic/fred/rates/dgs7/observations.parquet",
+    "sha256": "3daedd3b85c2e666aecf6ec1f4aa42f106ba9a839287beb33f92b0935af59420"
+   },
+   "status": "STILL_UNRESOLVED"
+  },
+  "fx.gbpusd.logret_1h": {
+   "clock": {
+    "evidence": "infer_fx_clock DETERMINED NEW_YORK_LOCAL/BAR_START, 0 bars dropped; value of bar [H,H+1h) indexed at bar end; INPUT ts >= producer bar end on every row",
+    "status": "RECOVERED"
+   },
+   "formula": "ln C_t - ln C_prev_row of the 1h lake file; exact-time reindex, no carry-over (absent bar -> NaN)",
+   "producer": {
+    "commit": "18cabb583ed5606ec7865658974513af6b66ee95",
+    "path": "tools/eurusd_ps/covariates.py::fx_pair_features",
+    "repo": "feature-eng"
+   },
+   "reproduction": {
+    "scope": "TRAIN rows only (ts < 2024-01-01); no 2024+ value compared, no TEST read",
+    "vs_i6n_input_train_rows": {
+     "clock_note": "offset +1 h rows: INPUT ts is one hour LATER than the producer bar end (I6N EU_DST_OFFSET_MINUS5 policy vs producer NEW_YORK_LOCAL/BAR_START, US/EU DST-gap weeks); never earlier, so no availability violation",
+     "input_nonfinite_rows": 430,
+     "offset_counts_input_minus_producer_h": {
+      "+1": 1917,
+      "0": 26808
+     },
+     "row_match_any_offset": "all finite rows",
+     "rows": 29155
+    },
+    "vs_retained_ps1_batch": {
+     "match_rel_1e-9_or_both_nan": 1.0,
+     "max_abs_diff": 1.11e-16,
+     "rows": 71734
+    }
+   },
+   "source": {
+    "path": "<financial-data-root>/features/trading_asset_data/gbpusd/1h.parquet",
+    "sha256": "7e2f8930046d5b145b7cc87fce061f3532f9777d347f068e864bd7d1d750e1b4"
+   },
+   "status": "RECOVERED"
+  },
+  "px.close_loc": {
+   "clock": {
+    "evidence": "infer_fx_clock DETERMINED NEW_YORK_LOCAL/BAR_START, 0 bars dropped; value of bar [H,H+1h) indexed at bar end; INPUT ts >= producer bar end on every row",
+    "status": "RECOVERED"
+   },
+   "formula": "(C-L)/(H-L) of the hourly bar aggregated from 5m; zero range -> NaN",
+   "producer": {
+    "commit": "79bb09d902e092d8ecfda858af881171a7799919",
+    "path": "tools/eurusd_ps/features.py::price_features",
+    "repo": "feature-eng"
+   },
+   "reproduction": {
+    "scope": "TRAIN rows only (ts < 2024-01-01); no 2024+ value compared, no TEST read",
+    "vs_i6n_input_train_rows": {
+     "clock_note": "offset +1 h rows: INPUT ts is one hour LATER than the producer bar end (I6N EU_DST_OFFSET_MINUS5 policy vs producer NEW_YORK_LOCAL/BAR_START, US/EU DST-gap weeks); never earlier, so no availability violation",
+     "input_nonfinite_rows": 0,
+     "offset_counts_input_minus_producer_h": {
+      "+1": 1965,
+      "0": 27190
+     },
+     "row_match_any_offset": "all finite rows",
+     "rows": 29155
+    },
+    "vs_retained_ps1_batch": {
+     "match_rel_1e-9_or_both_nan": 1.0,
+     "max_abs_diff": 0.0,
+     "rows": 71734
+    }
+   },
+   "source": {
+    "path": "<financial-data-root>/features/trading_asset_data/eurusd/5m.parquet",
+    "sha256": "c746f344ac743768e8c7f20e2e4ef3b7fb8222d96b3660f196c0a1d74039f327"
+   },
+   "status": "RECOVERED"
+  },
+  "px.log_co": {
+   "clock": {
+    "evidence": "infer_fx_clock DETERMINED NEW_YORK_LOCAL/BAR_START, 0 bars dropped; value of bar [H,H+1h) indexed at bar end; INPUT ts >= producer bar end on every row",
+    "status": "RECOVERED"
+   },
+   "formula": "ln(C/O) of the hourly bar",
+   "producer": {
+    "commit": "79bb09d902e092d8ecfda858af881171a7799919",
+    "path": "tools/eurusd_ps/features.py::price_features",
+    "repo": "feature-eng"
+   },
+   "reproduction": {
+    "scope": "TRAIN rows only (ts < 2024-01-01); no 2024+ value compared, no TEST read",
+    "vs_i6n_input_train_rows": {
+     "clock_note": "offset +1 h rows: INPUT ts is one hour LATER than the producer bar end (I6N EU_DST_OFFSET_MINUS5 policy vs producer NEW_YORK_LOCAL/BAR_START, US/EU DST-gap weeks); never earlier, so no availability violation",
+     "input_nonfinite_rows": 0,
+     "offset_counts_input_minus_producer_h": {
+      "+1": 1966,
+      "0": 27189
+     },
+     "row_match_any_offset": "all finite rows",
+     "rows": 29155
+    },
+    "vs_retained_ps1_batch": {
+     "match_rel_1e-9_or_both_nan": 1.0,
+     "max_abs_diff": 1.73e-18,
+     "rows": 71734
+    }
+   },
+   "source": {
+    "path": "<financial-data-root>/features/trading_asset_data/eurusd/5m.parquet",
+    "sha256": "c746f344ac743768e8c7f20e2e4ef3b7fb8222d96b3660f196c0a1d74039f327"
+   },
+   "status": "RECOVERED"
+  },
+  "px.rv5": {
+   "clock": {
+    "evidence": "infer_fx_clock DETERMINED NEW_YORK_LOCAL/BAR_START, 0 bars dropped; value of bar [H,H+1h) indexed at bar end; INPUT ts >= producer bar end on every row",
+    "status": "RECOVERED"
+   },
+   "formula": "sqrt(sum (diff ln close_5m)^2) over 5m returns whose two bars lie in the same UTC hour (first 5m return of each hour excluded), min_count=1",
+   "producer": {
+    "commit": "79bb09d902e092d8ecfda858af881171a7799919",
+    "path": "tools/eurusd_ps/sources.py::hourly_from_5m",
+    "repo": "feature-eng"
+   },
+   "reproduction": {
+    "scope": "TRAIN rows only (ts < 2024-01-01); no 2024+ value compared, no TEST read",
+    "vs_i6n_input_train_rows": {
+     "clock_note": "offset +1 h rows: INPUT ts is one hour LATER than the producer bar end (I6N EU_DST_OFFSET_MINUS5 policy vs producer NEW_YORK_LOCAL/BAR_START, US/EU DST-gap weeks); never earlier, so no availability violation",
+     "input_nonfinite_rows": 1,
+     "offset_counts_input_minus_producer_h": {
+      "+1": 1966,
+      "0": 27188
+     },
+     "row_match_any_offset": "all finite rows",
+     "rows": 29155
+    },
+    "vs_retained_ps1_batch": {
+     "match_rel_1e-9_or_both_nan": 1.0,
+     "max_abs_diff": 6.58e-17,
+     "rows": 71734
+    }
+   },
+   "source": {
+    "path": "<financial-data-root>/features/trading_asset_data/eurusd/5m.parquet",
+    "sha256": "c746f344ac743768e8c7f20e2e4ef3b7fb8222d96b3660f196c0a1d74039f327"
+   },
+   "status": "RECOVERED"
+  },
+  "rg.atr_ratio": {
+   "clock": {
+    "evidence": "infer_fx_clock DETERMINED NEW_YORK_LOCAL/BAR_START, 0 bars dropped; value of bar [H,H+1h) indexed at bar end; INPUT ts >= producer bar end on every row",
+    "status": "RECOVERED"
+   },
+   "formula": "TR=max(H-L,|H-C_prev|,|L-C_prev|); SMA14(TR)/(SMA60(TR)+1e-10)",
+   "producer": {
+    "commit": "42272ad7f288d39d5b9f84c63bb219ef0b9a7b19",
+    "dependency_commit": "477ba9b20a51098e0035cca6396b397c5ff05539",
+    "dependency_sha256": "6241ee3e3ba3c69cfcbc489ce08c842a86b43211789ffcf6867e6296b85af19e",
+    "path": "tools/eurusd_ps/run_batch3.py -> app/regime_detector.py::compute_regime_features",
+    "repo": "feature-eng"
+   },
+   "reproduction": {
+    "scope": "TRAIN rows only (ts < 2024-01-01); no 2024+ value compared, no TEST read",
+    "vs_i6n_input_train_rows": {
+     "clock_note": "offset +1 h rows: INPUT ts is one hour LATER than the producer bar end (I6N EU_DST_OFFSET_MINUS5 policy vs producer NEW_YORK_LOCAL/BAR_START, US/EU DST-gap weeks); never earlier, so no availability violation",
+     "input_nonfinite_rows": 0,
+     "offset_counts_input_minus_producer_h": {
+      "+1": 1966,
+      "0": 27189
+     },
+     "row_match_any_offset": "all finite rows",
+     "rows": 29155
+    },
+    "vs_retained_ps1_batch": {
+     "match_rel_1e-9_or_both_nan": 1.0,
+     "max_abs_diff": 0.0,
+     "rows": 71734
+    }
+   },
+   "source": {
+    "path": "<financial-data-root>/features/trading_asset_data/eurusd/5m.parquet",
+    "sha256": "c746f344ac743768e8c7f20e2e4ef3b7fb8222d96b3660f196c0a1d74039f327"
+   },
+   "status": "RECOVERED"
+  }
+ },
+ "lineage": "I6N INPUT (bf8587b1 -> no-STLFSI4 ef22ddb5) <- statistical72_v1 INPUT 897caee1 <- i6b train_selected20 <- FS lane A PS1 batches 001-003 (feature-eng docs/eurusd_ps/batch_00X/digests.json; code_commit 79bb09d / 18cabb5 / 42272ad)",
+ "schema": "i6dmo.producer_recovery.v1",
+ "why_prior_audit_missed": "producer lives in feature-eng tools/eurusd_ps on origin/master (78600f9) and satoshi/eurusd-ps0-ps1-20261003, absent from a stale local master; the audit compared against market_data/forex/g10/eurusd/1h.parquet instead of the 5m source the producer aggregates"
+}

@@ -1,37 +1,254 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-05. Este documento contiene sólo el plan vigente. Los
-retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
-superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
-gobiernan la ejecución.
+Actualizado: 2026-10-25. Las prioridades mas recientes prevalecen sobre los
+cortes operativos anteriores; el estado generado y CURRENT_EXECUTION indican
+que esta ejecutandose, no los parrafos de arranque historicos.
+Los resultados afectados por datos defectuosos se eliminan, no se conservan
+como evidencia historica ni gobiernan ningun despacho.
 
 ## 1. Autoridad vigente
 
-El orden de autoridad es:
+PRIORIDAD2026-10-25 09:09UTC: actividad antes de comparaciones financieras.
+El contraste de dropout termino sin recuperar operaciones. Ya corre una cola
+de alpha fijo0.01/0.1/1.0, misma receta/red/recompensa/negocio,100k decisiones
+por brazo. Se exige >2 operaciones ejecutadas/semana de promedio en TRAIN e
+INNER_A separadamente. Inactivos nunca ganan por perdida o drawdown cero.
+2024 se reporta sin decidir; TEST cerrado. Sin operaciones forzadas ni premio
+por abrir. Worker/copia/warehouse automatizados. No ampliar arquitectura ni
+comparar familias como si estuvieran calibradas antes de cumplir actividad.
+[Contrato y arranque](program_v3/MUSASHI_ACTIVITY_FIRST_RUNNING_2026_10_25.md).
+Los siguientes son cortes historicos anteriores.
 
-1. este plan maestro;
-2. [contrato semanal del negocio](program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md);
-3. [selección progresiva de características y representaciones](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md);
-4. [fases 2 y 3 de selección](program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md);
-5. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
-6. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
-7. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
-   [estado de ejecución](program_v3/CURRENT_EXECUTION.md);
-8. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
-   del apartado 4 y no un plan alterno.
+ARRANQUE2026-10-25 07:38UTC: autorizado y desplegado el contraste dropout
+solo del critico. Control0.3 -> variante0.0, actor0.3 fijo,100000 decisiones
+por brazo, mismas semillas, datos, arquitectura y negocio. Control ya entrena;
+el siguiente brazo exige reproduccion exacta del padre. Automatizacion acotada
+incluye evaluacion, diagnostico Q/acciones, publicacion y copia verificada.
+No hay decisiones intermedias por profit ni ampliaciones implicitas del estudio.
+[Contrato y prueba de arranque](program_v3/MUSASHI_CRITIC_DROPOUT_RUNNING_2026_10_25.md).
+El cierre inferior describe el estado anterior a este despacho.
 
-La vista ejecutiva obligatoria es
-[`MASTER_MILESTONE_PROGRESS.png`](../audits/evidence/canonical_20261003/MASTER_MILESTONE_PROGRESS.png),
-generada desde
-[`MASTER_MILESTONE_STATUS.json`](../audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json).
-Todo retorno de orquestación debe mantener visibles M1-M8, actualizar evidencia,
-próxima compuerta y ETA, y distinguir porcentaje de ingeniería de confianza
-científica. Ningún esquema local de carriles reemplaza estos hitos.
+CIERRE2026-10-25 06:55UTC: contraste de ordenes completo,24/24 publicaciones;
+diagnostico posterior completo,10 replays exactos,32 archivos verificados en dos
+maquinas. Se observa concentracion de politica/critico en cierres sin posicion,
+tambien en TRAIN. Siguiente diseno: contraste dropout solo del critico, sin
+cambiar actor ni datos/negocio; aun no lanzado. No aumentar complejidad ni
+rehacer seleccion para intentar ocultar esta inestabilidad.
+[Retorno y limites](program_v3/MUSASHI_ORDER_POLICY_DIAGNOSIS_RETURN_2026_10_25.md).
+La secuencia de arranque siguiente ya termino y no autoriza duplicarla.
 
-Un documento fechado anterior sigue siendo auditable, pero no puede abrir una
-campaña, cambiar dependencias ni redefinir un componente. Cuando contradiga esta
-lista, prevalece esta lista. Una medición retenida conserva su significado y su
-identidad; limpiar el plan no reescribe resultados.
+PRIORIDAD DEL PROPIETARIO2026-10-25: verificar la dinamica de ordenes antes de
+optimizar. La cola padre SAC R3 termino. La nueva secuencia automatica es
+alpha de negocio -> replay/diagnostico de acciones y umbrales -> control TARGET
+fresco -> COMMANDS5 -> comparacion/publicacion. No introducir realimentacion,
+recortes de entradas o cambios de datos, red, costos o presupuesto en este
+contraste. Tamano porcentual fijo declarado; especialistas por estado y tamano
+aprendido son contrastes posteriores, no cambios silenciosos. Primero contrato,
+luego busqueda pequena de aprendizaje, capacidad/contexto y reajuste al final.
+[Diseno, resultados padre y despliegue](program_v3/MUSASHI_ORDER_CONTRACT_STUDY_2026_10_25.md).
+El texto de arranque del24 de octubre inferior es un corte historico.
+
+ARRANQUE VERIFICADO2026-10-24 21:42UTC: SAC sin experto sobre receta R3 vigente,
+120 columnas. Cola GROUPED->FLAT de100000 decisiones por brazo automatizada en
+5090, sin feedback/rolling, con costos y calendario del motor compartido.
+Reinicio acotado, checkpoints, inferencia y copia/publicacion automaticos.
+[Identidad y evidencia del arranque](program_v3/MUSASHI_SAC_R3_RUNNING_2026_10_24.md).
+Los pendientes de integracion descritos en los cortes siguientes ya estan
+resueltos por ese despliegue; no significan que siga esperando autorizacion.
+
+DERIVACION APROBADA2026-10-24: Musashi retiro solo px.er_1; la base de consumo
+vigente es recipe_a58261c0fdc0a59d,120 columnas, mismo store y constantes
+restantes. Paridad y recuperacion de soporte verificadas sin interpolar ni
+reentrenar; no trasladar metricas antiguas al soporte ampliado. Detalle:
+[receta revision3](program_v3/MUSASHI_RECIPE_R3_RETIREMENT_RETURN_2026_10_24.md).
+La receta121 descrita abajo es su padre, no la identidad del proximo lote.
+
+BASE COMPARTIDA CERRADA2026-10-24: seleccion v5, perfiles/codificaciones,
+T2/T3 y C quedan aceptados para desarrollo tras re-revision A1-A4 y paridad
+exacta de entradas con SAC. Base de nuevos experimentos:
+`recipe_5a8f2155318ba7c7`,121 columnas,25 grupos conceptuales/31 extractores,
+13 slots observados a paso2, constantes TRAIN congeladas, sin feedback,
+clipping ni z-score movil. Toda variacion futura deriva de esta identidad y
+declara sus diferencias. No volver a los datos/configs anteriores ni repetir
+seleccion por el solapamiento interno declarado. Tareas restantes son de
+integracion y despliegue, no de seleccion; no afirmar que SAC ya esta corriendo.
+Reparto y evidencia: [cierre compartido y siguientes carriles](program_v3/MUSASHI_SHARED_RECIPE_REREVIEW_AND_NEXT_LANES_2026_10_24.md).
+Satoshi: experto solo del lado de entrenamiento en su GPU asignada. Musashi:
+SAC sin experto, prioridad5090 y4070 para trabajo secundario con admision de
+memoria. Mantener negocio, costos, TRAIN/VALIDATION separados, TEST cerrado,
+presupuesto fijo y reajuste al final. No se condiciona continuar a profit>0.
+Avance de integracion: puente de observaciones al motor verificado en CPU;
+no autoriza sustituir el contrato economico ni omitir intervalos sin entradas.
+Detalle y evidencia: [avance SAC y soporte](program_v3/MUSASHI_SAC_ENGINE_PROGRESS_AND_SUPPORT_NOTE_2026_10_24.md).
+Los estados operativos inferiores son historicos.
+
+PRIORIDAD CORREGIDA POR EL PROPIETARIO2026-10-21: completar datos, ingenieria y
+seleccion del pool acordado antes de seguir afinando modelos/ventanas. El grid
+local de Musashi queda sin nuevos despachos; el primer fit12 termino y se
+conservo con publicacion/copia. El resto NO esta corriendo. Guia entregable a
+Satoshi: [correcciones y auditoria de seleccion](program_v3/SATOSHI_SELECTION_CORRECTIONS_AND_AUDIT_BRIEF_2026_10_21.md).
+Exigir contraste original/componentes/subgrupos/combinacion, escala fija por
+feature ajustada solo TRAIN, catalogo completo y consumo real en el modelo;
+no veto universal univariado. La auditoria final se realiza sobre la solicitud
+y commit exactos de Satoshi. Los estados RUNNING inferiores son cortes previos.
+
+PRECISION DEL PROPIETARIO2026-10-21: investigar sin sesgo optimista ni pesimista.
+Un contraste negativo acota esa configuracion, datos y protocolo; no demuestra
+que una familia ni el problema esten agotados. El propietario decide terminar
+o redirigir el programa. Cada lote finito cierra segun su diseno, sin convertir
+ese cierre en abandono de la investigacion. Documentar todos los resultados,
+separar observacion/interpretacion/hipotesis y proponer las siguientes pruebas.
+Reservar la linea bayesiana/incertidumbre motivada por la tesis: el carril de
+Satoshi prepara su contraste, sin duplicarlo ni incorporarlo silenciosamente a
+SAC. Evaluar por separado capa probabilistica y uso de incertidumbre en las
+decisiones, con coste de muestreo registrado y negocio intacto.
+
+PRIORIDAD2026-10-21: [grid fino y optimizacion por componente](program_v3/RL_FINE_WINDOW_AND_COMPONENTS_2026_10_21.md).
+CONTINUACION APROBADA Y RUNNING: [vecinos12/14 y semillas compartidas](program_v3/RL_LOCAL_WINDOW_SHARED_SEEDS_2026_10_21.md).
+La repeticion fresca13 coincide exactamente con el control. Completar primero
+12/14 seed7 y luego13/12/14 con17/29, ocho fits obligatorios secuenciales,
+antes de subconjuntos. Corrige la omision de vecinos al ganar el control sin
+reescribir el grid anterior. No exigir mejora para ejecutar las confirmaciones.
+ADICION APROBADA: [subconjuntos incrementales de entradas](program_v3/RL_INCREMENTAL_FEATURE_SUBSETS_2026_10_21.md).
+Tras el grid activo, antes de ampliar extractores/componentes: base pequena,
+adiciones por importancia provisional, rescate acotado de interacciones y
+confirmacion frente a15. Revisar pares seno/coseno, relojes y transformaciones
+por variable; procesamiento/extraccion diferenciados como hipotesis posterior.
+No cambia inputs ni identidad de la cola vigente; reajuste sigue AL FINAL.
+Primero ventanas9/11/15/17, vecinos enteros condicionales y confirmacion con
+semillas comunes, stride2. Despues Dense por caracteristica frente a Conv1D
+con capacidad comparable, ramas/fusionador/nucleo/heads por separado y revision
+de interacciones. No asumir que crecer todos los componentes ayuda ni que los
+optimos individuales son conjuntamente optimos. Reajuste trimestral/mensual/
+semanal AL FINAL. Se conservan inputs admitidos15, negocio y costes; TEST cerrado.
+SAC usa100000 transiciones fijas, cuatro checkpoints diagnosticos y sin ES
+costoso. Esto reemplaza la pausa temporal y el ES frecuente del19 de octubre
+en los parrafos siguientes; NO reanuda ni modifica aquellas identidades.
+La evidencia gruesa7/13/25 no demuestra que13 sea el optimo local o global.
+
+Ampliacion2026-10-19: diagnosticar la generalizacion por causa y evidencia,
+aprovechando primero los checkpoints y trazas existentes sin reentrenar.
+Ver [matriz de diagnostico](program_v3/RL_GENERALIZATION_DIAGNOSTICS_2026_10_19.md):
+19 hipotesis, metricas comparables TRAIN/VALIDATION, pruebas discriminantes,
+instrumentacion pendiente y orden D0-D4. Es especificacion de trabajo, no
+telemetria ya desplegada. Sigue la cola regularizada sellada; no cambia el
+criterio de parada ni se levanta la pausa de nuevos ajustes temporales.
+
+Orden vigente2026-10-19: al cerrar el SAC directo con early stopping, continuar
+AUTOMATICAMENTE con dropout0.05, L2 1e-6, dropout+L2 y BatchNorm por separado,
+en ese orden. Regularizacion inicial solo en criticos; actor y datos intactos,
+sin combinar BatchNorm/dropout y sin cambiar el experimento vivo. Contrastes
+con TRAIN/VALIDATION completos y el mismo criterio de parada; OLAP, backup y
+segunda copia automatizados. Ver [secuencia](program_v3/RL_REGULARIZATION_SEQUENCE_2026_10_19.md).
+No se promete que la regularizacion resuelva el cambio de regimen ni toda la
+brecha de generalizacion. Las pausas de nuevos SAC temporales siguen vigentes.
+
+Se mantiene la orden de PAUSAR nuevos ensayos del SAC temporal. Sus ajustes de
+referencia TRAIN/VALIDATION ya finalizaron; no hay un fit temporal vivo que
+detener. Conservar sus resultados, no repetirlos ni lanzar nuevas variantes.
+Continuan los controles de cierre y el sucesor del SAC directo con early
+stopping; esta pausa no afecta al directo. BatchNorm, dropout y regularizacion
+de pesos siguen sin ejecucion cientifica y se probaran por separado.
+
+Prioridad aprobada mas reciente: controlar la generalizacion del SAC directo
+antes de ampliar modelos/barridos. Se desplego el sucesor de early stopping
+pareado, sin BatchNorm ni dropout y sin combinarlos. Cada5000 pasos evalua
+TRAIN y VALIDATION completos; paciencia10, min_delta1e-8 y restauracion del
+mejor checkpoint. Ya esta corriendo; sus sucesores regularizados esperan
+automaticamente su cierre verificado, sin cambiar sus pesos ni su protocolo.
+Ver [subplan ES](program_v3/RL_PAIRED_EARLY_STOP_2026_10_19.md).
+
+Avance real2026-10-19: cerrado un subconjunto de15/30 variables derivadas del
+nucleo EURUSD reparado y admitido, con37198 filas OLAP verificadas y dos copias.
+Ya corre SAC directo frente a la representacion temporal con ESE MISMO
+manifiesto; no otro RAW. Ver [seleccion y contraste](program_v3/SELECTED_CORE_RL_2026_10_19.md).
+Este cierre acotado no declara admitido/seleccionado el catalogo externo ni
+efectos causales identificados. Mantener ambos alcances separados.
+
+Regla inmutable de cada entrada: SL y TP obligatorios, mas un presupuesto
+maximo en moneda de cuenta igual a fraccion_elegida * rel_volume * balance(t).
+rel_volume es configurable (inicial0.1); el apalancamiento se aplica aparte
+para convertir margen a nominal. El minimo del broker nunca fuerza superar
+el presupuesto: si no alcanza, no abrir. Mantener esta regla en ambos SAC y
+controles; por instruccion del propietario la comparacion inicial usa
+apalancamiento1:50 y minimo/paso de ejemplo.1:100 configurable; el contraste
+1:1 queda para despues. Configurar el broker y el sizing con el mismo valor.
+
+Asignacion permanente de GPU (precision del propietario2026-10-19): priorizar
+la5090 para todo trabajo compatible, especialmente modelos complejos y ventanas
+largas. Usar la4090 en paralelo para unidades independientes cuando este libre
+de trabajo del plan o de otros agentes y pase admision de RAM, VRAM y disco.
+No duplicar una unidad ni cambiar un contraste activo para ocupar una GPU.
+Cada asignacion debe registrar dispositivo/runtime; una diferencia de GPU no
+se presenta como una reproduccion bitwise. En el host de la5090 sigue vigente
+un solo proceso pesado: no usar la5070Ti simultaneamente por la RAM compartida.
+La cola SAC actual es secuencial y conserva su identidad; el proximo lote
+paralelo debe declarar sus unidades/asignaciones antes de arrancar.
+
+Precision del propietario 2026-10-19: la seleccion de caracteristicas es una
+dependencia cientifica obligatoria del contraste RL solicitado, no decoracion.
+El ensayo RAW cerrado (12/12, OLAP y dos copias verificados) es solo un control independiente; no completa ni
+sustituye RL2 con seleccion. No abrir mas campanas RAW ni busquedas de agentes
+antes de cerrar el inventario admitido y la seleccion recalculada. El siguiente
+contraste comparte exactamente el manifiesto seleccionado: SAC directo frente
+a SAC con extractores por variable, fusionador y nucleo temporal. El control
+RAW se conserva unicamente para medir, por separado, el aporte de seleccionar.
+Los controles de sobreajuste se contrastan individualmente, sin cambiar el
+ensayo ya cerrado. Detalle y limitaciones en el subplan RL, seccion 8, y
+[resultado del control](program_v3/RL_RAW_CONTROL_RESULT_2026_10_19.md).
+
+Continuacion operativa 2026-10-19: EURUSD tiene admision CORE_PRICES_ONLY
+completa (37309 horas, 72 meses, sin horas operativas requeridas ausentes ni
+interpolacion). Con esa poblacion se prepara el control bruto SAC estatico y
+sus controles mecanicos, independiente del cierre del inventario restante.
+Su politica RAW_BASELINE no se presenta como seleccion final. No entrenar con
+datos pendientes: la admision del nucleo y la aceptacion real de hora/fill/
+sesiones preceden ese control. La comparacion con caracteristicas seleccionadas
+espera su propia seleccion recalculada. Costes iniciales son supuestos
+analiticos no nulos, etiquetados; no hechos verificados del broker.
+
+Cambio de prioridad 2026-10-18: terminar datos y seleccion; despues RL como
+primer consumidor, reutilizando componentes validos. Los experimentos de
+predictores corto/largo, su estrategia y NEAT pasan al final. No se exige vencer
+el naive de precios para ensayar una politica RL. El detalle vinculante es
+[RL primero tras reparar datos](program_v3/RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md).
+Preparacion de contratos y pruebas CPU sinteticas puede avanzar en paralelo;
+ningun fit financiero se adelanta a la admision real.
+
+Precision aprobada 2026-10-18: el primer contraste RL es ESTATICO, sin reajuste
+durante evaluacion. SAC con datos directos frente a SAC con ramas Conv1D pequenas
+y nucleo temporal, inicialmente 13 observaciones cada dos horas de mercado.
+Maximo una apertura por dia de negocio; salidas y cierre forzoso no se bloquean.
+Reajuste y otros algoritmos se contrastan despues. Implementacion en
+agent-multi y gym-fx, sin modificar DOIN ni retomar predictores.
+
+Plan operativo activo y trazabilidad de reparaciones:
+[RL: ejecucion y entrega de datos](program_v3/RL_EXECUTION_REPAIR_PLAN_2026_10_18.md).
+La aceptacion sintetica del simulador no sustituye la admision del lake ni la
+seleccion recalculada. No se transfieren automaticamente resultados anteriores.
+
+Directiva 2026-10-18: inventariar, recuperar y curar los datos antes de cualquier
+nuevo entrenamiento o seleccion. Eliminar los resultados, pesos, configuraciones,
+rankings, registros, metricas y copias derivados de los inputs afectados; no
+archivarlos ni reutilizarlos como referencias. Conservar codigo generico y
+trabajos independientes, no antiguas afirmaciones de performance.
+
+TRAIN2020-2023, VALIDATION2024 y TEST2025: cobertura efectiva mes a mes, no solo
+extremos de fecha. Recuperar cotizaciones observadas con fuentes pagadas y
+gratuitas; contrastar valores y relojes. Nada de interpolacion, relleno de precios,
+ticks sinteticos de mercado cerrado ni limpieza del target. Outliers: verificar
+y distinguir corrupcion de extremos reales, no borrarlos automaticamente.
+
+El lake canonico debe contener solamente recursos admitidos. Despues se
+recalculan preprocesamiento y todas las fases de seleccion con nueva identidad;
+los datos descartados/sustituidos se eliminan tras la recuperacion aplicable.
+No declarar admision completa, seleccion terminada o campanas activas sin
+verificacion real. Solo el control bruto con su poblacion ya admitida puede
+avanzar en paralelo; la poblacion ampliada no hereda esa admision.
+
+Procedimiento completo: financial-data/work_plan/17_CANONICAL_INVENTORY_AND_CURATION.md.
+Politica: financial-data/configs/curation_policy.v1.json.
+Controles: [estandar de calidad](../i6n/weekly_test/DATA_QUALITY_AND_SELECTION_STANDARD.md).
 
 ## 2. Objetivo
 
@@ -41,7 +258,10 @@ Construir y comprobar un sistema de aprendizaje para trading algorítmico que:
 - seleccione características por utilidad predictiva y de negocio, evidencia
   causal, calidad de representación, complementariedad y coste;
 - preserve la dimensión temporal desde cada entrada hasta el cabezal;
-- permita preentrenar extractores por rama y, después, el núcleo fusionado;
+- mantenga una ANN densa ramificada por característica como control explícito
+  no temporal, aunque contradiga nuestra hipótesis arquitectónica;
+- permita reutilizar extractores por rama y el nucleo sin exigir agotar sus
+  barridos ni la prediccion supervisada antes del primer ensayo RL;
 - compare pronóstico supervisado, estrategia heurística y políticas RL;
 - optimice configuraciones con DEAP/DOIN sin confundir búsqueda con el modelo;
 - opere primero en shadow, MT5 demo y Alpaca paper bajo el control de riesgo
@@ -55,8 +275,11 @@ en la misma población.
 ## 3. Reglas no negociables
 
 1. **Tiempo y causalidad.** Todo dato, transformación, label, split y replay
-   declara tiempo de evento, tiempo de disponibilidad y soporte. No se ajusta
-   nada con validación/test ni se permite fuga por bordes, relleno o revisiones.
+   declara tiempo de evento, tiempo de disponibilidad y soporte. Scalers,
+   imputacion y checkpoint selection usan fit/inner; VALIDATION puede elegir
+   hiperparametros y features, declarando su uso como desarrollo. TEST no
+   participa en ninguna seleccion. No se permite fuga por bordes, revisiones
+   ni disponibilidad; seleccionar con 2024 no convierte folds 2023 en OOS.
 2. **Naive pareado.** Cada MAE/MSE comunicado incluye el naive de las mismas
    filas, escala y horizonte. Una predicción que no supera estrictamente el
    naive no entra a la estrategia heurística ni genera artefactos de trading.
@@ -67,7 +290,8 @@ en la misma población.
    validation temporal. El test congelado sólo confirma el finalista sellado.
 5. **Semillas austeras.** Una semilla por defecto; hasta tres sólo cuando la
    variabilidad o la comparación publicada lo exijan. Nunca más de tres.
-6. **No repetir.** Reutilizar artefactos autenticados. Sólo se repite por pérdida,
+6. **No repetir.** Reutilizar solo artefactos de datos admitidos, nunca los
+   retirados por esta reparacion. Solo se repite por perdida,
    corrupción, comparación necesaria o cambio científico explícito.
 7. **Predicciones efímeras.** Se derivan todas las métricas declaradas y se
    verifica el catálogo antes de borrarlas. Se conservan config, semilla,
@@ -76,11 +300,20 @@ en la misma población.
    métricas científicas prueban hipótesis; shadow/paper prueba integración.
 9. **Paralelismo útil.** Un bloqueo local no detiene perfiles, referencias,
    preparación ni entrenamientos independientes y elegibles.
-10. **El negocio gobierna la evaluación financiera.** EURUSD validation y test
-   se recorren por semanas consecutivas. Antes de cada semana se actualiza el
-   modelo con una ventana móvil de cuatro años terminada en el cutoff. Se congela
-   el procedimiento antes del test, no un único juego de pesos para todo el año.
-   `LITERATURE_STATIC` permanece como modo separado para reproducciones fieles.
+10. **Espacio de salida.** En omega, las salidas grandes nuevas usan
+    [`EXPERIMENT_STORAGE_ROOT`](../EXPERIMENT_STORAGE_POLICY.md) después de
+    comprobar montaje escribible y espacio disponible. Bases vivas, SQLite,
+    bloqueos, secretos, repositorios y worktrees siguen en ext4. No mover
+    recursos ajenos ni rutas de servicios activos sin verificar dependencias.
+11. **El negocio gobierna la evaluacion financiera.** Calendario, disponibilidad,
+   mascaras por salida, cierre forzoso y costes son obligatorios en todos los
+   modos. La frecuencia de reajuste es explicita: NONE, QUARTERLY, MONTHLY o
+   WEEKLY, con identidad propia. WEEKLY es el modo de negocio por defecto;
+   controles estaticos solo en disenos posteriores explicitos. Se exigen
+   cuatro anos TRAIN, ano completo VALIDATION y ano completo TEST. Reajustes
+   usan cuatro anos moviles salvo contraste aprobado. Todos los modos
+   reportan cada semana y el total anual; no se sustituyen por una semana.
+   `LITERATURE_STATIC` sigue reservado a reproducciones fieles de papers.
 
 ## 4. Checklist de control de alto nivel
 
@@ -88,31 +321,79 @@ Este checklist es la vista que debe consultar el orquestador antes de cada
 despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 
 - [ ] I0. Contrato de negocio: targets corto/largo, barrera, RL, costes y riesgo.
-- [ ] I0-W. Walk-forward: cuatro años móviles, actualización semanal, años completos de validation/test y modo literatura separado.
+- [ ] I0-W. Cadencia configurable: semanal por defecto, controles de cadencia con identidad propia; anos externos completos y modo literatura separado.
 - [ ] I1. Inventario: fuente, columna, unidad, frecuencia, licencia y disponibilidad.
 - [ ] I2. Perfil básico completo por celda de métrica, no una marca global.
-- [x] I3. Perfil individual y escalera causal por feature-target.
+- [ ] I3. Recalcular perfil individual y escalera causal por feature-target sobre datos admitidos.
 - [ ] I4-C. Dependencia y redundancia entre características; alias y clusters.
 - [ ] I4-R. Rankings por clustering, mRMR y JMI; trayectorias K reproducibles.
 - [ ] I5. Comparación conjunta de conjuntos y manifiesto final.
+- [ ] I5-P. Ablación RAW/reconstrucción/latente sobre los rasgos seleccionados;
+  el target y el naive permanecen intactos.
+- [ ] I9-R/0-4. PRIORIDAD tras I5: contrato de entorno y contabilidad ->
+  baselines de negocio -> SAC compacto/modular -> DQN y contrastes justificados
+  -> cadencia y DEMO/PAPER. Ver subplan RL; no esperar I6-DMO ni NEAT.
 - [ ] I6-A. Agrupación, campos receptivos y controles ARCH emparejados.
+- [ ] I6-D. ANN histórica por característica y contraste Dense de ramas,
+  después de I5; resultado emparejado, sin atribuir tiempo a neuronas latentes.
 - [ ] I6-B. Preentrenamiento de extractores de ramas seleccionadas.
-- [ ] I7. E1: R0 frente a R1 frente a R2, mismo diseño y población.
+- [ ] I6-DMO. Direct multi-output corto/largo: solo despues de I5 y sobre la
+  nueva poblacion admitida. Registrar TRAIN y VALIDATION por horizonte,
+  checkpoints, parametros y semillas. Corto: 2,3,4,5,6,12 h; largo:
+  18,24,36,48,60,72 h, sujetos a soporte de negocio por salida.
+  Ningun modelo anterior es donante.
+- [ ] I6-E. Viabilidad de doble pronostico con calendario y mascaras de negocio.
+  **Naive para el horizonte de X horas** sobre exactamente las mismas filas y
+  escala que su MAE. Error relativo `(MAE_h-naive_h)/naive_h`, negativo mejora.
+  Resolucion, ventana y arquitectura se prueban sin suavizar ni limpiar targets;
+  los experimentos anteriores no constituyen evidencia reutilizable.
+- [ ] I7. E1: R0 frente a R1 frente a R2, mismo diseno y poblacion admitida.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
-- [ ] I8. Optimización DEAP distribuida por DOIN del modelo elegible.
+- [ ] I8. Optimizacion DEAP distribuida por DOIN: conservar su protocolo y
+  codigo, no cadenas ni candidatos de datos retirados. Nueva identidad y
+  configuraciones colaborativas verificadas solo tras datos y seleccion.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
-- [ ] I9-R. SAC raw/modular y DQN raw/modular.
 - [ ] I10. LTS semanal, shadow, MT5 demo y Alpaca paper.
 - [ ] I11. Extensión final opcional: calendario económico causal como entrada.
+- [ ] I12. Posprograma: configurar `feature-selector` desde el chat de M5PHET.
 
-Las casillas no implican ejecución serial. I2 de un lote puede coexistir con I4
-de otro; referencias públicas, ingeniería, M5PHET y paper trading pueden avanzar
-si no consumen artefactos que todavía no existen.
+Prioridad de la poblacion ampliada: inventario y recuperacion -> admision ->
+preparacion verificada -> seleccion recalculada -> RL con seleccion. El control
+bruto usa exclusivamente el nucleo admitido, sin esperar esa poblacion.
+Predictores y NEAT quedan diferidos
+al final por directiva del usuario, aunque mantengan sus identificadores I6/I9.
+No hay permiso para adelantar fits,
+extractores o trading con inputs pendientes. El paralelismo se usa dentro de
+la recuperacion y verificaciones independientes, con memoria y disco admitidos.
 
 ## 5. Datos y selección progresiva
 
-La primera selección financiera de negocio es **EURUSD**, con targets de retorno
-1-6 h, 24-144 h, barreras de orden y objetivo de política. FXMacroData aporta
+### Decision de negocio sobre los predictores
+
+I6-E queda DEFERRED_AFTER_RL. Cuando se retome debe producir una decision explicita sobre continuar la estrategia de
+pronosticos cortos/largos. Informar habilidad por horizonte y por funcion:
+cierre temprano frente a apertura/TP/SL. La compuerta es mejora estricta del
+MAE anual sobre el naive en las mismas filas, no mejora obligatoria cada semana.
+No exigir que todos los horizontes ganen: conservar los elegibles y comprobar
+si bastan para ambas funciones mediante la interfaz real de heuristic-strategy.
+Un subconjunto distinto exige su propia configuracion e identidad, no sustituir
+silenciosamente horizontes que el plugin requiere. No ensayar configuraciones
+inelegibles en trading. Ganar al naive no demuestra rentabilidad: despues medir
+costes, riesgo, Sharpe y utilidad pareada con el plugin existente.
+
+Si el ensayo finito no aporta senales elegibles para ambas funciones, registrar
+que la formulacion probada no justifica mas optimizacion, no una imposibilidad
+matematica universal. Priorizar entonces los carriles existentes de politicas
+SAC/DQN y definir por separado objetivos de eventos, direccion, barreras o
+parametros de orden. No lanzar automaticamente una busqueda ilimitada de
+predictores ni convertir el resultado negativo en una afirmacion sobre RL.
+
+### Secuencia de datos
+
+La primera seleccion financiera de negocio es **EURUSD**. Los targets vigentes
+de la estrategia son corto 2/3/4/5/6/12 h y largo 18/24/36/48/60/72 h; perfiles
+anteriores 1-6 h y 24-144 h quedan como evidencia, no calendario de despacho.
+Tambien se conservan barreras de orden y objetivo de politica. FXMacroData aporta
 calendario, consenso, actual y revisiones con vintage; Yahoo Finance y Alpaca
 aportan covariables donde tengan cobertura point-in-time. ETH puede probar
 mecánica y controles en un manifiesto secundario, pero no reemplaza EURUSD por
@@ -120,17 +401,34 @@ conveniencia ni se mezcla en su denominador.
 
 La selección no empieza entrenando cientos de ramas. La secuencia vigente es:
 
-1. Fase 1, completa: perfil individual y escalera causal sobre EURUSD y ETH;
+1. Fase 1, por recalcular para la poblacion afectada: perfil individual y
+   escalera causal sobre datos admitidos; ETH independiente no se invalida sin trazabilidad;
 2. Fase 2: matrices feature-feature, alias, redundancia, complementariedad y
    estabilidad temporal;
 3. Fase 3: clustering por correlación, mRMR, JMI y controles, con rankings y
    trayectorias K por target/horizonte;
-4. Fase 4: extractibilidad raw/random/trained sobre candidatos y controles;
-5. validación wrapper bajo walk-forward semanal y manifiesto final;
-6. grupos/ramas, fusión y downstream.
+4. Puerta preliminar entre las fases 3 y 4: congelar una primera ola de
+   candidatos por target/horizonte a partir de los rankings TRAIN y la
+   evidencia causal. Separar los controles `ALL_ADMISSIBLE` y `RANDOM_K` de
+   la union de rasgos que requiere extractores GPU. Conservar por identidad
+   los rasgos diferidos: ausencia de identificacion causal no prueba ausencia
+   de efecto. Ninguna decision usa VALIDATION ni TEST. La cola GPU debe leer
+   el manifiesto de esta puerta, no la union del control amplio.
+5. Fase 4: extractibilidad raw/random/trained sobre la primera ola y controles
+   de costo acotado; expansion a rasgos diferidos solo si el contraste semanal
+   justifica su valor incremental;
+6. validación wrapper bajo walk-forward semanal y manifiesto final;
+7. primer consumidor prioritario: entorno RL validado, baselines y politicas;
+8. ablacion I5-P y grupos/ramas/fusion reutilizables cuando aporten al contraste
+   RL; barridos completos y forecasting quedan para despues.
 
-Los 34 pares EURUSD y tres pares ETH favorecidos por la regla causal de fase 1
-son **candidatos con respaldo causal**, no la selección final. Las fases 2 y 3
+Despues de los hitos principales, estudiar el error de reconstruccion de
+extractores como posible detector de anomalias y de transiciones de regimen.
+No usar esa idea para retrasar la preseleccion, la validacion semanal ni la
+representacion modular.
+
+No se reutilizan conteos de candidatos EURUSD de las metricas retiradas como
+seleccion vigente. Las fases 2 y 3
 se rigen por su [subplan específico](program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md).
 
 La escalera causal tiene alta prioridad, pero no es una prueba binaria universal.
@@ -207,6 +505,14 @@ ganancia incremental y ablación con reajuste, coste y sensibilidad al contexto
 estacional. Buena reconstrucción sin utilidad no selecciona; mala reconstrucción
 no rechaza sin el resto de evidencias. La capacidad generativa se evalúa aparte.
 
+La reconstrucción como *entrada* operativa se comprueba después del
+manifiesto final de I5 y antes de comparar arquitecturas en I6-A. Su
+[subplan](program_v3/SELECTED_INPUT_DENOISING_ABLATION_2026_10_08.md) separa
+entrada RAW, reconstrucción y latente, exige probar el soporte temporal real
+del decoder y conserva **sin cambios** el target y el naive. El encoder actual
+tiene un rezago informativo certificado de tres horas en su último estado:
+emitir una muestra etiquetada en t no demuestra retraso cero.
+
 ## 7. Representación temporal modular
 
 El modelo acepta un número **F configurado** de entradas o grupos; cuatro ramas
@@ -214,12 +520,17 @@ en un diagrama son ilustrativas, no un límite.
 
 1. Cada rama recibe `(batch, time, channels)` y usa un extractor configurable.
    El default es Conv1D causal con ventana física mínima de 24 h y salida temporal.
-2. Las ramas se alinean causalmente a una rejilla común y se concatenan sólo en
-   canales. Ninguna Dense/Flatten/Pooling colapsa tiempo antes del cabezal.
+2. Las ramas temporales se alinean causalmente a una rejilla común y se
+   concatenan sólo en canales. En esta arquitectura ninguna Dense/Flatten/
+   Pooling colapsa tiempo antes del cabezal. I6-D es un control no temporal
+   separado; igualar tamaños o aplicar `Reshape` no crea pasos cronológicos.
 3. La codificación posicional se aplica inmediatamente después de la fusión.
 4. El núcleo default proyecta por instante, usa dos bloques Transformer completos
    y tres etapas Conv1D residuales que llevan tiempo 24→12→6→6 y canales
    32→16→8.
+   La identidad inicial I6-DMO es una excepcion pequena y explicita: branches
+   Conv1D de 4 filtros y core Conv1D 8->4, todos stride 1; no cambia ese default
+   ni el diseno de plugins. Colapsa tiempo exclusivamente dentro de cada head.
 5. El cabezal recibe la representación temporal `(batch, 6, 8)` o la forma
    configurada.
 
@@ -228,7 +539,10 @@ restaurado, save/load y conteo de actualizaciones son obligatorios.
 
 ## 8. Orden arquitectónico y regímenes
 
-La secuencia canónica después del manifiesto final es:
+La secuencia arquitectonica siguiente es un subprograma, no una dependencia
+que bloquee RL. Puede reutilizarse el nucleo/extractor implementado, si sus
+pesos y datos son elegibles; no se restaura ningun donante retirado.
+El subprograma despues del manifiesto final es:
 
 1. definir grupos, campos receptivos y controles ARCH con información emparejada;
 2. preentrenar extractores por rama;
@@ -238,6 +552,23 @@ La secuencia canónica después del manifiesto final es:
 6. materializar secuencias fusionadas y preentrenar H-CORE;
 7. ejecutar un experimento separado de transferencia del núcleo;
 8. congelar/materializar la representación final para cabezales tardíos.
+
+I6-D arranca tras I5 y la definición de controles I6-A, en paralelo con I6-B.
+Primero se identifica el código, configuración y población de la ANN histórica:
+ventana por característica -> Flatten -> capas Dense propias -> concatenación
+vectorial -> su fusión/cabezal original. Una réplica usa sus entradas y
+preprocesamiento originales; un reajuste con los rasgos seleccionados se
+etiqueta como control nuevo. Si esa identidad no se recupera, se declara
+`NOT_REPRODUCIBLE` y no se atribuyen resultados nuevos a la tesis. El segundo
+brazo es una **nueva** rama Dense causal de ventana local con salida
+anclada a cada instante, compatible con la misma fusión, núcleo y cabezal
+temporales que Conv1D. No se presenta como la ANN histórica. Ambos controles
+usan los rasgos finalmente seleccionados, idénticas filas, targets, horizontes,
+naive y protocolo semanal para los controles nuevos; la réplica conserva su
+protocolo original, con presupuestos y parámetros reportados. Una semilla
+inicial; hasta tres sólo si la variabilidad obliga. El resultado puede favorecer
+Dense sin ser descartado por no encajar en la explicación temporal. I6-D no
+reabre I5 ni autoriza consultar TEST para elegir arquitectura.
 
 - **R0:** extractores aleatorios y entrenables.
 - **R1:** mismos donantes preentrenados, congelados.
@@ -254,7 +585,7 @@ arquitectura/régimen; tampoco se confunde “prefijo fijado durante H-CORE” c
 - **DOIN** distribuye y registra evaluaciones de candidatos.
 - **NEAT no optimiza esos parámetros.** Es un cabezal evolutivo tardío.
 
-NEAT sólo se ejecuta después de existir una representación final
+NEAT queda al final, despues del programa RL prioritario y de existir una representación final
 congelada/materializada. Recibe esa representación, nunca las series crudas, y se
 compara con un cabezal Dense simple bajo las mismas filas, targets y presupuesto.
 Su contrato debe fijar interfaz latente, gramática, fitness, early stopping,
@@ -288,7 +619,13 @@ demostrada a partir de ese ganador.
 
 ## 11. Trading heurístico, RL y operación
 
-La estrategia heurística usa familias de predicciones cortas y largas según su
+RL es ahora el siguiente consumidor despues de datos y seleccion. Su
+[subplan](program_v3/RL_FIRST_AFTER_DATA_REPAIR_2026_10_18.md) fija negocio,
+baselines, metricas, pruebas, aprendizaje online y orden de ejecucion. La
+seleccion no debe descartar utilidad para politica/riesgo por el solo fracaso
+de un probe de MAE. No se afirma que SAC garantice ganancias.
+
+La estrategia heuristica queda diferida. Usa familias de predicciones cortas y largas según su
 plugin existente. Los barridos válidos mantienen una familia en persistencia
 pareada mientras varían la otra, y después hacen el factorial. Sólo entran
 pronósticos que superen su naive por horizonte.
@@ -298,8 +635,11 @@ RL compara `SAC raw` frente a `SAC modular` y `DQN raw` frente a
 compartan red. Reward, costes, episodios, early stopping y mejor checkpoint son
 identidades separadas.
 
-LTS consume sólo artefactos instalados y verificados. Las promociones son offline
-→ shadow → MT5 demo/Alpaca paper. No hay autorización de capital real.
+LTS consume sólo artefactos instalados y verificados. La regla vigente es
+simulacion con profit neto positivo y costes configurados -> MT5 demo/Alpaca
+paper automaticamente; no TEST ni otra aprobacion para demo. Comprobar cuenta
+y endpoint paper/demo antes de servir; rechazar dinero real. Shadow queda
+como comprobacion tecnica opcional, no como una autorizacion discrecional.
 
 ## 12. Extensión final: calendario causal como entrada
 
@@ -359,10 +699,11 @@ físico o capital real.
 Data-gov gobierna disponibilidad; data-lake conserva datasets y artefactos por
 contenido; warehouse recibe **todas** las métricas, disposiciones, rankings,
 costes e identidades de cada fase. Ningún cierre científico depende sólo de un
-JSON local. Cada fase exige lectura de vuelta del OLAP, snapshot físico DuckDB
-local y copia pública versionada. El repositorio conserva manifiesto, esquema,
-SHA-256 y URL; el binario comprimido se publica como asset de release para no
-inflar el historial Git. DOIN puede usar cadena liviana:
+JSON local. Cada fase exige lectura de vuelta del OLAP y copia fisica verificada
+en almacenamiento propio, con un segundo espejo. Git conserva codigo, esquema,
+configuracion, hashes e instrucciones de regeneracion, no bases grandes ni
+releases de metricas como requisito de cierre. Los datos y resultados retirados
+no se conservan como snapshots. DOIN puede usar cadena liviana:
 persiste el cuerpo completo fuera de cadena y encadena manifiesto, locator y
 hashes. Lectura y ETL verifican hash, esquema, autoridad y continuidad.
 
@@ -372,14 +713,75 @@ después de recomputación independiente y recibo por contenido.
 
 ## 16. Estado actual
 
-El estado observado y la cola se mantienen únicamente en
-`CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. La fase 1 está
-cerrada. La prioridad crítica única es terminar fase 2 y fase 3:
-dependencia/redundancia entre features y filtros reproducibles. Fase 4,
-extractibilidad, permanece sin iniciar hasta ese cierre. El calendario se usa
-ahora sólo como evidencia histórica del selector; su integración como entrada
-permanece en I11.
+Actualizacion 2026-10-22: seleccion provisional compartida en ejecucion, por
+orden del propietario. Satoshi conserva base, shard 1/2, fusiones y agregado;
+Musashi automatiza contrast y rescue shard 0/2 despues de sus barreras de
+fusion. Ver [plan de ejecucion](program_v3/SHARED_SELECTION_EXECUTION_2026_10_22.md).
+La implementacion entregada es CPU; no se cambia su protocolo para ocupar GPU.
+La mitad contrast/rescue ya completo. La revision posterior encontro lectura
+de un Parquet distinto del declarado y comparaciones con soportes diferentes;
+Satoshi integro el candidato y las correcciones adicionales en fd16919.
+La seleccion v3 completo 3894 unidades, sin errores registrados; las firmas de
+soporte coinciden en los grupos contrast/encoding/rescue comprobados de forma
+independiente. Musashi completo base, contrast, encoding y rescue en su shard 0/2;
+ver [ejecucion v3](program_v3/SHARED_SELECTION_V3_EXECUTION_2026_10_22.md).
+El agregado v3 no sustituye los finalistas consumidores ni la auditoria final.
+El agregado v2 retirado no se reutiliza. La codificacion no certifica una
+arquitectura de extractor. El siguiente orden y reparto quedan en el
+[contrato comun hacia RL](program_v3/SHARED_SELECTION_TO_RL_HANDOFF_2026_10_22.md):
+datos/codificaciones compartidos, decision de subconjunto y arquitectura propia
+por consumidor; SAC sin experto y aprendizaje guiado por ZigZag separados.
+Por orden nueva del propietario, el paquete E3-M pinneado31d90f7 se ejecuto:
+4 contratos consolidados y8 diagnosticos de brecha, secuenciales en la5090.
+La cola original y su recuperacion cerraron con11 brazos unicos completos.
+El unico brazo pendiente, cons_shortlist, completo en un worker alterno con mas
+RAM, GPU4070 y limite12GiB en20m16s, sin cambiar parametros cientificos.
+Los12 brazos tienen resultado y las dos copias finales estan verificadas.
+Los timers se cerraron automaticamente; resta consolidar y auditar el consumo. Ver
+[retorno completo para la solicitud de auditoria de Satoshi](program_v3/MUSASHI_TO_SATOSHI_SELECTION_RESULTS_AND_FINAL_AUDIT_HANDOFF_2026_10_22.md),
+[traslado del brazo restante](program_v3/E3M_RELOCATED_ARM_2026_10_22.md) y
+[ejecucion asignada](program_v3/E3M_ASSIGNED_GPU_EXECUTION_2026_10_22.md).
+No es una nueva cola SAC ni una aceptacion de la seleccion o sus transformaciones.
 
-NEAT queda fuera de la cola hasta que exista representación final congelada.
-Toda orden anterior que lo ejecute sobre entradas crudas o lo use como optimizador
-de hiperparámetros está superada.
+La cola SAC anterior sigue retenida hasta reparar preprocesamiento y aceptar
+la nueva seleccion. No hay receta predictiva promovida. RL_FIRST_AFTER_DATA_REPAIR
+sigue como prioridad de consumo; predictores y NEAT diferidos. No reutilizar
+cierres ni porcentajes de resultados eliminados. Esta autorizacion operativa
+no certifica la curacion del lake ni la seleccion final: ambas conservan sus
+requisitos de evidencia y auditoria.
+
+## 17. Posprograma: feature-selector desde M5PHET
+
+I12 queda **DEFERRED_POST_PROGRAM**: empieza después de cerrar I0-I11 y los
+trabajos futuros ya comprometidos, nunca como requisito de I5 ni como desvío
+de la selección actual. `feature-selector` será el punto de entrada reusable;
+M5PHET sólo interpretará la solicitud y coordinará proveedores declarados.
+No se implementa en la campaña vigente.
+
+La conversación podrá nombrar un data lake, uno o varios datasets (o todos los
+admisibles) y un data warehouse para las métricas. Si el usuario no indica
+warehouse, se usará sólo un perfil previamente configurado y autorizado: el
+chat no inventa credenciales, destinos, targets ni permisos. El intérprete
+producirá primero un plan tipado y revisable: población y columnas,
+disponibilidad point-in-time, target/horizonte, split y calendario de
+reentrenamiento, técnicas de perfil/causalidad/redundancia/extractibilidad,
+presupuesto y destino analítico. Data-gov resolverá autoridad; data-lake
+entregará bytes con identidad; `feature-selector` ejecutará los motores
+versionados; warehouse recibirá métricas, disposiciones y recibos con lectura
+de vuelta. Ningún texto recuperado por RAG sustituirá identidad o evidencia.
+
+La interfaz ofrecerá estado, ETA medido, reanudación idempotente y resultados
+en lenguaje natural enlazados a métricas y manifiestos tipados. Rechazará un
+dataset sin acceso, un target ambiguo, una combinación proveedor/salida no
+declarada y cualquier intento de llamar causal a `NOT_IDENTIFIED`. Antes de
+ejecutar, mostrará el alcance y costo estimado; trabajos costosos requerirán
+confirmación en el producto. Un ejemplo local sin stack desplegado seguirá
+siendo posible. La aceptación exige pruebas de extremo a extremo con dataset
+propio y ajeno, reinicio, aislamiento de credenciales y paridad con la CLI de
+`feature-selector` sobre idénticos bytes y configuración. El chat no adelanta
+ni altera el manifiesto financiero final de I5.
+
+Las antiguas ordenes de lanzamiento, donantes y contrastes de modelos no
+siguen vigentes. El procedimiento de prediccion antes del reajuste se conserva
+como contrato de negocio para nuevos datos admitidos, no como autorizacion
+para restaurar un checkpoint retirado ni repetir su experimento.

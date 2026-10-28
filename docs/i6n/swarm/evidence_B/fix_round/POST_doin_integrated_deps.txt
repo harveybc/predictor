@@ -1,0 +1,4 @@
+$ (doin-plugins @e24cf6b, deps doin-core @4a321cd, doin-node @aa890e6) PYTHONPATH=<predictor B>:src:<deps>/doin-core/src:<deps>/doin-node/src crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_wrapper.py tests/test_predictor_plugins.py
+23 passed in 9.53s
+$ (doin-node integration @aa890e6) PYTHONPATH=src:<deps>/doin-core/src crispdm-run -m 2G -t 120s -- python -m pytest -q -p no:cacheprovider tests/test_i6n_swarm_runtime.py tests/test_shared_population_contract.py tests/test_unified.py
+76 passed, 2 warnings in 2.46s

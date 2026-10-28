@@ -1,0 +1,29 @@
+{
+  "cap": "256M",
+  "claimed_at_utc": "2026-10-06T00:56:09Z",
+  "code_commit": "stub",
+  "exit_code": 3,
+  "failed_at_utc": "2026-10-06T00:56:11Z",
+  "heartbeat_cycle_at_claim": null,
+  "history": [
+    {
+      "state": "CLAIMED",
+      "until_utc": "2026-10-06T00:56:10Z"
+    },
+    {
+      "state": "RUNNING",
+      "until_utc": "2026-10-06T00:56:11Z"
+    }
+  ],
+  "home_role": "coordinator",
+  "host_role": "coordinator",
+  "pid": 584092,
+  "reason": "driver exit 3",
+  "running_at_utc": "2026-10-06T00:56:10Z",
+  "schema": "fs_phase23_shard_claim.v1",
+  "shard_id": "bad",
+  "slot": "1",
+  "state": "FAILED",
+  "threads": 1,
+  "wall_seconds": 1
+}

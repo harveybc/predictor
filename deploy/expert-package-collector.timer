@@ -1,0 +1,12 @@
+[Unit]
+Description=Collect assigned E3-M artifacts without agent polling
+
+[Timer]
+OnBootSec=60
+OnActiveSec=15
+OnUnitInactiveSec=300
+AccuracySec=15
+Unit=musashi-e3m-collector-20261022.service
+
+[Install]
+WantedBy=timers.target

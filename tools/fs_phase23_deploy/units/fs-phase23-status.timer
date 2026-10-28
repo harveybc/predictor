@@ -1,0 +1,11 @@
+[Unit]
+Description=Fire the phase 2/3 feature-selection status tick every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+AccuracySec=5s
+Persistent=false
+Unit=fs-phase23-status.service
+
+[Install]
+WantedBy=timers.target

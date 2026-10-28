@@ -1,0 +1,18 @@
+[Unit]
+Description=Phase 2/3 feature-selection relay: pull claims/terminals from workers, push plan and peer claims, heartbeat (coordinator only)
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.local/state/canonical_20261003/fs_phase23/runner.env
+ExecStart=/bin/bash ${FS23_CODE}/tools/fs_phase23_deploy/relay_loop.sh
+WorkingDirectory=%h/.local/state/canonical_20261003/fs_phase23
+Restart=always
+RestartSec=60
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+KillMode=mixed
+TimeoutStopSec=60
+
+[Install]
+WantedBy=default.target

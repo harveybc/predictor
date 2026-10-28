@@ -18,6 +18,22 @@ class PlanChecks(unittest.TestCase):
     def test_actual_state(self):
         self.assertEqual(validate(self.state, ROOT), [])
 
+    def test_feature_selector_chat_stays_after_program(self):
+        checklist_path = ROOT / "MASTER_CHECKLIST.json"
+        checklist = json.loads(checklist_path.read_text())
+        item = next(item for item in checklist["items"] if item["id"] == "I12")
+        self.assertEqual(item["state"], "NOT_STARTED")
+        self.assertIn("I11", item["depends_on"])
+        self.assertNotIn("I12", next(i for i in checklist["items"] if i["id"] == "I5").get("depends_on", []))
+
+    def test_denoising_inputs_precedes_architecture_and_not_targets(self):
+        checklist = json.loads((ROOT / "MASTER_CHECKLIST.json").read_text())
+        items = {item["id"]: item for item in checklist["items"]}
+        self.assertEqual(items["I5-P"]["state"], "EVIDENCE_PARTIAL")
+        self.assertIn("I5", items["I5-P"]["depends_on"])
+        self.assertIn("I5-P", items["I6-A"]["depends_on"])
+        self.assertIn("denoising the predictive target or naive during I5-P", checklist["forbidden_shortcuts"])
+
     def test_news_cannot_authorize_real_capital(self):
         self.state["news_live_track"]["real_capital_authorized"] = True
         self.assertIn("news live scope", validate(self.state, ROOT))

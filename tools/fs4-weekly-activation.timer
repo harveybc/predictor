@@ -1,0 +1,11 @@
+[Unit]
+Description=Poll the scoped weekly successor without agent intervention
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=1min
+Unit=fs4-weekly-activation.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

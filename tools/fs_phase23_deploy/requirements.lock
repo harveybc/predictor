@@ -1,0 +1,16 @@
+# Pinned numeric stack for the phase 2/3 selection venv (identical on every role).
+# Chosen from the versions the two workers' conda env already runs (python 3.12) plus duckdb
+# for the warehouse module. deploy.sh installs exactly this file and records its digest and
+# `pip freeze` in the deployment receipt; parity is the equality of those digests across roles.
+numpy==2.4.3
+scipy==1.17.1
+scikit-learn==1.8.0
+pandas==3.0.1
+pyarrow==23.0.1
+duckdb==1.5.6
+pytest==9.1.1
+# the DATA agent's warehouse module imports these two in-repo packages (paths relative to the code root)
+sqlalchemy==2.0.54
+duckdb-engine==0.17.0
+olap/store
+olap/duckdb_store

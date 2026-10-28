@@ -9,6 +9,32 @@ plugins are selected by name from JSON configs. Experiments are organized as
 numbered phases under [`examples/config/`](examples/config/), each phase a
 reproducible sweep over architectures, dataset sizes and horizons.
 
+## Feature selection and reusable analysis
+
+The public entry point is
+**[feature_selector](https://github.com/harveybc/feature_selector)**: a tested
+CPU example, JSON configuration, data-source guide, local DuckDB results and
+instructions for adapting the selection stages to another dataset. It uses
+the existing engines at a pinned revision, without duplicating their code or
+publishing large datasets/databases.
+
+This revision contains the [phase-1 inventory scheduler](docs/phase1_inventory/README.md),
+[pairwise campaign](tools/feature_pairwise_campaign.py),
+[filter methods](tools/feature_filter_selection.py),
+[warehouse adapter](tools/fs_phase23_warehouse.py) and
+[weekly validation campaign](tools/fs4_weekly_campaign.py). Pairwise analysis
+and rankings accept manifest-configured populations. The causal worker lives
+in `causal-inference` and currently validates EURUSD/ETH target packs; the
+complete workflow is not yet a universal entry-point plugin package. See the
+[portability audit](https://github.com/harveybc/feature_selector/blob/main/docs/PORTABILITY.md)
+for exact interfaces and limitations.
+
+Phases 1-3 of the retained financial campaign are complete for their declared
+populations; phase 4 and the final selected-feature manifest remain in progress.
+For live progress use the campaign's status command and the
+[current execution guide](docs/tres_temas_entrevista/program_v3/CURRENT_EXECUTION.md),
+not a historical README snapshot.
+
 ## Research and current development
 
 This project supports a data-centric research program: characterize the inputs,
@@ -16,6 +42,15 @@ test temporal preprocessing, and compare learned representations before scaling
 model search. The doctoral proposal investigates modular temporal representations
 for forecasting and reinforcement learning. It is a proposal, not a claim that
 its hypotheses have already been confirmed.
+
+The modular model exposes two distinct Dense comparisons. The retained I6-D
+whole-model control compares an unordered Dense representation with the complete
+temporal architecture. The newer `causal_dense_sequence` branch plugin is the
+strict branch-only control: it applies a shared MLP to causal trailing frames,
+keeps every time step, and can replace `causal_conv1d` while fusion, temporal
+core, forecast head, rows, fitting contract, and downstream initial weights stay
+identical. Weekly designs record `control_kind` as `WHOLE_MODEL` or
+`BRANCH_ONLY`; their evidence is never pooled.
 
 - **[Current doctoral proposal (PDF)](docs/propuesta_doctoral_representaciones_temporales_modulares.pdf)**
   and [editable LaTeX](docs/propuesta_doctoral_representaciones_temporales_modulares.tex).

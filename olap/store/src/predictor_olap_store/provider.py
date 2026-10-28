@@ -19,7 +19,16 @@ CAPABILITIES = ("describe", "storage", "discover", "query",
                 # It is additive: a caller that does not send contracts is unaffected, and a
                 # delivery whose contract was never sent resolves as UNRESOLVED, not as zero.
                 "write_availability_contracts", "resolve_delivery_availability",
-                "write_feature_selection_envelope", "reconcile_feature_selection")
+                "write_feature_selection_envelope", "reconcile_feature_selection",
+                # Phase-2/3 feature-selection rows: one owned write route, paged readback and
+                # reconciliation; workers never receive the database path.
+                "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23",
+                # Phase-4 extractibility terminals: one owned write route keyed by task_id, paged
+                # readback and reconciliation against the controller's expected counts (FS4-13).
+                "write_fs4_terminals", "read_fs4_terminals", "reconcile_fs4",
+                # DOIN archive projection: gov_metric rows plus versioned DOIN metadata,
+                # append-only events (reorg revokes, never deletes) and readback.
+                "write_doin_projection", "read_doin_projection", "revoke_doin_projection")
 
 
 def _source_commit() -> str | None:

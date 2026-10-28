@@ -1,0 +1,148 @@
+{
+  "generated_at": "2026-10-06T01:31:38Z",
+  "report_sha256": "2996c73a412bb4c3486bdd385fa72a0dc4e7063431ad323c7ab635cb73b9f660",
+  "run_id": null,
+  "schema": "fs_phase23_readback_report.v1",
+  "source": "local",
+  "tables": {
+    "feature_alias_groups": {
+      "by_asset": {},
+      "by_host_role": {},
+      "by_method": {},
+      "groups": [],
+      "table_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "total": 0
+    },
+    "feature_filter_rankings": {
+      "by_asset": {},
+      "by_host_role": {},
+      "by_method": {},
+      "groups": [],
+      "table_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "total": 0
+    },
+    "feature_filter_subsets": {
+      "by_asset": {},
+      "by_host_role": {},
+      "by_method": {},
+      "groups": [],
+      "table_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "total": 0
+    },
+    "feature_pair_gate": {
+      "by_asset": {
+        "ETH": 3,
+        "EURUSD": 3
+      },
+      "by_host_role": {
+        "worker_b": 6
+      },
+      "by_method": {
+        "pairwise_v1": 6
+      },
+      "groups": [
+        {
+          "failed": null,
+          "fold": "TRAIN",
+          "host_role": "worker_b",
+          "insufficient_support": null,
+          "measured": null,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "ETH",
+          "rows_sha256": "6cb5fa314ab6a26fd86dbdccb0e9bb4267b3e61db99e35c959054cfe6b0e1726"
+        },
+        {
+          "failed": null,
+          "fold": "TRAIN",
+          "host_role": "worker_b",
+          "insufficient_support": null,
+          "measured": null,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "EURUSD",
+          "rows_sha256": "a424edb34b7aca847285f718d99552a3798c3d67ffd5d064d39e0f28427b6775"
+        }
+      ],
+      "table_rows_sha256": "091055ba7dc57af0c98b8a22bcd80e97ff465c47e9d756cd1ca6ba1a69d79fd9",
+      "total": 6
+    },
+    "feature_pair_metrics": {
+      "by_asset": {
+        "ETH": 6,
+        "EURUSD": 6
+      },
+      "by_host_role": {
+        "worker_a": 6,
+        "worker_b": 6
+      },
+      "by_method": {
+        "pairwise_v1": 12
+      },
+      "groups": [
+        {
+          "failed": 0,
+          "fold": "inner_1",
+          "host_role": "worker_a",
+          "insufficient_support": 0,
+          "measured": 3,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "ETH",
+          "rows_sha256": "637e874ba33432b2dca20e943c765e06a0e9874f6905099585c14ffd82c6cdbf"
+        },
+        {
+          "failed": 0,
+          "fold": "inner_1",
+          "host_role": "worker_b",
+          "insufficient_support": 0,
+          "measured": 3,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "ETH",
+          "rows_sha256": "2ae2f8e7a888e6fd755b1dcd07e299db446e9d1dace31b18cff8ac5861101d6c"
+        },
+        {
+          "failed": 0,
+          "fold": "inner_1",
+          "host_role": "worker_a",
+          "insufficient_support": 0,
+          "measured": 3,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "EURUSD",
+          "rows_sha256": "6bbd139e335a0e9c2a0fc5c1ce0447d3bd388e17c742f2e0ce454b992b2450d3"
+        },
+        {
+          "failed": 0,
+          "fold": "inner_1",
+          "host_role": "worker_b",
+          "insufficient_support": 0,
+          "measured": 3,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "EURUSD",
+          "rows_sha256": "d470228cf37a4f4aed08c56bf7c270b0e73bc709293de468d222ed950f368182"
+        }
+      ],
+      "table_rows_sha256": "810f5179ad1e602a2a4dbf7478b596e0fceb410ef0924b8bf0e1e6f1cfa75837",
+      "total": 12
+    },
+    "feature_pair_stability": {
+      "by_asset": {},
+      "by_host_role": {},
+      "by_method": {},
+      "groups": [],
+      "table_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "total": 0
+    },
+    "feature_redundancy_clusters": {
+      "by_asset": {},
+      "by_host_role": {},
+      "by_method": {},
+      "groups": [],
+      "table_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "total": 0
+    }
+  }
+}

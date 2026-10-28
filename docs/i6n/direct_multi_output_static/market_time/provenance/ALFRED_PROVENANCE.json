@@ -1,0 +1,1212 @@
+{
+  "artifact": "ALFRED point-in-time evidence for DGS3MO and DGS7",
+  "authentication": "NONE - public unauthenticated endpoint, no API key used",
+  "chunk_rule": "one calendar quarter of observations; vintage set = quarter +/- 20 days",
+  "method": "HTTP POST of the public ALFRED Download Data form",
+  "observation_window": [
+    "2018-12-01",
+    "2024-12-31"
+  ],
+  "output_format": {
+    "2": "Observations by Vintage Date, All Observations",
+    "4": "Observations, Initial Release Only"
+  },
+  "replay_rule": {
+    "command": "CUDA_VISIBLE_DEVICES='' crispdm-run -q -m 3G -t 900s -n i6dmo-mt-review -- python3 -I review_probes/fetch_alfred_provenance.py <out_dir>",
+    "determinism": "ALFRED vintages are append-only; a replay reproduces every retained digest unless St. Louis publishes a NEW vintage that touches a 2018-12..2024-12 observation. The merged per-observation table is therefore the stable object; the chunk zips carry the raw server bytes for byte comparison.",
+    "script": "review_probes/fetch_alfred_provenance.py",
+    "verify": "python3 -I review_probes/prov01_fred_clock_check.py provenance"
+  },
+  "retrieved_utc": "2026-10-15T03:30:28Z",
+  "series": {
+    "DGS3MO": {
+      "alfread_vintage_last": "2026-10-14",
+      "alfred_vintage_dates_total": 5129,
+      "alfred_vintage_first": "2005-06-28",
+      "chunks": [
+        {
+          "bytes": 1171,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "f59452818f584c981fe21f41ef43c3b88c94304d308e2f0b9beea3abc25622c9",
+          "file": "DGS3MO_initial_release_2018-12-01_2018-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 43,
+          "obs_window": [
+            "2018-12-01",
+            "2018-12-31"
+          ],
+          "rows_kept": 21,
+          "sha256": "37f201e595b00f892a7eb771c90740fcb31db11abd4bc618b29c33ee5eae962f",
+          "vintage_window": [
+            "2018-11-13",
+            "2019-01-18"
+          ]
+        },
+        {
+          "bytes": 1491,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "e4554a643d1e5fb7a6bfe668f1691116c270749857f70e959032dfe858401e9a",
+          "file": "DGS3MO_initial_release_2019-01-01_2019-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 86,
+          "obs_window": [
+            "2019-01-01",
+            "2019-03-31"
+          ],
+          "rows_kept": 64,
+          "sha256": "6fa160c7baefb1793118ccd3c6163cb4a2b3f3ec09f8784771d6a87c952cb0d9",
+          "vintage_window": [
+            "2018-12-12",
+            "2019-04-19"
+          ]
+        },
+        {
+          "bytes": 1705,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "633081a9a1cdd3ce97959a417b902cad2be46c893643e0466cf5d28e0c74f947",
+          "file": "DGS3MO_initial_release_2019-04-01_2019-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 91,
+          "obs_window": [
+            "2019-04-01",
+            "2019-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "204e4e8e423d56ce1ee9c2aff2f69a97bee677bea185c2bd0b6ad9a69a173e15",
+          "vintage_window": [
+            "2019-03-12",
+            "2019-07-19"
+          ]
+        },
+        {
+          "bytes": 1738,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "40add9e59619687524af3cfaa85a16fdb55a0393c2ecd9fc4d3306be5717b322",
+          "file": "DGS3MO_initial_release_2019-07-01_2019-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 91,
+          "obs_window": [
+            "2019-07-01",
+            "2019-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "564ef80eb50a5aa31bd67893dd25e49a2dc5344b07ba81b3229d7f9dd6378868",
+          "vintage_window": [
+            "2019-06-11",
+            "2019-10-18"
+          ]
+        },
+        {
+          "bytes": 1635,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "a17227f5b6984a59e4358417ffcb3dd5e209b0191a6231e9a8c891af2ee10e55",
+          "file": "DGS3MO_initial_release_2019-10-01_2019-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 87,
+          "obs_window": [
+            "2019-10-01",
+            "2019-12-31"
+          ],
+          "rows_kept": 66,
+          "sha256": "33a303a2f23eb2109d6e6990554871191f2dbfe195c8a4da922d1a4a7e578ded",
+          "vintage_window": [
+            "2019-09-11",
+            "2020-01-17"
+          ]
+        },
+        {
+          "bytes": 1618,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "483a964dbc19e8399c955799c28b6c0861d9edf319cf12b9e218115968e7c1b6",
+          "file": "DGS3MO_initial_release_2020-01-01_2020-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 87,
+          "obs_window": [
+            "2020-01-01",
+            "2020-03-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "98f93a950de29f7cb32f146c57affa5f1e5b3f9bb2186e982e93053d11146108",
+          "vintage_window": [
+            "2019-12-12",
+            "2020-04-20"
+          ]
+        },
+        {
+          "bytes": 1617,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "c2e8e2c76274d2e627b9b89c106a8716db6b14bb845518422f420477451a0ccd",
+          "file": "DGS3MO_initial_release_2020-04-01_2020-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2020-04-01",
+            "2020-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "f89cb17f97b800d137eae23884810a01c00cf5a3e1d04f7efab5a6defc109ca0",
+          "vintage_window": [
+            "2020-03-12",
+            "2020-07-20"
+          ]
+        },
+        {
+          "bytes": 1612,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "b268f79b9cbbd89d8e5cef61074ddcd41ffbfe5a1342591a20040e5b9c0def24",
+          "file": "DGS3MO_initial_release_2020-07-01_2020-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2020-07-01",
+            "2020-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "992696c671b28417c3f8d8db730cfe6625793400c93fa28e31b143ba6f0616ca",
+          "vintage_window": [
+            "2020-06-11",
+            "2020-10-20"
+          ]
+        },
+        {
+          "bytes": 1591,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "b045d05f074bc9301fa77126bdd1fcb0ecd09cd12c9b369bea49da52325adbc2",
+          "file": "DGS3MO_initial_release_2020-10-01_2020-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 86,
+          "obs_window": [
+            "2020-10-01",
+            "2020-12-31"
+          ],
+          "rows_kept": 66,
+          "sha256": "a62586e7ca95c9b5d7cb19ad0b8108bb660cb5f3a377ba56ffd1826de154b320",
+          "vintage_window": [
+            "2020-09-11",
+            "2021-01-19"
+          ]
+        },
+        {
+          "bytes": 1576,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "96b03fb5c80009d2680603f02545a3580e8cd815aa4b530ef940107f7506da0b",
+          "file": "DGS3MO_initial_release_2021-01-01_2021-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 86,
+          "obs_window": [
+            "2021-01-01",
+            "2021-03-31"
+          ],
+          "rows_kept": 64,
+          "sha256": "6c1a08d646f733bba2fb427a3778f594cce27eabb217196cd49b21f79b4566e9",
+          "vintage_window": [
+            "2020-12-14",
+            "2021-04-20"
+          ]
+        },
+        {
+          "bytes": 1589,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "d7ca0fd086c3a0ddbd8f658d990c151c04393fc49b1b60a3b2008aa6bb07ce73",
+          "file": "DGS3MO_initial_release_2021-04-01_2021-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2021-04-01",
+            "2021-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "81f46399ec8f21a078ff6422261fa26353128fe2fc890087723b52e9f44c952d",
+          "vintage_window": [
+            "2021-03-12",
+            "2021-07-20"
+          ]
+        },
+        {
+          "bytes": 1591,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "aa5746dbdc119b42e594b869980190d4b3574c784a3f2c36094c4f31475b228b",
+          "file": "DGS3MO_initial_release_2021-07-01_2021-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2021-07-01",
+            "2021-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "04c005e47aa6438d1825902c2da3a901beb6bf9b08ff8c73505f92a9257c5a90",
+          "vintage_window": [
+            "2021-06-11",
+            "2021-10-20"
+          ]
+        },
+        {
+          "bytes": 1577,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "0fba8a6ac5dad0d5422d67cda45c6e11bbb51dbc51c7906163920b222098e34b",
+          "file": "DGS3MO_initial_release_2021-10-01_2021-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 88,
+          "obs_window": [
+            "2021-10-01",
+            "2021-12-31"
+          ],
+          "rows_kept": 66,
+          "sha256": "94b64dadb0b6bb9510566e51fb66c3c0b912fc82b7a130d72ced3e3a19c9ec2d",
+          "vintage_window": [
+            "2021-09-13",
+            "2022-01-20"
+          ]
+        },
+        {
+          "bytes": 1639,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "82031613ed2b6160b3c882df0d5cd429e0856bc5706bc6d022e17dc3de985288",
+          "file": "DGS3MO_initial_release_2022-01-01_2022-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 88,
+          "obs_window": [
+            "2022-01-01",
+            "2022-03-31"
+          ],
+          "rows_kept": 64,
+          "sha256": "826624c6fdfbf0ca10a0f8cf968bd47a408e90ccc2449d50be3370b43c3cbe7a",
+          "vintage_window": [
+            "2021-12-13",
+            "2022-04-20"
+          ]
+        },
+        {
+          "bytes": 1654,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "0cc9d1ccf03bfd31393bc3be7368c983c143043f91a6e561a63a69ad9d544964",
+          "file": "DGS3MO_initial_release_2022-04-01_2022-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2022-04-01",
+            "2022-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "590fe39a86efc4f7e6a5bead1284aa6fa19b2dbc528ea72d7224dd5d56c32a5c",
+          "vintage_window": [
+            "2022-03-14",
+            "2022-07-20"
+          ]
+        },
+        {
+          "bytes": 1682,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "390a2b5865abf5fd3f12246da6340ce3ff3e1d11753f7a18db4320e29eb74566",
+          "file": "DGS3MO_initial_release_2022-07-01_2022-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2022-07-01",
+            "2022-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "271b332755dbe4b433547e0ce62f79ed44a9cfe00ec4e0d44f6fc69bbc2b3454",
+          "vintage_window": [
+            "2022-06-13",
+            "2022-10-20"
+          ]
+        },
+        {
+          "bytes": 1649,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "683cdb1434981e05410fddddd1d10c7495d2508dee909c7a80d73ed030cb788a",
+          "file": "DGS3MO_initial_release_2022-10-01_2022-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2022-10-01",
+            "2022-12-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "f5633907a6a0603915118a23a5298438b95e60a7209c9f1a0fe4c69d2fbaf834",
+          "vintage_window": [
+            "2022-09-12",
+            "2023-01-20"
+          ]
+        },
+        {
+          "bytes": 1643,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "867ec743441e6054af428fce4fdf7cccffdcb6acf118724152a068f8e79b1797",
+          "file": "DGS3MO_initial_release_2023-01-01_2023-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2023-01-01",
+            "2023-03-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "4b9d939ab71a9d36b1de924e4a20b86e82287d1598ea0abc11d48dbc61131b98",
+          "vintage_window": [
+            "2022-12-12",
+            "2023-04-20"
+          ]
+        },
+        {
+          "bytes": 1663,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "c929f6b1a60c2233b98e76649c2af2a5d67a669711082bb0784e596a31d9d2b1",
+          "file": "DGS3MO_initial_release_2023-04-01_2023-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 91,
+          "obs_window": [
+            "2023-04-01",
+            "2023-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "7b4b8fe024a901dbd60fa01ad53058fbf63af1bc56b8c2024b0d20a9b24ea0c4",
+          "vintage_window": [
+            "2023-03-13",
+            "2023-07-20"
+          ]
+        },
+        {
+          "bytes": 1612,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "f91da4f829b4e18a347145cb236be5ba68c0d8ca19a8656fa2cbd9acf4436367",
+          "file": "DGS3MO_initial_release_2023-07-01_2023-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2023-07-01",
+            "2023-09-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "cbc9508215a12a43264210a82d8fc75f02b20fa1e9e59eb2142551b2835f52d9",
+          "vintage_window": [
+            "2023-06-12",
+            "2023-10-20"
+          ]
+        },
+        {
+          "bytes": 1620,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "193e2c38d2b1b6fa30538688f2e1ddecb2778eb79889b2e242da2ed8f417fc4b",
+          "file": "DGS3MO_initial_release_2023-10-01_2023-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 88,
+          "obs_window": [
+            "2023-10-01",
+            "2023-12-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "f690efcfaef4e92c56b999a7382c702a9e70956c76401b42718097894eeecd92",
+          "vintage_window": [
+            "2023-09-11",
+            "2024-01-19"
+          ]
+        },
+        {
+          "bytes": 1590,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "d0d75fdfaaf5acdceee7a23c83c0dc29b2ec5e35673a34aba7da19acf225ed75",
+          "file": "DGS3MO_initial_release_2024-01-01_2024-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2024-01-01",
+            "2024-03-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "70f901d09e70865d739a7925daaec6aa1782323a31fe7931fa3b259a862e4856",
+          "vintage_window": [
+            "2023-12-12",
+            "2024-04-19"
+          ]
+        },
+        {
+          "bytes": 1597,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "f4094cd54ad7a93e6350a50b091673cce136f180d081124be771931e50247379",
+          "file": "DGS3MO_initial_release_2024-04-01_2024-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2024-04-01",
+            "2024-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "4f0ca573ed2526a05bb8bd5da1e22aeae8eaddbc6d53e750834be7c3c1d5c530",
+          "vintage_window": [
+            "2024-03-12",
+            "2024-07-19"
+          ]
+        },
+        {
+          "bytes": 1650,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "c83545587580a58b6865a5da5a16d3b978c7ba2392d080317e1bd1a243780229",
+          "file": "DGS3MO_initial_release_2024-07-01_2024-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2024-07-01",
+            "2024-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "d3a3be5ec7984c68ec487124acc329929ecdfdbfb61e5e8947506683370c5551",
+          "vintage_window": [
+            "2024-06-11",
+            "2024-10-18"
+          ]
+        },
+        {
+          "bytes": 1755,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "12cf8e524e0e6ac0644a51091583fc8f6ffc1a6234e749eadcbaf881a6c0e655",
+          "file": "DGS3MO_initial_release_2024-10-01_2024-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS3MO",
+            "realtime_start_date"
+          ],
+          "n_vintages": 86,
+          "obs_window": [
+            "2024-10-01",
+            "2024-12-31"
+          ],
+          "rows_kept": 66,
+          "sha256": "e7e32f0bc561374546737b4acbceb937c4042cce5630b2541e4aeb31e8b71b5c",
+          "vintage_window": [
+            "2024-09-11",
+            "2025-01-17"
+          ]
+        }
+      ],
+      "initial_release_rows": {
+        "calendar_day_lag_histogram": {
+          "1": 1176,
+          "2": 72,
+          "3": 269,
+          "4": 68,
+          "5": 2
+        },
+        "first": "2018-12-03",
+        "last": "2024-12-31",
+        "n": 1587,
+        "nonpositive_or_unparsable_lag": []
+      },
+      "merged_table": {
+        "file": "DGS3MO_realtime_start_2019_2024.csv",
+        "rows": 1587,
+        "sha256": "bdeebfdfb0edd910f59b59379f9924ebaa450a5f36c720a2a5b47455df2f1091"
+      },
+      "revision_test": {
+        "absent_from_anchor": 0,
+        "bytes": 6253,
+        "compared": 1587,
+        "csv_member": "vintages_starting_2025-01-10.csv",
+        "csv_sha256": "c2d5c42575eba2d07b50123bcba1cfa5f311c47c43f6db583dc17819678943ce",
+        "file": "DGS3MO_all_obs_vintage_2025-01-10.zip",
+        "observations_revised": 1,
+        "revised_sample": [
+          {
+            "anchor": "0.11",
+            "initial": "",
+            "obs": "2020-08-19",
+            "realtime_start": "2020-08-21"
+          }
+        ],
+        "sha256": "3b4eb625ce6e131692fd980c4e063789aada69b3c7c4eaff984745665d57a7ad",
+        "vintage": "2025-01-10"
+      }
+    },
+    "DGS7": {
+      "alfread_vintage_last": "2026-10-14",
+      "alfred_vintage_dates_total": 5128,
+      "alfred_vintage_first": "2005-06-28",
+      "chunks": [
+        {
+          "bytes": 1278,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "eefd3055beb9c1e24abc430bf5e11ae276d7edc8da8f32e398cd97f74de2bd35",
+          "file": "DGS7_initial_release_2018-12-01_2018-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 43,
+          "obs_window": [
+            "2018-12-01",
+            "2018-12-31"
+          ],
+          "rows_kept": 21,
+          "sha256": "05d2b9f3a2684d56426180e4e3f546ce467d9462d51ca84eb5f65dd2e5d0b8cd",
+          "vintage_window": [
+            "2018-11-13",
+            "2019-01-18"
+          ]
+        },
+        {
+          "bytes": 1612,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "ce9ddfc7ac17053dbe3d1afdda07c61860d98885c7d4476701c29a07f9fe4cbf",
+          "file": "DGS7_initial_release_2019-01-01_2019-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 86,
+          "obs_window": [
+            "2019-01-01",
+            "2019-03-31"
+          ],
+          "rows_kept": 64,
+          "sha256": "537d9c09e4895233dcd01c8ce16f42bfec125d66e2008fc067bbef8461bed78c",
+          "vintage_window": [
+            "2018-12-12",
+            "2019-04-19"
+          ]
+        },
+        {
+          "bytes": 1654,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "c4c2c8825b1ab94634bc63af9339d9523e5088a62188eac70b4d5dcfb34df161",
+          "file": "DGS7_initial_release_2019-04-01_2019-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 91,
+          "obs_window": [
+            "2019-04-01",
+            "2019-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "db70feabf1003f82a6690461176d9b90a3c7dd39dedfa62e5985aea88b9d4805",
+          "vintage_window": [
+            "2019-03-12",
+            "2019-07-19"
+          ]
+        },
+        {
+          "bytes": 1662,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "bd13f269d0b11d8d4f3e344947d00146da4fa3d0dce58f485a66b89e33e9871e",
+          "file": "DGS7_initial_release_2019-07-01_2019-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 91,
+          "obs_window": [
+            "2019-07-01",
+            "2019-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "e583501f0afcc3dc0f1035adb63aab58ac50413cbf16404e5c4a14a06d511da9",
+          "vintage_window": [
+            "2019-06-11",
+            "2019-10-18"
+          ]
+        },
+        {
+          "bytes": 1654,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "3df6e21023cb56aa6efc0c70f7bc0347a80d8b4184ed9e6a9da8005e30fe4421",
+          "file": "DGS7_initial_release_2019-10-01_2019-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 87,
+          "obs_window": [
+            "2019-10-01",
+            "2019-12-31"
+          ],
+          "rows_kept": 66,
+          "sha256": "3e5dcc25da4e89c0722045c6c04c57d86fd50d969a5c09b0ad5d94a3264c8029",
+          "vintage_window": [
+            "2019-09-11",
+            "2020-01-17"
+          ]
+        },
+        {
+          "bytes": 1651,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "7d3098a23f5b7540382ca3869672dddbc1c0f1ce0fb6e2a70bccaeaaa0085491",
+          "file": "DGS7_initial_release_2020-01-01_2020-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 87,
+          "obs_window": [
+            "2020-01-01",
+            "2020-03-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "b813db3cd9391807485ea842c0d3ce92cb0f9efca85f097d77920afa3b7aa35a",
+          "vintage_window": [
+            "2019-12-12",
+            "2020-04-20"
+          ]
+        },
+        {
+          "bytes": 1636,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "d42586ddacf1bca0f801b66587681018602a021397a06f3a1e280a2ed6bc273d",
+          "file": "DGS7_initial_release_2020-04-01_2020-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2020-04-01",
+            "2020-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "b961a9d33347a795261026c3cfe8ee83f0816f88e467bf4a84f08d9bdcab4073",
+          "vintage_window": [
+            "2020-03-12",
+            "2020-07-20"
+          ]
+        },
+        {
+          "bytes": 1639,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "64234139440a3db8ad460296db955f8a062e8a66fa29820c7307baa7f437ab08",
+          "file": "DGS7_initial_release_2020-07-01_2020-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2020-07-01",
+            "2020-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "a2ad2dfc9ee622c576a0e314bc7d8e90006b6cab9e100dae5bd801d0b8330108",
+          "vintage_window": [
+            "2020-06-11",
+            "2020-10-20"
+          ]
+        },
+        {
+          "bytes": 1623,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "25c6396c430ba368c243ca2cd5530565725826e604939732e47701023de24574",
+          "file": "DGS7_initial_release_2020-10-01_2020-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 86,
+          "obs_window": [
+            "2020-10-01",
+            "2020-12-31"
+          ],
+          "rows_kept": 66,
+          "sha256": "ffebc2165dbbdcde8255d38376f5b7841a68d13f34890038875039086e8047b6",
+          "vintage_window": [
+            "2020-09-11",
+            "2021-01-19"
+          ]
+        },
+        {
+          "bytes": 1618,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "0ba659e58be8a6c05d3c541bca91c9cc1279870f807bfe80a3fd73fe5eccd06d",
+          "file": "DGS7_initial_release_2021-01-01_2021-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 86,
+          "obs_window": [
+            "2021-01-01",
+            "2021-03-31"
+          ],
+          "rows_kept": 64,
+          "sha256": "0678bc67335622aed05a4f2f0541accaa9cc14810b792e8f81b91308e7a9d89c",
+          "vintage_window": [
+            "2020-12-14",
+            "2021-04-20"
+          ]
+        },
+        {
+          "bytes": 1651,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "fd808f714acaa4b8a23c3789f5c7f7a6b62edb43a36d90cddcb14e1fff3861de",
+          "file": "DGS7_initial_release_2021-04-01_2021-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2021-04-01",
+            "2021-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "484b9b91f850fb7d34b25e39af00b4b08f33f37cd91f2d89a93d5d6f0fc58711",
+          "vintage_window": [
+            "2021-03-12",
+            "2021-07-20"
+          ]
+        },
+        {
+          "bytes": 1663,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "c9a892e255db7ebb28553a61cb9ec81b25809aa5c7bce67272322efaf4ea6212",
+          "file": "DGS7_initial_release_2021-07-01_2021-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2021-07-01",
+            "2021-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "26a80adde74d3d3c239527fa74e3004194c9265806684a9d0669b8afd92ac3cf",
+          "vintage_window": [
+            "2021-06-11",
+            "2021-10-20"
+          ]
+        },
+        {
+          "bytes": 1632,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "8866861613e24c3af89db9760256c03dbe2108f4463197cde19c6a16d00786da",
+          "file": "DGS7_initial_release_2021-10-01_2021-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 88,
+          "obs_window": [
+            "2021-10-01",
+            "2021-12-31"
+          ],
+          "rows_kept": 66,
+          "sha256": "b861631ee6c60b31e64a340202dd5d0f328e8d22d3abe72f6e4fc03ffbe6b6fb",
+          "vintage_window": [
+            "2021-09-13",
+            "2022-01-20"
+          ]
+        },
+        {
+          "bytes": 1654,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "c040ad2ebcad09375981a59442d84c288892282e9c330314225a47432cb2232d",
+          "file": "DGS7_initial_release_2022-01-01_2022-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 88,
+          "obs_window": [
+            "2022-01-01",
+            "2022-03-31"
+          ],
+          "rows_kept": 64,
+          "sha256": "09a69c9f9079b87cad7f207ef05bc96033f8559a90643061d176239651801c80",
+          "vintage_window": [
+            "2021-12-13",
+            "2022-04-20"
+          ]
+        },
+        {
+          "bytes": 1648,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "31f306f90f37fe4ce721b9d9d3fad9595fdcc4cf3625e90ab848e49e015cf66e",
+          "file": "DGS7_initial_release_2022-04-01_2022-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2022-04-01",
+            "2022-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "c6f35593d5cec061332a6c0c03497048c48605213d88584f8d0b5556a50b4fdf",
+          "vintage_window": [
+            "2022-03-14",
+            "2022-07-20"
+          ]
+        },
+        {
+          "bytes": 1679,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "2f0c59da45ec2c13cbff1949134e4cb350fd96782fe560bc7781e3526763671a",
+          "file": "DGS7_initial_release_2022-07-01_2022-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2022-07-01",
+            "2022-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "44abc3199c8cebbda601f345524001656d5bbb818de6715bf63272e324123f53",
+          "vintage_window": [
+            "2022-06-13",
+            "2022-10-20"
+          ]
+        },
+        {
+          "bytes": 1654,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "818c8d68f998355f14d0d5dcff7732f69bdac3e128efc2c75dbd0708c8d7da26",
+          "file": "DGS7_initial_release_2022-10-01_2022-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2022-10-01",
+            "2022-12-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "20757d3be22f3ffe0b9a465e4a4ae8940fd474356983a151404a05614245fe3f",
+          "vintage_window": [
+            "2022-09-12",
+            "2023-01-20"
+          ]
+        },
+        {
+          "bytes": 1654,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "782845502c4e484c2775d0613c34ae25104278dd691e91c2e216503b007c9309",
+          "file": "DGS7_initial_release_2023-01-01_2023-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2023-01-01",
+            "2023-03-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "d21bd787f1bd26e524b06e41e53dcf6b59e4148491c0361247897385bc2839e9",
+          "vintage_window": [
+            "2022-12-12",
+            "2023-04-20"
+          ]
+        },
+        {
+          "bytes": 1652,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "6112ccd28b7df55f95e697c964132327084448ffeb9b967930f36220eccc390e",
+          "file": "DGS7_initial_release_2023-04-01_2023-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 91,
+          "obs_window": [
+            "2023-04-01",
+            "2023-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "42f9dcd1fbfc1ee14bf497028088c2f9a0151768e8fb93965489e0cb692efed2",
+          "vintage_window": [
+            "2023-03-13",
+            "2023-07-20"
+          ]
+        },
+        {
+          "bytes": 1663,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "c60eed47a97860f2ef2d9d7e40122c9e68060042b802818475afcb4fc9efeb49",
+          "file": "DGS7_initial_release_2023-07-01_2023-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2023-07-01",
+            "2023-09-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "aaa51263aaff88405ef732edf27e12809dae3fead93fa32130bbef2d5498901a",
+          "vintage_window": [
+            "2023-06-12",
+            "2023-10-20"
+          ]
+        },
+        {
+          "bytes": 1649,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "6c79634e4bd4de124746b602cc6dc12f4e0da7f974af648d03dc60bec5faaa43",
+          "file": "DGS7_initial_release_2023-10-01_2023-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 88,
+          "obs_window": [
+            "2023-10-01",
+            "2023-12-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "c0de18232748e3f55c0237c708126d19c16a3a298e8b7376d8972de4183f2a1c",
+          "vintage_window": [
+            "2023-09-11",
+            "2024-01-19"
+          ]
+        },
+        {
+          "bytes": 1639,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "521b02d09ce771de90b050d3704a2c17cea955b201d7db1d90992937d0d10940",
+          "file": "DGS7_initial_release_2024-01-01_2024-03-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2024-01-01",
+            "2024-03-31"
+          ],
+          "rows_kept": 65,
+          "sha256": "7a9013e081f7a40126c76f8c8b17aeb7a6833dcd0090c96ff851ad7d83e06a87",
+          "vintage_window": [
+            "2023-12-12",
+            "2024-04-19"
+          ]
+        },
+        {
+          "bytes": 1658,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "53e5e513d1417ae032ee3386534448c30d02891e43cea0bd6b1f5f0542da32e3",
+          "file": "DGS7_initial_release_2024-04-01_2024-06-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 89,
+          "obs_window": [
+            "2024-04-01",
+            "2024-06-30"
+          ],
+          "rows_kept": 65,
+          "sha256": "097f7289b272f15f01510aa20495601c9b8df37bb9df8bc31a5c1f1cfd69b131",
+          "vintage_window": [
+            "2024-03-12",
+            "2024-07-19"
+          ]
+        },
+        {
+          "bytes": 1655,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "93116acfb5186329e76e9ef6998712151df3cb4e154289aee4ecfe9a5bbbe9e4",
+          "file": "DGS7_initial_release_2024-07-01_2024-09-30.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 90,
+          "obs_window": [
+            "2024-07-01",
+            "2024-09-30"
+          ],
+          "rows_kept": 66,
+          "sha256": "1cb51535b0b947969ba161397cf14f2f11ade90ebc19ecaba5d81f465a31569d",
+          "vintage_window": [
+            "2024-06-11",
+            "2024-10-18"
+          ]
+        },
+        {
+          "bytes": 1766,
+          "csv_member": "obs.,_initial_release_only.csv",
+          "csv_sha256": "56c014f8862104e55d202c57874702623e8c5b27a46a5b7e4543376f3347a41a",
+          "file": "DGS7_initial_release_2024-10-01_2024-12-31.zip",
+          "header": [
+            "period_start_date",
+            "DGS7",
+            "realtime_start_date"
+          ],
+          "n_vintages": 86,
+          "obs_window": [
+            "2024-10-01",
+            "2024-12-31"
+          ],
+          "rows_kept": 66,
+          "sha256": "d48d70b931142926a3fe68fc2fac92c4954595ba7276c4176cb4422b28db4290",
+          "vintage_window": [
+            "2024-09-11",
+            "2025-01-17"
+          ]
+        }
+      ],
+      "initial_release_rows": {
+        "calendar_day_lag_histogram": {
+          "1": 1176,
+          "2": 72,
+          "3": 269,
+          "4": 68,
+          "5": 2
+        },
+        "first": "2018-12-03",
+        "last": "2024-12-31",
+        "n": 1587,
+        "nonpositive_or_unparsable_lag": []
+      },
+      "merged_table": {
+        "file": "DGS7_realtime_start_2019_2024.csv",
+        "rows": 1587,
+        "sha256": "f78d6c09398007013de614a992e6fb9b4388749852675f28563189b40b0a8dbd"
+      },
+      "revision_test": {
+        "absent_from_anchor": 0,
+        "bytes": 7151,
+        "compared": 1587,
+        "csv_member": "vintages_starting_2025-01-10.csv",
+        "csv_sha256": "cb3a63f9e00077a4285fa2f8e372604acc71464c44352d5d9b0d5d36e97ddcf1",
+        "file": "DGS7_all_obs_vintage_2025-01-10.zip",
+        "observations_revised": 1,
+        "revised_sample": [
+          {
+            "anchor": "0.48",
+            "initial": "",
+            "obs": "2020-08-19",
+            "realtime_start": "2020-08-21"
+          }
+        ],
+        "sha256": "3d006ed0447c15ba0e0c0f1d1892f028dbc8b2f316b4cc314464987f84f5f74f",
+        "vintage": "2025-01-10"
+      }
+    }
+  },
+  "source_endpoint": "https://alfred.stlouisfed.org/series/downloaddata?seid=<SERIES>"
+}

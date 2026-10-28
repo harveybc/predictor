@@ -1,0 +1,11 @@
+[Unit]
+Description=Poll I6N island terminals without agent intervention
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=60s
+Persistent=true
+Unit=i6n-island-terminal-collect.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Phase 2/3 feature-selection status tick: CLAIMS_LEDGER.json and STATUS.json (every host; fired by fs-phase23-status.timer)
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/.local/state/canonical_20261003/fs_phase23/runner.env
+ExecStart=/bin/bash ${FS23_CODE}/tools/fs_phase23_deploy/status_tick.sh
+WorkingDirectory=%h/.local/state/canonical_20261003/fs_phase23
+Nice=15
+IOSchedulingClass=idle
+MemoryMax=512M
+TimeoutStartSec=50

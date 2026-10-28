@@ -67,7 +67,27 @@ FEATURE_SELECTION_VIEWS = (
     "df_feature_selection_failures",
     "df_feature_selection_dashboard",
 )
-SNAPSHOT_RELATIONS = GOVERNANCE + FEATURE_SELECTION_TABLES + FEATURE_SELECTION_VIEWS
+# Phase-2/3 feature-selection storage (feature-feature dependency, redundancy, filters) is part
+# of the boundary too: a phase-2 snapshot without these relations is an UNVERIFIED_COPY.
+FS_PHASE23_TABLES = (
+    "fs_phase23_run",
+    "fs_phase23_load_receipt",
+    "feature_pair_metrics",
+    "feature_pair_stability",
+    "feature_pair_gate",
+    "feature_alias_groups",
+    "feature_redundancy_clusters",
+    "feature_filter_rankings",
+    "feature_filter_subsets",
+)
+FS_PHASE23_VIEWS = ("fs_phase23_coverage",)
+# Phase-4 extractibility terminals (feature x fold x arm) and their receipts are part of the
+# boundary too: a phase-4 snapshot without them is an UNVERIFIED_COPY.
+FS4_TABLES = ("feature_extractibility_v1", "fs4_load_receipt", "fs4_load_receipt_task")
+FS4_VIEWS = ("fs4_extractibility_coverage", "fs4_extractibility_triples")
+
+SNAPSHOT_RELATIONS = (GOVERNANCE + FEATURE_SELECTION_TABLES + FEATURE_SELECTION_VIEWS
+                      + FS_PHASE23_TABLES + FS_PHASE23_VIEWS + FS4_TABLES + FS4_VIEWS)
 
 #: The dependency closure of a governed terminal that lives outside gov_*: the campaign and run
 #: identity the loader records, and the dimensions those rows point at.
@@ -1290,6 +1310,10 @@ def snapshot_database(source: str, target: str, *, schema: str = "main",
                       if source_counts.get(name) is None or counts.get(name) is None]
     if missing_phase1:
         reasons.append(f"phase-1 feature-selection relations are absent: {missing_phase1}")
+    missing_phase23 = [name for name in FS_PHASE23_TABLES + FS_PHASE23_VIEWS
+                       if source_counts.get(name) is None or counts.get(name) is None]
+    if missing_phase23:
+        reasons.append(f"phase-2/3 feature-selection relations are absent: {missing_phase23}")
 
     return {"schema": "olap_duckdb_snapshot.v5", "generated_utc": now(),
             "source": source, "target": target, "files_copied": copied,

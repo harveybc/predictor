@@ -1,10 +1,10 @@
 {
- "as_of": "2026-10-05T18:03:46+00:00",
- "critical_path_eta": "feature-selection manifest after GPU queues (done/done/done) and the closure step; later milestones downstream",
+ "as_of": "2026-10-16T13:48:44.747Z",
+ "critical_path_eta": "407 logical cells: 269 static + 138 conditional cadence. RUNNING on 5090; new-protocol end-to-end ETA unmeasured. No stage chat approvals; TEST closed.",
  "milestones": [
   {
    "eta": "1-3 development days",
-   "evidence": "Weekly/monthly/static contracts, four-year as-of windows and the durable paired-naive scorer pass 72 focused tests; restored evidence is bound to the full contract and WeekSpec",
+   "evidence": "Business masks retain open+12/close-12 and exact horizon naive. New owner protocol uses all four TRAIN years plus actual VALIDATION for stopping, no extra holdout; 2024 is retrospective development.",
    "id": "M1",
    "next": "Run one complete weekly validation pilot with MAE, short/long horizons and idempotent strategy delivery",
    "progress": 66,
@@ -12,10 +12,10 @@
    "title": "Business-faithful evaluation"
   },
   {
-   "eta": "GPU done/done/done; then closure",
-   "evidence": "PS3-R 383/411 terminals (111/137 complete); PS4 102/137; FS-PRED 0 methods; causal 366/366; rep 137/137; refits 146/146; manifest DRAFT sel/rej/pend 0/1/365",
+   "eta": "Selection DONE; source clocks unresolved",
+   "evidence": "6240 tasks closed; EURUSD/ETH unions 20/9. Current baseline: 19 RAW, no STLFSI4. Selection used 2024 development; TEST stays closed.",
    "id": "M2",
-   "next": "Blocking: PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits); PS3-R terminals complete 111/137 heavy candidates; PS4 profiles 102/137 heavy candidates",
+   "next": "Retain selected manifest; resolve source publication clocks before TEST, without rerunning the closed selection",
    "progress": 78,
    "state": "IN_PROGRESS",
    "title": "Feature selection"
@@ -30,12 +30,12 @@
    "title": "Exact literature controls"
   },
   {
-   "eta": "3-6 days after M2",
-   "evidence": "Modular engine and donors exist; ECL development contrast found R2 0.694% lower MAE than R0",
+   "eta": "Approved static R0/R2 contrast complete; remaining M4 work not measured",
+   "evidence": "Both R0/R2 families CLOSED R0_RETAINED under 5d430951. Short relative MAE R0 -0.007738%, R2 +0.020282%; long R0 +26.285134%, R2 +26.607801%. 50/50 units, 288 readbacks, 177 files per mirror per campaign. Nineteen short donors adopted without retraining; nineteen long donors trained. One seed, DEVELOPMENT only.",
    "id": "M4",
-   "next": "Repeat literature baseline vs modular R0/R1/R2 on the selected feature manifest",
+   "next": "Retain both verified closures and per-horizon results; do not repeat these fits. Preserve short INNER-only donor qualification. Core pretraining and other representation contrasts remain separate future work.",
    "progress": 48,
-   "state": "PARTIAL_MEASUREMENT",
+   "state": "STATIC_R0_R2_CONTRAST_CLOSED",
    "title": "Pretrained branches: R0/R1/R2"
   },
   {
@@ -48,13 +48,14 @@
    "title": "Pretrained temporal core"
   },
   {
-   "eta": "4-7 days after M5",
-   "evidence": "Real plugin harness and conditional-noise synthetic experiments; no eligible real predictor yet",
+   "engineering_note": "129 focused tests plus 23 final control regressions. 5090 engineering passed all private heads; real annual support verified for 4/12/53 periods. Historical engineering percentages unchanged.",
+   "eta": "UNMEASURED; automatic per-stage cost ETA",
+   "evidence": "1/407 COMPLETE, OLAP 1/1. Automatic relay to short DS4 private-Conv, epoch29. Heads 1/12, h72 0/15, joint 0/240, transfer 0/2, conditional cadence 0/138. TEST closed.",
    "id": "M6",
-   "next": "Weekly short/long forecasting; require same-row naive skill before strategy evaluation",
+   "next": "Timers execute heads, joint window/core/head grid, transfers and beneficial cadence; then eligibility, OLAP, mirrors and closure. No agent polling.",
    "progress": 24,
-   "state": "SYNTHETIC_ONLY",
-   "title": "Short/long forecasts + strategy"
+   "state": "PARTIAL_MEASUREMENT",
+   "title": "Forecasts + strategy: 407-cell queue"
   },
   {
    "eta": "5-10 days after M5",
@@ -83,6 +84,7 @@
  ],
  "regenerated_by": {
   "from": "fs_closure/STATUS.json",
+  "i6dmo_update": "2026-10-16: short and long downsampled R0/R2 campaigns automatically CLOSED and retain R0; all milestone percentages unchanged; r2_downsampled/SHORT_RETURN.md and LONG_RETURN.md record per-horizon results",
   "tool": "tools/fs_close_manifest.py"
  },
  "schema": "predictor.master_milestones.v1"

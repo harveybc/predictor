@@ -1,0 +1,41 @@
+{
+ "bogus_uuid": {
+  "build": {
+   "cuda_version": "12.5.1",
+   "cudnn_version": "9",
+   "is_cuda_build": "True"
+  },
+  "cuda_device_order": "PCI_BUS_ID",
+  "cuda_visible_devices": "GPU-00000000-0000-0000-0000-000000000000",
+  "gpu_count": 0,
+  "gpus": [],
+  "ok": true,
+  "schema": "fs4.tf_probe.v1",
+  "tensorflow": "2.21.0"
+ },
+ "expected_uuid": {
+  "build": {
+   "cuda_version": "12.5.1",
+   "cudnn_version": "9",
+   "is_cuda_build": "True"
+  },
+  "cuda_device_order": "PCI_BUS_ID",
+  "cuda_visible_devices": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+  "expect_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+  "gpu_count": 1,
+  "gpus": [
+   {
+    "details": {
+     "compute_capability": "(12, 0)",
+     "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU"
+    },
+    "name": "/physical_device:GPU:0"
+   }
+  ],
+  "matmul_device": "/job:localhost/replica:0/task:0/device:GPU:0",
+  "ok": true,
+  "schema": "fs4.tf_probe.v1",
+  "tensorflow": "2.21.0"
+ },
+ "role": "worker_a"
+}

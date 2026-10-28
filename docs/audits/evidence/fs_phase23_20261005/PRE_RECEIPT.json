@@ -1,0 +1,42 @@
+{
+ "schema": "fs_phase23.test_receipt.v1",
+ "stage": "PRE",
+ "recorded_at": "2026-10-06T00:42:08.054971+00:00",
+ "host_role": "coordinator (memory-capped crispdm-run 2G; synthetic data only)",
+ "worktree_head": "eb9df9eb63de0d4e6a0edb0d7eb3100ee8bcf692",
+ "test_file": "tools/test_fs_phase23_driver.py",
+ "test_file_sha256": "0d05b5048a645f247cced0393d003c3ccac40a79374d0ad2a7c4a5c3fe45436c",
+ "collected": 19,
+ "failed": 19,
+ "passed": 0,
+ "failure_reason": "capability absent (modules not yet implemented); no broken imports or fixtures",
+ "absent_capabilities": [
+  "tools/feature_filter_selection.py",
+  "tools/feature_pairwise_campaign.py",
+  "tools/feature_selection_phase23_status.py",
+  "tools/fs_phase23_manifest.py",
+  "tools/{name}.py\")"
+ ],
+ "failed_tests": [
+  "tools/test_fs_phase23_driver.py::test_committed_manifests_bind_phase1_identities_and_denominators",
+  "tools/test_fs_phase23_driver.py::test_manifest_identity_is_column_order_invariant",
+  "tools/test_fs_phase23_driver.py::test_plan_is_deterministic_and_shards_cover_every_pair",
+  "tools/test_fs_phase23_driver.py::test_future_row_mutation_does_not_change_earlier_fold_results",
+  "tools/test_fs_phase23_driver.py::test_column_order_does_not_change_pair_results",
+  "tools/test_fs_phase23_driver.py::test_restart_is_byte_identical_and_never_recomputes_complete_units",
+  "tools/test_fs_phase23_driver.py::test_restart_submission_produces_no_duplicate_rows",
+  "tools/test_fs_phase23_driver.py::test_synthetic_alias_is_grouped_with_a_representative",
+  "tools/test_fs_phase23_driver.py::test_nonlinear_pair_is_caught_by_mi_and_dcor_with_low_pearson",
+  "tools/test_fs_phase23_driver.py::test_insufficient_support_abstains_with_diagnostic",
+  "tools/test_fs_phase23_driver.py::test_lagged_cross_correlation_uses_elapsed_hours",
+  "tools/test_fs_phase23_driver.py::test_no_process_opens_validation_or_test",
+  "tools/test_fs_phase23_driver.py::test_foreign_identity_warehouse_receipt_is_rejected",
+  "tools/test_fs_phase23_driver.py::test_corrupt_terminal_is_quarantined_and_valid_one_adopted",
+  "tools/test_fs_phase23_driver.py::test_phase2_closure_fails_on_one_missing_disposition",
+  "tools/test_fs_phase23_driver.py::test_mrmr_and_jmi_reject_incomplete_matrices_or_mixed_populations",
+  "tools/test_fs_phase23_driver.py::test_phase3_outputs_label_causal_support_and_declare_no_winner",
+  "tools/test_fs_phase23_driver.py::test_follow_chains_phase3_automatically_when_phase2_closes",
+  "tools/test_fs_phase23_driver.py::test_status_reports_expected_complete_failed_active_rate_and_eta"
+ ],
+ "output_sha256": "3860968c89c1d48faa1c8b53d0d633ec031bfc88975c6d2a85a0f92c77054adb"
+}

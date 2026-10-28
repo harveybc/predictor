@@ -1,0 +1,14 @@
+eurusd feature_alias_groups closure 4087db1a00678739 live_now 4087db1a00678739 EQUAL count 1
+eurusd feature_filter_rankings closure c2d983fdde260024 live_now c2d983fdde260024 EQUAL count 45990
+eurusd feature_filter_subsets closure 2a50443e326104e1 live_now 2a50443e326104e1 EQUAL count 686
+eurusd feature_pair_gate closure 415f65fecada7998 live_now 415f65fecada7998 EQUAL count 66795
+eurusd feature_pair_metrics closure 03e8f8e160dbea0c live_now 03e8f8e160dbea0c EQUAL count 7213860
+eurusd feature_pair_stability closure 7df21b0a2fcfc755 live_now 7df21b0a2fcfc755 EQUAL count 1202310
+eurusd feature_redundancy_clusters closure 8228253fa56fffa6 live_now 8228253fa56fffa6 EQUAL count 277
+eth feature_alias_groups closure 84c25556f3bbada8 live_now 84c25556f3bbada8 EQUAL count 5
+eth feature_filter_rankings closure 767333e18abe60f1 live_now 767333e18abe60f1 EQUAL count 4212
+eth feature_filter_subsets closure 73790f4f89124699 live_now 73790f4f89124699 EQUAL count 294
+eth feature_pair_gate closure 00718c737b7b1eac live_now 00718c737b7b1eac EQUAL count 3403
+eth feature_pair_metrics closure c6634d60336e611b live_now c6634d60336e611b EQUAL count 245016
+eth feature_pair_stability closure d7842dcccad089c8 live_now d7842dcccad089c8 EQUAL count 61254
+eth feature_redundancy_clusters closure 5b9bd26e106c02ec live_now 5b9bd26e106c02ec EQUAL count 38

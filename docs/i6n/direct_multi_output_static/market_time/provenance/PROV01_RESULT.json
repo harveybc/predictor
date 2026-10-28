@@ -1,0 +1,284 @@
+{
+  "C5_revision_control": {
+    "DGS3MO": {
+      "anchor_vintage": "2025-01-10",
+      "compared": 1587,
+      "observations_revised": 1,
+      "revised": [
+        {
+          "anchor": "0.11",
+          "initial": "",
+          "obs": "2020-08-19",
+          "realtime_start": "2020-08-21"
+        }
+      ]
+    },
+    "DGS7": {
+      "anchor_vintage": "2025-01-10",
+      "compared": 1587,
+      "observations_revised": 1,
+      "revised": [
+        {
+          "anchor": "0.48",
+          "initial": "",
+          "obs": "2020-08-19",
+          "realtime_start": "2020-08-21"
+        }
+      ]
+    }
+  },
+  "declared_clock_under_test": "as-of last value from (D+2) 00:00 UTC, NaN if older than 168 h (tools/i6dmo/producer_recovery.v1.json, both FRED features)",
+  "evidence_semantics": "ALFRED realtime_start is the DATE the value entered the FRED/ALFRED database. It is an UPPER bound on public availability: the H.15 release itself is posted at 4:15pm ET on the observation day. A realtime_start later than the declared instant therefore refutes coverage BY THIS ARTIFACT, and does not by itself prove look-ahead.",
+  "probe": "PROV01_fred_publication_clock",
+  "series": {
+    "DGS3MO": {
+      "C1_realtime_start_not_after_observation": [],
+      "C1_verdict": "PASS",
+      "C2_declared_instant": "(D+2) 00:00 UTC",
+      "C2_examples": [
+        {
+          "lag_days": 3,
+          "obs": "2018-12-07",
+          "obs_weekday": "Fri",
+          "realtime_start": "2018-12-10"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2018-12-14",
+          "obs_weekday": "Fri",
+          "realtime_start": "2018-12-17"
+        },
+        {
+          "lag_days": 5,
+          "obs": "2018-12-21",
+          "obs_weekday": "Fri",
+          "realtime_start": "2018-12-26"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2018-12-28",
+          "obs_weekday": "Fri",
+          "realtime_start": "2018-12-31"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2019-01-04",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-01-07"
+        },
+        {
+          "lag_days": 4,
+          "obs": "2019-01-11",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-01-15"
+        },
+        {
+          "lag_days": 4,
+          "obs": "2019-01-18",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-01-22"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2019-01-25",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-01-28"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2019-02-01",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-02-04"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2019-02-08",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-02-11"
+        }
+      ],
+      "C2_fraction_not_covered": 0.2136,
+      "C2_observations_not_covered_by_declared_clock": 339,
+      "C3_lag_by_observation_weekday": {
+        "Fri": {
+          "3": 265,
+          "4": 51,
+          "5": 1
+        },
+        "Mon": {
+          "1": 272,
+          "2": 42,
+          "3": 4
+        },
+        "Thu": {
+          "1": 300,
+          "4": 17
+        },
+        "Tue": {
+          "1": 304,
+          "2": 14
+        },
+        "Wed": {
+          "1": 300,
+          "2": 16,
+          "5": 1
+        }
+      },
+      "C3_lag_histogram_calendar_days": {
+        "1": 1176,
+        "2": 72,
+        "3": 269,
+        "4": 68,
+        "5": 2
+      },
+      "C4_counterexamples": {
+        "coverage_row_pulled_earlier": {
+          "caught": true,
+          "not_covered_doctored": 338,
+          "not_covered_true": 339,
+          "row": {
+            "forced_realtime_start": "2018-12-09",
+            "obs": "2018-12-07",
+            "true_realtime_start": "2018-12-10"
+          }
+        },
+        "same_day_row_injected": {
+          "C1_verdict_on_doctored_table": "FAIL",
+          "caught": true,
+          "row": {
+            "forced_realtime_start": "2018-12-17",
+            "obs": "2018-12-17"
+          }
+        }
+      },
+      "n": 1587
+    },
+    "DGS7": {
+      "C1_realtime_start_not_after_observation": [],
+      "C1_verdict": "PASS",
+      "C2_declared_instant": "(D+2) 00:00 UTC",
+      "C2_examples": [
+        {
+          "lag_days": 3,
+          "obs": "2018-12-07",
+          "obs_weekday": "Fri",
+          "realtime_start": "2018-12-10"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2018-12-14",
+          "obs_weekday": "Fri",
+          "realtime_start": "2018-12-17"
+        },
+        {
+          "lag_days": 5,
+          "obs": "2018-12-21",
+          "obs_weekday": "Fri",
+          "realtime_start": "2018-12-26"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2018-12-28",
+          "obs_weekday": "Fri",
+          "realtime_start": "2018-12-31"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2019-01-04",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-01-07"
+        },
+        {
+          "lag_days": 4,
+          "obs": "2019-01-11",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-01-15"
+        },
+        {
+          "lag_days": 4,
+          "obs": "2019-01-18",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-01-22"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2019-01-25",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-01-28"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2019-02-01",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-02-04"
+        },
+        {
+          "lag_days": 3,
+          "obs": "2019-02-08",
+          "obs_weekday": "Fri",
+          "realtime_start": "2019-02-11"
+        }
+      ],
+      "C2_fraction_not_covered": 0.2136,
+      "C2_observations_not_covered_by_declared_clock": 339,
+      "C3_lag_by_observation_weekday": {
+        "Fri": {
+          "3": 265,
+          "4": 51,
+          "5": 1
+        },
+        "Mon": {
+          "1": 272,
+          "2": 42,
+          "3": 4
+        },
+        "Thu": {
+          "1": 300,
+          "4": 17
+        },
+        "Tue": {
+          "1": 304,
+          "2": 14
+        },
+        "Wed": {
+          "1": 300,
+          "2": 16,
+          "5": 1
+        }
+      },
+      "C3_lag_histogram_calendar_days": {
+        "1": 1176,
+        "2": 72,
+        "3": 269,
+        "4": 68,
+        "5": 2
+      },
+      "C4_counterexamples": {
+        "coverage_row_pulled_earlier": {
+          "caught": true,
+          "not_covered_doctored": 338,
+          "not_covered_true": 339,
+          "row": {
+            "forced_realtime_start": "2018-12-09",
+            "obs": "2018-12-07",
+            "true_realtime_start": "2018-12-10"
+          }
+        },
+        "same_day_row_injected": {
+          "C1_verdict_on_doctored_table": "FAIL",
+          "caught": true,
+          "row": {
+            "forced_realtime_start": "2018-12-17",
+            "obs": "2018-12-17"
+          }
+        }
+      },
+      "n": 1587
+    }
+  },
+  "verdict": {
+    "counterexamples_caught": true,
+    "declared_(D+2)_clock_covered_by_this_artifact": false,
+    "no_same_day_availability": "PASS"
+  }
+}
