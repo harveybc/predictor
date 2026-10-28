@@ -1,0 +1,146 @@
+{
+ "schema": "predictor.timing_selection.v1",
+ "population_id": "EURUSD_H1_TIMING",
+ "lake": {
+  "path": "<LAKE_ROOT>/market_data/forex/g10/eurusd/1h.parquet",
+  "sha256": "c6628375b2872f16dcdbd6b1b90ed8e68bc5bdd852efdef01f2515b8712d4e2e",
+  "load": [
+   "2019-12-01",
+   "2025-01-01"
+  ]
+ },
+ "zigzag": {
+  "module": "<HEURISTIC_STRATEGY_ROOT>/app/short_horizon/zigzag.py",
+  "sha256": "b30788e6fd591c6f49fb7661e2eb54373166131d9734b46efba7ebbffcb4d364",
+  "params": {
+   "depth": 3,
+   "deviation_pips": 36.3,
+   "backstep": 2
+  },
+  "k_bars": 2
+ },
+ "splits": {
+  "train": [
+   "2020-01-01",
+   "2023-01-01"
+  ],
+  "inner": [
+   "2023-01-01",
+   "2024-01-01"
+  ],
+  "confirm": [
+   "2024-01-01",
+   "2025-01-01"
+  ],
+  "folds": [
+   "2021-01-01",
+   "2022-01-01"
+  ],
+  "inner_a_end": "2023-07-01"
+ },
+ "candidates": {
+  "inventory": {
+   "bundle_script": "<FINANCIAL_DATA_ROOT>/_scripts/core_selection_bundle.py",
+   "bundle_sha256": "f7bf19f8b229099f80b8b9baf3a1cd2543d1538ef4fa16d2d4e282aa2a23c441",
+   "bundle_commit": "financial-data codex/data-curation-20261018 @41f5af170",
+   "generator_module": "<FEATURE_ENG_ROOT>/normalize_phase1b.py",
+   "generator_sha256": "17a33c4470a3fc4270e60f347240dae2d40fde023a27218961e0a4f3bba68067",
+   "generator_commit": "feature-eng @d081d0f"
+  },
+  "price_pool": true,
+  "fractal": {
+   "files": [
+    "<FRACTAL_STORE>/eurusd_h1_causal_fractal_w200_train.parquet",
+    "<FRACTAL_STORE>/eurusd_h1_causal_fractal_w200_validation.parquet",
+    "<FRACTAL_STORE>/eurusd_h1_causal_fractal_w96_train.parquet",
+    "<FRACTAL_STORE>/eurusd_h1_causal_fractal_w96_validation.parquet",
+    "<FRACTAL_STORE>/eurusd_h1_causal_fractal_w48_train.parquet",
+    "<FRACTAL_STORE>/eurusd_h1_causal_fractal_w48_validation.parquet"
+   ],
+   "manifest_sha256": "906578e1c96ddd1aa2024a455467db91db623c6583a351ea2468f6d57cb2740f",
+   "source": "feature-eng satoshi/causal-fractal-eurusd-20261019 @6c028aa",
+   "manifest": "<FRACTAL_STORE>/MANIFEST.json",
+   "owner_module": "<FEATURE_ENG_ROOT>/app/plugins/causal_fractal.py",
+   "owner_module_sha256": "4fd73f0ddc4fe621c67f856676a03e890790b88f10a8ee67b6f17337ec8b9ea4",
+   "owner_module_commit": "feature-eng satoshi/causal-fractal-eurusd-20261019 @6c028aa"
+  }
+ },
+ "pairwise_params": {
+  "lags_hours": [
+   0,
+   1,
+   2,
+   6,
+   24
+  ],
+  "min_support": 100,
+  "dcor_max_rows": 1000
+ },
+ "filter": {
+  "seed": 6102026,
+  "k_grid": [
+   4,
+   8,
+   12,
+   16,
+   24
+  ],
+  "recipe": {
+   "method": "MRMR",
+   "k": 12,
+   "prune_abs_spearman": 0.9,
+   "require_fdr_pass": true,
+   "targets": [
+    "timing_pivot_k2",
+    "timing_valley_k2",
+    "timing_peak_k2"
+   ]
+  }
+ },
+ "fdr_q": 0.1,
+ "causal": {
+  "enabled": true,
+  "provider_src": "<CAUSAL_INFERENCE_ROOT>/provider/src",
+  "history": [
+   "px.logret_24",
+   "px.rv_24"
+  ],
+  "q": 0.1,
+  "event_quantile": 0.8,
+  "n_controls": 5,
+  "min_events": 20,
+  "n_boot": 400,
+  "seed": 0,
+  "negative_control_reference": "px.logret_2",
+  "workers": 4,
+  "pc_alpha": 0.05,
+  "alpha": 0.01
+ },
+ "comparison_sets": {
+  "admitted_core_15_553fc047": [
+   "HIGH",
+   "RAW_LOG_RANGE",
+   "RAW_CLOSE_LOG_RETURN",
+   "RAW_ELAPSED_HOURS",
+   "ATR",
+   "RSI",
+   "MACD_Histogram",
+   "ADX",
+   "DI_minus",
+   "Stochastic_D",
+   "WilliamsR",
+   "rolling_std_24",
+   "hod_sin",
+   "hod_cos",
+   "dow_cos"
+  ]
+ },
+ "n_shards": 4,
+ "phase3_workers": 1,
+ "seed": 6102026,
+ "adapter_revision": "heuristic-strategy app/short_horizon/execution.py + tools/short_horizon_zigzag_study.Ctx.run @8b289f3 (parity vs gym-fx e287ea2 recorded at b9b4f9c)",
+ "not_comparable": {
+  "manifest_19_2ff34fa2": "its feature matrix (INPUT.npz with daily macro / cross-asset columns) exists only in a private deployment directory and cannot be regenerated from the lake; no identical-row comparison is possible"
+ },
+ "_note": "Replace <...> placeholders with local checkouts/stores; every sha256 is a pin verified at load. No host name, address or private path belongs in this file."
+}

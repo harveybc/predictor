@@ -1,0 +1,800 @@
+{
+ "dataset_id": "EURUSD_H1_TIMING",
+ "features": [
+  {
+   "name": "OPEN",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "HIGH",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "LOW",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "CLOSE",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RAW_BAR_LOG_RETURN",
+   "reason_codes": [
+    "MRMR_K12_UNION_T1",
+    "FDR_PASS_T1",
+    "CLUSTER_REPRESENTATIVE"
+   ],
+   "state": "selected"
+  },
+  {
+   "name": "RAW_LOG_RANGE",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RAW_CLOSE_LOG_RETURN",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RAW_ELAPSED_HOURS",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "ATR",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "RSI",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "MACD",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "MACD_Histogram",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "MACD_Signal",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "ADX",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "DI_plus",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "DI_minus",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "Stochastic_K",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "Stochastic_D",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "BB_Width",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "CCI",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "WilliamsR",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "ROC",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "ATR_ratio",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "BB_position",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "rolling_std_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "price_minus_ema",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hod_sin",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hod_cos",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "dow_sin",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1",
+    "CONSTANT_WITHIN_DAY"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "dow_cos",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1",
+    "CONSTANT_WITHIN_DAY"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_1",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_1",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_1",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_1",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_1",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_2",
+   "reason_codes": [
+    "MRMR_K12_UNION_T1",
+    "FDR_PASS_T1",
+    "CLUSTER_REPRESENTATIVE"
+   ],
+   "state": "selected"
+  },
+  {
+   "name": "px.er_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_2",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_4",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_4",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_4",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_4",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_4",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_6",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_6",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_12",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_12",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_24",
+   "reason_codes": [
+    "MRMR_K12_UNION_T1",
+    "FDR_PASS_T1",
+    "CLUSTER_REPRESENTATIVE"
+   ],
+   "state": "selected"
+  },
+  {
+   "name": "px.range_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.logret_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.range_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.close_loc_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.er_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.rv_48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.atr_14",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.atr_ratio_14_120",
+   "reason_codes": [
+    "MRMR_K12_UNION_T1",
+    "FDR_PASS_T1",
+    "CLUSTER_REPRESENTATIVE"
+   ],
+   "state": "selected"
+  },
+  {
+   "name": "px.range_ratio_1_24",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.bar_body",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.hod_sin",
+   "reason_codes": [
+    "MRMR_K12_UNION_T1",
+    "FDR_PASS_T1",
+    "CLUSTER_REPRESENTATIVE"
+   ],
+   "state": "selected"
+  },
+  {
+   "name": "cal.hod_cos",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.dow_sin",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1",
+    "CONSTANT_WITHIN_DAY"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.dow_cos",
+   "reason_codes": [
+    "FDR_FAIL_T1",
+    "CONSTANT_WITHIN_DAY"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.session_asia",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "cal.session_europe",
+   "reason_codes": [
+    "MRMR_K12_UNION_T1",
+    "FDR_PASS_T1",
+    "CLUSTER_REPRESENTATIVE"
+   ],
+   "state": "selected"
+  },
+  {
+   "name": "cal.session_us",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "px.elapsed_hours",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_rs_w200",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "box_counting_dimension_w200",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "variogram_hurst_w200",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_spectrum_width_w200",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_rs_w96",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "box_counting_dimension_w96",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "variogram_hurst_w96",
+   "reason_codes": [
+    "MRMR_K12_UNION_T1",
+    "FDR_PASS_T1",
+    "CLUSTER_REPRESENTATIVE"
+   ],
+   "state": "selected"
+  },
+  {
+   "name": "hurst_spectrum_width_w96",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_rs_w48",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "box_counting_dimension_w48",
+   "reason_codes": [
+    "FDR_FAIL_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "variogram_hurst_w48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  },
+  {
+   "name": "hurst_spectrum_width_w48",
+   "reason_codes": [
+    "NOT_IN_MRMR_K12_UNION_T1"
+   ],
+   "state": "rejected"
+  }
+ ],
+ "final_selection": false,
+ "independent_decision_record": {
+  "decider_role": "auditor",
+  "decision_id": "TIMING_PROXY_SELECTION:timing-selection:2c6689c8f93232d7:decision",
+  "state": "PENDING"
+ },
+ "learning_paradigm": "expert-demonstration / hindsight-guided learning (not human-preference RLHF)",
+ "manifest_sha256": "4fd6710e5a1fa746d6b1303ca871dbbe3c81fc516638e04eb352300c6bcbf2d0",
+ "manifest_version": 1,
+ "predictive_validation": {
+  "evaluator": "heuristic-strategy tools/short_horizon_timing_eval.py",
+  "freeze_sha256": "50952d2b44516b962e1f00c5138a7d84dd2744428937414e5ad1354ab02830e2",
+  "proxy_only": true,
+  "roles": {
+   "INNER_A_2023H1": "choices (joint development)",
+   "INNER_B_2023H2": "frozen score (joint development)",
+   "REOBSERVED_2024": "previously observed reconfirmation, never pristine",
+   "TRAIN_2020_2022": "fit"
+  },
+  "seal_sha256": "2e0838ec2a7d3c0fe7a3de0df59a9b6b7ef0e8c3ccd1809af02800ceee6d5457"
+ },
+ "producer": {
+  "lane": "SELECTION",
+  "role": "producer"
+ },
+ "proxy_only": true,
+ "rl_observation_contract": {
+  "feature_columns": [
+   "RAW_BAR_LOG_RETURN",
+   "cal.hod_sin",
+   "cal.session_europe",
+   "px.atr_ratio_14_120",
+   "px.close_loc_2",
+   "px.logret_24",
+   "variogram_hurst_w96"
+  ],
+  "note": "column order only; scaling and window follow the consuming RL contract",
+  "schema": "gym_fx.observation_contract.v1"
+ },
+ "schema": "feature_selection.manifest.v1",
+ "scope": "usefulness for the pivot-classification proxy and its trivial reversal strategy only; NOT an RL-selected subset; a fixed-budget SAC comparison against the admitted-core 15 is a later, separately authorized integration",
+ "selected_features": [
+  "RAW_BAR_LOG_RETURN",
+  "cal.hod_sin",
+  "cal.session_europe",
+  "px.atr_ratio_14_120",
+  "px.close_loc_2",
+  "px.logret_24",
+  "variogram_hurst_w96"
+ ],
+ "selection_name": "TIMING_PROXY_SELECTION",
+ "source_digests": {
+  "config": "2c6689c8f93232d7bf4e1b0c549b2ea09aeb7e6d20d1295f207bb6a4a43919d4",
+  "evaluator_seal": "2e0838ec2a7d3c0fe7a3de0df59a9b6b7ef0e8c3ccd1809af02800ceee6d5457",
+  "features_train": "5fe1d42f66bc477f2e2f3f6063074ce8e1f1ab0fbcc33bf4161ad5b34dcd5ba8",
+  "fractal_store_manifest": "906578e1c96ddd1aa2024a455467db91db623c6583a351ea2468f6d57cb2740f",
+  "inventory_bundle_script": "f7bf19f8b229099f80b8b9baf3a1cd2543d1538ef4fa16d2d4e282aa2a23c441",
+  "inventory_generator": "17a33c4470a3fc4270e60f347240dae2d40fde023a27218961e0a4f3bba68067",
+  "lake": "c6628375b2872f16dcdbd6b1b90ed8e68bc5bdd852efdef01f2515b8712d4e2e",
+  "population_manifest": "8e7ffd5e2f53d5ab77fbb3b25d2ca13c729250392d6c553c3348809a3dd7c2c8",
+  "subset": "36b16fc885f746e4be738a41ccb1d78668968ad3d0673ab34bb4c72722b77116",
+  "target_identity": "1cb052e317ceb054e62d27232f6e46f575967dafbcb34dec05a70e510ee6f560",
+  "targets_train": "240d6c940637f335b847fb2513f4f04a5ab3a8ab437d8e519d02a805ff856a9d",
+  "zigzag_module": "b30788e6fd591c6f49fb7661e2eb54373166131d9734b46efba7ebbffcb4d364"
+ },
+ "split": {
+  "confirm": [
+   "2024-01-01",
+   "2025-01-01"
+  ],
+  "folds": [
+   "2021-01-01",
+   "2022-01-01"
+  ],
+  "inner": [
+   "2023-01-01",
+   "2024-01-01"
+  ],
+  "inner_a_end": "2023-07-01",
+  "roles": {
+   "2020-2022": "selection (TRAIN)",
+   "2023": "JOINT development (expert chosen with it)",
+   "2024": "PREVIOUSLY OBSERVED reconfirmation",
+   "2025+": "never read"
+  },
+  "train": [
+   "2020-01-01",
+   "2023-01-01"
+  ]
+ },
+ "status": "TIMING_PROXY_SELECTION_SEALED_PENDING_INDEPENDENT_DECISION",
+ "target_params": {
+  "expert_label": "HINDSIGHT_NON_CAUSAL_EXPERT",
+  "k_bars": 2,
+  "semantics": "timing_targets.v2",
+  "zigzag": {
+   "backstep": 2,
+   "depth": 3,
+   "deviation_pips": 36.3
+  }
+ },
+ "targets": [
+  {
+   "family": "timing_pivot",
+   "head": "classification",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    2
+   ],
+   "name": "timing_pivot_k2",
+   "role": "PRIMARY_ANTICIPATORY"
+  },
+  {
+   "family": "timing_pivot",
+   "head": "classification",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    2
+   ],
+   "name": "timing_valley_k2",
+   "role": "PRIMARY_INDICATOR"
+  },
+  {
+   "family": "timing_pivot",
+   "head": "classification",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    2
+   ],
+   "name": "timing_peak_k2",
+   "role": "PRIMARY_INDICATOR"
+  },
+  {
+   "family": "timing_pivot",
+   "head": "classification",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    2
+   ],
+   "name": "timing_action_confirmed",
+   "role": "REACTIVE_COMPARATOR"
+  },
+  {
+   "family": "timing_pivot",
+   "head": "regression",
+   "horizon_unit": "observed market bars",
+   "horizons": [
+    2
+   ],
+   "name": "timing_expert_leg_remaining_pips",
+   "role": "STATE_CONDITIONAL_HOLDING_EXPERT_LEG"
+  }
+ ],
+ "test_read": false
+}

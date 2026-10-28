@@ -1,0 +1,5596 @@
+{
+ "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+ "hac_lag_screen": {
+  "timing_peak_k2": {
+   "ci_test": "HAC(Bartlett, bandwidth=24) partial t-test",
+   "estimand": "conditional dependence of the future timing label on the lagged candidate given H_t and a_t (association screen; not identification)",
+   "history": [
+    "px.logret_24",
+    "px.rv_24"
+   ],
+   "lags": [
+    0,
+    1,
+    2
+   ],
+   "model": "linear-probability regression of the 0/1 indicator",
+   "parents_at_lags_1_to_k": [
+    "BB_position",
+    "CCI",
+    "DI_minus",
+    "DI_plus",
+    "MACD",
+    "MACD_Histogram",
+    "RAW_BAR_LOG_RETURN",
+    "RAW_CLOSE_LOG_RETURN",
+    "ROC",
+    "RSI",
+    "Stochastic_D",
+    "Stochastic_K",
+    "WilliamsR",
+    "cal.hod_sin",
+    "cal.session_us",
+    "hod_sin",
+    "price_minus_ema",
+    "px.atr_14",
+    "px.atr_ratio_14_120",
+    "px.bar_body",
+    "px.close_loc_1",
+    "px.close_loc_12",
+    "px.close_loc_2",
+    "px.close_loc_24",
+    "px.close_loc_4",
+    "px.close_loc_48",
+    "px.close_loc_6",
+    "px.logret_1",
+    "px.logret_12",
+    "px.logret_2",
+    "px.logret_4",
+    "px.logret_48",
+    "px.logret_6",
+    "px.range_2",
+    "px.range_ratio_1_24",
+    "px.rv_1",
+    "px.rv_12"
+   ],
+   "q": 0.1,
+   "rows": [
+    {
+     "coef": 0.0006739987110941533,
+     "feature": "ADX",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0036944600852217846,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.903136131044977
+    },
+    {
+     "coef": 0.003345837604350516,
+     "feature": "ADX",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.21535153310774713,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.238983703922151
+    },
+    {
+     "coef": 0.0014714713605528465,
+     "feature": "ADX",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.29489285271895294,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.0474483267268198
+    },
+    {
+     "coef": 0.1934162865588792,
+     "feature": "BB_position",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 18.960201026639048
+    },
+    {
+     "coef": -0.43112227119683394,
+     "feature": "BB_position",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -25.762322957718773
+    },
+    {
+     "coef": -0.3090751742742458,
+     "feature": "BB_position",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.356153785862265
+    },
+    {
+     "coef": 0.00033831279750851567,
+     "feature": "CCI",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 11.14562737418805
+    },
+    {
+     "coef": -0.0013977475966136582,
+     "feature": "CCI",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.75510005605528
+    },
+    {
+     "coef": -0.0007526458432310186,
+     "feature": "CCI",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -18.942260904707343
+    },
+    {
+     "coef": -0.001421413879655602,
+     "feature": "DI_minus",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.010902748342927815,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.5458004843458553
+    },
+    {
+     "coef": 0.025580599969612823,
+     "feature": "DI_minus",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 24.74733447876376
+    },
+    {
+     "coef": 0.015632490648016188,
+     "feature": "DI_minus",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 19.081871230199788
+    },
+    {
+     "coef": 0.001693883643946015,
+     "feature": "DI_plus",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.004635204759480427,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.8313494580378373
+    },
+    {
+     "coef": -0.026038713729783846,
+     "feature": "DI_plus",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -19.289445812147306
+    },
+    {
+     "coef": -0.0152025000919595,
+     "feature": "DI_plus",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -15.662014346754356
+    },
+    {
+     "coef": -67.22979580998128,
+     "feature": "MACD",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -11.128231606090067
+    },
+    {
+     "coef": -441.40053846126017,
+     "feature": "MACD",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -18.992077556856824
+    },
+    {
+     "coef": -117.16817577144239,
+     "feature": "MACD",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -10.071873562060643
+    },
+    {
+     "coef": 35.163101598434,
+     "feature": "MACD_Histogram",
+     "lag": 0,
+     "n": 18659,
+     "p": 1.2494126522266669e-05,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 4.368782249420501
+    },
+    {
+     "coef": -848.5728104908496,
+     "feature": "MACD_Histogram",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.428832163404063
+    },
+    {
+     "coef": -325.15132446934064,
+     "feature": "MACD_Histogram",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -17.330431967206977
+    },
+    {
+     "coef": 88.8755376612615,
+     "feature": "RAW_BAR_LOG_RETURN",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 24.82809211855449
+    },
+    {
+     "coef": 29.591380997131047,
+     "feature": "RAW_BAR_LOG_RETURN",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 11.722377509872794
+    },
+    {
+     "coef": -5.154810395614619,
+     "feature": "RAW_BAR_LOG_RETURN",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.056115344842829096,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -1.9101387969379577
+    },
+    {
+     "coef": 87.35622413990724,
+     "feature": "RAW_CLOSE_LOG_RETURN",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 23.6130090960365
+    },
+    {
+     "coef": 28.251538867701143,
+     "feature": "RAW_CLOSE_LOG_RETURN",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 11.033012703290602
+    },
+    {
+     "coef": -5.241545493932632,
+     "feature": "RAW_CLOSE_LOG_RETURN",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.050789071867616276,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -1.953257659401903
+    },
+    {
+     "coef": 0.0006068583450381692,
+     "feature": "RAW_ELAPSED_HOURS",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.3938843358608648,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.8525942797321872
+    },
+    {
+     "coef": 0.0005543134414602803,
+     "feature": "RAW_ELAPSED_HOURS",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.43224387932923114,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.785357691546631
+    },
+    {
+     "coef": 0.00033935635343010525,
+     "feature": "RAW_ELAPSED_HOURS",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.6307718186419828,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.4806407915612147
+    },
+    {
+     "coef": 0.09771523688935804,
+     "feature": "ROC",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 8.626421797131643
+    },
+    {
+     "coef": -0.4303666616839566,
+     "feature": "ROC",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -17.22973407170227
+    },
+    {
+     "coef": -0.2856167159396746,
+     "feature": "ROC",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -15.973115182653768
+    },
+    {
+     "coef": 0.005886867512708333,
+     "feature": "RSI",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 15.135643543545033
+    },
+    {
+     "coef": -0.020678127877421532,
+     "feature": "RSI",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -33.29617320777963
+    },
+    {
+     "coef": -0.014145311053926562,
+     "feature": "RSI",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -29.41737554130009
+    },
+    {
+     "coef": -0.0007063638651817944,
+     "feature": "Stochastic_D",
+     "lag": 0,
+     "n": 18659,
+     "p": 6.960248335463604e-07,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -4.962469543555383
+    },
+    {
+     "coef": -0.004956061529941045,
+     "feature": "Stochastic_D",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -10.201109141616767
+    },
+    {
+     "coef": -0.0017245894709711856,
+     "feature": "Stochastic_D",
+     "lag": 2,
+     "n": 18657,
+     "p": 2.199245230372071e-10,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -6.346740475292324
+    },
+    {
+     "coef": 0.0002869263368113842,
+     "feature": "Stochastic_K",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.03012085372316209,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.168497511908431
+    },
+    {
+     "coef": -0.008384813881006634,
+     "feature": "Stochastic_K",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -24.0663199106693
+    },
+    {
+     "coef": -0.0032110746951111986,
+     "feature": "Stochastic_K",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -14.348684982020357
+    },
+    {
+     "coef": 0.0022061424533394436,
+     "feature": "WilliamsR",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 19.268256732389872
+    },
+    {
+     "coef": -0.004740016399515978,
+     "feature": "WilliamsR",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -26.841762731524526
+    },
+    {
+     "coef": -0.0034696829723106703,
+     "feature": "WilliamsR",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.32137253396338
+    },
+    {
+     "coef": 0.01474763261485482,
+     "feature": "cal.hod_cos",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0002513897560896261,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.66083995869733
+    },
+    {
+     "coef": 0.023792372972603625,
+     "feature": "cal.hod_cos",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.1333319418488621,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.5010913266233084
+    },
+    {
+     "coef": 0.011979625475355131,
+     "feature": "cal.hod_cos",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.14448562108548835,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.4592888568090618
+    },
+    {
+     "coef": 0.006095973778029444,
+     "feature": "cal.hod_sin",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.137207031789079,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.4862725974786068
+    },
+    {
+     "coef": -0.056530543356675615,
+     "feature": "cal.hod_sin",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0002729052681162969,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.6397477359756993
+    },
+    {
+     "coef": -0.0297770173597944,
+     "feature": "cal.hod_sin",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.00021801179426494954,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.6971753085231627
+    },
+    {
+     "coef": 0.012187531965589651,
+     "feature": "cal.session_asia",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.07064706985120761,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 1.8077393968748372
+    },
+    {
+     "coef": -0.004495951486571735,
+     "feature": "cal.session_asia",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.6892181554787602,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.39991631460022303
+    },
+    {
+     "coef": 0.009331922515701894,
+     "feature": "cal.session_asia",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.31329558460144513,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.0083310020201077
+    },
+    {
+     "coef": -0.005164164918870908,
+     "feature": "cal.session_us",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.42892770845623973,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.791027903899395
+    },
+    {
+     "coef": -0.029502168279689905,
+     "feature": "cal.session_us",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.007458577441114667,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.6756442240451497
+    },
+    {
+     "coef": -0.023016562517836646,
+     "feature": "cal.session_us",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.013634140126300487,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.466760801174099
+    },
+    {
+     "coef": 0.01474763261485482,
+     "feature": "hod_cos",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0002513897560896261,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.66083995869733
+    },
+    {
+     "coef": 0.023792372972603625,
+     "feature": "hod_cos",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.1333319418488621,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.5010913266233084
+    },
+    {
+     "coef": 0.011979625475355131,
+     "feature": "hod_cos",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.14448562108548835,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.4592888568090618
+    },
+    {
+     "coef": 0.006095973778029444,
+     "feature": "hod_sin",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.137207031789079,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.4862725974786068
+    },
+    {
+     "coef": -0.056530543356675615,
+     "feature": "hod_sin",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0002729052681162969,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.6397477359756993
+    },
+    {
+     "coef": -0.0297770173597944,
+     "feature": "hod_sin",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.00021801179426494954,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.6971753085231627
+    },
+    {
+     "coef": 14.887950486509622,
+     "feature": "price_minus_ema",
+     "lag": 0,
+     "n": 18659,
+     "p": 3.890510136272951e-11,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 6.608188648246628
+    },
+    {
+     "coef": -105.77012432462611,
+     "feature": "price_minus_ema",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.189022406808263
+    },
+    {
+     "coef": -54.658811350306514,
+     "feature": "price_minus_ema",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -19.232326525077394
+    },
+    {
+     "coef": -28.926740287430206,
+     "feature": "px.atr_14",
+     "lag": 0,
+     "n": 18659,
+     "p": 2.6469301013243296e-05,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -4.201892345648398
+    },
+    {
+     "coef": 49.17865680487346,
+     "feature": "px.atr_14",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.07553999269226264,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 1.7771717088976149
+    },
+    {
+     "coef": 40.015121427620244,
+     "feature": "px.atr_14",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.013808810038611341,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.4621988062878466
+    },
+    {
+     "coef": -0.03908629763610553,
+     "feature": "px.atr_ratio_14_120",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0002350178409686876,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.678056571763222
+    },
+    {
+     "coef": 0.08254569967575597,
+     "feature": "px.atr_ratio_14_120",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.06493300470626151,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 1.8457190843713727
+    },
+    {
+     "coef": 0.07127969877998057,
+     "feature": "px.atr_ratio_14_120",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.005849947419641843,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.7560755998763584
+    },
+    {
+     "coef": 88.8755376612615,
+     "feature": "px.bar_body",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 24.82809211855449
+    },
+    {
+     "coef": 29.591380997131047,
+     "feature": "px.bar_body",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 11.722377509872794
+    },
+    {
+     "coef": -5.154810395614619,
+     "feature": "px.bar_body",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.056115344842829096,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -1.9101387969379577
+    },
+    {
+     "coef": 0.38945764963149976,
+     "feature": "px.close_loc_1",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 42.42994851069136
+    },
+    {
+     "coef": 0.12345482509422169,
+     "feature": "px.close_loc_1",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 13.403115648620012
+    },
+    {
+     "coef": -0.021476768900101653,
+     "feature": "px.close_loc_1",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.023602289051900982,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.263542155157746
+    },
+    {
+     "coef": 0.23557582678559674,
+     "feature": "px.close_loc_12",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 21.329633747476873
+    },
+    {
+     "coef": -0.44779445566183274,
+     "feature": "px.close_loc_12",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -27.7550401374043
+    },
+    {
+     "coef": -0.3382630074519293,
+     "feature": "px.close_loc_12",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -24.26098327429022
+    },
+    {
+     "coef": 0.4491815898334678,
+     "feature": "px.close_loc_2",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 47.88049913762739
+    },
+    {
+     "coef": -0.03503446827141788,
+     "feature": "px.close_loc_2",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0007603237703852628,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.3668487489637187
+    },
+    {
+     "coef": -0.022666023883477875,
+     "feature": "px.close_loc_2",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.029732728215009274,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.173632731657399
+    },
+    {
+     "coef": 0.21430427131116855,
+     "feature": "px.close_loc_24",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 14.63194319600302
+    },
+    {
+     "coef": -0.7156715912426632,
+     "feature": "px.close_loc_24",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -29.970918522863283
+    },
+    {
+     "coef": -0.5144349614781695,
+     "feature": "px.close_loc_24",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -27.663644048531143
+    },
+    {
+     "coef": 0.3676905951031913,
+     "feature": "px.close_loc_4",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 36.493890048151364
+    },
+    {
+     "coef": -0.20244559681015084,
+     "feature": "px.close_loc_4",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -17.142354684367746
+    },
+    {
+     "coef": -0.15149419041802778,
+     "feature": "px.close_loc_4",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -13.817738641655968
+    },
+    {
+     "coef": 0.1062278314314718,
+     "feature": "px.close_loc_48",
+     "lag": 0,
+     "n": 18659,
+     "p": 3.788080960021034e-13,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 7.26291857393693
+    },
+    {
+     "coef": -0.9778651034277828,
+     "feature": "px.close_loc_48",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -29.584670917430394
+    },
+    {
+     "coef": -0.6730993605601814,
+     "feature": "px.close_loc_48",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -27.32661517823719
+    },
+    {
+     "coef": 0.3121199951866224,
+     "feature": "px.close_loc_6",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 30.73738318106105
+    },
+    {
+     "coef": -0.29128120876345875,
+     "feature": "px.close_loc_6",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -22.046898085967783
+    },
+    {
+     "coef": -0.22781084586849312,
+     "feature": "px.close_loc_6",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -19.59307656213937
+    },
+    {
+     "coef": 0.0006068583450381692,
+     "feature": "px.elapsed_hours",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.3938843358608648,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.8525942797321872
+    },
+    {
+     "coef": 0.0005543134414602803,
+     "feature": "px.elapsed_hours",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.43224387932923114,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.785357691546631
+    },
+    {
+     "coef": 0.00033935635343010525,
+     "feature": "px.elapsed_hours",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.6307718186419828,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.4806407915612147
+    },
+    {
+     "coef": 0.01292655890781323,
+     "feature": "px.er_2",
+     "lag": 0,
+     "n": 18657,
+     "p": 0.14148556674494905,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.4702813620104687
+    },
+    {
+     "coef": -0.008785253866793795,
+     "feature": "px.er_2",
+     "lag": 1,
+     "n": 18654,
+     "p": 0.3119365236942522,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -1.0111669657037539
+    },
+    {
+     "coef": -0.0026780502642316573,
+     "feature": "px.er_2",
+     "lag": 2,
+     "n": 18653,
+     "p": 0.7566415963442514,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.3098939596611053
+    },
+    {
+     "coef": 87.35622413990724,
+     "feature": "px.logret_1",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 23.6130090960365
+    },
+    {
+     "coef": 28.251538867701143,
+     "feature": "px.logret_1",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 11.033012703290602
+    },
+    {
+     "coef": -5.241545493932632,
+     "feature": "px.logret_1",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.050789071867616276,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -1.953257659401903
+    },
+    {
+     "coef": 8.143189864667887,
+     "feature": "px.logret_12",
+     "lag": 0,
+     "n": 18659,
+     "p": 1.0182965581861936e-12,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 7.128025778994085
+    },
+    {
+     "coef": -42.79100055581887,
+     "feature": "px.logret_12",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -18.728977959796033
+    },
+    {
+     "coef": -30.779353965494124,
+     "feature": "px.logret_12",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -17.16101742193593
+    },
+    {
+     "coef": 58.776598611152096,
+     "feature": "px.logret_2",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 23.29069279243822
+    },
+    {
+     "coef": -23.357540545010206,
+     "feature": "px.logret_2",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -8.788038015821652
+    },
+    {
+     "coef": -5.75412067312555,
+     "feature": "px.logret_2",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.009326648336053234,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.599842765769975
+    },
+    {
+     "coef": 26.06863542106575,
+     "feature": "px.logret_4",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 15.290048497272005
+    },
+    {
+     "coef": -38.48799982081229,
+     "feature": "px.logret_4",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -15.427550848490208
+    },
+    {
+     "coef": -22.949809609595466,
+     "feature": "px.logret_4",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -11.89244431361411
+    },
+    {
+     "coef": -0.3694723921513922,
+     "feature": "px.logret_48",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.5054054529221843,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.6660088355346534
+    },
+    {
+     "coef": -41.68353910942534,
+     "feature": "px.logret_48",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -19.253052432496215
+    },
+    {
+     "coef": -28.542068818432963,
+     "feature": "px.logret_48",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -16.90846763463235
+    },
+    {
+     "coef": 17.36514613647044,
+     "feature": "px.logret_6",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 13.033746991507662
+    },
+    {
+     "coef": -41.55172911157984,
+     "feature": "px.logret_6",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -17.895383570724544
+    },
+    {
+     "coef": -27.611333307118404,
+     "feature": "px.logret_6",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -14.851311598792515
+    },
+    {
+     "coef": -3.6416303076272323,
+     "feature": "px.range_12",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.006022059034221039,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.7465778591216847
+    },
+    {
+     "coef": -1.930461588655132,
+     "feature": "px.range_12",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.5911043341223565,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.5372363953065336
+    },
+    {
+     "coef": -1.086141366240377,
+     "feature": "px.range_12",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.6676393435624135,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.42939011873511124
+    },
+    {
+     "coef": -7.966612089191373,
+     "feature": "px.range_2",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0031558379266187764,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.952136107060963
+    },
+    {
+     "coef": -4.960508728175092,
+     "feature": "px.range_2",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.12355608168607368,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -1.5400175249488066
+    },
+    {
+     "coef": -4.93075990209873,
+     "feature": "px.range_2",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.07146327033223576,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -1.8025222941753873
+    },
+    {
+     "coef": -6.318457245843269,
+     "feature": "px.range_4",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0006440463228130078,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.412353086847883
+    },
+    {
+     "coef": -1.5853667840390788,
+     "feature": "px.range_4",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.6563925368923822,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.444899288433007
+    },
+    {
+     "coef": 0.7043411887540905,
+     "feature": "px.range_4",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.8012645420325704,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.2517108860364724
+    },
+    {
+     "coef": -0.06211111294463065,
+     "feature": "px.range_ratio_1_24",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.008111560030632514,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.6473906016230697
+    },
+    {
+     "coef": -0.1213202450955504,
+     "feature": "px.range_ratio_1_24",
+     "lag": 1,
+     "n": 18658,
+     "p": 2.5035947348595045e-06,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -4.707836748955548
+    },
+    {
+     "coef": -0.06404197956433727,
+     "feature": "px.range_ratio_1_24",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.021411418417639272,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.300650070573901
+    },
+    {
+     "coef": 3.752998756981222,
+     "feature": "px.rv_1",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.36905872889196956,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.8982379054801333
+    },
+    {
+     "coef": -12.026777745356343,
+     "feature": "px.rv_1",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.002884011118350349,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.979837733450758
+    },
+    {
+     "coef": -5.4744996889853805,
+     "feature": "px.rv_1",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.15336975406891606,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -1.4277294223920285
+    },
+    {
+     "coef": -8.555346030433878,
+     "feature": "px.rv_12",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0015726775086797318,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.1609272899844414
+    },
+    {
+     "coef": -10.297329607318602,
+     "feature": "px.rv_12",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.06980117352419368,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -1.8131987438420951
+    },
+    {
+     "coef": -4.461418890809141,
+     "feature": "px.rv_12",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.33327980487353503,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.9675286924418373
+    },
+    {
+     "coef": 0.048193477072877286,
+     "feature": "variogram_hurst_w48",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.005085860114476315,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.801544659874175
+    },
+    {
+     "coef": -0.18644108546696417,
+     "feature": "variogram_hurst_w48",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.2595189061684129,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -1.1275289532515285
+    },
+    {
+     "coef": -0.07312790382712266,
+     "feature": "variogram_hurst_w48",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.42427630693726237,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.7990243257316909
+    },
+    {
+     "coef": 0.053723503869042774,
+     "feature": "variogram_hurst_w96",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.03497928642807335,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.1085981069855806
+    },
+    {
+     "coef": -0.21057625538770267,
+     "feature": "variogram_hurst_w96",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.6107127538357855,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.5090563112388198
+    },
+    {
+     "coef": -0.3409771175728344,
+     "feature": "variogram_hurst_w96",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.16784210037321712,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -1.379170794796087
+    }
+   ]
+  },
+  "timing_valley_k2": {
+   "ci_test": "HAC(Bartlett, bandwidth=24) partial t-test",
+   "estimand": "conditional dependence of the future timing label on the lagged candidate given H_t and a_t (association screen; not identification)",
+   "history": [
+    "px.logret_24",
+    "px.rv_24"
+   ],
+   "lags": [
+    0,
+    1,
+    2
+   ],
+   "model": "linear-probability regression of the 0/1 indicator",
+   "parents_at_lags_1_to_k": [
+    "ADX",
+    "BB_position",
+    "CCI",
+    "DI_minus",
+    "DI_plus",
+    "MACD",
+    "MACD_Histogram",
+    "RAW_BAR_LOG_RETURN",
+    "RAW_CLOSE_LOG_RETURN",
+    "ROC",
+    "RSI",
+    "Stochastic_D",
+    "Stochastic_K",
+    "WilliamsR",
+    "cal.hod_cos",
+    "cal.session_us",
+    "hod_cos",
+    "price_minus_ema",
+    "px.bar_body",
+    "px.close_loc_1",
+    "px.close_loc_12",
+    "px.close_loc_2",
+    "px.close_loc_24",
+    "px.close_loc_4",
+    "px.close_loc_48",
+    "px.close_loc_6",
+    "px.logret_1",
+    "px.logret_12",
+    "px.logret_2",
+    "px.logret_4",
+    "px.logret_48",
+    "px.logret_6",
+    "px.range_12",
+    "px.range_2",
+    "px.range_ratio_1_24",
+    "px.rv_1",
+    "px.rv_12",
+    "variogram_hurst_w96"
+   ],
+   "q": 0.1,
+   "rows": [
+    {
+     "coef": 0.000292938518363633,
+     "feature": "ADX",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.21394638275251543,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.2427868684304249
+    },
+    {
+     "coef": 0.006163726761455227,
+     "feature": "ADX",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.02151692762246471,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.2987889317981716
+    },
+    {
+     "coef": 0.003366090046277086,
+     "feature": "ADX",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.014861108128552125,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.435746185719783
+    },
+    {
+     "coef": -0.2114180858004613,
+     "feature": "BB_position",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -21.24954699833078
+    },
+    {
+     "coef": 0.4058859255364186,
+     "feature": "BB_position",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 23.72483240938015
+    },
+    {
+     "coef": 0.2912547880453956,
+     "feature": "BB_position",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 21.316819948733016
+    },
+    {
+     "coef": -0.000379937319808001,
+     "feature": "CCI",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -13.023748348656046
+    },
+    {
+     "coef": 0.0013485653344336406,
+     "feature": "CCI",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 22.7316982696552
+    },
+    {
+     "coef": 0.0006850312361695816,
+     "feature": "CCI",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 16.46661892249711
+    },
+    {
+     "coef": 0.0017897318610757326,
+     "feature": "DI_minus",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0019223406214339267,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.1019752001555863
+    },
+    {
+     "coef": -0.0259225021041045,
+     "feature": "DI_minus",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -18.46848853809066
+    },
+    {
+     "coef": -0.014941409425645437,
+     "feature": "DI_minus",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -14.98884797292041
+    },
+    {
+     "coef": -0.0015989327699291208,
+     "feature": "DI_plus",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.005589033765810658,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.7709655617634685
+    },
+    {
+     "coef": 0.025838124423258346,
+     "feature": "DI_plus",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 25.22741462466828
+    },
+    {
+     "coef": 0.015476299555652816,
+     "feature": "DI_plus",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 19.174149938238862
+    },
+    {
+     "coef": 57.14859596995101,
+     "feature": "MACD",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 9.599454448418827
+    },
+    {
+     "coef": 458.9086831171013,
+     "feature": "MACD",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 19.109794178402925
+    },
+    {
+     "coef": 125.96888322368072,
+     "feature": "MACD",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 10.65308301677645
+    },
+    {
+     "coef": -41.72378746032803,
+     "feature": "MACD_Histogram",
+     "lag": 0,
+     "n": 18659,
+     "p": 1.373811078231313e-07,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -5.268716283460933
+    },
+    {
+     "coef": 828.1411124103504,
+     "feature": "MACD_Histogram",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 21.61110707122708
+    },
+    {
+     "coef": 312.60953672534345,
+     "feature": "MACD_Histogram",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 15.779148802895625
+    },
+    {
+     "coef": -87.90231064690293,
+     "feature": "RAW_BAR_LOG_RETURN",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.89093837758544
+    },
+    {
+     "coef": -28.88312345549077,
+     "feature": "RAW_BAR_LOG_RETURN",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -10.377659950109752
+    },
+    {
+     "coef": 7.498174404028227,
+     "feature": "RAW_BAR_LOG_RETURN",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.005803616913283571,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.7586752958975858
+    },
+    {
+     "coef": -86.69594250383358,
+     "feature": "RAW_CLOSE_LOG_RETURN",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.575448309951447
+    },
+    {
+     "coef": -28.275475872463584,
+     "feature": "RAW_CLOSE_LOG_RETURN",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -10.359802517966193
+    },
+    {
+     "coef": 6.825654878829697,
+     "feature": "RAW_CLOSE_LOG_RETURN",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.010810222141805825,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.5487743494930553
+    },
+    {
+     "coef": -0.001705918081206917,
+     "feature": "RAW_ELAPSED_HOURS",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0024687854338227844,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.027141278598455
+    },
+    {
+     "coef": 0.00027710065467578804,
+     "feature": "RAW_ELAPSED_HOURS",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.6899670187498439,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.3988998241787179
+    },
+    {
+     "coef": 0.0004147546913303137,
+     "feature": "RAW_ELAPSED_HOURS",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.5534013450607858,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.5926710118028196
+    },
+    {
+     "coef": -0.11112017688006284,
+     "feature": "ROC",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -10.103176381175544
+    },
+    {
+     "coef": 0.43417101236268335,
+     "feature": "ROC",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 19.13718615558981
+    },
+    {
+     "coef": 0.28993312729036985,
+     "feature": "ROC",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 17.54764672174041
+    },
+    {
+     "coef": -0.006812136891580817,
+     "feature": "RSI",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -16.359420351773924
+    },
+    {
+     "coef": 0.019766879268001632,
+     "feature": "RSI",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 31.238122048828938
+    },
+    {
+     "coef": 0.013523661300896116,
+     "feature": "RSI",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 26.679817912453398
+    },
+    {
+     "coef": 0.00032674556460679554,
+     "feature": "Stochastic_D",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.017731391688690312,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.37118003624965
+    },
+    {
+     "coef": 0.005401765891985355,
+     "feature": "Stochastic_D",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 11.242383551424462
+    },
+    {
+     "coef": 0.0018066395983221057,
+     "feature": "Stochastic_D",
+     "lag": 2,
+     "n": 18657,
+     "p": 1.064348609247645e-11,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 6.797518851084488
+    },
+    {
+     "coef": -0.0007063537033156648,
+     "feature": "Stochastic_K",
+     "lag": 0,
+     "n": 18659,
+     "p": 3.67907313503224e-08,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -5.50560274354472
+    },
+    {
+     "coef": 0.00857912634638975,
+     "feature": "Stochastic_K",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 24.094615116317286
+    },
+    {
+     "coef": 0.003330084124948842,
+     "feature": "Stochastic_K",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 14.813114342801553
+    },
+    {
+     "coef": -0.0025888090300872136,
+     "feature": "WilliamsR",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -22.947825069531024
+    },
+    {
+     "coef": 0.00452506056341865,
+     "feature": "WilliamsR",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 26.292155270627244
+    },
+    {
+     "coef": 0.0034366174879987103,
+     "feature": "WilliamsR",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 22.984452031668628
+    },
+    {
+     "coef": 0.0026106929073050245,
+     "feature": "cal.hod_cos",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.5121930249932187,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.6554267630930951
+    },
+    {
+     "coef": 0.055155658673365256,
+     "feature": "cal.hod_cos",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.00029016394846781424,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.6239266306392306
+    },
+    {
+     "coef": 0.028351622204657298,
+     "feature": "cal.hod_cos",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.00033169894828199986,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.5891963464992394
+    },
+    {
+     "coef": 0.014590319342153428,
+     "feature": "cal.hod_sin",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.00022312239967625658,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.6912867739530455
+    },
+    {
+     "coef": -0.011180653835913717,
+     "feature": "cal.hod_sin",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.4656970659697861,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.729498040507975
+    },
+    {
+     "coef": -0.005534018831106142,
+     "feature": "cal.hod_sin",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.4866685900197063,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.6956172026578268
+    },
+    {
+     "coef": 0.010478150273729203,
+     "feature": "cal.session_asia",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.12243332248420713,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.544640176622485
+    },
+    {
+     "coef": 0.001669195072349615,
+     "feature": "cal.session_asia",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.8822983154331341,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.14805632709487174
+    },
+    {
+     "coef": 0.003386629127891094,
+     "feature": "cal.session_asia",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.7208038276886346,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.35738470191781346
+    },
+    {
+     "coef": -0.014238872355247961,
+     "feature": "cal.session_us",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.027503275643702363,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.20429967721062
+    },
+    {
+     "coef": -0.014629995422008425,
+     "feature": "cal.session_us",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.17748237857271376,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -1.3485474215976505
+    },
+    {
+     "coef": -0.017901549970754334,
+     "feature": "cal.session_us",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.05682434366453393,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -1.9046595239989867
+    },
+    {
+     "coef": 0.0026106929073050245,
+     "feature": "hod_cos",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.5121930249932187,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.6554267630930951
+    },
+    {
+     "coef": 0.055155658673365256,
+     "feature": "hod_cos",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.00029016394846781424,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.6239266306392306
+    },
+    {
+     "coef": 0.028351622204657298,
+     "feature": "hod_cos",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.00033169894828199986,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.5891963464992394
+    },
+    {
+     "coef": 0.014590319342153428,
+     "feature": "hod_sin",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.00022312239967625658,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 3.6912867739530455
+    },
+    {
+     "coef": -0.011180653835913717,
+     "feature": "hod_sin",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.4656970659697861,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.729498040507975
+    },
+    {
+     "coef": -0.005534018831106142,
+     "feature": "hod_sin",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.4866685900197063,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.6956172026578268
+    },
+    {
+     "coef": -17.716544488028866,
+     "feature": "price_minus_ema",
+     "lag": 0,
+     "n": 18659,
+     "p": 8.881784197001252e-16,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -8.04309909782158
+    },
+    {
+     "coef": 103.39501834922949,
+     "feature": "price_minus_ema",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 23.05919603173353
+    },
+    {
+     "coef": 52.16074733746534,
+     "feature": "price_minus_ema",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 18.347555439625545
+    },
+    {
+     "coef": -15.027666478302871,
+     "feature": "px.atr_14",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.021601543384880628,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.297302077296144
+    },
+    {
+     "coef": 19.418928772025765,
+     "feature": "px.atr_14",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.443258685309722,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.7667020486849233
+    },
+    {
+     "coef": 22.318099476494883,
+     "feature": "px.atr_14",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.12450299405664023,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.5361442971357118
+    },
+    {
+     "coef": -0.02440670837742358,
+     "feature": "px.atr_ratio_14_120",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.019834348592928652,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.329466823450956
+    },
+    {
+     "coef": 0.018512283076842422,
+     "feature": "px.atr_ratio_14_120",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.6570118933849918,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.4440424498258457
+    },
+    {
+     "coef": 0.03350740499267338,
+     "feature": "px.atr_ratio_14_120",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.15436528003905314,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.424280534353859
+    },
+    {
+     "coef": -87.90231064690293,
+     "feature": "px.bar_body",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.89093837758544
+    },
+    {
+     "coef": -28.88312345549077,
+     "feature": "px.bar_body",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -10.377659950109752
+    },
+    {
+     "coef": 7.498174404028227,
+     "feature": "px.bar_body",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.005803616913283571,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.7586752958975858
+    },
+    {
+     "coef": -0.38641395683421415,
+     "feature": "px.close_loc_1",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -40.66596363873826
+    },
+    {
+     "coef": -0.1297191946253964,
+     "feature": "px.close_loc_1",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -14.21921930378491
+    },
+    {
+     "coef": 0.022055888320137065,
+     "feature": "px.close_loc_1",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.017558851118737007,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.3747918029408233
+    },
+    {
+     "coef": -0.264954875460015,
+     "feature": "px.close_loc_12",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -24.05839935822661
+    },
+    {
+     "coef": 0.4110998953572729,
+     "feature": "px.close_loc_12",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 24.941626121267483
+    },
+    {
+     "coef": 0.31938731882440746,
+     "feature": "px.close_loc_12",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 22.583943106525084
+    },
+    {
+     "coef": -0.4490804930601587,
+     "feature": "px.close_loc_2",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -46.25416969369071
+    },
+    {
+     "coef": 0.021186238705316326,
+     "feature": "px.close_loc_2",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.044020399768910146,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.0138965126398474
+    },
+    {
+     "coef": 0.011171352469206707,
+     "feature": "px.close_loc_2",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.26443222338297456,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.1159764310588587
+    },
+    {
+     "coef": -0.2729066285423157,
+     "feature": "px.close_loc_24",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -18.763608624429256
+    },
+    {
+     "coef": 0.6733719678802349,
+     "feature": "px.close_loc_24",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 28.612451300498893
+    },
+    {
+     "coef": 0.481488988847774,
+     "feature": "px.close_loc_24",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 25.20858934635219
+    },
+    {
+     "coef": -0.3719875934469111,
+     "feature": "px.close_loc_4",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -36.4403806932557
+    },
+    {
+     "coef": 0.1843270583350265,
+     "feature": "px.close_loc_4",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 15.708162336334148
+    },
+    {
+     "coef": 0.14616629792676714,
+     "feature": "px.close_loc_4",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 13.558945873663383
+    },
+    {
+     "coef": -0.17364504074738138,
+     "feature": "px.close_loc_48",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -12.096491727227495
+    },
+    {
+     "coef": 0.9745036209926035,
+     "feature": "px.close_loc_48",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 30.78668327655379
+    },
+    {
+     "coef": 0.6671377022981346,
+     "feature": "px.close_loc_48",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 26.618137950376727
+    },
+    {
+     "coef": -0.3150155191069691,
+     "feature": "px.close_loc_6",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -30.426568845387738
+    },
+    {
+     "coef": 0.2620827295352599,
+     "feature": "px.close_loc_6",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 20.368856647456575
+    },
+    {
+     "coef": 0.20834594897399436,
+     "feature": "px.close_loc_6",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 18.000901926849036
+    },
+    {
+     "coef": -0.001705918081206917,
+     "feature": "px.elapsed_hours",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0024687854338227844,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.027141278598455
+    },
+    {
+     "coef": 0.00027710065467578804,
+     "feature": "px.elapsed_hours",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.6899670187498439,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.3988998241787179
+    },
+    {
+     "coef": 0.0004147546913303137,
+     "feature": "px.elapsed_hours",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.5534013450607858,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.5926710118028196
+    },
+    {
+     "coef": 0.01652565539474149,
+     "feature": "px.er_2",
+     "lag": 0,
+     "n": 18657,
+     "p": 0.059061311737857114,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 1.8877366635502837
+    },
+    {
+     "coef": 0.002721912255802829,
+     "feature": "px.er_2",
+     "lag": 1,
+     "n": 18654,
+     "p": 0.7553374210780961,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.3116093585146784
+    },
+    {
+     "coef": -0.0028823749063216966,
+     "feature": "px.er_2",
+     "lag": 2,
+     "n": 18653,
+     "p": 0.7375520608437991,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.33509680774836037
+    },
+    {
+     "coef": -86.69594250383358,
+     "feature": "px.logret_1",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -23.575448309951447
+    },
+    {
+     "coef": -28.275475872463584,
+     "feature": "px.logret_1",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -10.359802517966193
+    },
+    {
+     "coef": 6.825654878829697,
+     "feature": "px.logret_1",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.010810222141805825,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.5487743494930553
+    },
+    {
+     "coef": -8.633999675309735,
+     "feature": "px.logret_12",
+     "lag": 0,
+     "n": 18659,
+     "p": 2.262634524186069e-13,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -7.332252329634983
+    },
+    {
+     "coef": 37.93814271389789,
+     "feature": "px.logret_12",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 16.86187796311048
+    },
+    {
+     "coef": 27.01650463293317,
+     "feature": "px.logret_12",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 14.88831873562358
+    },
+    {
+     "coef": -58.449553956866055,
+     "feature": "px.logret_2",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -21.71237204117833
+    },
+    {
+     "coef": 24.179028981808926,
+     "feature": "px.logret_2",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 9.345990901342343
+    },
+    {
+     "coef": 4.929546963151314,
+     "feature": "px.logret_2",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.03630615571550733,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.093481927325629
+    },
+    {
+     "coef": -26.355954492779254,
+     "feature": "px.logret_4",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -13.997394201968675
+    },
+    {
+     "coef": 37.93959069087592,
+     "feature": "px.logret_4",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 16.35223427131042
+    },
+    {
+     "coef": 23.169379633860842,
+     "feature": "px.logret_4",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 12.261955779477502
+    },
+    {
+     "coef": -0.32093027537220103,
+     "feature": "px.logret_48",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.5480382327257154,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.60070238126281
+    },
+    {
+     "coef": 43.298425024642256,
+     "feature": "px.logret_48",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 20.014775654802435
+    },
+    {
+     "coef": 28.81907925550737,
+     "feature": "px.logret_48",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 17.223507781294042
+    },
+    {
+     "coef": -17.15368484599035,
+     "feature": "px.logret_6",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -11.849633334739853
+    },
+    {
+     "coef": 38.92365821841091,
+     "feature": "px.logret_6",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 16.78833802277119
+    },
+    {
+     "coef": 26.86966271892735,
+     "feature": "px.logret_6",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 14.738904659317194
+    },
+    {
+     "coef": -3.972440613137562,
+     "feature": "px.range_12",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0027535589131297833,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.9939889782261266
+    },
+    {
+     "coef": 1.8391556288082982,
+     "feature": "px.range_12",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.5715791336319387,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.5657273592641742
+    },
+    {
+     "coef": 4.874754541957625,
+     "feature": "px.range_12",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.032575748738272514,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": 2.137273551575167
+    },
+    {
+     "coef": -7.447162912681974,
+     "feature": "px.range_2",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.0006509134105936454,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.409461179644797
+    },
+    {
+     "coef": -6.0654211216499165,
+     "feature": "px.range_2",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.05866301606752655,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -1.890710380011868
+    },
+    {
+     "coef": 0.3364288188935062,
+     "feature": "px.range_2",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.9089151094742982,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.11440707034455236
+    },
+    {
+     "coef": -4.126691701719418,
+     "feature": "px.range_4",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.021110524810247888,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.3060019243404795
+    },
+    {
+     "coef": 1.7103600862640758,
+     "feature": "px.range_4",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.6005929778632269,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.5235479703066208
+    },
+    {
+     "coef": 3.998090485790046,
+     "feature": "px.range_4",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.10330715383484623,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.6290277062098706
+    },
+    {
+     "coef": -0.01452142199241999,
+     "feature": "px.range_ratio_1_24",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.5303794999247886,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.6274268075653128
+    },
+    {
+     "coef": -0.12315212760988346,
+     "feature": "px.range_ratio_1_24",
+     "lag": 1,
+     "n": 18658,
+     "p": 3.478093655306935e-07,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -5.09550689265402
+    },
+    {
+     "coef": -0.0785079453629746,
+     "feature": "px.range_ratio_1_24",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.0025903500263628754,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -3.0125825159860895
+    },
+    {
+     "coef": 6.466969809298238,
+     "feature": "px.rv_1",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.09796010177488812,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.654824504589549
+    },
+    {
+     "coef": -8.462639728784273,
+     "feature": "px.rv_1",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.013682815047658003,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.465484354796961
+    },
+    {
+     "coef": -8.742719049714495,
+     "feature": "px.rv_1",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.03633578134657833,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.093149833702641
+    },
+    {
+     "coef": -3.994852764136189,
+     "feature": "px.rv_12",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.13743742170627504,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -1.4854017903082375
+    },
+    {
+     "coef": -10.456918161303596,
+     "feature": "px.rv_12",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.04475053148769814,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.0069918434134855
+    },
+    {
+     "coef": -0.3781978378715125,
+     "feature": "px.rv_12",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.9217286903292661,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.09825641010644261
+    },
+    {
+     "coef": 0.02273060284579944,
+     "feature": "variogram_hurst_w48",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.17372795163386368,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.3603223092056334
+    },
+    {
+     "coef": 0.11027190504149442,
+     "feature": "variogram_hurst_w48",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.49886882846708613,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 0.6762706424051056
+    },
+    {
+     "coef": -0.04018834783892419,
+     "feature": "variogram_hurst_w48",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.658341266484324,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -0.44220444961465205
+    },
+    {
+     "coef": 0.03590937769926514,
+     "feature": "variogram_hurst_w96",
+     "lag": 0,
+     "n": 18659,
+     "p": 0.14925753657846252,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": 1.4421589551995724
+    },
+    {
+     "coef": -0.5124260419552313,
+     "feature": "variogram_hurst_w96",
+     "lag": 1,
+     "n": 18658,
+     "p": 0.2141920096931771,
+     "pass_fdr": false,
+     "state": "TESTED",
+     "t": -1.242120760998354
+    },
+    {
+     "coef": -0.5817454381787366,
+     "feature": "variogram_hurst_w96",
+     "lag": 2,
+     "n": 18657,
+     "p": 0.012790083977289868,
+     "pass_fdr": true,
+     "state": "TESTED",
+     "t": -2.489561356679082
+    }
+   ]
+  }
+ },
+ "history": [
+  "px.logret_24",
+  "px.rv_24"
+ ],
+ "interpreter": "3.12.7",
+ "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+ "matched_control_contrast": {
+  "ADX": {
+   "ci95": [
+    -0.10494535519125685,
+    0.04808743169398907
+   ],
+   "control_pivot_rate": 0.40437158469945356,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.3770491803278688,
+   "events": 183,
+   "excess_pivot_rate": -0.027322404371584706,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 35.1098192591867
+  },
+  "BB_position": {
+   "ci95": [
+    -0.03574250570218313,
+    0.029635874877810345
+   ],
+   "control_pivot_rate": 0.4493971977842946,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4447702834799609,
+   "events": 1023,
+   "excess_pivot_rate": -0.00462691430433366,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.807158587336895
+  },
+  "CCI": {
+   "ci95": [
+    -0.06197032232704403,
+    0.01092472484276728
+   ],
+   "control_pivot_rate": 0.4489190251572327,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4233490566037736,
+   "events": 848,
+   "excess_pivot_rate": -0.02556996855345912,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 100.15634048080163
+  },
+  "DI_minus": {
+   "ci95": [
+    -0.06393962848297215,
+    0.011619582043343638
+   ],
+   "control_pivot_rate": 0.44458204334365325,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4195046439628483,
+   "events": 646,
+   "excess_pivot_rate": -0.025077399380804957,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 26.682177145821115
+  },
+  "DI_plus": {
+   "ci95": [
+    -0.08503209969788522,
+    -0.008113670694864067
+   ],
+   "control_pivot_rate": 0.4473313192346425,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4003021148036254,
+   "events": 662,
+   "excess_pivot_rate": -0.04702920443101712,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 26.362154477237727
+  },
+  "MACD": {
+   "ci95": [
+    -0.10555045871559635,
+    0.025733944954128403
+   ],
+   "control_pivot_rate": 0.44036697247706424,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.39908256880733944,
+   "events": 218,
+   "excess_pivot_rate": -0.04128440366972477,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.0009027894152123573
+  },
+  "MACD_Histogram": {
+   "ci95": [
+    -0.024512684649967885,
+    0.0701164097623635
+   ],
+   "control_pivot_rate": 0.43702633269107255,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4624277456647399,
+   "events": 519,
+   "excess_pivot_rate": 0.025401412973667305,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.00026112162449780753
+  },
+  "RAW_BAR_LOG_RETURN": {
+   "ci95": [
+    0.018851447979978547,
+    0.05562567036110117
+   ],
+   "control_pivot_rate": 0.39978548444762246,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4379692527708259,
+   "events": 2797,
+   "excess_pivot_rate": 0.038183768323203436,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.0005766451281527784
+  },
+  "RAW_CLOSE_LOG_RETURN": {
+   "ci95": [
+    0.01907013466809677,
+    0.059758670003575265
+   ],
+   "control_pivot_rate": 0.40075676319866527,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.44190203789774757,
+   "events": 2797,
+   "excess_pivot_rate": 0.04114527469908235,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.0005772469762625359
+  },
+  "RAW_ELAPSED_HOURS": {
+   "events": 5,
+   "state": "TOO_FEW_MATCHED_EVENTS"
+  },
+  "ROC": {
+   "ci95": [
+    -0.057848553175497947,
+    0.010042277339346085
+   ],
+   "control_pivot_rate": 0.4359263434798948,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4137542277339346,
+   "events": 887,
+   "excess_pivot_rate": -0.022172115745960168,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.2065469724748633
+  },
+  "RSI": {
+   "ci95": [
+    -0.0892569151429911,
+    -0.011420534458509157
+   ],
+   "control_pivot_rate": 0.45236755743084855,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4008438818565401,
+   "events": 711,
+   "excess_pivot_rate": -0.051523675574308495,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 60.577810071355394
+  },
+  "Stochastic_D": {
+   "ci95": [
+    -0.06104128014842302,
+    0.024325139146567695
+   ],
+   "control_pivot_rate": 0.43858998144712436,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.41929499072356213,
+   "events": 539,
+   "excess_pivot_rate": -0.019294990723562156,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 77.64103383270306
+  },
+  "Stochastic_K": {
+   "ci95": [
+    -0.03929426705370102,
+    0.03868831640058054
+   ],
+   "control_pivot_rate": 0.42380261248185774,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.42380261248185774,
+   "events": 689,
+   "excess_pivot_rate": 1.2890833377360308e-18,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 78.80526175878491
+  },
+  "WilliamsR": {
+   "ci95": [
+    -0.043412,
+    0.018622999999999976
+   ],
+   "control_pivot_rate": 0.45203999999999994,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4376,
+   "events": 1250,
+   "excess_pivot_rate": -0.01444,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": -18.588313792772603
+  },
+  "cal.hod_cos": {
+   "events": 0,
+   "state": "TOO_FEW_MATCHED_EVENTS"
+  },
+  "cal.hod_sin": {
+   "events": 0,
+   "state": "TOO_FEW_MATCHED_EVENTS"
+  },
+  "cal.session_asia": {
+   "events": 0,
+   "state": "TOO_FEW_EVENTS"
+  },
+  "cal.session_us": {
+   "events": 0,
+   "state": "TOO_FEW_EVENTS"
+  },
+  "hod_cos": {
+   "events": 0,
+   "state": "TOO_FEW_MATCHED_EVENTS"
+  },
+  "hod_sin": {
+   "events": 0,
+   "state": "TOO_FEW_MATCHED_EVENTS"
+  },
+  "price_minus_ema": {
+   "ci95": [
+    -0.059883217993079586,
+    0.03038927335640136
+   ],
+   "control_pivot_rate": 0.4331314878892734,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4186851211072664,
+   "events": 578,
+   "excess_pivot_rate": -0.014446366782006916,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.0018001358325838268
+  },
+  "px.atr_14": {
+   "ci95": [
+    -0.07020214521452145,
+    0.04356435643564356
+   ],
+   "control_pivot_rate": 0.4344884488448845,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.42244224422442245,
+   "events": 303,
+   "excess_pivot_rate": -0.012046204620462048,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.002001428571428586
+  },
+  "px.atr_ratio_14_120": {
+   "ci95": [
+    -0.056797491039426516,
+    0.03914874551971325
+   ],
+   "control_pivot_rate": 0.40415770609318996,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.38924731182795697,
+   "events": 465,
+   "excess_pivot_rate": -0.014910394265232975,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 1.224273925419017
+  },
+  "px.bar_body": {
+   "ci95": [
+    0.018851447979978547,
+    0.05562567036110117
+   ],
+   "control_pivot_rate": 0.39978548444762246,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4379692527708259,
+   "events": 2797,
+   "excess_pivot_rate": 0.038183768323203436,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.0005766451281527784
+  },
+  "px.close_loc_1": {
+   "ci95": [
+    0.016165924826904047,
+    0.0504673590504451
+   ],
+   "control_pivot_rate": 0.4107374436751292,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4431256181998022,
+   "events": 3033,
+   "excess_pivot_rate": 0.03238817452467304,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.8139534883720998
+  },
+  "px.close_loc_12": {
+   "ci95": [
+    -0.03334854694485842,
+    0.024521236959761543
+   ],
+   "control_pivot_rate": 0.45064580228514656,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.44709388971684055,
+   "events": 1342,
+   "excess_pivot_rate": -0.0035519125683060103,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.8128569129245156
+  },
+  "px.close_loc_2": {
+   "ci95": [
+    0.05380422039859319,
+    0.09425898788589292
+   ],
+   "control_pivot_rate": 0.4099062133645955,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.48339194998046114,
+   "events": 2559,
+   "excess_pivot_rate": 0.07348573661586558,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.808153773137178
+  },
+  "px.close_loc_24": {
+   "ci95": [
+    -0.06845992152466368,
+    0.007026345291479798
+   ],
+   "control_pivot_rate": 0.44398355754857993,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.41591928251121074,
+   "events": 892,
+   "excess_pivot_rate": -0.028064275037369215,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.814656172276699
+  },
+  "px.close_loc_4": {
+   "ci95": [
+    0.0016606016496846173,
+    0.04460092188258123
+   ],
+   "control_pivot_rate": 0.44803493449781656,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.47161572052401746,
+   "events": 2061,
+   "excess_pivot_rate": 0.023580786026200867,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.810182019772678
+  },
+  "px.close_loc_48": {
+   "ci95": [
+    -0.08645733652312601,
+    -0.0014161350345561082
+   ],
+   "control_pivot_rate": 0.44479000531632107,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4003189792663477,
+   "events": 627,
+   "excess_pivot_rate": -0.044471026049973425,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.8150175798012275
+  },
+  "px.close_loc_6": {
+   "ci95": [
+    -0.00866853019877676,
+    0.04223719418960244
+   ],
+   "control_pivot_rate": 0.4530485474006117,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4701834862385321,
+   "events": 1744,
+   "excess_pivot_rate": 0.017134938837920485,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.8113060715072559
+  },
+  "px.elapsed_hours": {
+   "events": 5,
+   "state": "TOO_FEW_MATCHED_EVENTS"
+  },
+  "px.er_2": {
+   "ci95": [
+    -0.004461175616835997,
+    0.033361756168359916
+   ],
+   "control_pivot_rate": 0.434833091436865,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4481132075471698,
+   "events": 2756,
+   "excess_pivot_rate": 0.013280116110304782,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 1.0000000000000133
+  },
+  "px.logret_1": {
+   "ci95": [
+    0.01907013466809677,
+    0.059758670003575265
+   ],
+   "control_pivot_rate": 0.40075676319866527,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.44190203789774757,
+   "events": 2797,
+   "excess_pivot_rate": 0.04114527469908235,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.0005772469762625359
+  },
+  "px.logret_12": {
+   "ci95": [
+    -0.049668335419274096,
+    0.021615561118064237
+   ],
+   "control_pivot_rate": 0.43996662494785144,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.42428035043804757,
+   "events": 799,
+   "excess_pivot_rate": -0.01568627450980393,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.0023073217175173626
+  },
+  "px.logret_2": {
+   "ci95": [
+    -0.009755586592178771,
+    0.035170771965464705
+   ],
+   "control_pivot_rate": 0.42976130015236164,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.44032503809040124,
+   "events": 1969,
+   "excess_pivot_rate": 0.010563737938039611,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.0008192690631102721
+  },
+  "px.logret_4": {
+   "ci95": [
+    -0.04967114568599718,
+    0.009286008958038636
+   ],
+   "control_pivot_rate": 0.4466643092880717,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.42715700141442714,
+   "events": 1414,
+   "excess_pivot_rate": -0.019507307873644512,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.0011849038896003716
+  },
+  "px.logret_48": {
+   "ci95": [
+    -0.0006596306068601562,
+    0.10391490765171497
+   ],
+   "control_pivot_rate": 0.40804749340369395,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.46174142480211083,
+   "events": 379,
+   "excess_pivot_rate": 0.05369393139841687,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.00508856850768647
+  },
+  "px.logret_6": {
+   "ci95": [
+    -0.05535761736049602,
+    0.010414452317685258
+   ],
+   "control_pivot_rate": 0.4468408621198701,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4242692648361382,
+   "events": 1129,
+   "excess_pivot_rate": -0.022571597283731915,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.001501841447630505
+  },
+  "px.range_12": {
+   "ci95": [
+    -0.09595375722543353,
+    0.024855491329479763
+   ],
+   "control_pivot_rate": 0.42485549132947975,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.3901734104046243,
+   "events": 346,
+   "excess_pivot_rate": -0.03468208092485549,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.007009459444185942
+  },
+  "px.range_2": {
+   "ci95": [
+    -0.07799312853678254,
+    -0.018455268121800088
+   ],
+   "control_pivot_rate": 0.4473592023713286,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.40177849636216656,
+   "events": 1237,
+   "excess_pivot_rate": -0.045580706009161955,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.0028177484660504735
+  },
+  "px.range_4": {
+   "ci95": [
+    -0.056172069825436405,
+    0.016709788029925177
+   ],
+   "control_pivot_rate": 0.440211970074813,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4177057356608479,
+   "events": 802,
+   "excess_pivot_rate": -0.022506234413965084,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.0040024492867581744
+  },
+  "px.range_ratio_1_24": {
+   "ci95": [
+    -0.06209439328277358,
+    -0.012796587215601318
+   ],
+   "control_pivot_rate": 0.4728602383531961,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4355362946912243,
+   "events": 1846,
+   "excess_pivot_rate": -0.03732394366197184,
+   "significant": true,
+   "state": "ESTIMATED",
+   "threshold": 0.28408052384058957
+  },
+  "px.rv_1": {
+   "ci95": [
+    -0.014619352356973007,
+    0.03029899286613511
+   ],
+   "control_pivot_rate": 0.44521611414183804,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.45488879563575324,
+   "events": 2383,
+   "excess_pivot_rate": 0.009672681493915232,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.0010400865490419026
+  },
+  "px.rv_12": {
+   "ci95": [
+    -0.012241512345679016,
+    0.10293981481481482
+   ],
+   "control_pivot_rate": 0.41913580246913584,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4660493827160494,
+   "events": 324,
+   "excess_pivot_rate": 0.046913580246913576,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.004280650228843047
+  },
+  "variogram_hurst_w48": {
+   "ci95": [
+    -0.06011083743842365,
+    0.0874076354679801
+   ],
+   "control_pivot_rate": 0.4386699507389163,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.458128078817734,
+   "events": 203,
+   "excess_pivot_rate": 0.01945812807881773,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.5571256068198754
+  },
+  "variogram_hurst_w96": {
+   "ci95": [
+    -0.022663043478260862,
+    0.1722173913043478
+   ],
+   "control_pivot_rate": 0.4021739130434783,
+   "design": "association under matching on hour, weekday and pre-event realized vol; crossings of other features are not excluded; no placebo; screening only",
+   "event_pivot_rate": 0.4782608695652174,
+   "events": 115,
+   "excess_pivot_rate": 0.07608695652173915,
+   "significant": false,
+   "state": "ESTIMATED",
+   "threshold": 0.5485017654923148
+  }
+ },
+ "mixed_ci": {
+  "control_verdicts": {
+   "NEGATIVE_CONTROL_CIRCULAR_SHIFT": "NO_LINK",
+   "NEGATIVE_CONTROL_NOISE": "NO_LINK",
+   "POSITIVE_CONTROL_LABEL_LEAK_LAG1": "LAGGED_PARENT"
+  },
+  "controls": {
+   "NEGATIVE_CONTROL_CIRCULAR_SHIFT": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "NEGATIVE_CONTROL_NOISE": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "POSITIVE_CONTROL_LABEL_LEAK_LAG1": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 5.549091547559364e-121,
+      "val": 559.6776663200944
+     },
+     {
+      "edge": "-->",
+      "lag": 1,
+      "p": 0.0,
+      "val": 4771.884799176209
+     }
+    ],
+    "n_masked": 32,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   }
+  },
+  "controls_behave": true,
+  "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+  "history": [
+   "px.logret_24",
+   "px.rv_24"
+  ],
+  "neutrality": "NO_LINK / NOT_IDENTIFIED never rejects a feature; association is not intervention",
+  "pin": {
+   "library": "tigramite",
+   "version": "5.2.7.0"
+  },
+  "records": {
+   "ADX": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "x-x",
+      "lag": 0,
+      "p": 9.343624207000745e-06,
+      "val": 26.042577891988913
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "BB_position": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 8.332374378249593e-75,
+      "val": 346.54965685644856
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "CCI": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "x-x",
+      "lag": 0,
+      "p": 8.752467690233541e-06,
+      "val": 26.178128209379793
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "DI_minus": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "DI_plus": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 0.0054735550834937195,
+      "val": 12.64389187542838
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "MACD": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 7.516230541876249e-55,
+      "val": 254.34515772206942
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "MACD_Histogram": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 2.1132655273971257e-38,
+      "val": 178.2426893401862
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "CONFLICTING_OR_REVERSED"
+   },
+   "RAW_BAR_LOG_RETURN": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 3.038509678696864e-76,
+      "val": 353.1912656523273
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "RAW_CLOSE_LOG_RETURN": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 2.080275049433655e-69,
+      "val": 321.61971951820306
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "RAW_ELAPSED_HOURS": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 0.02045516057541173,
+      "val": 9.788185927238374
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "CONFLICTING_OR_REVERSED"
+   },
+   "ROC": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 2.1142080712668196e-27,
+      "val": 127.25235949785565
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "RSI": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 1.1495102889806041e-98,
+      "val": 456.70482567924773
+     },
+     {
+      "edge": "-->",
+      "lag": 2,
+      "p": 0.000586411854404791,
+      "val": 17.393906596313172
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "Stochastic_D": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 9.069962435756164e-79,
+      "val": 364.8518765124463
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "Stochastic_K": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 6.158814872989004e-63,
+      "val": 291.7209890614977
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "WilliamsR": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 1.3717515908785574e-86,
+      "val": 400.9597068217736
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "cal.hod_cos": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "cal.hod_sin": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "cal.session_asia": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     1,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "cal.session_us": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     1,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "hod_cos": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "hod_sin": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "price_minus_ema": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 1.0767457718013495e-12,
+      "val": 58.76939656920149
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "CONFLICTING_OR_REVERSED"
+   },
+   "px.atr_14": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "px.atr_ratio_14_120": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "px.bar_body": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 3.038509678696864e-76,
+      "val": 353.1912656523273
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.close_loc_1": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 8.02168309549937e-223,
+      "val": 1029.2756230912928
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.close_loc_12": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 1.5101811768286792e-95,
+      "val": 442.31164688761055
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.close_loc_2": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 2.8552191517362695e-191,
+      "val": 883.8241427916873
+     },
+     {
+      "edge": "-->",
+      "lag": 1,
+      "p": 6.256189691159305e-14,
+      "val": 64.55141249083681
+     },
+     {
+      "edge": "-->",
+      "lag": 2,
+      "p": 8.015779884534147e-35,
+      "val": 161.6643303072051
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "px.close_loc_24": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 5.5972754657742556e-90,
+      "val": 416.6060988224999
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.close_loc_4": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 1.0631608746549824e-177,
+      "val": 821.2543110442857
+     },
+     {
+      "edge": "-->",
+      "lag": 1,
+      "p": 0.00012697937131012562,
+      "val": 20.60786932674091
+     },
+     {
+      "edge": "-->",
+      "lag": 2,
+      "p": 9.278647405535213e-08,
+      "val": 35.559600186519674
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "px.close_loc_48": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 3.154483101993568e-53,
+      "val": 246.84158833618858
+     },
+     {
+      "edge": "-->",
+      "lag": 2,
+      "p": 0.012294950811798728,
+      "val": 10.89719842341583
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "px.close_loc_6": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 8.765810644734423e-135,
+      "val": 623.3429721072898
+     },
+     {
+      "edge": "-->",
+      "lag": 1,
+      "p": 0.04249685149186836,
+      "val": 8.176737849891651
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "px.elapsed_hours": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 0.02045516057541173,
+      "val": 9.788185927238374
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "CONFLICTING_OR_REVERSED"
+   },
+   "px.er_2": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 0.00010978039558523213,
+      "val": 20.912380588415544
+     }
+    ],
+    "n_masked": 31,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_1": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 2.080275049433655e-69,
+      "val": 321.61971951820306
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_12": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 4.343953466862268e-14,
+      "val": 65.29205758756143
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_2": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 2.4561852797704602e-67,
+      "val": 312.04713386830554
+     },
+     {
+      "edge": "-->",
+      "lag": 1,
+      "p": 0.0004091149700576448,
+      "val": 18.152503359975526
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "px.logret_24": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 3.1616577446518585e-33,
+      "val": 154.26837488295132
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "note": "history member tested against H without itself",
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_4": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 3.930149665098122e-91,
+      "val": 421.9311146420514
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_48": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 0,
+      "p": 2.5105871383313045e-12,
+      "val": 57.04749032800464
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_6": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "x-x",
+      "lag": 0,
+      "p": 2.0987051889319726e-59,
+      "val": 275.3962512021353
+     },
+     {
+      "edge": "-->",
+      "lag": 2,
+      "p": 4.348103341824089e-06,
+      "val": 27.627590379441244
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "px.range_12": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 1.0224441669245818e-05,
+      "val": 25.85570213721803
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "CONFLICTING_OR_REVERSED"
+   },
+   "px.range_2": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 3.871213039941619e-08,
+      "val": 37.3546398832259
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "CONFLICTING_OR_REVERSED"
+   },
+   "px.range_4": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "<--",
+      "lag": 0,
+      "p": 3.497345409348036e-10,
+      "val": 46.98726970564894
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "CONFLICTING_OR_REVERSED"
+   },
+   "px.range_ratio_1_24": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "-->",
+      "lag": 1,
+      "p": 2.971091872108954e-06,
+      "val": 28.415511102844903
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "px.rv_1": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "o-o",
+      "lag": 0,
+      "p": 0.025191658238394535,
+      "val": 9.331630958382448
+     },
+     {
+      "edge": "-->",
+      "lag": 1,
+      "p": 2.0403070659107255e-05,
+      "val": 24.420879038174462
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": true,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "LAGGED_PARENT"
+   },
+   "px.rv_12": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "px.rv_24": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [
+     {
+      "edge": "x-x",
+      "lag": 0,
+      "p": 0.027710558320800306,
+      "val": 9.122118080340442
+     }
+    ],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "note": "history member tested against H without itself",
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24"
+    ],
+    "verdict": "LAG0_TIME_ORDERED_LINK"
+   },
+   "variogram_hurst_w48": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   },
+   "variogram_hurst_w96": {
+    "alpha_reported": 0.01,
+    "assumptions": "linear-in-parameters regressions per variable type; causal sufficiency NOT assumed or claimed; stationarity over the sample assumed",
+    "ci_test": "RegressionCI (tigramite; linear / multinomial regressions, chi2 deviance)",
+    "data_type": [
+     0,
+     1,
+     0,
+     0
+    ],
+    "evidence_label": "CONDITIONAL_PREDICTIVE_ASSOCIATION",
+    "lag0_mapping": "lag 0 = the candidate's value on the COMPLETED bar t (available at bar end) against the label of the window (t, t+k]; the label's support starts at bar t+1, so a lag-0 link is time-ordered x -> y",
+    "links_x_to_y": [],
+    "n_masked": 29,
+    "n_rows": 18688,
+    "pc_alpha": 0.05,
+    "significant_at_alpha": false,
+    "tau_max": 2,
+    "variables": [
+     "x",
+     "timing_pivot_k2",
+     "px.logret_24",
+     "px.rv_24"
+    ],
+    "verdict": "NO_LINK"
+   }
+  },
+  "target": "timing_pivot_k2",
+  "tau_max": 2,
+  "temporal_resampling": {
+   "ADX": {
+    "agree": false,
+    "first_half": "CONFLICTING_OR_REVERSED",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "BB_position": {
+    "agree": false,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAGGED_PARENT"
+   },
+   "CCI": {
+    "agree": true,
+    "first_half": "CONFLICTING_OR_REVERSED",
+    "second_half": "CONFLICTING_OR_REVERSED"
+   },
+   "DI_minus": {
+    "agree": false,
+    "first_half": "NO_LINK",
+    "second_half": "CONFLICTING_OR_REVERSED"
+   },
+   "DI_plus": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "MACD": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "MACD_Histogram": {
+    "agree": true,
+    "first_half": "CONFLICTING_OR_REVERSED",
+    "second_half": "CONFLICTING_OR_REVERSED"
+   },
+   "NEGATIVE_CONTROL_CIRCULAR_SHIFT": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "NEGATIVE_CONTROL_NOISE": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "POSITIVE_CONTROL_LABEL_LEAK_LAG1": {
+    "agree": true,
+    "first_half": "LAGGED_PARENT",
+    "second_half": "LAGGED_PARENT"
+   },
+   "RAW_BAR_LOG_RETURN": {
+    "agree": false,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAGGED_PARENT"
+   },
+   "RAW_CLOSE_LOG_RETURN": {
+    "agree": false,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAGGED_PARENT"
+   },
+   "RAW_ELAPSED_HOURS": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "ROC": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "RSI": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "Stochastic_D": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "Stochastic_K": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "WilliamsR": {
+    "agree": false,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAGGED_PARENT"
+   },
+   "cal.hod_cos": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "cal.hod_sin": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "cal.session_asia": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "cal.session_us": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "hod_cos": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "hod_sin": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "price_minus_ema": {
+    "agree": false,
+    "first_half": "NO_LINK",
+    "second_half": "CONFLICTING_OR_REVERSED"
+   },
+   "px.atr_14": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "px.atr_ratio_14_120": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "px.bar_body": {
+    "agree": false,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAGGED_PARENT"
+   },
+   "px.close_loc_1": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.close_loc_12": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.close_loc_2": {
+    "agree": true,
+    "first_half": "LAGGED_PARENT",
+    "second_half": "LAGGED_PARENT"
+   },
+   "px.close_loc_24": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.close_loc_4": {
+    "agree": false,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAGGED_PARENT"
+   },
+   "px.close_loc_48": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.close_loc_6": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.elapsed_hours": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "px.er_2": {
+    "agree": false,
+    "first_half": "CONFLICTING_OR_REVERSED",
+    "second_half": "NO_LINK"
+   },
+   "px.logret_1": {
+    "agree": false,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAGGED_PARENT"
+   },
+   "px.logret_12": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_2": {
+    "agree": true,
+    "first_half": "LAGGED_PARENT",
+    "second_half": "LAGGED_PARENT"
+   },
+   "px.logret_4": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_48": {
+    "agree": true,
+    "first_half": "LAG0_TIME_ORDERED_LINK",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.logret_6": {
+    "agree": false,
+    "first_half": "LAGGED_PARENT",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.range_12": {
+    "agree": false,
+    "first_half": "CONFLICTING_OR_REVERSED",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.range_2": {
+    "agree": false,
+    "first_half": "CONFLICTING_OR_REVERSED",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.range_4": {
+    "agree": false,
+    "first_half": "CONFLICTING_OR_REVERSED",
+    "second_half": "LAG0_TIME_ORDERED_LINK"
+   },
+   "px.range_ratio_1_24": {
+    "agree": true,
+    "first_half": "LAGGED_PARENT",
+    "second_half": "LAGGED_PARENT"
+   },
+   "px.rv_1": {
+    "agree": false,
+    "first_half": "NO_LINK",
+    "second_half": "LAGGED_PARENT"
+   },
+   "px.rv_12": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "variogram_hurst_w48": {
+    "agree": true,
+    "first_half": "NO_LINK",
+    "second_half": "NO_LINK"
+   },
+   "variogram_hurst_w96": {
+    "agree": false,
+    "first_half": "NO_LINK",
+    "second_half": "CONFLICTING_OR_REVERSED"
+   }
+  }
+ },
+ "pack": "EURUSD_TIMING",
+ "provider_sha256": "9fc5c9980c774c967b64d5fc26a0e1989a0653d7e2f842cfd77135c1fe1c650e"
+}

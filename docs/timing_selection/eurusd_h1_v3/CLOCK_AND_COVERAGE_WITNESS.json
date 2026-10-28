@@ -1,0 +1,137 @@
+{
+ "rule": "WITNESS ONLY: no shift is applied to any selection input; lake label + h hours compared with admitted UTC bar start",
+ "admitted_rows_before_2025": 31116,
+ "lake_rows": 30854,
+ "offsets": {
+  "-8": {
+   "matched": 27073,
+   "close_absdiff_p50": 0.0019500000000001183,
+   "close_absdiff_p95": 0.007580000000000142,
+   "return_corr": -0.008186447773909845
+  },
+  "-7": {
+   "matched": 27331,
+   "close_absdiff_p50": 0.0018400000000000638,
+   "close_absdiff_p95": 0.007319999999999993,
+   "return_corr": -0.007921860922821664
+  },
+  "-6": {
+   "matched": 27590,
+   "close_absdiff_p50": 0.0017300000000000093,
+   "close_absdiff_p95": 0.007060000000000016,
+   "return_corr": -0.00612076646663386
+  },
+  "-5": {
+   "matched": 27849,
+   "close_absdiff_p50": 0.0016300000000000203,
+   "close_absdiff_p95": 0.006750000000000034,
+   "return_corr": -0.006073302334883042
+  },
+  "-4": {
+   "matched": 28108,
+   "close_absdiff_p50": 0.0015099999999999003,
+   "close_absdiff_p95": 0.006399999999999961,
+   "return_corr": 0.001856429644080618
+  },
+  "-3": {
+   "matched": 28367,
+   "close_absdiff_p50": 0.0014000000000000679,
+   "close_absdiff_p95": 0.006010000000000071,
+   "return_corr": -0.013328176770003173
+  },
+  "-2": {
+   "matched": 28627,
+   "close_absdiff_p50": 0.0012800000000001699,
+   "close_absdiff_p95": 0.005610000000000115,
+   "return_corr": -0.002281274689719244
+  },
+  "-1": {
+   "matched": 28888,
+   "close_absdiff_p50": 0.0011600000000000499,
+   "close_absdiff_p95": 0.005159999999999831,
+   "return_corr": 0.0020800822272957543
+  },
+  "0": {
+   "matched": 29149,
+   "close_absdiff_p50": 0.0010199999999997988,
+   "close_absdiff_p95": 0.004649999999999821,
+   "return_corr": -0.0038249698146076492
+  },
+  "1": {
+   "matched": 29410,
+   "close_absdiff_p50": 0.0008799999999999919,
+   "close_absdiff_p95": 0.0040800000000000836,
+   "return_corr": -0.0038008562273227323
+  },
+  "2": {
+   "matched": 29658,
+   "close_absdiff_p50": 0.0007099999999999884,
+   "close_absdiff_p95": 0.003430000000000044,
+   "return_corr": 0.001994802603174108
+  },
+  "3": {
+   "matched": 29906,
+   "close_absdiff_p50": 0.000520000000000076,
+   "close_absdiff_p95": 0.0025999999999999357,
+   "return_corr": 0.017112034224917406
+  },
+  "4": {
+   "matched": 30152,
+   "close_absdiff_p50": 0.0,
+   "close_absdiff_p95": 0.0014899999999999913,
+   "return_corr": 0.5539381028250681
+  },
+  "5": {
+   "matched": 30107,
+   "close_absdiff_p50": 0.00010999999999983245,
+   "close_absdiff_p95": 0.0016700000000000603,
+   "return_corr": 0.4648971804909233
+  },
+  "6": {
+   "matched": 29866,
+   "close_absdiff_p50": 0.0005599999999998939,
+   "close_absdiff_p95": 0.00275000000000003,
+   "return_corr": -0.0025582557026704185
+  },
+  "7": {
+   "matched": 29618,
+   "close_absdiff_p50": 0.0007400000000000739,
+   "close_absdiff_p95": 0.0035400000000000986,
+   "return_corr": 0.003251643051321156
+  },
+  "8": {
+   "matched": 29376,
+   "close_absdiff_p50": 0.0009000000000001229,
+   "close_absdiff_p95": 0.004229999999999956,
+   "return_corr": 0.0003114939070517811
+  }
+ },
+ "rows_by_half": {
+  "lake": {
+   "2019H2": 514,
+   "2020H1": 3102,
+   "2020H2": 3128,
+   "2021H1": 3058,
+   "2021H2": 3161,
+   "2022H1": 3102,
+   "2022H2": 3137,
+   "2023H1": 2445,
+   "2023H2": 2964,
+   "2024H1": 3097,
+   "2024H2": 3146
+  },
+  "admitted": {
+   "2020H1": 3097,
+   "2020H2": 3135,
+   "2021H1": 3075,
+   "2021H2": 3160,
+   "2022H1": 3099,
+   "2022H2": 3132,
+   "2023H1": 3111,
+   "2023H2": 3086,
+   "2024H1": 3091,
+   "2024H2": 3130
+  }
+ },
+ "best_return_corr_offset_hours": 4
+}

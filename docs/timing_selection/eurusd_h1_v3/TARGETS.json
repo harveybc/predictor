@@ -1,0 +1,376 @@
+{
+ "bars": 30854,
+ "class_counts_labelled": {
+  "0": 17648,
+  "1": 6544,
+  "2": 6609
+ },
+ "confirmation": "confirmation_bars_fast",
+ "confirmed_pivots": 7037,
+ "cuts": [
+  "2021-01-01 00:00:00+00:00",
+  "2022-01-01 00:00:00+00:00",
+  "2023-01-01 00:00:00+00:00",
+  "2023-07-01 00:00:00+00:00",
+  "2024-01-01 00:00:00+00:00",
+  "2025-01-01 00:00:00+00:00"
+ ],
+ "family": "timing_pivot",
+ "finality": {
+  "all_final_rows_unchanged": true,
+  "t1_t2_t3_with_confirmation_replay": {
+   "all_final_rows_unchanged": true,
+   "confirmation": "confirmation_bars_fast",
+   "cuts": [
+    {
+     "cut_position": 6744,
+     "cut_time": "2021-01-03 17:00:00+00:00",
+     "future_perturbation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 6728
+      },
+      "t2": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 6730
+      },
+      "t3": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 3,
+       "rows_declared_final": 6728
+      }
+     },
+     "truncation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 6728
+      },
+      "t2": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 6730
+      },
+      "t3": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 3,
+       "rows_declared_final": 6728
+      }
+     }
+    },
+    {
+     "cut_position": 19202,
+     "cut_time": "2023-01-01 17:00:00+00:00",
+     "future_perturbation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 4,
+       "rows_declared_final": 19196
+      },
+      "t2": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 19198
+      },
+      "t3": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 4,
+       "rows_declared_final": 19196
+      }
+     },
+     "truncation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 4,
+       "rows_declared_final": 19196
+      },
+      "t2": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 19198
+      },
+      "t3": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 4,
+       "rows_declared_final": 19196
+      }
+     }
+    },
+    {
+     "cut_position": 24611,
+     "cut_time": "2024-01-01 17:00:00+00:00",
+     "future_perturbation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 3,
+       "rows_declared_final": 24599
+      },
+      "t2": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 24601
+      },
+      "t3": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 10,
+       "rows_declared_final": 24599
+      }
+     },
+     "truncation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 2,
+       "rows_declared_final": 24599
+      },
+      "t2": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 24601
+      },
+      "t3": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 10,
+       "rows_declared_final": 24599
+      }
+     }
+    }
+   ],
+   "rule": "timing_targets.v2"
+  },
+  "t1_t3_all_cuts": {
+   "all_final_rows_unchanged": true,
+   "confirmation": "confirmation_bars_fast",
+   "cuts": [
+    {
+     "cut_position": 6744,
+     "cut_time": "2021-01-03 17:00:00+00:00",
+     "future_perturbation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 6728
+      }
+     },
+     "truncation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 6728
+      }
+     }
+    },
+    {
+     "cut_position": 12963,
+     "cut_time": "2022-01-02 17:00:00+00:00",
+     "future_perturbation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 0,
+       "rows_declared_final": 12956
+      }
+     },
+     "truncation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 2,
+       "rows_declared_final": 12956
+      }
+     }
+    },
+    {
+     "cut_position": 19202,
+     "cut_time": "2023-01-01 17:00:00+00:00",
+     "future_perturbation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 4,
+       "rows_declared_final": 19196
+      }
+     },
+     "truncation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 4,
+       "rows_declared_final": 19196
+      }
+     }
+    },
+    {
+     "cut_position": 21647,
+     "cut_time": "2023-07-02 18:00:00+00:00",
+     "future_perturbation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 1,
+       "rows_declared_final": 21642
+      }
+     },
+     "truncation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 3,
+       "rows_declared_final": 21642
+      }
+     }
+    },
+    {
+     "cut_position": 24611,
+     "cut_time": "2024-01-01 17:00:00+00:00",
+     "future_perturbation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 1,
+       "rows_declared_final": 24599
+      }
+     },
+     "truncation": {
+      "t1": {
+       "changed_among_final": 0,
+       "changed_among_not_final": 2,
+       "rows_declared_final": 24599
+      }
+     }
+    }
+   ],
+   "rule": "timing_targets.v2"
+  }
+ },
+ "identity": "b48e6809e4e8db198ed07ed4a03bd120405cf2cc1202a464c5135ccdc877fee4",
+ "k_bars": 2,
+ "k_unit": "OBSERVED_MARKET_BARS",
+ "label": "HINDSIGHT_ZIGZAG_TIMING_TARGETS_DEVELOPMENT_ONLY",
+ "lake_sha256": "c6628375b2872f16dcdbd6b1b90ed8e68bc5bdd852efdef01f2515b8712d4e2e",
+ "ledger_sha256": "2ec041306050cc1301f7d26668eda296ee75c6063d4312f5c1f25fcd2e734d3b",
+ "not_labelled_rows": 53,
+ "note": "labels are the final repainted ZigZag (hindsight); labels only, never inputs",
+ "params": {
+  "backstep": 0,
+  "depth": 3,
+  "deviation_pips": 40.7
+ },
+ "pivots": 7038,
+ "roles": {
+  "timing_action_confirmed": "REACTIVE_COMPARATOR",
+  "timing_expert_leg_remaining_pips": "STATE_CONDITIONAL_HOLDING_EXPERT_LEG",
+  "timing_peak_k2": "PRIMARY_INDICATOR",
+  "timing_pivot_k2": "PRIMARY_ANTICIPATORY",
+  "timing_valley_k2": "PRIMARY_INDICATOR"
+ },
+ "semantics": "timing_targets.v2",
+ "span": [
+  "2019-12-01 17:00:00+00:00",
+  "2024-12-31 16:00:00+00:00"
+ ],
+ "status_by_period": {
+  "INNER_A_2023H1": {
+   "origins": 2445,
+   "t1": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 2440,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 5
+   },
+   "t1_both_kinds_in_window": 76,
+   "t1_window_crosses_gap": 756,
+   "t2": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 2442,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 3
+   },
+   "t3": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 2442,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 3
+   }
+  },
+  "INNER_B_2023H2": {
+   "origins": 2964,
+   "t1": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 2952,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 12
+   },
+   "t1_both_kinds_in_window": 96,
+   "t1_window_crosses_gap": 207,
+   "t2": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 2954,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 10
+   },
+   "t3": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 2954,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 10
+   }
+  },
+  "REOBSERVED_2024": {
+   "origins": 6243,
+   "t1": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 7,
+    "LABELLED": 6236,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 0
+   },
+   "t1_both_kinds_in_window": 190,
+   "t1_window_crosses_gap": 114,
+   "t2": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 5,
+    "LABELLED": 6238,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 0
+   },
+   "t3": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 2,
+    "LABELLED": 6238,
+    "NO_LEG": 3,
+    "PURGED_SUPPORT_CROSSES_CUT": 0
+   }
+  },
+  "TRAIN_2020_2022": {
+   "origins": 18688,
+   "t1": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 18659,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 29
+   },
+   "t1_both_kinds_in_window": 528,
+   "t1_window_crosses_gap": 324,
+   "t2": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 18665,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 23
+   },
+   "t3": {
+    "CENSORED_END_OF_DATA": 0,
+    "CENSORED_UNCONFIRMED": 0,
+    "LABELLED": 18665,
+    "NO_LEG": 0,
+    "PURGED_SUPPORT_CROSSES_CUT": 23
+   }
+  }
+ },
+ "test_read": false,
+ "unconfirmed_pivots": 1,
+ "window": "(t, t+k] earliest event",
+ "zigzag_module_sha256": "fc24c6f22aa4f7696548d1117b1d2cfad42a43eccd116f0bbcffe6a71df1624a"
+}

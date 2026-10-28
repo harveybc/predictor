@@ -1,0 +1,951 @@
+{
+ "shards": {
+  "admitted_core_15_553fc047__m1_dmo_class": {
+   "set": "admitted_core_15_553fc047",
+   "arm": "m1_dmo_class",
+   "cell": {
+    "dropout": 0.0,
+    "weight_decay": 0.0001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0_weight_decay0.0001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1022599637421744,
+     "mean_gap": 0.23481418491593375,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.1022867018445959,
+     "mean_gap": 0.2439936229868691,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.1202916377748102,
+     "mean_gap": 0.30565836688191644,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.126635553739968,
+     "mean_gap": 0.31576978368814496,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.1558495390318464,
+     "mean_gap": 0.3937295823909854,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.1662343872756074,
+     "mean_gap": 0.41757111352961,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.8340080864093418,
+    "6102027": 2.0885475648548266,
+    "6102028": 2.1810154653305145
+   },
+   "threshold": 0.5,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -4.545606377843367,
+     "valid": true
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": -1.086144371832899,
+     "valid": true
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -0.8182118048936756,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": -1.2240472062287782,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0_weight_decay0.0001__s6102026.keras",
+     "sha256": "be5b204bc7bb05be980655f56092a08d957ef5a93ff58c5589478197d97bdb5c"
+    },
+    "6102027": {
+     "file": "dropout0_weight_decay0.0001__s6102027.keras",
+     "sha256": "15d2307a13e0966514bc288e000d9684aaa33ff0baf4feba9ccab4379eff3ed0"
+    },
+    "6102028": {
+     "file": "dropout0_weight_decay0.0001__s6102028.keras",
+     "sha256": "e38966e88a4b9eec1737a97309156231aef13b7fd7a51af238cc21dc5b42be57"
+    }
+   },
+   "columns": [
+    "HIGH",
+    "RAW_LOG_RANGE",
+    "RAW_CLOSE_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "ATR",
+    "RSI",
+    "MACD_Histogram",
+    "ADX",
+    "DI_minus",
+    "Stochastic_D",
+    "WilliamsR",
+    "rolling_std_24",
+    "hod_sin",
+    "hod_cos",
+    "dow_cos"
+   ],
+   "scaler": {
+    "mean": [
+     1.1265501059757015,
+     0.0013859274622486553,
+     -1.0478231940949867e-05,
+     1.4092548410364534,
+     0.0015411041124577102,
+     49.55332669371025,
+     -8.910260564310203e-07,
+     26.4161762724122,
+     20.768876611865853,
+     49.46634783729234,
+     -50.72165356646628,
+     0.0018729307435431347,
+     0.0014040480582534977,
+     0.01387960497878426,
+     0.011948982650919619
+    ],
+    "sd": [
+     0.0680952278899378,
+     0.001103660016099447,
+     0.0010629601906558528,
+     4.421762096919598,
+     0.0006039898231257307,
+     12.51483951320545,
+     0.00036690972115102513,
+     10.911760669079067,
+     7.302619153713986,
+     26.605968279720205,
+     29.606732613190772,
+     0.0011574309095082132,
+     0.7094397339109967,
+     0.7046280218406108,
+     0.7657903438076081
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "develop_sha256": "4fd5890330b849839dafd3d6fe6a5a5afee72d397ac92fa89a29cb6f0d2dfe7c"
+  },
+  "admitted_core_15_553fc047__m2_gru": {
+   "set": "admitted_core_15_553fc047",
+   "arm": "m2_gru",
+   "cell": {
+    "dropout": 0.1,
+    "weight_decay": 0.001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0.1_weight_decay0.001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.0626113906634356,
+     "mean_gap": 0.16454473367427283,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.0661826168450494,
+     "mean_gap": 0.17854657294293586,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0698138168080862,
+     "mean_gap": 0.18134149372505462,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.070243878509884,
+     "mean_gap": 0.1730109462302705,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.07170450479773,
+     "mean_gap": 0.1838836818895984,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0816719153049894,
+     "mean_gap": 0.1962066483555919,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.8340080864093418,
+    "6102027": 1.8340080864093418,
+    "6102028": 1.8340080864093418
+   },
+   "threshold": 0.5,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -5.091309190325771,
+     "valid": true
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": -2.163837058950277,
+     "valid": true
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -0.1291120731085974,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.816804124129949,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0.1_weight_decay0.001__s6102026.keras",
+     "sha256": "cdb1c050edc0f6ac1640125702c4dd7da7c829642b734b6092a11bd37a9d21af"
+    },
+    "6102027": {
+     "file": "dropout0.1_weight_decay0.001__s6102027.keras",
+     "sha256": "25536b967e465360cdb50c8e3404c2383e590a914e9c52275939f4161e37d897"
+    },
+    "6102028": {
+     "file": "dropout0.1_weight_decay0.001__s6102028.keras",
+     "sha256": "7adcd01ad681ddb2d26e9803199486eb71e3800029df312d4db114aad12b3e32"
+    }
+   },
+   "columns": [
+    "HIGH",
+    "RAW_LOG_RANGE",
+    "RAW_CLOSE_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "ATR",
+    "RSI",
+    "MACD_Histogram",
+    "ADX",
+    "DI_minus",
+    "Stochastic_D",
+    "WilliamsR",
+    "rolling_std_24",
+    "hod_sin",
+    "hod_cos",
+    "dow_cos"
+   ],
+   "scaler": {
+    "mean": [
+     1.1265501059757015,
+     0.0013859274622486553,
+     -1.0478231940949867e-05,
+     1.4092548410364534,
+     0.0015411041124577102,
+     49.55332669371025,
+     -8.910260564310203e-07,
+     26.4161762724122,
+     20.768876611865853,
+     49.46634783729234,
+     -50.72165356646628,
+     0.0018729307435431347,
+     0.0014040480582534977,
+     0.01387960497878426,
+     0.011948982650919619
+    ],
+    "sd": [
+     0.0680952278899378,
+     0.001103660016099447,
+     0.0010629601906558528,
+     4.421762096919598,
+     0.0006039898231257307,
+     12.51483951320545,
+     0.00036690972115102513,
+     10.911760669079067,
+     7.302619153713986,
+     26.605968279720205,
+     29.606732613190772,
+     0.0011574309095082132,
+     0.7094397339109967,
+     0.7046280218406108,
+     0.7657903438076081
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "develop_sha256": "02a4b2a1f9c6e09b59019e7c3cf05b38bd7b2ed6102fa6aca80695302f9440ab"
+  },
+  "admitted_core_15_553fc047__m3_hgb": {
+   "set": "admitted_core_15_553fc047",
+   "arm": "m3_hgb",
+   "cell": {
+    "l2_regularization": 0.0
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "l2_regularization0",
+    "primary": "l2_regularization0",
+    "replaced_primary": false
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "l2_regularization": 0.0
+     },
+     "cell_id": "l2_regularization0",
+     "mean_inner_a_loss": 1.0520840382944794,
+     "mean_gap": 0.37780270943078653,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "l2_regularization": 10.0
+     },
+     "cell_id": "l2_regularization10",
+     "mean_inner_a_loss": 1.0526766717456313,
+     "mean_gap": 0.36589605818652293,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "l2_regularization": 1.0
+     },
+     "cell_id": "l2_regularization1",
+     "mean_inner_a_loss": 1.0533467834837145,
+     "mean_gap": 0.3763039981596723,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.4142135623730947,
+    "6102027": 1.4142135623730947,
+    "6102028": 1.4142135623730947
+   },
+   "threshold": 0.6,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -5.395781920505875,
+     "valid": true
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": -5.9202870149899764,
+     "valid": true
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -0.14480810159883373,
+     "valid": true
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": -0.6337846580628672,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "l2_regularization0__s6102026.pkl",
+     "sha256": "01e0a237e68586e6a6616d9c3e9c5ff59b39eff1cd5fe2dc31d6595e539b3536"
+    },
+    "6102027": {
+     "file": "l2_regularization0__s6102027.pkl",
+     "sha256": "50b4a866e15514e62062835034aebe2c461bd5799b566bef82d18771f4e499e0"
+    },
+    "6102028": {
+     "file": "l2_regularization0__s6102028.pkl",
+     "sha256": "b46a23427b6141894fe7d8cae502c4680b02e010eb6ab0bcd79e9969dcd15e95"
+    }
+   },
+   "columns": [
+    "HIGH",
+    "RAW_LOG_RANGE",
+    "RAW_CLOSE_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "ATR",
+    "RSI",
+    "MACD_Histogram",
+    "ADX",
+    "DI_minus",
+    "Stochastic_D",
+    "WilliamsR",
+    "rolling_std_24",
+    "hod_sin",
+    "hod_cos",
+    "dow_cos"
+   ],
+   "scaler": {
+    "mean": [
+     1.1265501059757015,
+     0.0013859274622486553,
+     -1.0478231940949867e-05,
+     1.4092548410364534,
+     0.0015411041124577102,
+     49.55332669371025,
+     -8.910260564310203e-07,
+     26.4161762724122,
+     20.768876611865853,
+     49.46634783729234,
+     -50.72165356646628,
+     0.0018729307435431347,
+     0.0014040480582534977,
+     0.01387960497878426,
+     0.011948982650919619
+    ],
+    "sd": [
+     0.0680952278899378,
+     0.001103660016099447,
+     0.0010629601906558528,
+     4.421762096919598,
+     0.0006039898231257307,
+     12.51483951320545,
+     0.00036690972115102513,
+     10.911760669079067,
+     7.302619153713986,
+     26.605968279720205,
+     29.606732613190772,
+     0.0011574309095082132,
+     0.7094397339109967,
+     0.7046280218406108,
+     0.7657903438076081
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "develop_sha256": "ef89b0749267cd0a1ffa79c77967b0c36cd5077c8d289f5998db2392cbbe3fbc"
+  },
+  "timing_selected__m1_dmo_class": {
+   "set": "timing_selected",
+   "arm": "m1_dmo_class",
+   "cell": {
+    "dropout": 0.0,
+    "weight_decay": 0.0001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0_weight_decay0.0001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0430751879784965,
+     "mean_gap": 0.13815528714286265,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.0462413143391815,
+     "mean_gap": 0.14679893236562916,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.0682405834657793,
+     "mean_gap": 0.23357189354185662,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0827117820741272,
+     "mean_gap": 0.25952841262970694,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.0848351519738524,
+     "mean_gap": 0.26065113454076033,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0882966122508357,
+     "mean_gap": 0.2786450186474818,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.476826145939499,
+    "6102027": 1.756252160373299,
+    "6102028": 1.6104903319492538
+   },
+   "threshold": 0.5,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -5.575906991551489,
+     "valid": true
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": -2.3772352914852353,
+     "valid": true
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -0.6099613210619783,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.8043451542560284,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0_weight_decay0.0001__s6102026.keras",
+     "sha256": "854cd6e5e1d4e334288d8681e29d71231c177ba9a3987aeb9c8143763d970bde"
+    },
+    "6102027": {
+     "file": "dropout0_weight_decay0.0001__s6102027.keras",
+     "sha256": "b7e2e6768c7fe58faf397de89f52eda9f58f5fd5570b3b0db3ac1c398d955861"
+    },
+    "6102028": {
+     "file": "dropout0_weight_decay0.0001__s6102028.keras",
+     "sha256": "721e867020978c9fd54eb4c794dedc925b8f059076c774062f832209ab7b4f8d"
+    }
+   },
+   "columns": [
+    "RAW_BAR_LOG_RETURN",
+    "cal.hod_sin",
+    "cal.session_europe",
+    "px.atr_ratio_14_120",
+    "px.close_loc_2",
+    "px.logret_24",
+    "variogram_hurst_w96"
+   ],
+   "scaler": {
+    "mean": [
+     -9.486534527470533e-06,
+     0.0014040480582534977,
+     0.24585252177772846,
+     0.999213037426826,
+     0.4943695052562785,
+     -8.262120717476872e-05,
+     0.4584588649769568
+    ],
+    "sd": [
+     0.001056588699967667,
+     0.7094397339109967,
+     0.43059152257473055,
+     0.2727528144229196,
+     0.2965515507612367,
+     0.00487006789466681,
+     0.10154187943039435
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "develop_sha256": "acc01f23ec0dc9da4b783f95c815828b78f5b1ed221e66f255e2fb90bd6a06d7"
+  },
+  "timing_selected__m2_gru": {
+   "set": "timing_selected",
+   "arm": "m2_gru",
+   "cell": {
+    "dropout": 0.2,
+    "weight_decay": 0.0001
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "dropout0.2_weight_decay0.0001",
+    "primary": "dropout0.1_weight_decay0.0001",
+    "replaced_primary": true
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.2_weight_decay0.0001",
+     "mean_inner_a_loss": 1.021907999985091,
+     "mean_gap": 0.10011219006977652,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.2,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.2_weight_decay0.001",
+     "mean_inner_a_loss": 1.0237611671510722,
+     "mean_gap": 0.10381636265627459,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0.1_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0339195755136938,
+     "mean_gap": 0.1333348162610675,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.0001
+     },
+     "cell_id": "dropout0_weight_decay0.0001",
+     "mean_inner_a_loss": 1.0352629626741223,
+     "mean_gap": 0.1232688200461366,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.1,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0.1_weight_decay0.001",
+     "mean_inner_a_loss": 1.0392902050487562,
+     "mean_gap": 0.14960549144271376,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "dropout": 0.0,
+      "weight_decay": 0.001
+     },
+     "cell_id": "dropout0_weight_decay0.001",
+     "mean_inner_a_loss": 1.0395241427426438,
+     "mean_gap": 0.13249987121190188,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.756252160373299,
+    "6102027": 1.6817928305074286,
+    "6102028": 1.6104903319492538
+   },
+   "threshold": 0.5,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -4.930243882709029,
+     "valid": true
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": -2.383781098564978,
+     "valid": true
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -0.8416193355211373,
+     "valid": false
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 0.0,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "dropout0.2_weight_decay0.0001__s6102026.keras",
+     "sha256": "6390603813dfa9964b75ce03759c78360ee2fa6ba827506d26c9f39f25b66200"
+    },
+    "6102027": {
+     "file": "dropout0.2_weight_decay0.0001__s6102027.keras",
+     "sha256": "b82abdff356761ef90e2addae39f4389e86f85067a78e45e3469903bf1587aa4"
+    },
+    "6102028": {
+     "file": "dropout0.2_weight_decay0.0001__s6102028.keras",
+     "sha256": "753f61ed8f4162f66ec9438c4529180a06e8f963ed585f802ca030185d7d9e0a"
+    }
+   },
+   "columns": [
+    "RAW_BAR_LOG_RETURN",
+    "cal.hod_sin",
+    "cal.session_europe",
+    "px.atr_ratio_14_120",
+    "px.close_loc_2",
+    "px.logret_24",
+    "variogram_hurst_w96"
+   ],
+   "scaler": {
+    "mean": [
+     -9.486534527470533e-06,
+     0.0014040480582534977,
+     0.24585252177772846,
+     0.999213037426826,
+     0.4943695052562785,
+     -8.262120717476872e-05,
+     0.4584588649769568
+    ],
+    "sd": [
+     0.001056588699967667,
+     0.7094397339109967,
+     0.43059152257473055,
+     0.2727528144229196,
+     0.2965515507612367,
+     0.00487006789466681,
+     0.10154187943039435
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "develop_sha256": "02f19ee9792a883a3ba74ee965b8bc2cdd1e5daf2cd4d1b203b384064fd8fb47"
+  },
+  "timing_selected__m3_hgb": {
+   "set": "timing_selected",
+   "arm": "m3_hgb",
+   "cell": {
+    "l2_regularization": 0.0
+   },
+   "cell_choice": {
+    "rule": "lowest mean INNER_A loss at the restored checkpoint across seeds, ties by smaller mean gap",
+    "winner": "l2_regularization0",
+    "primary": "l2_regularization0",
+    "replaced_primary": false
+   },
+   "cell_table": [
+    {
+     "cell": {
+      "l2_regularization": 0.0
+     },
+     "cell_id": "l2_regularization0",
+     "mean_inner_a_loss": 1.0264446440816464,
+     "mean_gap": 0.3470700584247142,
+     "seeds": 3,
+     "primary": true
+    },
+    {
+     "cell": {
+      "l2_regularization": 10.0
+     },
+     "cell_id": "l2_regularization10",
+     "mean_inner_a_loss": 1.027309932340683,
+     "mean_gap": 0.32823656359767195,
+     "seeds": 3,
+     "primary": false
+    },
+    {
+     "cell": {
+      "l2_regularization": 1.0
+     },
+     "cell_id": "l2_regularization1",
+     "mean_inner_a_loss": 1.0276689781998172,
+     "mean_gap": 0.3467341385167752,
+     "seeds": 3,
+     "primary": false
+    }
+   ],
+   "temperatures": {
+    "6102026": 1.476826145939499,
+    "6102027": 1.476826145939499,
+    "6102028": 1.476826145939499
+   },
+   "threshold": 0.6,
+   "threshold_grid_inner_a": [
+    {
+     "threshold": 0.4,
+     "sharpe": -5.526433777060493,
+     "valid": true
+    },
+    {
+     "threshold": 0.5,
+     "sharpe": -3.535511964990981,
+     "valid": true
+    },
+    {
+     "threshold": 0.6,
+     "sharpe": -2.2826883319737346,
+     "valid": true
+    },
+    {
+     "threshold": 0.7,
+     "sharpe": 1.7688951835996838,
+     "valid": false
+    }
+   ],
+   "models": {
+    "6102026": {
+     "file": "l2_regularization0__s6102026.pkl",
+     "sha256": "76819a5ee7107c9fdae138f28db823b6f27c34c17812996e27d8f5bb95017008"
+    },
+    "6102027": {
+     "file": "l2_regularization0__s6102027.pkl",
+     "sha256": "f53521075beda477e5d3a995de58f62163a7c119c214d79f24a055fe9ea30ac7"
+    },
+    "6102028": {
+     "file": "l2_regularization0__s6102028.pkl",
+     "sha256": "1f3371c65dfa482123c0448ff4c93580611d00cb5b38939237ee0a6969cfc675"
+    }
+   },
+   "columns": [
+    "RAW_BAR_LOG_RETURN",
+    "cal.hod_sin",
+    "cal.session_europe",
+    "px.atr_ratio_14_120",
+    "px.close_loc_2",
+    "px.logret_24",
+    "variogram_hurst_w96"
+   ],
+   "scaler": {
+    "mean": [
+     -9.486534527470533e-06,
+     0.0014040480582534977,
+     0.24585252177772846,
+     0.999213037426826,
+     0.4943695052562785,
+     -8.262120717476872e-05,
+     0.4584588649769568
+    ],
+    "sd": [
+     0.001056588699967667,
+     0.7094397339109967,
+     0.43059152257473055,
+     0.2727528144229196,
+     0.2965515507612367,
+     0.00487006789466681,
+     0.10154187943039435
+    ],
+    "fit_on": "TRAIN_2020_2022 identical rows"
+   },
+   "develop_sha256": "27775a32db65fa41eb72eb5162f757324ef1287b823a7bcb965af8c494737909"
+  }
+ },
+ "stage": "freeze",
+ "thresholds_attempted": [
+  0.4,
+  0.5,
+  0.6,
+  0.7
+ ],
+ "periods_read": [
+  "TRAIN_2020_2022",
+  "INNER_A_2023H1",
+  "INNER_B_2023H2"
+ ],
+ "reads_2024": false,
+ "rules": {
+  "cell": "lowest mean INNER_A loss, ties by gap",
+  "threshold": "max mean INNER_A Sharpe over seeds among valid, else max",
+  "temperature": "per seed on INNER_A (log grid 0.25..8)"
+ },
+ "freeze_sha256": "50952d2b44516b962e1f00c5138a7d84dd2744428937414e5ad1354ab02830e2"
+}

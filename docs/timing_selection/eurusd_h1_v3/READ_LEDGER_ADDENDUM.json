@@ -1,0 +1,37 @@
+{
+ "schema": "timing_selection.read_ledger_addendum.v1",
+ "expert": "ZigZag v2 (abbfaa6): 2023 JOINT development, 2024 PREVIOUSLY OBSERVED development (owner relabel)",
+ "evaluator_executions": [
+  {
+   "stage": "develop (GPU neural, CPU m3)",
+   "periods_read": [
+    "TRAIN_2020_2022",
+    "INNER_A_2023H1",
+    "INNER_B_2023H2"
+   ],
+   "reads_2024": false
+  },
+  {
+   "stage": "freeze (once)",
+   "periods_read": [
+    "INNER_A_2023H1 (choices)",
+    "INNER_B_2023H2 (frozen scoring)"
+   ],
+   "freeze_sha256": "03fe9b2d544e862c2344d082ab1d7a44572ab14b75ae540deb9c88f350b28c01"
+  },
+  {
+   "stage": "reconfirm (once, after FROZEN.json)",
+   "periods_read": [
+    "REOBSERVED_2024"
+   ],
+   "decisions_changed": false
+  },
+  {
+   "stage": "seal",
+   "periods_read": []
+  }
+ ],
+ "witness_reads": {
+  "admitted_root_rows_before_2025": "CLOCK_AND_COVERAGE_WITNESS.json only (no selection input)"
+ }
+}

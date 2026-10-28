@@ -1,0 +1,38 @@
+{
+ "freeze_rule": "the candidate subset is frozen in SELECTION_MANIFEST before the evaluator's first read of 2023; the evaluator's choices are frozen in FROZEN.json before its read of 2024",
+ "prior_reads": [
+  {
+   "actor": "ZigZag expert selection (heuristic-strategy docs/short_horizon/results/zigzag/CHOICE.json)",
+   "consequence": "2023 is JOINT development for every downstream use of this expert; 2024 is PREVIOUSLY OBSERVED",
+   "periods": {
+    "2020-2022": "frequency-rule acceptance of the NSGA-II front",
+    "2023": "chose the expert by best 2023 Sharpe",
+    "2024": "reported confirm_2024 metrics"
+   }
+  },
+  {
+   "actor": "pivot detector (heuristic-strategy satoshi/pivot-detector-20261019 @cead861c)",
+   "consequence": "2024 observed again",
+   "periods": {
+    "2023": "temperature and operating threshold",
+    "2024": "reported once"
+   }
+  },
+  {
+   "actor": "this lane, provisional v1 (targets timing_targets.v1, 2026-10-19)",
+   "consequence": "no 2023/2024 metric of v1 exists or influenced v2",
+   "periods": {
+    "2020-2022": "phase-2/3 selection, screens",
+    "2023-2024": "evaluator loaded rows and began fits; stopped before any metric was computed or written"
+   }
+  }
+ ],
+ "schema": "timing_selection.read_ledger.v1",
+ "this_run": {
+  "2020-2022 TRAIN": "every selection stage (engines, screens, recipe, causal)",
+  "2023H1 INNER_A": "evaluator: early stopping, temperature, regularization cell, threshold",
+  "2023H2 INNER_B": "evaluator: frozen scoring only",
+  "2024": "evaluator `reconfirm` after FROZEN.json; previously observed; no decision may change on it",
+  "2025+": "never read"
+ }
+}

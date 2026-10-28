@@ -1,0 +1,8 @@
+{
+  "schema": "timing_v3_independent_audit_persistence.v1",
+  "metrics": 80,
+  "warehouse": {"expected": 1, "delivered": 1, "pending": 0, "mismatch": 0},
+  "closed_sqlite_backup_sha256": "52467335f603f77969a3a098a2d64e8a272d186457efed46042dd6b40b0be02b",
+  "physical_copy": "SECOND_MACHINE_CONTENT_CHECKSUM_IDENTICAL",
+  "scope": "AUDIT_EVIDENCE_ONLY_NOT_A_REPAIR_OF_THE_PRODUCER_MODEL_SNAPSHOT"
+}

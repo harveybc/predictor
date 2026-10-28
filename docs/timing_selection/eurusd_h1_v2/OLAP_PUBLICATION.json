@@ -1,0 +1,27 @@
+{
+ "all_match": true,
+ "db": "timing_selection.sqlite",
+ "inserted": {
+  "timing_selection_eval": 0,
+  "timing_selection_features": 0,
+  "timing_selection_manifest": 0
+ },
+ "readback": {
+  "timing_selection_eval": {
+   "count": 1244,
+   "expected": 1244,
+   "match": true
+  },
+  "timing_selection_features": {
+   "count": 89,
+   "expected": 89,
+   "match": true
+  },
+  "timing_selection_manifest": {
+   "count": 1,
+   "expected": 1,
+   "match": true
+  }
+ },
+ "run_id": "4fd6710e5a1fa746d6b1303ca871dbbe3c81fc516638e04eb352300c6bcbf2d0"
+}

@@ -1,0 +1,114 @@
+{
+ "frozen_at": "2026-10-19T14:28:53.931502+00:00",
+ "reads_so_far": [
+  "TRAIN_2020_2022"
+ ],
+ "recipe": {
+  "dropped_by_fdr_screen": [
+   "CLOSE",
+   "RAW_ELAPSED_HOURS",
+   "box_counting_dimension_w48",
+   "box_counting_dimension_w96",
+   "cal.dow_cos",
+   "hurst_rs_w48",
+   "hurst_rs_w96",
+   "hurst_spectrum_width_w200",
+   "px.er_1",
+   "px.er_12",
+   "px.er_4",
+   "px.er_6"
+  ],
+  "k": 12,
+  "method": "MRMR",
+  "per_target": {
+   "timing_peak_k2": [
+    "CLOSE",
+    "RAW_ELAPSED_HOURS",
+    "box_counting_dimension_w48",
+    "box_counting_dimension_w96",
+    "cal.dow_cos",
+    "cal.hod_sin",
+    "hurst_rs_w48",
+    "hurst_rs_w96",
+    "px.close_loc_2",
+    "px.er_1",
+    "px.er_12",
+    "px.er_4"
+   ],
+   "timing_pivot_k2": [
+    "RAW_BAR_LOG_RETURN",
+    "RAW_ELAPSED_HOURS",
+    "box_counting_dimension_w48",
+    "cal.dow_cos",
+    "cal.session_europe",
+    "hurst_rs_w48",
+    "hurst_spectrum_width_w200",
+    "px.close_loc_2",
+    "px.er_1",
+    "px.er_12",
+    "px.er_4",
+    "variogram_hurst_w96"
+   ],
+   "timing_valley_k2": [
+    "RAW_ELAPSED_HOURS",
+    "box_counting_dimension_w48",
+    "cal.dow_cos",
+    "cal.session_europe",
+    "hurst_rs_w48",
+    "hurst_spectrum_width_w200",
+    "px.atr_ratio_14_120",
+    "px.close_loc_2",
+    "px.er_1",
+    "px.er_6",
+    "px.logret_24",
+    "variogram_hurst_w96"
+   ]
+  },
+  "pruned_redundant": [],
+  "selected": [
+   "RAW_BAR_LOG_RETURN",
+   "cal.hod_sin",
+   "cal.session_europe",
+   "px.atr_ratio_14_120",
+   "px.close_loc_2",
+   "px.logret_24",
+   "variogram_hurst_w96"
+  ],
+  "targets": [
+   "timing_pivot_k2",
+   "timing_valley_k2",
+   "timing_peak_k2"
+  ],
+  "union": [
+   "CLOSE",
+   "RAW_BAR_LOG_RETURN",
+   "RAW_ELAPSED_HOURS",
+   "box_counting_dimension_w48",
+   "box_counting_dimension_w96",
+   "cal.dow_cos",
+   "cal.hod_sin",
+   "cal.session_europe",
+   "hurst_rs_w48",
+   "hurst_rs_w96",
+   "hurst_spectrum_width_w200",
+   "px.atr_ratio_14_120",
+   "px.close_loc_2",
+   "px.er_1",
+   "px.er_12",
+   "px.er_4",
+   "px.er_6",
+   "px.logret_24",
+   "variogram_hurst_w96"
+  ]
+ },
+ "selected": [
+  "RAW_BAR_LOG_RETURN",
+  "cal.hod_sin",
+  "cal.session_europe",
+  "px.atr_ratio_14_120",
+  "px.close_loc_2",
+  "px.logret_24",
+  "variogram_hurst_w96"
+ ],
+ "subset_sha256": "36b16fc885f746e4be738a41ccb1d78668968ad3d0673ab34bb4c72722b77116"
+}

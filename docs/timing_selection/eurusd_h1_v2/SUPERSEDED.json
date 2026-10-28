@@ -1,0 +1,9 @@
+{
+ "schema": "timing_selection.superseded.v1",
+ "state": "SUPERSEDED",
+ "superseded_by": "docs/timing_selection/eurusd_h1_v3/",
+ "manifest_sha256": "4fd6710e5a1fa746d6b1303ca871dbbe3c81fc516638e04eb352300c6bcbf2d0",
+ "reason": "the expert changed (heuristic-strategy abbfaa6: ZigZag v2 from the full NSGA-II, Depth 3 / Deviation 40.7 pips / Backstep 0 at cap 4/day; confirmation definition fixed to the first opposite candidate + Backstep; executable fill path b+1). Per the plan audit's F08 every target-dependent stage was recomputed; target-independent stages were reused unchanged.",
+ "kept_for_the_record": true,
+ "do_not_consume": true
+}

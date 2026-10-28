@@ -1,0 +1,53 @@
+{
+ "schema": "timing_eval.compute_ledger.v1",
+ "shards": {
+  "admitted_core_15_553fc047__m1_dmo_class": {
+   "device": "GPU: RTX 4090 Laptop (secondary worker role; one nvidia-smi read: 0 compute processes)",
+   "stack": "TF 2.21.0 / Keras 3.13, sklearn 1.8.0, TF_DETERMINISTIC_OPS=1",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 working tree after merging abbfaa6 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 6G -t 14400s",
+   "fits": 18,
+   "fit_seconds_sum": 291.3
+  },
+  "admitted_core_15_553fc047__m2_gru": {
+   "device": "GPU: RTX 4090 Laptop (secondary worker role; one nvidia-smi read: 0 compute processes)",
+   "stack": "TF 2.21.0 / Keras 3.13, sklearn 1.8.0, TF_DETERMINISTIC_OPS=1",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 working tree after merging abbfaa6 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 6G -t 14400s",
+   "fits": 18,
+   "fit_seconds_sum": 452.9
+  },
+  "admitted_core_15_553fc047__m3_hgb": {
+   "device": "CPU (coordinator role)",
+   "stack": "TF 2.18 / sklearn 1.5.1",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 working tree after merging abbfaa6 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 3G -t 7200s",
+   "fits": 9,
+   "fit_seconds_sum": 573.7
+  },
+  "timing_selected__m1_dmo_class": {
+   "device": "GPU: RTX 4090 Laptop (secondary worker role; one nvidia-smi read: 0 compute processes)",
+   "stack": "TF 2.21.0 / Keras 3.13, sklearn 1.8.0, TF_DETERMINISTIC_OPS=1",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 working tree after merging abbfaa6 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 6G -t 14400s",
+   "fits": 18,
+   "fit_seconds_sum": 312.9
+  },
+  "timing_selected__m2_gru": {
+   "device": "GPU: RTX 4090 Laptop (secondary worker role; one nvidia-smi read: 0 compute processes)",
+   "stack": "TF 2.21.0 / Keras 3.13, sklearn 1.8.0, TF_DETERMINISTIC_OPS=1",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 working tree after merging abbfaa6 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 6G -t 14400s",
+   "fits": 18,
+   "fit_seconds_sum": 522.6
+  },
+  "timing_selected__m3_hgb": {
+   "device": "CPU (coordinator role)",
+   "stack": "TF 2.18 / sklearn 1.5.1",
+   "code": "heuristic-strategy satoshi/timing-selection-eval-20261019 working tree after merging abbfaa6 (staged file sha256 verified identical)",
+   "cap": "crispdm-run -m 3G -t 7200s",
+   "fits": 9,
+   "fit_seconds_sum": 301.9
+  }
+ }
+}
