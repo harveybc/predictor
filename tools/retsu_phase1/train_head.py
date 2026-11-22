@@ -35,6 +35,7 @@ def write_status(payload: dict) -> None:
     payload = dict(payload)
     payload["updated_at"] = pd_now()
     payload["source"] = "keras_epoch_logs"
+    OUT.mkdir(parents=True, exist_ok=True)
     tmp = OUT / "STATUS.json.tmp"
     tmp.write_text(json.dumps(payload, indent=2, default=str) + "\n")
     tmp.replace(OUT / "STATUS.json")
