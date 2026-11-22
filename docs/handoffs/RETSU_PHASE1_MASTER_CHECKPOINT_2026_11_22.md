@@ -93,3 +93,9 @@ Several champions are epoch 1: the validation loss never improved on the CLOSE l
 | pretrained | long_1575 | 181 | 1 | 0.030552 | 0.022929 | 0.019464 | 24 h 0.019107 |
 
 The other seven jobs on each encoder are higher. Full rows are in `close_results.json`.
+
+## CLOSE change, 2026-11-22
+
+The level run predicted the train mean of CLOSE (about 1.111, train MAE stuck at the 0.0208 standard deviation) and never approached the origin price. The next measurement is the change: future CLOSE minus CLOSE at the origin. Zero change is CLOSE persistence, so the 2024 gates stay 0.001415 at 6 h and 0.003370 at 24 h. Masks, horizons 1–6, 24 and 48, champion protocol, and both frozen embeddings are unchanged. The encoder stays frozen.
+
+`build_dclose_targets.py` refuses to train unless the recomputed 2024 persistence matches `followup/close_persistence.json` and the 1 h change is much tighter than the CLOSE level. Queues, in series on the 4090: `/var/tmp/retsu-phase1-dclose-seed7`, then `/var/tmp/retsu-phase1-dclose-pretrained`. This queue does not write `Prediction_h_*` or `Prediction_d_*`. Results land in `followup/dclose_results.json`.
