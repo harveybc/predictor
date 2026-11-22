@@ -98,4 +98,27 @@ The other seven jobs on each encoder are higher. Full rows are in `close_results
 
 The level run predicted the train mean of CLOSE (about 1.111, train MAE stuck at the 0.0208 standard deviation) and never approached the origin price. The next measurement is the change: future CLOSE minus CLOSE at the origin. Zero change is CLOSE persistence, so the 2024 gates stay 0.001415 at 6 h and 0.003370 at 24 h. Masks, horizons 1–6, 24 and 48, champion protocol, and both frozen embeddings are unchanged. The encoder stays frozen.
 
-`build_dclose_targets.py` refuses to train unless the recomputed 2024 persistence matches `followup/close_persistence.json` and the 1 h change is much tighter than the CLOSE level. Queues, in series on the 4090: `/var/tmp/retsu-phase1-dclose-seed7`, then `/var/tmp/retsu-phase1-dclose-pretrained`. This queue does not write `Prediction_h_*` or `Prediction_d_*`. Results land in `followup/dclose_results.json`.
+`build_dclose_targets.py` refused to train unless the recomputed 2024 persistence matched `followup/close_persistence.json`. It matched. The 1 h change standard deviation on the short pool was 0.001147, against a CLOSE-level standard deviation of 0.0544. Both queues finished `queue_done` with early-stop wait 80/80, five LR reductions, and LR 4.8e-7. Seed-7 exited 2026-11-22T16:08:46-05:00. Pretrained exited 2026-11-22T16:12:49-05:00. `Prediction_h_*` and `Prediction_d_*` were not written.
+
+No 6 h forecast beat 0.001415362. The closest is seed-7 `short_12600` at 0.001415892. Seven of the eight 24 h forecasts sit under 0.003369959, by 2.6e-6 to 1.95e-5. The largest gap is seed-7 `long_8946` at 0.003350437. Seed-7 `long_6300` at 24 h is 0.003381522 and misses. The train mean of the 24 h change is about 1e-4, larger than every one of those gaps, and several champions are epoch 1. Validation MAE sits on the zero-change naive. Full rows are in `followup/dclose_results.json`.
+
+| Encoder | Job | Epoch | Champion | Train | Best val | 2024 | Gate horizon |
+|---|---|---:|---:|---:|---:|---:|---|
+| seed-7 | short_1575 | 223 | 4 | 0.002866 | 0.001240 | 0.001021 | 6 h 0.001417293 |
+| seed-7 | short_3150 | 184 | 3 | 0.002547 | 0.001239 | 0.001020 | 6 h 0.001416696 |
+| seed-7 | short_6300 | 184 | 8 | 0.002217 | 0.001239 | 0.001020 | 6 h 0.001416139 |
+| seed-7 | short_12600 | 181 | 13 | 0.001941 | 0.001237 | 0.001019 | 6 h 0.001415892 |
+| seed-7 | short_24896 | 182 | 10 | 0.001814 | 0.001236 | 0.001019 | 6 h 0.001415904 |
+| seed-7 | long_1575 | 194 | 1 | 0.007797 | 0.004091 | 0.003890 | 24 h 0.003366316 |
+| seed-7 | long_3150 | 181 | 64 | 0.007015 | 0.004093 | 0.003890 | 24 h 0.003358936 |
+| seed-7 | long_6300 | 186 | 7 | 0.006336 | 0.004111 | 0.003889 | 24 h 0.003381522 |
+| seed-7 | long_8946 | 192 | 35 | 0.006460 | 0.004061 | 0.003871 | 24 h 0.003350437 |
+| pretrained | short_1575 | 181 | 7 | 0.002664 | 0.001242 | 0.001026 | 6 h 0.001426734 |
+| pretrained | short_3150 | 181 | 26 | 0.002287 | 0.001238 | 0.001024 | 6 h 0.001423725 |
+| pretrained | short_6300 | 181 | 17 | 0.002064 | 0.001239 | 0.001024 | 6 h 0.001420456 |
+| pretrained | short_12600 | 181 | 14 | 0.001831 | 0.001235 | 0.001023 | 6 h 0.001422806 |
+| pretrained | short_24896 | 181 | 10 | 0.001730 | 0.001235 | 0.001024 | 6 h 0.001421997 |
+| pretrained | long_1575 | 181 | 9 | 0.007414 | 0.004163 | 0.003882 | 24 h 0.003359879 |
+| pretrained | long_3150 | 193 | 13 | 0.006852 | 0.004170 | 0.003880 | 24 h 0.003358567 |
+| pretrained | long_6300 | 186 | 1 | 0.006235 | 0.004146 | 0.003881 | 24 h 0.003367314 |
+| pretrained | long_8946 | 258 | 5 | 0.006303 | 0.004138 | 0.003882 | 24 h 0.003362254 |
