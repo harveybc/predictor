@@ -142,6 +142,17 @@ Start balance is 10000. Full trades are in `followup/account/account_results.jso
 
 The handoff asks for a TRAIN/VAL figure per run, with the learning rate and each reduction, plus the hash of the restored champion. `plot_curves.py` read the 54 `epochs.jsonl` files of the six cited queues and did not fit or predict. The figures and `champion_sha256` values are in `/var/tmp/retsu-phase1/followup/curves/`. Nine jobs in each of seasonal pretrained, seasonal seed-7, CLOSE seed-7, CLOSE pretrained, change seed-7, and change pretrained.
 
-## Encoder fine-tune, launched 2026-11-22
+## Encoder fine-tune, 2026-11-22
 
-The frozen linear head does not beat CLOSE persistence, and the true seasonal plus the origin trend does. The next contrast keeps that seasonal target, the same masks, the full pools, and the same champion rule. The only change is whether the recipe-61 encoder receives gradients. A fresh torch linear head is used in both arms so the head class is not confounded with Flipout. `dump_windows.py` rebuilt the 32618 windows of shape [13, 61] and matched the saved CPU embedding with max abs 0. Queues, in series: `/var/tmp/retsu-phase1-unfreeze-frozen`, then `/var/tmp/retsu-phase1-unfreeze-tuned`. No Prediction columns.
+The frozen linear head does not beat CLOSE persistence, and the true seasonal plus the origin trend does. This contrast keeps that seasonal target, the same masks, the full pools, and the same champion rule. The only change is whether the recipe-61 encoder receives gradients. A fresh torch linear head is used in both arms so the head class is not confounded with Flipout. `dump_windows.py` rebuilt the 32618 windows of shape [13, 61] and matched the saved CPU embedding with max abs 0. Both queues finished at 2026-11-22T17:37:42-05:00. Every job stopped at early-stop wait 80/80, four LR reductions, and LR 4.8e-7.
+
+| Arm | Job | Epoch | Champion | Train | Best val | 2024 seasonal |
+|---|---|---:|---:|---:|---:|---:|
+| frozen | short | 419 | 339 | 0.002318 | 0.002229 | 0.001808 |
+| frozen | long | 205 | 125 | 0.002762 | 0.002739 | 0.002229 |
+| tuned | short | 179 | 7 | 0.001398 | 0.001578 | 0.001372 |
+| tuned | long | 179 | 4 | 0.001896 | 0.002708 | 0.002217 |
+
+Tuned short by horizon: 0.001181, 0.001258, 0.001346, 0.001423, 0.001482, 0.001542. The 2024 seasonal naive is 0.000693, 0.001006, 0.001245, 0.001446, 0.001617, 0.001766. Horizons 4, 5 and 6 beat that naive. Horizons 1, 2 and 3 do not. The mean 0.001372 stays above the naive mean 0.001295. Tuned long is 0.002198 at 24 h and 0.002236 at 48 h, against seasonal naive 0.003157 and 0.003090. The frozen long arm is 0.002183 and 0.002274. Fine-tuning moves the short seasonal error and leaves the long arm where the frozen head already was.
+
+Price reconstruction is trend at the origin plus the seasonal forecast, against future CLOSE. No horizon beats CLOSE persistence. Tuned short, horizons 1–6: 0.001067, 0.001211, 0.001356, 0.001505, 0.001640, 0.001775 against 0.000552, 0.000780, 0.000971, 0.001124, 0.001272, 0.001415. Tuned long: 0.004162 against 0.003370 at 24 h, and 0.004988 against 0.004399 at 48 h. The gates 0.001415 and 0.003370 stay closed. `Prediction_h_*` and `Prediction_d_*` were not written. Rows are in `followup/unfreeze_results.json`.
