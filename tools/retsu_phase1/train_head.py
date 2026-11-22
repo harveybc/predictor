@@ -149,7 +149,7 @@ class ChampionStatus(tf.keras.callbacks.Callback):
             "target_mean": self.job["target_mean"],
             "target_std": self.job["target_std"],
             "embedding_scale": self.job["embedding_scale"],
-            "mae_unit": "seasonal_price",
+            "mae_unit": os.environ.get("RETSU_MAE_UNIT", "seasonal_price"),
             "kl_weight": float(self.kl_var.numpy()),
             "naive_mae_monitor": self.job["naive_mae_monitor"],
             "champion_restored": False,

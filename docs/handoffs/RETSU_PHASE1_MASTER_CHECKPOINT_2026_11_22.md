@@ -74,3 +74,22 @@ short_24896 by horizon in 2024: 0.001485, 0.001535, 0.001571, 0.001619, 0.001651
 - Follow-up outputs: `/var/tmp/retsu-phase1/followup`.
 - Seed-7 control queue: `/var/tmp/retsu-phase1-control`.
 - Tools in this repo: `tools/retsu_phase1`.
+- CLOSE queues: `/var/tmp/retsu-phase1-close-seed7` and `/var/tmp/retsu-phase1-close-pretrained`.
+- CLOSE summary: `/var/tmp/retsu-phase1/followup/close_results.json`.
+
+## CLOSE target, 2026-11-22
+
+Both queues finished `queue_done`. Seed-7 at 2026-11-22T19:24:19Z. Pretrained at 2026-11-22T19:28 UTC, log exit 2026-11-22T14:28:47-05:00. Every job stopped at early-stop wait 80/80 and LR 4.8e-7. The target is future CLOSE on the seasonal masks. The naive is CLOSE at the origin. 2024 persistence is 0.000552, 0.000780, 0.000971, 0.001124, 0.001272, 0.001415 for 1–6 h, and 0.003370, 0.004399 for 24 h and 48 h.
+
+No horizon beats that persistence. The gates were 0.001415 at 6 h and 0.003370 at 24 h. The lowest 6 h MAE is 0.028627 (pretrained short_3150). The lowest 24 h MAE is 0.018976 (seed-7 long_1575). `Prediction_h_*` and `Prediction_d_*` were not written.
+
+Several champions are epoch 1: the validation loss never improved on the CLOSE level after the first epoch.
+
+| Encoder | Job | Epoch | Champion | Train | Best val | 2024 | 6 h or 24 h |
+|---|---|---:|---:|---:|---:|---:|---:|
+| seed-7 | short_3150 | 367 | 1 | 0.022680 | 0.031427 | 0.029349 | 6 h 0.029118 |
+| seed-7 | long_1575 | 181 | 1 | 0.031648 | 0.022098 | 0.018952 | 24 h 0.018976 |
+| pretrained | short_3150 | 181 | 1 | 0.020605 | 0.031143 | 0.028897 | 6 h 0.028627 |
+| pretrained | long_1575 | 181 | 1 | 0.030552 | 0.022929 | 0.019464 | 24 h 0.019107 |
+
+The other seven jobs on each encoder are higher. Full rows are in `close_results.json`.
