@@ -39,6 +39,18 @@ The unscaled sweep in row 5 stays archived and is not cited. The strategy plugin
 | 4 | Control without pretrained weights | Same Bayesian head, same rows, same protocol. 2024 seasonal MAE against persistence, to see what the 61 encoder adds | Dragon RTX 4090. Omega's GPU stays Musashi's | Not with another training job on that 4090. Yes with rows 1–3 on CPU |
 | 5 | Horizons 72, 96, 120 and 144 | Nothing under the current segment mask: there are not 1575 train rows and 200 monitor rows | None, until that rule changes | Not applicable |
 
+## Follow-up already measured
+
+Tasks 1–3 finished on Dragon CPU on 2026-11-22. Task 4 is the seed-7 control on the RTX 4090. Task 5 was not run.
+
+| # | Task | Result |
+|---|---|---|
+| 1 | Encoder panel, 377 windows (256 train, 60 monitor, 61 holdout) | Frozen relative L2 is 0. The panel matches the saved CPU embeddings with max abs 2.38e-7. Parameter L2: branches 21.67, fusion 5.08, post_fusion 6.34, core 7.18. `fixed_fusion_offset` L2 3.04, absmax 0.729. Activation std: fusion 0.668, fusion plus offset 0.748, post_fusion 0.517, core and encoder output 0.353. All 22 branches and every activation are finite. |
+| 2 | 90% predictive interval, 24 Flipout samples | short_12600 holdout coverage by horizon 0.739, 0.747, 0.741, 0.726, 0.726, 0.723. Mean width about 0.0055. long_8946 holdout coverage 0.757 at 24 h and 0.715 at 48 h. Width 0.00626 and 0.00660. Nominal is 0.90, so the intervals are short of calibrated. |
+| 3 | 2024 semesters | short_12600 H1 MAE 0.001830 against naive 0.001237 (1684 rows). H2 MAE 0.001854 against naive 0.001356 (1619 rows). long_8946 H1 MAE 0.002170 against naive 0.003135 (600 rows). H2 MAE 0.002301 against naive 0.003113 (588 rows). The full-year sign holds in both halves. |
+| 4 | Seed-7 encoder, model.pt not loaded | Embeddings differ from the pretrained encoder by max abs 11.41. The nine-head queue is on the 4090. |
+| 5 | Horizons 72–144 | Not run. The segment mask still does not admit them. |
+
 ## Layout
 
 - Pretrained champions: `/var/tmp/retsu-phase1/jobs`.
