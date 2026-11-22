@@ -137,3 +137,7 @@ Persistence takes no trade: the predicted price is the current price, and the en
 | pretrained persistence | 0.00 | 0 |  |  |  |
 
 Start balance is 10000. Full trades are in `followup/account/account_results.json`. `Prediction_h_*` and `Prediction_d_*` were not written into the predictor pipeline.
+
+## Curves, 2026-11-22
+
+The handoff asks for a TRAIN/VAL figure per run, with the learning rate and each reduction, plus the hash of the restored champion. `plot_curves.py` read the 54 `epochs.jsonl` files of the six cited queues and did not fit or predict. The figures and `champion_sha256` values are in `/var/tmp/retsu-phase1/followup/curves/`. Nine jobs in each of seasonal pretrained, seasonal seed-7, CLOSE seed-7, CLOSE pretrained, change seed-7, and change pretrained.
