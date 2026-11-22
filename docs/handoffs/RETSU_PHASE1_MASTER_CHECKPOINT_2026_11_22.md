@@ -41,15 +41,31 @@ The unscaled sweep in row 5 stays archived and is not cited. The strategy plugin
 
 ## Follow-up already measured
 
-Tasks 1–3 finished on Dragon CPU on 2026-11-22. Task 4 is the seed-7 control on the RTX 4090. Task 5 was not run.
+Tasks 1–4 finished on 2026-11-22. The seed-7 control reached `queue_done` at 2026-11-22T18:27:08Z. Task 5 was not run.
 
 | # | Task | Result |
 |---|---|---|
 | 1 | Encoder panel, 377 windows (256 train, 60 monitor, 61 holdout) | Frozen relative L2 is 0. The panel matches the saved CPU embeddings with max abs 2.38e-7. Parameter L2: branches 21.67, fusion 5.08, post_fusion 6.34, core 7.18. `fixed_fusion_offset` L2 3.04, absmax 0.729. Activation std: fusion 0.668, fusion plus offset 0.748, post_fusion 0.517, core and encoder output 0.353. All 22 branches and every activation are finite. |
 | 2 | 90% predictive interval, 24 Flipout samples | short_12600 holdout coverage by horizon 0.739, 0.747, 0.741, 0.726, 0.726, 0.723. Mean width about 0.0055. long_8946 holdout coverage 0.757 at 24 h and 0.715 at 48 h. Width 0.00626 and 0.00660. Nominal is 0.90, so the intervals are short of calibrated. |
 | 3 | 2024 semesters | short_12600 H1 MAE 0.001830 against naive 0.001237 (1684 rows). H2 MAE 0.001854 against naive 0.001356 (1619 rows). long_8946 H1 MAE 0.002170 against naive 0.003135 (600 rows). H2 MAE 0.002301 against naive 0.003113 (588 rows). The full-year sign holds in both halves. |
-| 4 | Seed-7 encoder, model.pt not loaded | Embeddings differ from the pretrained encoder by max abs 11.41. The nine-head queue is on the 4090. |
+| 4 | Seed-7 encoder, model.pt not loaded | Embeddings differ from the pretrained encoder by max abs 11.41. All nine heads stopped at early-stop wait 80/80 and LR 4.8e-7. Every 2024 MAE is lower than the pretrained head. Best short is short_24896 at 0.001591 against pretrained 0.001845 and 2024 naive 0.001295. Best long is long_8946 at 0.002220 against pretrained 0.002235 and 2024 naive 0.003124. The pretrained recipe-61 weights do not improve this seasonal target. |
 | 5 | Horizons 72–144 | Not run. The segment mask still does not admit them. |
+
+2024 seasonal MAE of the seed-7 control minus the pretrained head. A negative delta means the control is lower. Monitor naive is 0.001391 short and 0.004382 long. 2024 naive is 0.001295 short and 0.003124 long.
+
+| Job | Epoch | Champion | Train | Best val | Control 2024 | Pretrained 2024 | Delta |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| short_1575 | 475 | 395 | 0.004125 | 0.002269 | 0.001803 | 0.002032 | −0.000229 |
+| short_3150 | 430 | 350 | 0.003330 | 0.002123 | 0.001633 | 0.001902 | −0.000269 |
+| short_6300 | 267 | 187 | 0.003157 | 0.002090 | 0.001611 | 0.001885 | −0.000275 |
+| short_12600 | 188 | 96 | 0.002885 | 0.002099 | 0.001603 | 0.001842 | −0.000239 |
+| short_24896 | 182 | 49 | 0.002818 | 0.002100 | 0.001591 | 0.001845 | −0.000255 |
+| long_1575 | 226 | 146 | 0.004423 | 0.002798 | 0.002213 | 0.002255 | −0.000042 |
+| long_3150 | 188 | 108 | 0.004279 | 0.002759 | 0.002232 | 0.002270 | −0.000038 |
+| long_6300 | 183 | 103 | 0.003651 | 0.002744 | 0.002229 | 0.002242 | −0.000013 |
+| long_8946 | 182 | 70 | 0.003747 | 0.002739 | 0.002220 | 0.002235 | −0.000014 |
+
+short_24896 by horizon in 2024: 0.001485, 0.001535, 0.001571, 0.001619, 0.001651, 0.001684 against naive 0.000693, 0.001006, 0.001245, 0.001446, 0.001617, 0.001766. Horizon 6 is the only short horizon under its own persistence. long_8946: 0.002148 at 24 h against 0.003157, and 0.002293 at 48 h against 0.003090.
 
 ## Layout
 
