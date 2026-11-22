@@ -122,3 +122,18 @@ No 6 h forecast beat 0.001415362. The closest is seed-7 `short_12600` at 0.00141
 | pretrained | long_3150 | 193 | 13 | 0.006852 | 0.004170 | 0.003880 | 24 h 0.003358567 |
 | pretrained | long_6300 | 186 | 1 | 0.006235 | 0.004146 | 0.003881 | 24 h 0.003367314 |
 | pretrained | long_8946 | 258 | 5 | 0.006303 | 0.004138 | 0.003882 | 24 h 0.003362254 |
+
+## Account, 2026-11-22
+
+The handoff sends the forecast and the naive through the same long/short plugin after the error tables. The price column is origin CLOSE plus the predicted change. The naive column is the origin CLOSE. Champions are seed-7 and pretrained `short_24896` with `long_8946`. The second predict reproduced the saved 2024 MAE within 1e-5. The individual is the plugin default `(5, 0.9, 2.0, 0.5, 2.0, 24)`, not fit on 2024. The feed is the 1188 holdout hours that have both horizons. Open, high and low are the CLOSE, because the STL series has no range.
+
+Persistence takes no trade: the predicted price is the current price, and the entry asks for 5 pips. The change champions do trade, and the account falls.
+
+| Arm | Profit USD | Trades | Win % | Sharpe | Max trade DD, pips |
+|---|---:|---:|---:|---:|---:|
+| seed-7 model | -220.23 | 145 | 46.2 | -9.04 | 306 |
+| seed-7 persistence | 0.00 | 0 |  |  |  |
+| pretrained model | -365.57 | 109 | 40.4 | -14.82 | 322 |
+| pretrained persistence | 0.00 | 0 |  |  |  |
+
+Start balance is 10000. Full trades are in `followup/account/account_results.json`. `Prediction_h_*` and `Prediction_d_*` were not written into the predictor pipeline.
