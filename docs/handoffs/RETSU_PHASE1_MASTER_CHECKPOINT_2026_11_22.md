@@ -185,3 +185,24 @@ The level head loses seasonal persistence at 1 h, 2 h and 3 h. This queue keeps 
 Validation is H2 2023. The tuned champion beats seasonal persistence on every horizon there: 1 h 0.000720 against 0.000732, 2 h 0.001022 against 0.001059, 3 h 0.001238 against 0.001315, 4 h 0.001425 against 0.001545, 5 h 0.001573 against 0.001749, 6 h 0.001725 against 0.001947, 24 h 0.003079 against 0.003926, 48 h 0.003532 against 0.004839. The frozen champion also beats every horizon on that split.
 
 2024, tuned: 0.000677, 0.000957, 0.001167, 0.001335, 0.001467, 0.001590, and 0.002621 at 24 h, 0.002416 at 48 h. All eight are under persistence. The 1 h gap is 0.000016. Rows are in `followup/sdelta_results.json`. Prediction columns were not written.
+
+The measured quantity is the MAE of the causal STL seasonal level. The model emits the increment, and the level is the origin seasonal plus that increment. The naive is persistence of that level: the forecast is the seasonal at the origin, which is an increment of zero. It is not a trained model. Training is `available_at < 2023-07-01`. Validation is H2 2023 and selects the champion. Test is 2024 and does not select weights. The training log stores only the mean MAE across horizons. Per-horizon MAE is stored for validation and for the 2024 test.
+
+| Split | Horizon | Rows | Naive MAE | Frozen model MAE | Frozen minus naive | Tuned model MAE | Tuned minus naive |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Validation | 1 | 1506 | 0.000732 | 0.000722 | −0.000010 | 0.000720 | −0.000013 |
+| Validation | 2 | 1506 | 0.001059 | 0.001029 | −0.000030 | 0.001022 | −0.000037 |
+| Validation | 3 | 1506 | 0.001315 | 0.001260 | −0.000056 | 0.001238 | −0.000077 |
+| Validation | 4 | 1506 | 0.001545 | 0.001448 | −0.000097 | 0.001425 | −0.000120 |
+| Validation | 5 | 1506 | 0.001749 | 0.001616 | −0.000133 | 0.001573 | −0.000175 |
+| Validation | 6 | 1506 | 0.001947 | 0.001777 | −0.000171 | 0.001725 | −0.000222 |
+| Validation | 24 | 527 | 0.003926 | 0.003286 | −0.000639 | 0.003079 | −0.000847 |
+| Validation | 48 | 527 | 0.004839 | 0.004129 | −0.000710 | 0.003532 | −0.001306 |
+| Test 2024 | 1 | 3303 | 0.000693 | 0.000681 | −0.000012 | 0.000677 | −0.000016 |
+| Test 2024 | 2 | 3303 | 0.001006 | 0.000972 | −0.000034 | 0.000957 | −0.000049 |
+| Test 2024 | 3 | 3303 | 0.001245 | 0.001187 | −0.000058 | 0.001167 | −0.000078 |
+| Test 2024 | 4 | 3303 | 0.001446 | 0.001369 | −0.000077 | 0.001335 | −0.000111 |
+| Test 2024 | 5 | 3303 | 0.001617 | 0.001508 | −0.000108 | 0.001467 | −0.000149 |
+| Test 2024 | 6 | 3303 | 0.001766 | 0.001641 | −0.000124 | 0.001590 | −0.000175 |
+| Test 2024 | 24 | 1188 | 0.003157 | 0.002869 | −0.000288 | 0.002621 | −0.000536 |
+| Test 2024 | 48 | 1188 | 0.003090 | 0.002687 | −0.000403 | 0.002416 | −0.000674 |
