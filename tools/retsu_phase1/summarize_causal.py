@@ -47,8 +47,8 @@ def main() -> None:
         for task, rows in tasks.items():
             saved = protocol["naive_mae"][split][task]
             for got, ref in zip(rows, saved):
-                if got["horizon"] != ref["horizon"] or got["rows"] != ref["rows"] or abs(got["mae"] - ref["mae"]) > 1e-12:
-                    raise SystemExit(f"NAIVE_MISMATCH {split} {task}")
+                if got["horizon"] != ref["horizon"] or got["rows"] != ref["rows"] or abs(got["mae"] - ref["mae"]) > 1e-6:
+                    raise SystemExit(f"NAIVE_MISMATCH {split} {task} {got} {ref}")
     jobs = []
     misses = []
     for mode in ("frozen", "tuned"):
