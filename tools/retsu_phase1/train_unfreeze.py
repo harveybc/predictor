@@ -265,7 +265,8 @@ def main() -> None:
     if mode not in ("frozen", "tuned"):
         raise SystemExit("RETSU_MODE")
     torch.backends.cudnn.benchmark = False
-    saved = np.load(PHASE / "dataset.npz")
+    dataset_path = Path(os.environ.get("RETSU_DATASET", str(PHASE / "dataset.npz")))
+    saved = np.load(dataset_path)
     data = {key: saved[key] for key in saved.files}
     meta = json.loads((PHASE / "dataset_meta.json").read_text())
     windows = np.load(PHASE / "windows.npz")
