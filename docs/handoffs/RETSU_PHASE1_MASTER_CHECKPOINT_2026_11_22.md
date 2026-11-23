@@ -157,6 +157,15 @@ Tuned short by horizon: 0.001181, 0.001258, 0.001346, 0.001423, 0.001482, 0.0015
 
 Price reconstruction is trend at the origin plus the seasonal forecast, against future CLOSE. No horizon beats CLOSE persistence. Tuned short, horizons 1–6: 0.001067, 0.001211, 0.001356, 0.001505, 0.001640, 0.001775 against 0.000552, 0.000780, 0.000971, 0.001124, 0.001272, 0.001415. Tuned long: 0.004162 against 0.003370 at 24 h, and 0.004988 against 0.004399 at 48 h. The gates 0.001415 and 0.003370 stay closed. `Prediction_h_*` and `Prediction_d_*` were not written. Rows are in `followup/unfreeze_results.json`.
 
-## CLOSE-change fine-tune, launched 2026-11-22
+## CLOSE-change fine-tune, 2026-11-22
 
-The seasonal fine-tune lowered the short seasonal error and still lost the CLOSE reconstruction. The same champion rule now trains on the change, future CLOSE minus CLOSE at the origin, with the windows already checked. Frozen torch head first, then the recipe-61 encoder unfrozen. Full short and long pools. Outputs: `/var/tmp/retsu-phase1-unfreeze-change-frozen` and `/var/tmp/retsu-phase1-unfreeze-change-tuned`. The 2024 gates stay 0.001415 at 6 h and 0.003370 at 24 h. This queue does not write prediction columns.
+The seasonal fine-tune lowered the short seasonal error and still lost the CLOSE reconstruction. This queue trains on the change, future CLOSE minus CLOSE at the origin, with the windows already checked. Frozen torch head first, then the recipe-61 encoder unfrozen. Full short and long pools. Both finished at 2026-11-22T19:33:53-05:00. Every job stopped at early-stop wait 80/80, four LR reductions, and LR 4.8e-7. Champions are epochs 13, 1, 3 and 2.
+
+| Arm | Job | Epoch | Champion | Train | Best val | 2024 | Gate horizon |
+|---|---|---:|---:|---:|---:|---:|---|
+| frozen | short | 179 | 13 | 0.001321 | 0.001235 | 0.001022 | 6 h 0.00141910 |
+| frozen | long | 179 | 1 | 0.004820 | 0.004130 | 0.003885 | 24 h 0.00336604 |
+| tuned | short | 179 | 3 | 0.001117 | 0.001233 | 0.001022 | 6 h 0.00141894 |
+| tuned | long | 179 | 2 | 0.002613 | 0.004143 | 0.003882 | 24 h 0.00337172 |
+
+The 6 h gate is 0.00141536. Both short arms miss it. The 24 h gate is 0.00336996. The frozen long arm sits under it by 3.9e-6, with the champion at epoch 1. The tuned long arm misses it. Validation of every arm stays on the zero-change naive. Unfreezing the encoder does not move the CLOSE change off persistence. `Prediction_h_*` and `Prediction_d_*` were not written. Rows are in `followup/unfreeze_change_results.json`.
