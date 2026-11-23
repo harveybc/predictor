@@ -169,3 +169,11 @@ The seasonal fine-tune lowered the short seasonal error and still lost the CLOSE
 | tuned | long | 179 | 2 | 0.002613 | 0.004143 | 0.003882 | 24 h 0.00337172 |
 
 The 6 h gate is 0.00141536. Both short arms miss it. The 24 h gate is 0.00336996. The frozen long arm sits under it by 3.9e-6, with the champion at epoch 1. The tuned long arm misses it. Validation of every arm stays on the zero-change naive. Unfreezing the encoder does not move the CLOSE change off persistence. `Prediction_h_*` and `Prediction_d_*` were not written. Rows are in `followup/unfreeze_change_results.json`.
+
+## Pending closed, 2026-11-23
+
+The four unfreeze queues now have TRAIN/VAL figures. The manifest at `followup/curves/manifest.json` has 62 curves. The eight new ones are the frozen and tuned seasonal arms and the frozen and tuned CLOSE-change arms. Each champion file is hashed.
+
+Horizons 72, 96, 120 and 144 were counted again under the same-segment rule. Each one has 0 train rows, 0 monitor rows and 0 holdout rows. The prefix of 24 h and 48 h is unchanged: 8946 train and 527 monitor. The rule was not relaxed and nothing was trained. The count is `followup/horizons_72.json`.
+
+Price columns stay unwritten. No 2024 horizon beat CLOSE persistence by a usable margin, so `Prediction_h_*` and `Prediction_d_*` were not given to the plugin.

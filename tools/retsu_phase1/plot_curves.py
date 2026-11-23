@@ -18,6 +18,10 @@ ROOTS = {
     "close_pretrained": Path("/var/tmp/retsu-phase1-close-pretrained/jobs"),
     "change_seed7": Path("/var/tmp/retsu-phase1-dclose-seed7/jobs"),
     "change_pretrained": Path("/var/tmp/retsu-phase1-dclose-pretrained/jobs"),
+    "unfreeze_seasonal_frozen": Path("/var/tmp/retsu-phase1-unfreeze-frozen/jobs"),
+    "unfreeze_seasonal_tuned": Path("/var/tmp/retsu-phase1-unfreeze-tuned/jobs"),
+    "unfreeze_change_frozen": Path("/var/tmp/retsu-phase1-unfreeze-change-frozen/jobs"),
+    "unfreeze_change_tuned": Path("/var/tmp/retsu-phase1-unfreeze-change-tuned/jobs"),
 }
 OUT = Path("/var/tmp/retsu-phase1/followup/curves")
 
@@ -96,8 +100,11 @@ def main() -> None:
                 continue
             record = plot_one(family, job.name, rows, OUT / family / f"{job.name}.png")
             weights = job / "champion.weights.h5"
+            if not weights.exists():
+                weights = job / "champion.pt"
             record["champion_sha256"] = sha256(weights)
             record["champion_bytes"] = weights.stat().st_size if weights.exists() else None
+            record["champion_file"] = weights.name if weights.exists() else None
             manifest.append(record)
     path = OUT / "manifest.json"
     path.write_text(json.dumps(manifest, indent=2) + "\n")
