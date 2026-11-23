@@ -177,3 +177,11 @@ The four unfreeze queues now have TRAIN/VAL figures. The manifest at `followup/c
 Horizons 72, 96, 120 and 144 were counted again under the same-segment rule. Each one has 0 train rows, 0 monitor rows and 0 holdout rows. The prefix of 24 h and 48 h is unchanged: 8946 train and 527 monitor. The rule was not relaxed and nothing was trained. The count is `followup/horizons_72.json`.
 
 Price columns stay unwritten. No 2024 horizon beat CLOSE persistence by a usable margin, so `Prediction_h_*` and `Prediction_d_*` were not given to the plugin.
+
+## Seasonal increment, 2026-11-23
+
+The level head loses seasonal persistence at 1 h, 2 h and 3 h. This queue keeps the causal STL seasonal and predicts the increment, so the level is the origin seasonal plus that increment. Same 61 features, same windows, same masks. One short row and twelve long rows had no origin seasonal and were dropped. Frozen encoder first, then fine-tuned. Both finished at 2026-11-23T12:55:52-05:00. Every job stopped at early-stop wait 80/80, four LR reductions, and LR 4.8e-7.
+
+Validation is H2 2023. The tuned champion beats seasonal persistence on every horizon there: 1 h 0.000720 against 0.000732, 2 h 0.001022 against 0.001059, 3 h 0.001238 against 0.001315, 4 h 0.001425 against 0.001545, 5 h 0.001573 against 0.001749, 6 h 0.001725 against 0.001947, 24 h 0.003079 against 0.003926, 48 h 0.003532 against 0.004839. The frozen champion also beats every horizon on that split.
+
+2024, tuned: 0.000677, 0.000957, 0.001167, 0.001335, 0.001467, 0.001590, and 0.002621 at 24 h, 0.002416 at 48 h. All eight are under persistence. The 1 h gap is 0.000016. Rows are in `followup/sdelta_results.json`. Prediction columns were not written.
