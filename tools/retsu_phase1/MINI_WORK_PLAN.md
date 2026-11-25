@@ -146,8 +146,8 @@ Toda MAE dice que es la MAE del incremento estacional, en unidades de precio, el
 ## Progreso
 
 - [x] 0. Este plan queda escrito y entra a `origin/master` antes de construir columnas.
-- [ ] 1. `decide()` sobre las 111, voto anterior a 2023-07-01, árbol nuevo.
-- [ ] 2. Endpoints estacionales causales al lado, sonda en cero hacia el futuro, ventanas nuevas.
+- [x] 1. `decide()` sobre las 111, voto anterior a 2023-07-01, árbol nuevo. Decisiones: NONE 77, LOG 23, ASINH 5, ASINHS 2, DIFF 4. Calendario, reloj de eventos, régimen y los tres relojes `px.*hours*` quedaron en NONE.
+- [x] 2. Endpoints estacionales causales al lado, sonda en cero hacia el futuro, ventanas nuevas. Artefacto: `/var/tmp/retsu-phase1-causal-p2`, `recipe_cb69e8f60044af7f`, 164 columnas, 53 estacionales, `stl.close` en periodo 48. Sonda: futuro 0 celdas, polvo del prefijo 0, control de `cdl.body_pips` 0.129. Filas ok que sobreviven: monitor corto 1506/1506, holdout corto 3303/3303, monitor largo 527/527, holdout largo 1188/1188. Pool corto 22667/22753, pool largo 8122/8166. Selección todavía abierta. 2024 sin predecir.
 - [ ] 3. two_pass_greedy por familia, luego un refit con early stopping en H2 2023.
 - [ ] 4. Grilla de 8 celdas por familia sobre las columnas selladas.
 - [ ] 5. Una predicción 2024 por familia, después de restaurar el campeón final.
