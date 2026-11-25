@@ -37,6 +37,7 @@ El builder lee solo este bloque. No duplica estos números en otro default.
   "acf_lags_bars": [24, 48],
   "acf_min_rows": 2000,
   "acf_z": 1.96,
+  "acf_tie": "smaller_lag",
   "stl_seasonal": [7, 13],
   "stl_robust": [false, true],
   "stl_history_multiples": [4, 8],
@@ -96,7 +97,7 @@ La columna que ve el modelo es la serie ya transformada, con el mismo nombre. La
 
 Se conserva la columna del paso 1. Al lado se agrega el endpoint estacional causal solo si el TRAIN de esa columna muestra un pico en 24 o en 48 barras. Siempre se agrega el estacional causal de CLOSE. No se descompone calendario ni reloj de eventos. No se reemplaza la columna por su estacional.
 
-Pico, en la serie ya transformada y solo en filas de decisión: se quita el NaN inicial de calentamiento; si queda un NaN interior, esa columna no recibe estacional. Hacen falta al menos 2000 filas finitas. ACF con `nlags=50`. El lag L en {24, 48} es pico si `acf[L] > 0`, `acf[L] > 1.96/sqrt(n)`, `acf[L] > acf[L-1]` y `acf[L] >= acf[L+1]`. Si los dos califican, el periodo es el de mayor ACF.
+Pico, en la serie ya transformada y solo en filas de decisión: se quita el NaN inicial de calentamiento; si queda un NaN interior, esa columna no recibe estacional. Hacen falta al menos 2000 filas finitas. ACF con `nlags=50`. El lag L en {24, 48} es pico si `acf[L] > 0`, `acf[L] > 1.96/sqrt(n)`, `acf[L] > acf[L-1]` y `acf[L] >= acf[L+1]`. Si los dos califican, el periodo es el de mayor ACF. Si el ACF empata, manda `acf_tie`: el lag menor.
 
 Parametros solo en TRAIN, grilla cerrada del bloque: `seasonal` en {7, 13}, `robust` en {false, true}, `history = max(64, multiple * period)` con multiple en {4, 8}. El criterio es el de `choose_parameters`: MAE escalado del pronóstico a 24 barras en 16 orígenes cuyo horizonte sigue dentro del corte de decisión. Empate: menor history, luego menor seasonal, luego robust false. No se llama `choose_parameters` tal cual, porque su grilla puede elegir periodo 6, 12 o 120. Se llama `fit_history`.
 
