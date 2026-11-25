@@ -404,10 +404,26 @@ def cuts(ts: np.ndarray, data: dict, ok: np.ndarray, plan: dict) -> dict[str, np
         "hold": np.flatnonzero(hold),
     }
     ids = {key: set(value.tolist()) for key, value in parts.items()}
-    for left in ids:
-        for right in ids:
-            if left < right and ids[left] & ids[right]:
-                raise SystemExit(f"SPLIT_OVERLAP {left} {right}")
+    # The refit pool contains fit, the inner early-stopping cut and the score cut.
+    # Those three are disjoint from each other and from H2 2023 and 2024.
+    for left, right in (
+        ("fit", "es"),
+        ("fit", "score"),
+        ("fit", "monitor"),
+        ("fit", "hold"),
+        ("es", "score"),
+        ("es", "monitor"),
+        ("es", "hold"),
+        ("score", "monitor"),
+        ("score", "hold"),
+        ("monitor", "hold"),
+        ("refit", "monitor"),
+        ("refit", "hold"),
+    ):
+        if ids[left] & ids[right]:
+            raise SystemExit(f"SPLIT_OVERLAP {left} {right}")
+    if (ids["fit"] | ids["es"] | ids["score"]) - ids["refit"]:
+        raise SystemExit("REFIT_MISSING_INNER")
     for key in ("fit", "es", "score", "refit", "monitor"):
         if len(parts[key]) < 200:
             raise SystemExit(f"ROWS_{key} {len(parts[key])}")
