@@ -217,7 +217,7 @@ Satoshi owns the trading strategy. It already covers ideal predictions, a noise 
 
 ## Next options, 2026-11-25
 
-All four are open. None has been started. The one to do now is option 1. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
+Option 1 is locked in `tools/retsu_phase1/H12_H36_PLAN.md`. Options 2, 3 and 4 stay unstarted. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives: The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
 
 | Horizon | Train rows | H2 2023 rows | 2024 rows | Admitted alone |
 |---:|---:|---:|---:|:---|
