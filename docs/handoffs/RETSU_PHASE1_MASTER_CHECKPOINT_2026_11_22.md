@@ -206,3 +206,29 @@ The measured quantity is the MAE of the causal STL seasonal level. The model emi
 | Test 2024 | 6 | 3303 | 0.001766 | 0.001641 | −0.000124 | 0.001590 | −0.000175 |
 | Test 2024 | 24 | 1188 | 0.003157 | 0.002869 | −0.000288 | 0.002621 | −0.000536 |
 | Test 2024 | 48 | 1188 | 0.003090 | 0.002687 | −0.000403 | 0.002416 | −0.000674 |
+
+## Current seasonal channel, 2026-11-25
+
+The table above is the 23 November 61-feature increment run. The operative channel is the past-only causal rerun and the closed phase-2 mini plan, `tools/retsu_phase1/MINI_WORK_PLAN.md`. Short champion `lr3e-06_full_encoder_linear`, epoch 123. Long champion `lr3e-05_full_encoder_linear`, epoch 40. Both use the full actor encoder and a linear head.
+
+Validation is H2 2023. Mean MAE of the seasonal increment is 0.00128259 on 1506 short rows and 0.00315358 on 527 long rows. The single 2024 predict is 0.00121341 on 3303 short rows and 0.00251728 on 1188 long rows. Both families beat the zero-increment naive on every horizon of both splits. The earlier tuned causal run, with all columns, remains lower on 2024 at 1–6 h and at 48 h.
+
+Satoshi owns the trading strategy. It already covers ideal predictions, a noise sweep, and this seasonal channel. Retsu does not design or retune that strategy in this plan. `Prediction_h_*` and `Prediction_d_*` stay unwritten.
+
+## Next options, 2026-11-25
+
+All four are open. None has been started. The one to do now is option 1. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
+
+| Horizon | Train rows | H2 2023 rows | 2024 rows | Admitted alone |
+|---:|---:|---:|---:|:---|
+| 12 | 22647 | 1362 | 3009 | yes |
+| 24 | 18074 | 1074 | 2397 | yes |
+| 36 | 13514 | 794 | 1791 | yes |
+| 48 | 8970 | 527 | 1194 | yes |
+
+12 h and 36 h each get their own mask. They are not reduced to the 527 rows of the 48 h joint head. 2024 for these two horizons has not been predicted. The target stays the seasonal increment. The strategy is not changed.
+
+1. Predict 12 h and 36 h. Recommended now. This is the horizon set the existing long-entry path can use, together with 24 h and 48 h, while 1–6 h stay the early-close horizons. The mask already admits both new horizons. Their 2024 year is still unseen.
+2. Search training hyperparameters and the modular topology with DEAP: dropout, per-layer settings, and the extractor, core, and later blocks among Conv1D, LSTM, TCN, and TFT. Later. The minimal DoubleTCN already beats the seasonal naive, and the phase-2 grid improved H2 2023 while the 2024 short horizons and 48 h did not improve. A new search on those horizons would be scored against a year that has already been read. It needs a predeclared budget and a selection rule written before the first run.
+3. Decompose the portfolio assets with STL, rank them by seasonal, trend, and noise measures, and bring the promising ones in with their own feature selection. Later. This is the portfolio service. It starts after the EURUSD horizon set above is measured.
+4. Predict the trend, add it to the predicted seasonal, and compare that sum with the naive of the denoised price, trend plus seasonal. Later. The origin trend plus the forecast seasonal already lost to CLOSE persistence on every 2024 horizon. The 1 h and 2 h seasonal edges are about 0.15 and 0.39 pips, with 1 pip equal to 0.0001, so those two sit near the spread. The existing strategy consumes the seasonal channel.
