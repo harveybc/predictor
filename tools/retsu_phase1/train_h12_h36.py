@@ -133,19 +133,24 @@ def main() -> None:
             if ids[left] & ids[right]:
                 raise SystemExit(f"SPLIT_OVERLAP {horizon} {left} {right}")
         counts = {key: int(len(value)) for key, value in parts.items()}
+        print(
+            f"ROWS h{horizon} fit {counts['fit']} monitor {counts['monitor']} hold {counts['hold']}",
+            flush=True,
+        )
         declared = {
             "fit": int(plan["alone_pool"][str(horizon)]),
             "monitor": int(plan["alone_monitor"][str(horizon)]),
             "hold": int(plan["alone_holdout"][str(horizon)]),
         }
         keep = float(plan["row_keep_fraction"])
-        for key in ("fit", "monitor", "hold"):
+        if counts["fit"] > declared["fit"] or counts["fit"] < int(plan["min_pool"]):
+            raise SystemExit(f"ROW_DRIFT {horizon} fit {counts['fit']} {declared['fit']}")
+        for key in ("monitor", "hold"):
             if counts[key] > declared[key] or counts[key] < declared[key] * keep:
                 raise SystemExit(f"ROW_DRIFT {horizon} {key} {counts[key]} {declared[key]}")
         if counts["fit"] < int(plan["min_pool"]) or counts["monitor"] < int(plan["min_monitor"]):
             raise SystemExit(f"ROWS_{horizon} {counts}")
         prepared[horizon] = {"y": increment[:, None], "parts": parts, "counts": counts}
-        print(f"ROWS h{horizon} fit {counts['fit']} monitor {counts['monitor']} hold {counts['hold']}", flush=True)
     (out / "DECLARED.json").write_text(json.dumps({
         "schema": plan["schema"],
         "recipe": recipe["identity"],

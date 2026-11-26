@@ -6,7 +6,7 @@ Cada horizonte tiene su propia máscara de la misma sesión y su propio modelo. 
 
 Entradas: las 164 columnas de la fase 2, identidad `recipe_cb69e8f60044af7f`. El encoder es el DoubleTCN semilla 7, completo y descongelado, con cabeza lineal de una salida. El learning rate del encoder es el del campeón vecino: 3e-6 para 12 h y 3e-5 para 36 h. La cabeza queda en 3e-4. Esos dos valores se declaran aquí; no hay grilla.
 
-El target es `estacional(t+h) - estacional(t)` de la serie ya guardada. El naive es el incremento cero. La validación es H2 2023.
+El target es `estacional(t+h) - estacional(t)` de la serie ya guardada. El naive es el incremento cero. La validación es H2 2023. El conteo de filas de arriba solo mira la etiqueta. El train además exige una ventana de entradas finita, así que el calentamiento del z-scaler expansivo deja el train por debajo de ese conteo. H2 2023 y 2024 tienen que conservar al menos el 95 % del conteo.
 
 ```h12-h36
 {
