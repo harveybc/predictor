@@ -217,7 +217,7 @@ Satoshi owns the trading strategy. It already covers ideal predictions, a noise 
 
 ## Next options, 2026-11-25
 
-Option 1 is locked in `tools/retsu_phase1/H12_H36_PLAN.md`. Options 2, 3 and 4 stay unstarted. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives: The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
+Option 1 is finished. Options 2, 3 and 4 stay unstarted. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
 
 | Horizon | Train rows | H2 2023 rows | 2024 rows | Admitted alone |
 |---:|---:|---:|---:|:---|
@@ -226,9 +226,21 @@ Option 1 is locked in `tools/retsu_phase1/H12_H36_PLAN.md`. Options 2, 3 and 4 s
 | 36 | 13514 | 794 | 1791 | yes |
 | 48 | 8970 | 527 | 1194 | yes |
 
-12 h and 36 h each get their own mask. They are not reduced to the 527 rows of the 48 h joint head. 2024 for these two horizons has not been predicted. The target stays the seasonal increment. The strategy is not changed.
+12 h and 36 h each kept their own mask. They were not reduced to the 527 rows of the 48 h joint head. The target stayed the seasonal increment. The strategy was not changed.
 
-1. Predict 12 h and 36 h. Recommended now. This is the horizon set the existing long-entry path can use, together with 24 h and 48 h, while 1–6 h stay the early-close horizons. The mask already admits both new horizons. Their 2024 year is still unseen.
+
+
+1. Predict 12 h and 36 h. Done. Locked in `tools/retsu_phase1/H12_H36_PLAN.md`. Each horizon kept its own mask. The model is the phase-2 DoubleTCN, seed 7, full actor encoder, linear head, 164 columns. Encoder learning rate 3e-6 at 12 h and 3e-5 at 36 h. Head learning rate 3e-4. Train rows are 20611 and 12270 after dropping the expanding-z warmup. H2 2023 kept 1362 and 794 rows. 2024 kept 3009 and 1791 rows. One predict per horizon after both champions were restored. The log has two `HOLDOUT_2024` lines and one `H12_H36_DONE`.
+
+| Split | Horizon | Rows | Model MAE | Naive MAE | Model minus naive |
+|---|---:|---:|---:|---:|---:|
+| Validation H2 2023 | 12 | 1362 | 0.00237325 | 0.00290091 | −0.00052765 |
+| Validation H2 2023 | 36 | 794 | 0.00287121 | 0.00496982 | −0.00209861 |
+| Test 2024 | 12 | 3009 | 0.00213015 | 0.00251019 | −0.00038005 |
+| Test 2024 | 36 | 1791 | 0.00229506 | 0.00334251 | −0.00104745 |
+
+The 12 h champion is epoch 151, stopped at epoch 231, early-stopping wait 80/80, four learning-rate reductions, both rates at 4.8e-7. Train MAE 0.00247659. The 36 h champion is epoch 62, stopped at epoch 179, wait 80/80, four reductions, both rates at 4.8e-7. Train MAE 0.00274291. Train MAE is the pooled z-space L1 times the mean target standard deviation. Validation and test MAE are the seasonal increment in price units. The naive is a zero increment. Both horizons beat that naive on both splits.
+
 2. Search training hyperparameters and the modular topology with DEAP: dropout, per-layer settings, and the extractor, core, and later blocks among Conv1D, LSTM, TCN, and TFT. Later. The minimal DoubleTCN already beats the seasonal naive, and the phase-2 grid improved H2 2023 while the 2024 short horizons and 48 h did not improve. A new search on those horizons would be scored against a year that has already been read. It needs a predeclared budget and a selection rule written before the first run.
 3. Decompose the portfolio assets with STL, rank them by seasonal, trend, and noise measures, and bring the promising ones in with their own feature selection. Later. This is the portfolio service. It starts after the EURUSD horizon set above is measured.
 4. Predict the trend, add it to the predicted seasonal, and compare that sum with the naive of the denoised price, trend plus seasonal. Later. The origin trend plus the forecast seasonal already lost to CLOSE persistence on every 2024 horizon. The 1 h and 2 h seasonal edges are about 0.15 and 0.39 pips, with 1 pip equal to 0.0001, so those two sit near the spread. The existing strategy consumes the seasonal channel.

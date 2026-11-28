@@ -1,6 +1,8 @@
 # 12 h y 36 h — incremento estacional
 
-Este archivo manda para esta corrida. No se abre la opción 2, 3 ni 4. No se diseña la estrategia. No se rehacen el STL del target, la máscara de columnas ni los campeones de 1–6 h, 24 h y 48 h.
+Corrida cerrada. `H12_H36_DONE` en Dragon. 12 h campeón época 151, validación H2 2023 MAE 0.00237325 contra naive 0.00290091, 1362 filas. 2024 MAE 0.00213015 contra naive 0.00251019, 3009 filas. 36 h campeón época 62, validación MAE 0.00287121 contra naive 0.00496982, 794 filas. 2024 MAE 0.00229506 contra naive 0.00334251, 1791 filas. Las dos vencen al naive en los dos cortes. Una predicción de 2024 por horizonte.
+
+Este archivo mandó la corrida. No se abrió la opción 2, 3 ni 4. No se diseña la estrategia. No se rehacen el STL del target, la máscara de columnas ni los campeones de 1–6 h, 24 h y 48 h.
 
 Cada horizonte tiene su propia máscara de la misma sesión y su propio modelo. 12 h no se recorta a las filas de 48 h. 2024 se predice una vez por horizonte, después de entrenar los dos y de restaurar cada campeón. Ninguna época mira 2024.
 
