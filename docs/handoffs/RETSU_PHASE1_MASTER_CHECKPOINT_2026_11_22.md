@@ -217,7 +217,7 @@ Satoshi owns the trading strategy. It already covers ideal predictions, a noise 
 
 ## Next options, 2026-11-25
 
-Option 1 is finished. Options 2, 3 and 4 stay unstarted. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
+Option 1 is finished. Option 2 is locked in `tools/retsu_phase1/OPTION2_PLAN.md`. Options 3 and 4 stay unstarted. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
 
 | Horizon | Train rows | H2 2023 rows | 2024 rows | Admitted alone |
 |---:|---:|---:|---:|:---|
@@ -241,6 +241,6 @@ Option 1 is finished. Options 2, 3 and 4 stay unstarted. The same-segment rule s
 
 The 12 h champion is epoch 151, stopped at epoch 231, early-stopping wait 80/80, four learning-rate reductions, both rates at 4.8e-7. Train MAE 0.00247659. The 36 h champion is epoch 62, stopped at epoch 179, wait 80/80, four reductions, both rates at 4.8e-7. Train MAE 0.00274291. Train MAE is the pooled z-space L1 times the mean target standard deviation. Validation and test MAE are the seasonal increment in price units. The naive is a zero increment. Both horizons beat that naive on both splits.
 
-2. Search training hyperparameters and the modular topology with DEAP: dropout, per-layer settings, and the extractor, core, and later blocks among Conv1D, LSTM, TCN, and TFT. Later. The minimal DoubleTCN already beats the seasonal naive, and the phase-2 grid improved H2 2023 while the 2024 short horizons and 48 h did not improve. A new search on those horizons would be scored against a year that has already been read. It needs a predeclared budget and a selection rule written before the first run.
+2. Search the modular encoder. Locked in `tools/retsu_phase1/OPTION2_PLAN.md` and started from the findings above. The live extractor builds `tcn` and `pointwise` only, so LSTM, TFT and transformer are not in this search. DEAP runs on horizon 6. Fitness is naive MAE minus model MAE on `[2023-01-01, 2023-07-01)`. H2 2023 and 2024 stay out of that choice. The winner is refit on horizon 6, transferred once to horizon 24 at encoder learning rate 3e-5, and 2024 is predicted once per horizon after those refits.
 3. Decompose the portfolio assets with STL, rank them by seasonal, trend, and noise measures, and bring the promising ones in with their own feature selection. Later. This is the portfolio service. It starts after the EURUSD horizon set above is measured.
 4. Predict the trend, add it to the predicted seasonal, and compare that sum with the naive of the denoised price, trend plus seasonal. Later. The origin trend plus the forecast seasonal already lost to CLOSE persistence on every 2024 horizon. The 1 h and 2 h seasonal edges are about 0.15 and 0.39 pips, with 1 pip equal to 0.0001, so those two sit near the spread. The existing strategy consumes the seasonal channel.

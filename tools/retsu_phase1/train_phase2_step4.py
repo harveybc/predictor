@@ -87,7 +87,7 @@ def embed_train(model, params, windows: torch.Tensor) -> torch.Tensor:
         return encoder({"features": windows})
 
 
-def train_cell(model, head, trainable, windows, y_all, fit_idx, es_idx, plan, out: Path, job: str, horizons, encoder_lr: float) -> dict:
+def train_cell(model, head, trainable, windows, y_all, fit_idx, es_idx, plan, out: Path, job: str, horizons, encoder_lr: float, val_split_name: str = "H2 2023 monitor") -> dict:
     batch = int(plan["batch"])
     head_lr = float(plan["head_lr"])
     wd = float(plan["weight_decay"])
@@ -187,26 +187,30 @@ def train_cell(model, head, trainable, windows, y_all, fit_idx, es_idx, plan, ou
                     lr_wait = 0
                     opt.param_groups[0]["lr"] = current_head_lr
                     opt.param_groups[1]["lr"] = current_enc_lr
+        rows = {"train": int(len(fit_idx)), "validation": int(len(es_idx))}
+        if val_split_name == "H2 2023 monitor":
+            rows["validation_h2_2023"] = int(len(es_idx))
         record = {
             "epoch": epoch,
             "train_mae": train_price,
             "train_mae_definition": "pooled z-space L1 times mean train-target std; not per horizon",
             "val_mae": val_price,
-            "val_mae_definition": "mean across horizons of MAE of the seasonal increment on H2 2023 monitor",
+            "val_mae_definition": "mean across horizons of MAE of the seasonal increment on " + val_split_name,
             "val_mae_per_horizon": {str(h): val_per[i] for i, h in enumerate(horizons)},
             "lr": current_head_lr,
             "encoder_lr": current_enc_lr,
             "early_stopping": {"wait": wait, "patience": es_patience, "started": epoch >= es_start, "best_epoch": best_epoch, "min_delta": min_delta},
             "reduce_lr": {"wait": lr_wait, "patience": lr_patience, "grace": lr_grace, "reductions": reductions, "factor": lr_factor, "floor": lr_floor},
             "job": job,
-            "rows": {"train": int(len(fit_idx)), "validation_h2_2023": int(len(es_idx))},
+            "rows": rows,
+            "validation_split": val_split_name,
             "holdout_2024": "not predicted",
         }
         with log_path.open("a") as handle:
             handle.write(json.dumps(record) + "\n")
         step3.write_status(out, record | {"state": "running"})
         print(
-            f"{job} epoch {epoch} train {train_price:.6f} val {val_price:.6f} lr {current_head_lr:.3e} enc_lr {current_enc_lr:.3e} es {wait}/{es_patience}",
+            f"{job} epoch {epoch} train {train_price:.6f} val {val_price:.6f} lr {current_head_lr:.3e} enc_lr {current_enc_lr:.3e} es {wait}/{es_patience} split {val_split_name}",
             flush=True,
         )
         if epoch >= es_start and wait >= es_patience:
@@ -221,7 +225,7 @@ def train_cell(model, head, trainable, windows, y_all, fit_idx, es_idx, plan, ou
         "champion_train_mae": best_train,
         "champion_val_mae": best,
         "champion_val_mae_per_horizon": {str(h): best_val_per[i] for i, h in enumerate(horizons)},
-        "val_mae_split": "H2 2023 monitor",
+        "val_mae_split": val_split_name,
         "lr": current_head_lr,
         "encoder_lr": current_enc_lr,
         "early_stopping": {"wait": wait, "patience": es_patience, "best_epoch": best_epoch},
