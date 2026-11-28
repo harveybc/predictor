@@ -217,7 +217,7 @@ Satoshi owns the trading strategy. It already covers ideal predictions, a noise 
 
 ## Next options, 2026-11-25
 
-Option 1 is finished. Option 2 is locked in `tools/retsu_phase1/OPTION2_PLAN.md`. Options 3 and 4 stay unstarted. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
+Option 1 and option 2 are finished. Options 3 and 4 stay unstarted. The same-segment rule stays: a horizon is admitted on its own mask only when the train pool has at least 1575 rows and H2 2023 has at least 200. A count on the saved causal seasonal, without training and without refitting STL, gives:
 
 | Horizon | Train rows | H2 2023 rows | 2024 rows | Admitted alone |
 |---:|---:|---:|---:|:---|
@@ -241,6 +241,20 @@ Option 1 is finished. Option 2 is locked in `tools/retsu_phase1/OPTION2_PLAN.md`
 
 The 12 h champion is epoch 151, stopped at epoch 231, early-stopping wait 80/80, four learning-rate reductions, both rates at 4.8e-7. Train MAE 0.00247659. The 36 h champion is epoch 62, stopped at epoch 179, wait 80/80, four reductions, both rates at 4.8e-7. Train MAE 0.00274291. Train MAE is the pooled z-space L1 times the mean target standard deviation. Validation and test MAE are the seasonal increment in price units. The naive is a zero increment. Both horizons beat that naive on both splits.
 
-2. Search the modular encoder. Locked in `tools/retsu_phase1/OPTION2_PLAN.md` and started from the findings above. The live extractor builds `tcn` and `pointwise` only, so LSTM, TFT and transformer are not in this search. DEAP runs on horizon 6. Fitness is naive MAE minus model MAE on `[2023-01-01, 2023-07-01)`. H2 2023 and 2024 stay out of that choice. The winner is refit on horizon 6, transferred once to horizon 24 at encoder learning rate 3e-5, and 2024 is predicted once per horizon after those refits.
+2. Search the modular encoder. Done. Locked in `tools/retsu_phase1/OPTION2_PLAN.md`. The live extractor builds `tcn` and `pointwise` only, so LSTM, TFT and transformer were not in this search. DEAP ran on horizon 6. Twenty trainings finished, under the cap of 24. Fitness was naive MAE minus model MAE on the inner cut `[2023-01-01, 2023-07-01)`, 1707 rows. H2 2023 and 2024 stayed out of that choice. The winner among every evaluated genome is genes `[0, 0, 0, 1, 1, 2, 1, 1]`: one pointwise core block, kernel forced to 1, dilation base 1, GELU, actor dropout 0.1, encoder learning rate 3e-5, and pointwise branches. Its inner-cut champion is epoch 46, MAE 0.00211578 against naive 0.00240421. That genome was refit on horizon 6 at encoder learning rate 3e-5 and transferred once to horizon 24 on the alone mask, with the encoder learning rate forced to 3e-5. The head stayed at 3e-4. The log has two `HOLDOUT_2024` lines and one `OPTION2_DONE`. The logged final learning rates are the reduced ones.
+
+The inner row is the search score. The other rows are the refit. 2024 was predicted once per horizon after both refits existed.
+
+| Split | Horizon | Rows | Model MAE | Naive MAE | Model minus naive |
+|---|---:|---:|---:|---:|---:|
+| Inner train [2023-01-01, 2023-07-01) | 6 | 1707 | 0.00211578 | 0.00240421 | −0.00028844 |
+| Validation H2 2023 | 6 | 1506 | 0.00170825 | 0.00194733 | −0.00023908 |
+| Validation H2 2023 | 24 | 1074 | 0.00283684 | 0.00423919 | −0.00140235 |
+| Test 2024 | 6 | 3303 | 0.00162058 | 0.00176566 | −0.00014508 |
+| Test 2024 | 24 | 2397 | 0.00255174 | 0.00333405 | −0.00078231 |
+
+The 6 h refit champion is epoch 12, stopped at epoch 179, early-stopping wait 80/80, four learning-rate reductions, both rates at 4.8e-7. Train MAE 0.00199191 on 22667 rows. The 24 h champion is epoch 35, stopped at epoch 179, wait 80/80, four reductions, both rates at 4.8e-7. Train MAE 0.00279693 on 16434 rows. Both runs unfroze 24074 parameters. Train MAE is the pooled z-space L1 times the mean target standard deviation. Validation and test MAE are the seasonal increment in price units. The naive is a zero increment. Both horizons beat that naive on both splits. On 2024 the edges are about 1.45 pips at 6 h and 7.82 pips at 24 h, with 1 pip equal to 0.0001.
+
+On the same 1506 rows, the phase-2 6 h champion was 0.00172839. This refit is lower. On the same 3303 rows of 2024, the phase-2 6 h predict was 0.00161767. This predict is 0.00162058. The 24 h rows here are the alone mask. The joint 24 h and 48 h head used 527 and 1188 rows.
 3. Decompose the portfolio assets with STL, rank them by seasonal, trend, and noise measures, and bring the promising ones in with their own feature selection. Later. This is the portfolio service. It starts after the EURUSD horizon set above is measured.
 4. Predict the trend, add it to the predicted seasonal, and compare that sum with the naive of the denoised price, trend plus seasonal. Later. The origin trend plus the forecast seasonal already lost to CLOSE persistence on every 2024 horizon. The 1 h and 2 h seasonal edges are about 0.15 and 0.39 pips, with 1 pip equal to 0.0001, so those two sit near the spread. The existing strategy consumes the seasonal channel.
